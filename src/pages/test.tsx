@@ -1,7 +1,7 @@
 import { NextPage } from "next";
-import NavigationBar from "../components/NavigationBar";
+import NavigationSidebar from "../components/Navigation/NavigationSidebar";
 
 const Test: NextPage = () => {
-  return <NavigationBar />;
+  return <NavigationSidebar />;
 };
 export default Test;
