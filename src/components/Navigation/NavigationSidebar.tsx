@@ -12,14 +12,21 @@ const user = {
 
 const NavigationSidebar = () => {
   return (
-    <nav className="flex h-screen w-fit flex-col bg-white px-6 pt-10 text-xl shadow-xl ring-1 ring-gray-900/5 lg:px-8">
+    <nav className="flex h-screen w-fit flex-col justify-center bg-white px-6 pt-10 text-xl shadow-xl ring-1 ring-gray-900/5 md:justify-start lg:px-8">
       <a href="#">
         <Image
-          src="/authorie_logo.png"
+          src="/authorie_logo.svg"
           alt="Authorie Logo"
           width="276"
           height="120"
-          className="mx-auto h-14 w-auto"
+          className="mx-auto hidden h-14 w-auto md:block"
+        />
+        <Image
+          src="/authorie_logo_minified.svg"
+          alt="Authorie Logo"
+          width="30"
+          height="12"
+          className="mx-auto md:hidden"
         />
       </a>
       <NavigationItemList
@@ -27,13 +34,6 @@ const NavigationSidebar = () => {
         profileImage={user.profileImage}
         coin={user.coin}
       />
-      <a
-        href="#"
-        className="mt-8 flex justify-center gap-4 rounded-full bg-green-600 px-8 py-3 text-white hover:bg-green-700"
-      >
-        <PencilIcon width="24" height="24" />
-        <span className="hidden sm:block">Create</span>
-      </a>
     </nav>
   );
 };

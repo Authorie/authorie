@@ -7,10 +7,13 @@ interface Props {
 
 const NavigationItem = ({ Icon, title }: Props) => {
   return (
-    <li className="rounded-full py-4 hover:bg-gray-200">
-      <a href="#" className="flex items-center justify-start gap-6 px-3">
+    <li>
+      <a
+        href="#"
+        className="flex items-center justify-start gap-6 rounded-full p-4 hover:bg-gray-200"
+      >
         <Icon width={30} height={30} />
-        <span className="hidden sm:block">{title}</span>
+        <span className="hidden md:block">{title}</span>
       </a>
     </li>
   );
