@@ -18,7 +18,7 @@ interface Props {
 const NavigationItemList = ({ username, profileImage, coin }: Props) => {
   return (
     <ul className="mt-6 flex flex-col items-center gap-4 md:mt-10 md:items-stretch">
-      <NavigationItem>
+      <NavigationItem href="/account">
         <Image
           src={profileImage}
           alt="profile picture"
@@ -28,27 +28,27 @@ const NavigationItemList = ({ username, profileImage, coin }: Props) => {
         />
         <span className="hidden md:block">{username}</span>
       </NavigationItem>
-      <NavigationItem>
+      <NavigationItem href="/">
         <HomeIcon width={30} height={30} />
         <span className="hidden sm:inline-block">Home</span>
       </NavigationItem>
       {username && profileImage && coin ? (
         <>
-          <NavigationItem>
+          <NavigationItem href="/notifications">
             <BellIcon width={30} height={30} />
             <span className="hidden sm:inline-block">Notification</span>
           </NavigationItem>
-          <NavigationItem>
+          <NavigationItem href="/messages">
             <ChatBubbleOvalLeftEllipsisIcon width={30} height={30} />
             <span className="hidden sm:inline-block">Messages</span>
           </NavigationItem>
         </>
       ) : undefined}
-      <NavigationItem>
+      <NavigationItem href="/search">
         <MagnifyingGlassIcon width={30} height={30} />
         <span className="hidden sm:inline-block">Search</span>
       </NavigationItem>
-      <NavigationItem>
+      <NavigationItem href="#">
         <Image
           src="/authorie_coin_logo.svg"
           alt="Authorie coin logo"
@@ -58,16 +58,25 @@ const NavigationItemList = ({ username, profileImage, coin }: Props) => {
         <span className="hidden text-amber-500 sm:inline-block">{coin} Au</span>
       </NavigationItem>
       {username && profileImage && coin ? (
-        <NavigationItem className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
+        <NavigationItem
+          href="#"
+          className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
+        >
           <PencilIcon width="24" height="24" />
           <span className="hidden md:block">Create</span>
         </NavigationItem>
       ) : (
         <>
-          <NavigationItem className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600">
+          <NavigationItem
+            href="#"
+            className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
+          >
             <span className="hidden md:block">Register</span>
           </NavigationItem>
-          <NavigationItem className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
+          <NavigationItem
+            href="#"
+            className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
+          >
             <span className="hidden md:block">Login</span>
           </NavigationItem>
         </>

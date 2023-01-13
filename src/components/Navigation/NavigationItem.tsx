@@ -1,19 +1,23 @@
+import Link from "next/link";
 import React from "react";
 
 const NavigationItem = ({
+  href,
   children,
   className,
-}: React.ComponentPropsWithRef<"a">) => {
+  ...props
+}: React.ComponentPropsWithRef<typeof Link>) => {
   return (
     <li>
-      <a
-        href="#"
+      <Link
+        {...props}
+        href={href}
         className={`flex items-center justify-start gap-4 rounded-full p-2 hover:bg-gray-200 ${
           className || ""
         }`}
       >
         {children}
-      </a>
+      </Link>
     </li>
   );
 };

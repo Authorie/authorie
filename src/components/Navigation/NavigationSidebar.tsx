@@ -1,5 +1,6 @@
 import Image from "next/image";
 import NavigationItemList from "./NavigationItemList";
+import Link from "next/link";
 
 const user = {
   username: "nongfameza",
@@ -11,7 +12,7 @@ const user = {
 const NavigationSidebar = () => {
   return (
     <nav className="fixed top-0 bottom-0 flex min-h-screen w-fit flex-col justify-center overflow-y-auto bg-white px-4 pt-10 text-lg shadow-xl ring-1 ring-gray-900/5 md:justify-start lg:px-6">
-      <a href="#">
+      <Link href="/">
         <Image
           src="/authorie_logo.svg"
           alt="Authorie Logo"
@@ -26,7 +27,7 @@ const NavigationSidebar = () => {
           height="12"
           className="mx-auto md:hidden"
         />
-      </a>
+      </Link>
       <NavigationItemList
         username={user.username}
         profileImage={user.profileImage}
