@@ -1,6 +1,4 @@
 import Image from "next/image";
-
-import { PencilIcon } from "@heroicons/react/24/solid";
 import NavigationItemList from "./NavigationItemList";
 
 const user = {
