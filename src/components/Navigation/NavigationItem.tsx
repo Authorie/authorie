@@ -11,7 +11,7 @@ const NavigationItem = ({ Icon, title, className }: Props) => {
     <li>
       <a
         href="#"
-        className={`flex items-center justify-start gap-6 rounded-full p-4 hover:bg-gray-200 ${
+        className={`flex items-center justify-start gap-4 rounded-full p-3 hover:bg-gray-200 ${
           className || ""
         }`}
       >

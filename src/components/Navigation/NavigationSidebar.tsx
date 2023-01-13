@@ -12,14 +12,14 @@ const user = {
 
 const NavigationSidebar = () => {
   return (
-    <nav className="flex h-screen w-fit flex-col justify-center bg-white px-6 pt-10 text-xl shadow-xl ring-1 ring-gray-900/5 md:justify-start lg:px-8">
+    <nav className="fixed top-0 bottom-0 flex min-h-screen w-fit flex-col justify-center overflow-y-auto bg-white px-4 pt-10 text-lg shadow-xl ring-1 ring-gray-900/5 md:justify-start lg:px-6">
       <a href="#">
         <Image
           src="/authorie_logo.svg"
           alt="Authorie Logo"
           width="276"
           height="120"
-          className="mx-auto hidden h-14 w-auto md:block"
+          className="mx-auto hidden h-10 w-auto md:block"
         />
         <Image
           src="/authorie_logo_minified.svg"
