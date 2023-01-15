@@ -20,14 +20,14 @@ const NavigationSidebar = ({
   coin: number;
 }) => {
   return (
-    <nav className="fixed top-0 bottom-0 flex min-h-screen w-fit flex-col justify-center overflow-y-auto bg-white px-4 pt-10 text-lg shadow-xl ring-1 ring-gray-900/5 md:justify-start lg:px-6">
+    <nav className="text-md fixed top-0 bottom-0 flex min-h-screen w-fit flex-col justify-center overflow-y-auto bg-white px-3 pt-10 shadow-xl ring-1 ring-gray-900/5 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
           alt="Authorie Logo"
           width="276"
           height="120"
-          className="mx-auto hidden h-10 w-auto md:block"
+          className="mx-auto hidden h-10 w-auto sm:block"
           priority
         />
         <Image
@@ -35,12 +35,12 @@ const NavigationSidebar = ({
           alt="Authorie Logo"
           width="30"
           height="12"
-          className="mx-auto md:hidden"
+          className="mx-auto sm:hidden"
           priority
         />
       </NextLink>
-      <ul className="mt-6 flex flex-col items-center gap-4 md:mt-10 md:items-stretch">
-        {username && profileImage && coin ? (
+      <ul className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
+        {username && profileImage && coin && (
           <Link href="/account">
             <Image
               src={profileImage}
@@ -50,14 +50,14 @@ const NavigationSidebar = ({
               className="rounded-full"
               priority
             />
-            <span className="hidden md:block">{username}</span>
+            <span className="hidden sm:inline-block">{username}</span>
           </Link>
-        ) : undefined}
+        )}
         <Link href="/">
           <HomeIcon width={30} height={30} />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
-        {username && profileImage && coin ? (
+        {username && profileImage && coin && (
           <>
             <Link href="/notifications">
               <BellIcon width={30} height={30} />
@@ -68,13 +68,13 @@ const NavigationSidebar = ({
               <span className="hidden sm:inline-block">Messages</span>
             </Link>
           </>
-        ) : undefined}
+        )}
         <Button>
           <MagnifyingGlassIcon width={30} height={30} />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
-        {username && profileImage && coin ? (
-          <Link href="/coin-shop" parentClassName="hidden sm:inline-block">
+        {username && profileImage && coin && (
+          <Link href="/coin-shop" parentClassName="hidden sm:inline-block mb-2">
             <Image
               src="/authorie_coin_logo.svg"
               alt="Authorie coin logo"
@@ -83,19 +83,25 @@ const NavigationSidebar = ({
             />
             <span className="text-amber-500">{coin} Au</span>
           </Link>
-        ) : undefined}
+        )}
         {username && profileImage && coin ? (
-          <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
+          <Button
+            className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
+            parentClassName="mt-2 sm:mt-0"
+          >
             <PencilIcon width="24" height="24" />
-            <span className="hidden md:block">Create</span>
+            <span className="hidden sm:block">Create</span>
           </Button>
         ) : (
           <>
-            <Button className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600">
-              <span className="hidden md:block">Register</span>
+            <Button
+              className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
+              parentClassName="mt-2 sm:mt-0"
+            >
+              <span className="hidden sm:block">Register</span>
             </Button>
             <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
-              <span className="hidden md:block">Login</span>
+              <span className="hidden sm:block">Login</span>
             </Button>
           </>
         )}
