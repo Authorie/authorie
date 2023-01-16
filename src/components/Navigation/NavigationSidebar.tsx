@@ -39,7 +39,7 @@ const NavigationSidebar = ({
           priority
         />
       </NextLink>
-      <ul className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
+      <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
         {username && profileImage && coin && (
           <Link href="/account">
             <Image
@@ -47,57 +47,52 @@ const NavigationSidebar = ({
               alt="profile picture"
               width={30}
               height={30}
-              className="rounded-full"
+              className="h-7 w-7 rounded-full"
               priority
             />
             <span className="hidden sm:inline-block">{username}</span>
           </Link>
         )}
         <Link href="/">
-          <HomeIcon width={30} height={30} />
+          <HomeIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
         {username && profileImage && coin && (
           <>
             <Link href="/notifications">
-              <BellIcon width={30} height={30} />
+              <BellIcon className="h-7 w-7" />
               <span className="hidden sm:inline-block">Notification</span>
             </Link>
             <Link href="/messages">
-              <ChatBubbleOvalLeftEllipsisIcon width={30} height={30} />
+              <ChatBubbleOvalLeftEllipsisIcon className="h-7 w-7" />
               <span className="hidden sm:inline-block">Messages</span>
             </Link>
           </>
         )}
         <Button>
-          <MagnifyingGlassIcon width={30} height={30} />
+          <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
         {username && profileImage && coin && (
-          <Link href="/coin-shop" parentClassName="hidden sm:inline-block mb-2">
+          <Link href="/coin-shop" className="hidden sm:flex">
             <Image
               src="/authorie_coin_logo.svg"
               alt="Authorie coin logo"
               width={30}
               height={30}
+              className="h-7 w-7"
             />
             <span className="text-amber-500">{coin} Au</span>
           </Link>
         )}
         {username && profileImage && coin ? (
-          <Button
-            className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
-            parentClassName="mt-2 sm:mt-0"
-          >
+          <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
             <PencilIcon width="24" height="24" />
             <span className="hidden sm:block">Create</span>
           </Button>
         ) : (
           <>
-            <Button
-              className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
-              parentClassName="mt-2 sm:mt-0"
-            >
+            <Button className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600">
               <span className="hidden sm:block">Register</span>
             </Button>
             <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
@@ -105,7 +100,7 @@ const NavigationSidebar = ({
             </Button>
           </>
         )}
-      </ul>
+      </div>
     </nav>
   );
 };

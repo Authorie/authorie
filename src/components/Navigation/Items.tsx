@@ -7,18 +7,16 @@ const baseClasses =
 export const Button = ({
   children,
   className,
-  parentClassName,
   ...props
-}: React.ComponentPropsWithRef<"button"> & { parentClassName?: string }) => {
+}: React.ComponentPropsWithRef<"button">) => {
   return (
-    <li className={parentClassName}>
-      <button
-        {...props}
-        className={`${baseClasses} ${className ? className : ""}`}
-      >
-        {children}
-      </button>
-    </li>
+    <button
+      className={`${baseClasses} ${className ? className : ""}`}
+      type="button"
+      {...props}
+    >
+      {children}
+    </button>
   );
 };
 
@@ -26,20 +24,15 @@ export const Link = ({
   href,
   children,
   className,
-  parentClassName,
   ...props
-}: React.ComponentPropsWithRef<typeof NextLink> & {
-  parentClassName?: string;
-}) => {
+}: React.ComponentPropsWithRef<typeof NextLink>) => {
   return (
-    <li className={parentClassName}>
-      <NextLink
-        {...props}
-        href={href}
-        className={`${baseClasses} ${className ? className : ""}`}
-      >
-        {children}
-      </NextLink>
-    </li>
+    <NextLink
+      href={href}
+      className={`${baseClasses} ${className ? className : ""}`}
+      {...props}
+    >
+      {children}
+    </NextLink>
   );
 };
