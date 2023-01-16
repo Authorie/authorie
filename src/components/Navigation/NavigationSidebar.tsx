@@ -48,7 +48,6 @@ const NavigationSidebar = ({
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
-              priority
             />
             <span className="hidden sm:inline-block">{username}</span>
           </Link>
