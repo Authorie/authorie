@@ -10,7 +10,7 @@ export default function AuthorBanner({
     authorDescription,
     followers,
     following,
-    page
+    page // the way i am detecting what page it is right now. will need to change to use url <<
 }: {
     username: string,
     profileImage: string,
