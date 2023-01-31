@@ -2,25 +2,28 @@ import Image from "next/image"
 import { EnvelopeIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
 import Link from 'next/link';
+import { useRouter } from "next/router";
 
 export default function AuthorBanner({
     username,
+    onlineStatus,
     profileImage,
-    currentStatus,
+    initialFollowStatus,
     authorDescription,
     followers,
-    following,
-    page // the way i am detecting what page it is right now. will need to change to use url <<
+    following
 }: {
     username: string,
+    onlineStatus: boolean,
     profileImage: string,
-    currentStatus: boolean,
+    initialFollowStatus: boolean,
     authorDescription: string,
     followers: number,
-    following: number,
-    page: string
+    following: number
 }) {
-    const [followStatus, setfollowStatus] = useState(currentStatus)
+    const [followStatus, setfollowStatus] = useState(initialFollowStatus)
+
+    const router = useRouter()
 
     const pages = ["home", "community", "book", "about"]
 
@@ -40,7 +43,7 @@ export default function AuthorBanner({
             />
             <div className="flex items-center">
                 <div className="font-bold text-4xl w-max">{username}</div>
-                <div className="rounded-full bg-lime-300 w-5 h-5 mx-3 mt-3"></div>
+                <div className={`rounded-full w-5 h-5 mx-3 mt-3 ${onlineStatus ? "bg-lime-300":"bg-gray-300"}`}></div>
                 <button><EnvelopeIcon className="w-16 h-16 ml-16 mr-7" /></button>
                 <button className="rounded-md bg-lime-300 text-slate-800/60 px-4 py-1 w-24" onClick={handleFollow}>{followStatus ? "Followed" : "Follow"}</button>
             </div>
@@ -51,8 +54,8 @@ export default function AuthorBanner({
             </div>
             <ul className="flex gap-14 justify-between">
                 {pages.map((pagenames) => (
-                    <li key={page}>
-                        <Link href={``} className={`${page == pagenames ? 'text-lime-300 underline' : 'hover:text-lime-300 hover:underline'
+                    <li key={pagenames}>
+                        <Link href={``} className={`${router.pathname.endsWith(pagenames) ? 'text-lime-300 underline' : 'hover:text-lime-300 hover:underline'
                             } leading-5 underline-offset-4 uppercase`}
                         >{pagenames}</Link>
                     </li>
