@@ -5,22 +5,23 @@ import {
   ChatBubbleOvalLeftEllipsisIcon,
   HomeIcon,
   MagnifyingGlassIcon,
+  ArrowLeftOnRectangleIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
+import { signIn, signOut } from "next-auth/react";
 
 import { Link, Button } from "./Items";
 
-const NavigationSidebar = ({
-  username,
-  profileImage,
-  coin,
-}: {
+type User = {
   username: string;
   profileImage: string;
   coin: number;
-}) => {
+};
+
+const NavigationSidebar = ({ user }: { user?: User }) => {
   return (
-    <nav className="text-md fixed top-0 bottom-0 flex min-h-screen w-fit flex-col justify-center overflow-y-auto bg-white px-3 pt-10 shadow-xl ring-1 ring-gray-900/5 sm:justify-start">
+    <nav className="text-md fixed top-0 bottom-0 flex min-h-screen w-44 flex-col justify-center overflow-y-auto bg-white px-3 pt-10 shadow-xl ring-1 ring-gray-900/5 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -40,23 +41,25 @@ const NavigationSidebar = ({
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {username && profileImage && coin && (
+        {user && (
           <Link href="/account">
             <Image
-              src={profileImage}
+              src={user.profileImage}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
-            <span className="hidden sm:inline-block">{username}</span>
+            <span className="hidden truncate sm:inline-block ">
+              {user.username}
+            </span>
           </Link>
         )}
         <Link href="/">
           <HomeIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
-        {username && profileImage && coin && (
+        {user && (
           <>
             <Link href="/notifications">
               <BellIcon className="h-7 w-7" />
@@ -72,7 +75,7 @@ const NavigationSidebar = ({
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
-        {username && profileImage && coin && (
+        {user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
               src="/authorie_coin_logo.svg"
@@ -81,24 +84,34 @@ const NavigationSidebar = ({
               height={30}
               className="h-7 w-7"
             />
-            <span className="text-amber-500">{coin} Au</span>
+            <span className="text-amber-500">{user.coin} Au</span>
           </Link>
         )}
-        {username && profileImage && coin ? (
-          <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
-            <PencilIcon width="24" height="24" />
-            <span className="hidden sm:block">Create</span>
-          </Button>
-        ) : (
-          <>
-            <Button className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600">
-              <span className="hidden sm:block">Register</span>
-            </Button>
-            <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
+        <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
+          {user ? (
+            <>
+              <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
+                <PencilIcon width="24" height="24" />
+                <span className="hidden sm:block">Create</span>
+              </Button>
+              <Button
+                className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
+                onClick={() => void signOut()}
+              >
+                <ArrowLeftOnRectangleIcon width="24" height="24" />
+                <span className="hidden sm:block">Signout</span>
+              </Button>
+            </>
+          ) : (
+            <Button
+              className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
+              onClick={() => void signIn()}
+            >
+              <ArrowRightOnRectangleIcon width="24" height="24" />
               <span className="hidden sm:block">Login</span>
             </Button>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );
