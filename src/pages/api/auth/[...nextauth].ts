@@ -14,6 +14,7 @@ export const authOptions: NextAuthOptions = {
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
+        session.user.coin = user.coin;
       }
       return session;
     },
@@ -31,7 +32,7 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
-          prompt: "consent",
+          prompt: "login",
           access_type: "offline",
           response_type: "code",
         },

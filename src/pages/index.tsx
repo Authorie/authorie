@@ -22,7 +22,15 @@ const Home: NextPage = () => {
         <title>Authorie</title>
       </Head>
       <main>
-        <NavigationSidebar user={session ? user : undefined} />
+        <NavigationSidebar
+          user={
+            session?.user && {
+              username: user.username,
+              coin: session.user.coin,
+              profileImage: user.profileImage,
+            }
+          }
+        />
       </main>
     </>
   );
