@@ -19,7 +19,7 @@ type User = {
   coin: number;
 };
 
-const NavigationSidebar = ({ user }: { user?: User }) => {
+const NavigationSidebar = ({ user }: { user: User | undefined }) => {
   return (
     <nav className="text-md fixed top-0 bottom-0 flex min-h-screen w-44 flex-col justify-center overflow-y-auto bg-white px-3 pt-10 shadow-xl ring-1 ring-gray-900/5 sm:justify-start">
       <NextLink href="/">
