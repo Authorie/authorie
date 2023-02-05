@@ -29,6 +29,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.FACEBOOK_CLIENT_SECRET,
     }),
   ],
+  debug: env.NODE_ENV !== "production",
+  useSecureCookies: env.NODE_ENV === "production",
 };
 
 export default NextAuth(authOptions);
