@@ -61,3 +61,10 @@ model VerificationToken {
     @@unique([identifier, token])
     @@map("verificationTokens")
 }
+
+model Category {
+    id   String @id @default(cuid())
+    name String
+
+    @@map("categories")
+}
