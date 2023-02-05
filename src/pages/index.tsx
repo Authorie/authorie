@@ -1,7 +1,7 @@
 import { type NextPage } from "next";
 import Head from "next/head";
 
-import NavigationSidebar from "../components/Navigation/NavigationSidebar";
+import NavigationSidebar from "@components/Navigation/NavigationSidebar";
 
 import user from "../mocks/user";
 
