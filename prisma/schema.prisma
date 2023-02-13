@@ -42,14 +42,15 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String              @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?             @unique
     emailVerified DateTime?
     image         String?
-    coin          Int       @default(0)
+    coin          Int                 @default(0)
     accounts      Account[]
     sessions      Session[]
+    categories    CategoriesOnUsers[]
 
     @@map("users")
 }
@@ -64,8 +65,19 @@ model VerificationToken {
 }
 
 model Category {
-    id   String @id @default(cuid())
-    name String
+    id    String              @id @default(cuid())
+    name  String
+    users CategoriesOnUsers[]
 
     @@map("categories")
+}
+
+model CategoriesOnUsers {
+    category   Category @relation(fields: [categoryId], references: [id])
+    categoryId String
+    user       User     @relation(fields: [userId], references: [id])
+    userId     String
+
+    @@id([categoryId, userId])
+    @@map("categoriesOnUsers")
 }
