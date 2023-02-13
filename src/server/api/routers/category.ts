@@ -6,7 +6,7 @@ export const categoryRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.category.findMany();
   }),
-  getFollowedCategories: protectedProcedure.query(async ({ ctx }) => {
+  getFollowedCategories: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.category.findMany({
       where: {
         users: {
@@ -19,7 +19,7 @@ export const categoryRouter = createTRPCRouter({
   }),
   followCategory: protectedProcedure
     .input(z.string())
-    .mutation(async ({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       ctx.prisma.user.update({
         where: {
           id: ctx.session.user.id,
@@ -33,12 +33,11 @@ export const categoryRouter = createTRPCRouter({
         },
       });
     }),
-  create: publicProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    const category = await ctx.prisma.category.create({
+  create: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
+    return ctx.prisma.category.create({
       data: {
         name: input,
       },
     });
-    return category;
   }),
 });
