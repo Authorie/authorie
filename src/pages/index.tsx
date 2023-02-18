@@ -1,10 +1,13 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
-import user from "../mocks/user";
 import { getServerAuthSession } from "@server/auth";
 import NavigationSidebar from "@components/Navigation/NavigationSidebar";
-import FeedLayout from "@components/Feed/FeedLayout";
+import { useState } from "react";
+import CategoryBar from "@components/Category/CategoryBar";
+import ChapterContent from "@components/Chapter/ChapterContent";
+import { api } from "@utils/api";
+import CategoryChoice from "@components/Category/CategoryChoice";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerAuthSession(context);
@@ -15,6 +18,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 const Home: NextPage = () => {
   const { data: session } = useSession();
+  const { data: categories } = api.category.getAll.useQuery();
+  const { data: userCategories } = api.category.getFollowed.useQuery();
+
+  const [showCategories, setShowCategories] = useState<boolean>(false);
+
+  const onToggleChoices = () => {
+    setShowCategories(() => !showCategories);
+  };
+
+  const onCloseChoices = () => {
+    setShowCategories(false);
+  };
 
   return (
     <>
@@ -28,7 +43,25 @@ const Home: NextPage = () => {
       <div className="flex justify-center">
         <NavigationSidebar />
         <div className="border-l-2 px-10">
-          <FeedLayout />
+          <div className="my-4 flex h-[329px] w-[1100px] flex-col overflow-hidden rounded-xl bg-neutral-500">
+            <div className="flex h-[269px] items-center justify-center rounded-xl bg-dark-600">
+              {!showCategories ? (
+                <h1 className="text-8xl text-white">For Ads</h1>
+              ) : (
+                <CategoryChoice
+                  categoriesList={categories}
+                  onCloseCategories={onCloseChoices}
+                />
+              )}
+            </div>
+            <div className="h-[10px]" />
+            <CategoryBar
+              openCategories={showCategories}
+              onOpenCategories={onToggleChoices}
+              categories={userCategories}
+            />
+          </div>
+          <ChapterContent />
         </div>
       </div>
     </>

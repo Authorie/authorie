@@ -1,15 +1,14 @@
+import { api } from "@utils/api";
 import Choice from "./Choice";
-import { useState } from "react";
+import { Category } from "@prisma/client";
 
 type props = {
-  categoriesList: string[];
+  categoriesList: Category[] | undefined;
   onCloseCategories: () => void;
 };
 
 const CategoryChoice = ({ categoriesList, onCloseCategories }: props) => {
-  const onClickHandler = () => {
-    console.log("hi");
-  };
+  const followCategoryMutation = api.category.follow.useMutation();
 
   return (
     <div className="h-[269px] w-[1100px] overflow-y-scroll rounded-lg bg-dark-500 px-7 py-5 text-white shadow-lg">
@@ -18,8 +17,12 @@ const CategoryChoice = ({ categoriesList, onCloseCategories }: props) => {
         <button onClick={onCloseCategories}>close</button>
       </div>
       <div className="grid grid-cols-5 gap-4">
-        {categoriesList.map((data) => (
-          <Choice key={data} title={data} onClick={onClickHandler} />
+        {categoriesList?.map((category) => (
+          <Choice
+            key={category.id}
+            title={category.name}
+            onClick={() => followCategoryMutation.mutate(category.id)}
+          />
         ))}
       </div>
     </div>

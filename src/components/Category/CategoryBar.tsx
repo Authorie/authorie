@@ -2,25 +2,26 @@ import TimeMachine from "@components/TimeMachine/TimeMachine";
 import CategoryItem from "./CategoryItem";
 import { useState } from "react";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Category } from "@prisma/client";
+import { api } from "@utils/api";
 
 type props = {
-  categories: string[];
+  categories: Category[] | undefined;
   onOpenCategories: () => void;
   openCategories: boolean;
-  removeCategory: (title: string) => void;
 };
 
 const CategoryBar = ({
   categories,
   onOpenCategories,
   openCategories,
-  removeCategory,
 }: props) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("Following");
+  const unfollowCategoryMutation = api.category.unfollow.useMutation();
   const onClickHandler = (title: string) => setSelectedCategory(title);
 
-  const onDeleteHandler = (title: string) => {
-    removeCategory(title);
+  const onDeleteHandler = (categoryId: string) => {
+    unfollowCategoryMutation.mutate(categoryId);
     setSelectedCategory("Following");
   };
 
@@ -44,13 +45,19 @@ const CategoryBar = ({
           )}
         </button>
         <div className="flex items-center">
-          {categories.map((category) => (
+          <CategoryItem
+            onDelete={() => {}}
+            title={"Following"}
+            selected={"Following" === selectedCategory}
+            onClick={() => onClickHandler("Following")}
+          />
+          {categories?.map((category) => (
             <CategoryItem
-              onDelete={() => onDeleteHandler(category)}
-              key={category}
-              title={category}
-              selected={category === selectedCategory}
-              onClick={() => onClickHandler(category)}
+              onDelete={() => onDeleteHandler(category.id)}
+              key={category.id}
+              title={category.name}
+              selected={category.name === selectedCategory}
+              onClick={() => onClickHandler(category.name)}
             />
           ))}
         </div>
