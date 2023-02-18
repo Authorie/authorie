@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
   ],
   debug: env.NODE_ENV !== "production",
   useSecureCookies: env.NODE_ENV === "production",
+  pages: { newUser: "/auth/new-user" },
 };
 
 export default NextAuth(authOptions);

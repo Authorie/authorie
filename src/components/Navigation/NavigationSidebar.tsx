@@ -10,8 +10,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { signIn, signOut } from "next-auth/react";
-
+import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
+import { useState } from "react";
 
 type User = {
   username: string;
@@ -20,8 +21,18 @@ type User = {
 };
 
 const NavigationSidebar = ({ user }: { user: User | undefined }) => {
+  const [openSearchModal, setOpenSearchModal] = useState<boolean>(false);
+
+  const onSearchHandler = () => {
+    setOpenSearchModal(true);
+  };
+
+  const onCloseSearchHandler = () => {
+    setOpenSearchModal(false);
+  };
+
   return (
-    <nav className="text-md fixed top-0 bottom-0 flex min-h-screen w-44 flex-col justify-center overflow-y-auto bg-white px-3 pt-10 shadow-xl ring-1 ring-gray-900/5 sm:justify-start">
+    <nav className="text-md top-0 bottom-0 flex min-h-screen w-60 flex-col justify-center overflow-y-auto border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -71,10 +82,13 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
             </Link>
           </>
         )}
-        <Button>
+        <Button onClick={onSearchHandler}>
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
+        {openSearchModal && (
+          <SearchModal onCloseSearchHandler={onCloseSearchHandler} />
+        )}
         {user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
