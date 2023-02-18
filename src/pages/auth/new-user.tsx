@@ -1,3 +1,5 @@
+import { api } from "@utils/api";
+import { useRouter } from "next/router";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 interface IFormInputs {
@@ -10,13 +12,13 @@ const NewUser = () => {
     formState: { errors },
     handleSubmit,
   } = useForm<IFormInputs>();
-
-  const onSubmit: SubmitHandler<IFormInputs> = (data) => console.log(data);
-
-  let inputClassName = "";
-  if (errors.penName) {
-    inputClassName = "border-red-500";
-  }
+  const router = useRouter();
+  const updateUser = api.user.update.useMutation();
+  const onSubmit: SubmitHandler<IFormInputs> = async (data) => {
+    await updateUser.mutateAsync({ name: data.penName }).then(() => {
+      router.replace("/");
+    });
+  };
 
   return (
     <form
@@ -31,7 +33,9 @@ const NewUser = () => {
           <input
             {...register("penName", { required: true })}
             aria-invalid={errors.penName ? "true" : "false"}
-            className={`focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${inputClassName}`}
+            className={`focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
+              errors.penName ?? "border-red-500"
+            }`}
             id="penName"
             type="text"
             placeholder="your pen name..."
@@ -49,7 +53,30 @@ const NewUser = () => {
         type="submit"
         className="rounded-full bg-green-500 py-2 px-8 font-bold text-white hover:bg-green-600"
       >
-        Confirm
+        {updateUser.isLoading ? (
+          <svg
+            className="h-4 w-4 animate-spin text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        ) : (
+          <span>Confirm</span>
+        )}
       </button>
     </form>
   );

@@ -1,35 +1,67 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
-import { useSession } from "next-auth/react";
 import { getServerAuthSession } from "@server/auth";
 import NavigationSidebar from "@components/Navigation/NavigationSidebar";
 import { useState } from "react";
-import CategoryBar from "@components/Category/CategoryBar";
-import ChapterContent from "@components/Chapter/ChapterContent";
+import CategoryBar from "@components/Category/CategoryBar/CategoryBar";
 import { api } from "@utils/api";
-import CategoryChoice from "@components/Category/CategoryChoice";
+import CategorySelectionBoard from "@components/Category/CategorySelectionBoard/CategorySelectionBoard";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { AppRouter, appRouter } from "@server/api/root";
+import superjson from "superjson";
+import ChapterPost from "@components/Chapter/ChapterPost";
+
+const mockChapters = [
+  {
+    bookTitle: "The Book",
+    chapterNumber: 1,
+    chapterTitle: "The Beginning",
+    publishDate: new Date(),
+    content: "This is the beginning of the book",
+  },
+  {
+    bookTitle: "The Book",
+    chapterNumber: 2,
+    chapterTitle: "The Middle",
+    publishDate: new Date(),
+    content: "This is the middle of the book",
+  },
+  {
+    bookTitle: "The Book",
+    chapterNumber: 3,
+    chapterTitle: "The End",
+    publishDate: new Date(),
+    content: "This is the end of the book",
+  },
+];
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerAuthSession(context);
+  const ssg = createProxySSGHelpers<AppRouter>({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session }),
+    transformer: superjson,
+  });
+
+  const promises = [ssg.category.getAll.prefetch()];
+  if (session) {
+    promises.push(ssg.category.getFollowed.prefetch());
+  }
+
   return {
-    props: { session },
+    props: {
+      trpcState: ssg.dehydrate(),
+      session,
+    },
   };
 };
 
+// TODO: Guard categories with auth
 const Home: NextPage = () => {
-  const { data: session } = useSession();
   const { data: categories } = api.category.getAll.useQuery();
   const { data: userCategories } = api.category.getFollowed.useQuery();
-
   const [showCategories, setShowCategories] = useState<boolean>(false);
-
-  const onToggleChoices = () => {
-    setShowCategories(() => !showCategories);
-  };
-
-  const onCloseChoices = () => {
-    setShowCategories(false);
-  };
 
   return (
     <>
@@ -42,26 +74,29 @@ const Home: NextPage = () => {
       </Head>
       <div className="flex justify-center">
         <NavigationSidebar />
-        <div className="border-l-2 px-10">
-          <div className="my-4 flex h-[329px] w-[1100px] flex-col overflow-hidden rounded-xl bg-neutral-500">
-            <div className="flex h-[269px] items-center justify-center rounded-xl bg-dark-600">
-              {!showCategories ? (
-                <h1 className="text-8xl text-white">For Ads</h1>
+        <div className="flex w-4/5 max-w-6xl flex-col gap-6 px-10 py-4">
+          <div className="flex flex-col gap-3 overflow-hidden rounded-xl bg-neutral-500">
+            <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
+              {showCategories ? (
+                <CategorySelectionBoard categoriesList={categories} />
               ) : (
-                <CategoryChoice
-                  categoriesList={categories}
-                  onCloseCategories={onCloseChoices}
-                />
+                <h1 className="text-8xl text-white">For Ads</h1>
               )}
             </div>
-            <div className="h-[10px]" />
             <CategoryBar
-              openCategories={showCategories}
-              onOpenCategories={onToggleChoices}
               categories={userCategories}
+              openCategories={showCategories}
+              onOpenCategories={() => setShowCategories((prev) => !prev)}
             />
           </div>
-          <ChapterContent />
+          <div className="flex flex-col gap-8">
+            {mockChapters.map((chapter) => (
+              <ChapterPost
+                key={`${chapter.bookTitle}_${chapter.chapterNumber}_${chapter.chapterTitle}`}
+                {...chapter}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </>
