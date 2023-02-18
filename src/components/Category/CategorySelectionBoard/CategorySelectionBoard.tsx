@@ -1,6 +1,5 @@
-import { api } from "@utils/api";
+import type { Category } from "@prisma/client";
 import CategoryChoice from "./CategoryChoice";
-import { Category } from "@prisma/client";
 
 type props = {
   categoriesList: Category[] | undefined;

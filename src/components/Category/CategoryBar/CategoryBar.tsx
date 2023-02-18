@@ -1,7 +1,6 @@
-import dynamic from "next/dynamic";
 import CategoryItem from "./CategoryItem";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Category } from "@prisma/client";
+import type { Category } from "@prisma/client";
 import { api } from "@utils/api";
 import { useSelectCategory, useSelectedCategory } from "@hooks/category";
 
@@ -25,8 +24,8 @@ const CategoryBar = ({
     },
   });
 
-  const onDeleteHandler = async (categoryId: string) => {
-    await unfollowCategoryMutation.mutateAsync(categoryId);
+  const onDeleteHandler = (categoryId: string) => {
+    unfollowCategoryMutation.mutate(categoryId);
     selectCategory("following");
   };
 

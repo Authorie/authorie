@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { Category } from ".prisma/client";
+import type { Category } from "@prisma/client";
 
 type CategoryStore = {
   selectedCategory: "following" | Category;

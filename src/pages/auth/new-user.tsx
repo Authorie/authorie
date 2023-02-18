@@ -1,6 +1,6 @@
 import { api } from "@utils/api";
 import { useRouter } from "next/router";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 
 interface IFormInputs {
   penName: string;
@@ -15,14 +15,17 @@ const NewUser = () => {
   const router = useRouter();
   const updateUser = api.user.update.useMutation();
   const onSubmit: SubmitHandler<IFormInputs> = async (data) => {
-    await updateUser.mutateAsync({ name: data.penName }).then(() => {
-      router.replace("/");
-    });
+    updateUser.mutate({ name: data.penName });
+    try {
+      await router.replace("/");
+    } catch (error) {
+      console.error(error); // TODO: Handle error
+    }
   };
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={() => handleSubmit(onSubmit)}
       className="flex h-screen flex-col items-center justify-center"
     >
       <div className="flex items-center gap-4">
@@ -34,7 +37,7 @@ const NewUser = () => {
             {...register("penName", { required: true })}
             aria-invalid={errors.penName ? "true" : "false"}
             className={`focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
-              errors.penName ?? "border-red-500"
+              errors.penName ? "border-red-500" : ""
             }`}
             id="penName"
             type="text"

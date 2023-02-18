@@ -8,7 +8,7 @@ import { api } from "@utils/api";
 import CategorySelectionBoard from "@components/Category/CategorySelectionBoard/CategorySelectionBoard";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createInnerTRPCContext } from "@server/api/trpc";
-import { AppRouter, appRouter } from "@server/api/root";
+import { type AppRouter, appRouter } from "@server/api/root";
 import superjson from "superjson";
 import ChapterPost from "@components/Chapter/ChapterPost";
 
