@@ -33,6 +33,25 @@ export const categoryRouter = createTRPCRouter({
         },
       });
     }),
+  removeCategory: protectedProcedure
+    .input(z.string())
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.user.update({
+        where: {
+          id: ctx.session.user.id,
+        },
+        data: {
+          categories: {
+            delete: {
+              categoryId_userId: {
+                userId: ctx.session.user.id,
+                categoryId: input,
+              },
+            },
+          },
+        },
+      });
+    }),
   create: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
     return ctx.prisma.category.create({
       data: {
