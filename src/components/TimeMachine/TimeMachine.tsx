@@ -1,8 +1,11 @@
+import { CalendarDaysIcon } from "@heroicons/react/24/outline";
+
 const TimeMachine = () => {
   return (
     <>
-      <button className="height-[7px] rounded-full bg-white px-4 text-sm font-bold text-black hover:bg-dark-200">
-        Time Machine
+      <button className="flex items-center gap-2 rounded-full bg-white px-3 py-1 hover:bg-dark-200">
+        <CalendarDaysIcon className="h-6 w-auto" />
+        <span className="text-sm font-bold">Time Machine</span>
       </button>
     </>
   );
