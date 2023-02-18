@@ -1,44 +1,49 @@
-import { useState, ChangeEvent } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+
+interface IFormInputs {
+  penName: string;
+}
 
 const NewUser = () => {
-  const [penName, setPenName] = useState<string>("");
-  const [pressed, setPressed] = useState<boolean>(false);
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<IFormInputs>();
 
-  const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    setPenName(event.target.value);
-  };
+  const onSubmit: SubmitHandler<IFormInputs> = (data) => console.log(data);
 
-  const onSubmitHandler = () => {
-    setPressed(true);
-    if (penName) {
-      console.log("passed");
-      return;
-    } else {
-      console.log("no name");
-      return;
-    }
-  };
+  let inputClassName = "";
+  if (errors.penName) {
+    inputClassName = "border-red-500";
+  }
 
   return (
     <form
-      onSubmit={onSubmitHandler}
+      onSubmit={handleSubmit(onSubmit)}
       className="flex h-screen flex-col items-center justify-center"
     >
-      <div className="mb-10 flex items-center gap-4">
+      <div className="flex items-center gap-4">
         <label className="text-md font-bold text-gray-700">
           Enter your pen name:
         </label>
-        <div>
+        <div className="flex-col align-top">
           <input
-            className="focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none"
+            {...register("penName", { required: true })}
+            aria-invalid={errors.penName ? "true" : "false"}
+            className={`focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${inputClassName}`}
             id="penName"
             type="text"
             placeholder="your pen name..."
-            value={penName}
-            onChange={onChangeHandler}
           />
-          {pressed && penName === "" && <p>please input you pen name</p>}
         </div>
+      </div>
+      <div className="mb-5 ml-5 mt-1 h-[20px]">
+        {errors.penName?.type === "required" && (
+          <p role="alert" className="text-sm text-red-600">
+            Please enter your pen name
+          </p>
+        )}
       </div>
       <button
         type="submit"

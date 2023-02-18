@@ -2,35 +2,11 @@ import Choice from "./Choice";
 import { useState } from "react";
 
 type props = {
+  categoriesList: string[];
   onCloseCategories: () => void;
 };
 
-const CategoryChoice = ({ onCloseCategories }: props) => {
-  const categories: string[] = [
-    "Fiction",
-    "Non-fiction",
-    "Horror",
-    "Entertainment",
-    "Study",
-    "Animals and Pets",
-    "Business and Economics",
-    "Cryptocurrency",
-    "Stock investment",
-    "Technical Analysis",
-    "Fundamental Analysis",
-    "Fiction",
-    "Non-fiction",
-    "Horror",
-    "Entertainment",
-    "Study",
-    "Animals and Pets",
-    "Business and Economics",
-    "Cryptocurrency",
-    "Stock investment",
-    "Technical Analysis",
-    "Fundamental Analysis",
-  ];
-
+const CategoryChoice = ({ categoriesList, onCloseCategories }: props) => {
   const onClickHandler = () => {
     console.log("hi");
   };
@@ -42,7 +18,7 @@ const CategoryChoice = ({ onCloseCategories }: props) => {
         <button onClick={onCloseCategories}>close</button>
       </div>
       <div className="grid grid-cols-5 gap-4">
-        {categories.map((data) => (
+        {categoriesList.map((data) => (
           <Choice key={data} title={data} onClick={onClickHandler} />
         ))}
       </div>
