@@ -1,6 +1,7 @@
 import TimeMachine from "@components/TimeMachine/TimeMachine";
 import CategoryItem from "./CategoryItem";
 import { useState } from "react";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 type props = {
   categories: string[];
@@ -18,20 +19,29 @@ const CategoryBar = ({
   const [selectedCategory, setSelectedCategory] = useState<string>("Following");
   const onClickHandler = (title: string) => setSelectedCategory(title);
 
-  const onDeleteHandler = (title: string) => removeCategory(title);
-
-  let className =
-    "rounded-full px-[12px] py-[5px] bg-black text-white hover:bg-dark-500";
-  if (openCategories) {
-    className =
-      "rounded-full bg-yellow-700 px-[12px] py-[5px] text-white hover:bg-yellow-800";
-  }
+  const onDeleteHandler = (title: string) => {
+    removeCategory(title);
+    setSelectedCategory("Following");
+  };
 
   return (
     <div className="flex justify-between bg-dark-600 py-3 px-4">
       <div className="flex">
-        <button onClick={onOpenCategories} className={className}>
-          +
+        <button
+          title="Open Categories"
+          type="button"
+          onClick={onOpenCategories}
+          className={`flex aspect-square h-full items-center justify-center rounded-full text-white ${
+            openCategories
+              ? "bg-yellow-700 hover:bg-yellow-800"
+              : "bg-black hover:bg-dark-500"
+          }`}
+        >
+          {openCategories ? (
+            <XMarkIcon className="h-4 w-4" />
+          ) : (
+            <PlusIcon className="h-4 w-4" />
+          )}
         </button>
         <div className="flex items-center">
           {categories.map((category) => (

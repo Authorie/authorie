@@ -1,3 +1,5 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
+
 type props = {
   title: string;
   selected: boolean;
@@ -6,24 +8,23 @@ type props = {
 };
 
 const CategoryItem = ({ title, selected, onClick, onDelete }: props) => {
-  let className = " hover:bg-dark-400";
-  if (selected) {
-    className = "bg-yellow-700 hover:bg-yellow-800";
-  }
-
   return (
     <div
-      className={`group/categoryItem font-regular + relative ml-3 rounded-3xl text-sm text-white ${className}`}
+      className={`group/categoryItem font-regular relative ml-3 rounded-3xl text-sm text-white ${
+        selected
+          ? "bg-yellow-700 hover:bg-yellow-800"
+          : "bg-black hover:bg-dark-500"
+      }`}
     >
-      <button onClick={onClick} className="py-[7px] px-4">
+      <button onClick={onClick} className="py-2 px-4">
         <span className="text-white group-hover:text-black">{title}</span>
       </button>
-      {title != "Following" && (
+      {selected && title != "Following" && (
         <button
           onClick={onDelete}
-          className="invisible absolute right-[-5%] top-[-25%] rounded-full bg-red-400 px-2 text-[8px] text-white hover:bg-red-500 group-hover/categoryItem:visible"
+          className="absolute -top-1 -left-2 hidden items-center justify-center rounded-full bg-red-400 p-1 text-white hover:bg-red-500 group-hover/categoryItem:flex"
         >
-          x
+          <XMarkIcon className="h-3 w-3 stroke-2" />
         </button>
       )}
     </div>
