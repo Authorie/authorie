@@ -20,7 +20,7 @@ export const categoryRouter = createTRPCRouter({
   followCategory: protectedProcedure
     .input(z.string())
     .mutation(({ ctx, input }) => {
-      ctx.prisma.user.update({
+      return ctx.prisma.user.update({
         where: {
           id: ctx.session.user.id,
         },
