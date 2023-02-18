@@ -26,15 +26,7 @@ const Home: NextPage = () => {
         />
       </Head>
       <div className="flex justify-center">
-        <NavigationSidebar
-          user={
-            session?.user && {
-              username: user.username,
-              coin: session.user.coin,
-              profileImage: user.profileImage,
-            }
-          }
-        />
+        <NavigationSidebar />
         <div className="border-l-2 px-10">
           <FeedLayout />
         </div>

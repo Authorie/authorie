@@ -9,18 +9,14 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
 import { useState } from "react";
+import user from "mocks/user";
 
-type User = {
-  username: string;
-  profileImage: string;
-  coin: number;
-};
-
-const NavigationSidebar = ({ user }: { user: User | undefined }) => {
+const NavigationSidebar = () => {
+  const { data: session } = useSession();
   const [openSearchModal, setOpenSearchModal] = useState<boolean>(false);
 
   const onSearchHandler = () => {
@@ -52,7 +48,7 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {user && (
+        {session?.user && (
           <Link href="/account">
             <Image
               src={user.profileImage}
@@ -70,7 +66,7 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
           <HomeIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
-        {user && (
+        {session?.user && (
           <>
             <Link href="/notifications">
               <BellIcon className="h-7 w-7" />
@@ -89,7 +85,7 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
         {openSearchModal && (
           <SearchModal onCloseSearchHandler={onCloseSearchHandler} />
         )}
-        {user && (
+        {session?.user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
               src="/authorie_coin_logo.svg"
@@ -102,7 +98,7 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
           </Link>
         )}
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
-          {user ? (
+          {session?.user ? (
             <>
               <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
                 <PencilIcon width="24" height="24" />
