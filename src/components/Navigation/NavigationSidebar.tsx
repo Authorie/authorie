@@ -13,7 +13,6 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
 import { useState } from "react";
-import { user } from "mocks";
 
 const NavigationSidebar = () => {
   const { data: session } = useSession();
@@ -51,14 +50,14 @@ const NavigationSidebar = () => {
         {session?.user && (
           <Link href="/account">
             <Image
-              src={user.profileImage}
+              src={session.user.image || "/profile_image_placeholder.png"}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {user.username}
+              {session.user.name}
             </span>
           </Link>
         )}
@@ -94,7 +93,7 @@ const NavigationSidebar = () => {
               height={30}
               className="h-7 w-7"
             />
-            <span className="text-amber-500">{user.coin} Au</span>
+            <span className="text-amber-500">{session.user.coin} Au</span>
           </Link>
         )}
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
