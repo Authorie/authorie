@@ -9,20 +9,18 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
 import { useState } from "react";
-import { type Session } from "next-auth";
 import { useSelectCategory } from "@hooks/selectedCategory";
 
-type props = {
-  user: Session["user"] | undefined;
-};
-
-const NavigationSidebar = ({ user }: props) => {
+const NavigationSidebar = () => {
+  const { data: session } = useSession();
   const [openSearchModal, setOpenSearchModal] = useState<boolean>(false);
   const selectCategory = useSelectCategory();
+
+  const user = session?.user;
 
   return (
     <nav className="text-md top-0 bottom-0 flex min-h-screen w-60 flex-col justify-center overflow-y-auto border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">

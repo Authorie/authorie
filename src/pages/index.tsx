@@ -65,7 +65,7 @@ const Home: NextPage = () => {
         />
       </Head>
       <div className="flex justify-center">
-        <NavigationSidebar user={session?.user} />
+        <NavigationSidebar />
         <div className="flex w-4/5 max-w-6xl flex-col gap-6 px-10 py-4">
           <div className="flex flex-col gap-3 overflow-hidden rounded-xl bg-neutral-500">
             <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
