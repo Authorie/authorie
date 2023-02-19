@@ -55,7 +55,7 @@ const CategoryBar = ({
       {categories?.map((category) => (
         <CategoryItem
           key={category.id}
-          title={category.name}
+          title={category.title}
           selected={
             selectedCategory !== "following" &&
             category.id === selectedCategory.id

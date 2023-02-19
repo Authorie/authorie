@@ -31,7 +31,7 @@ async function main() {
   ];
   await prisma.category.createMany({
     data: categories.map((category) => ({
-      name: category,
+      title: category,
     })),
   });
 }

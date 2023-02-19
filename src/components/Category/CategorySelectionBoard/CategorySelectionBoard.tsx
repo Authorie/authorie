@@ -14,7 +14,7 @@ const CategorySelectionBoard = ({ categoriesList }: props) => {
           <CategoryChoice
             id={category.id}
             key={category.id}
-            title={category.name}
+            title={category.title}
           />
         ))}
       </div>
