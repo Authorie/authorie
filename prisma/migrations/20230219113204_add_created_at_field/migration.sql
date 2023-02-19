@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "categoriesOnUsers" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

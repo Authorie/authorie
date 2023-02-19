@@ -49,6 +49,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     promises.push(ssg.category.getFollowed.prefetch());
   }
 
+  await Promise.allSettled(promises);
   return {
     props: {
       trpcState: ssg.dehydrate(),
