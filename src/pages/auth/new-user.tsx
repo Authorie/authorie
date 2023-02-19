@@ -25,10 +25,13 @@ const NewUser = () => {
     formState: { errors },
   } = useForm<FormValues>({ resolver });
   const router = useRouter();
-  const updateUser = api.user.update.useMutation();
-  const onSubmit = handleSubmit(async (data) => {
+  const updateUser = api.user.update.useMutation({
+    onSuccess() {
+      void router.replace("/");
+    },
+  });
+  const onSubmit = handleSubmit((data) => {
     updateUser.mutate({ name: data.name });
-    await router.replace("/");
   });
 
   return (
@@ -77,7 +80,7 @@ const NewUser = () => {
               cy="12"
               r="10"
               stroke="currentColor"
-              stroke-width="4"
+              strokeWidth="4"
             ></circle>
             <path
               className="opacity-75"
