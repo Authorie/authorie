@@ -17,17 +17,6 @@ async function main() {
     "Stock investment",
     "Technical Analysis",
     "Fundamental Analysis",
-    "Fiction",
-    "Non-fiction",
-    "Horror",
-    "Entertainment",
-    "Study",
-    "Animals and Pets",
-    "Business and Economics",
-    "Cryptocurrency",
-    "Stock investment",
-    "Technical Analysis",
-    "Fundamental Analysis",
   ];
   await prisma.category.createMany({
     data: categories.map((category) => ({

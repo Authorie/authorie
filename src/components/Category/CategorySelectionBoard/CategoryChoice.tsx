@@ -16,11 +16,11 @@ const CategoryChoice = ({ id, title }: props) => {
     <button
       disabled={followCategoryMutation.isLoading}
       onClick={() => followCategoryMutation.mutate(id)}
-      className="flex items-center justify-center rounded-3xl bg-authGreen-500 py-[7px] px-3 text-sm font-semibold hover:bg-authGreen-600"
+      className="flex items-center justify-center rounded-3xl bg-authGreen-500 p-3 text-sm font-semibold hover:bg-authGreen-600"
     >
       {followCategoryMutation.isLoading ? (
         <svg
-          className="h-3 w-3 animate-spin text-white"
+          className="h-4 w-4 animate-spin text-white"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -40,7 +40,7 @@ const CategoryChoice = ({ id, title }: props) => {
           ></path>
         </svg>
       ) : (
-        <span>{title}</span>
+        <span className="whitespace-nowrap">{title}</span>
       )}
     </button>
   );
