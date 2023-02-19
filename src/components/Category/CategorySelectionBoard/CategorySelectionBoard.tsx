@@ -2,19 +2,29 @@ import type { Category } from "@prisma/client";
 import CategoryChoice from "./CategoryChoice";
 
 type props = {
+  isLogin: boolean;
   categoriesList: Category[] | undefined;
+  followedCategories: Category[];
 };
 
-const CategorySelectionBoard = ({ categoriesList }: props) => {
+const CategorySelectionBoard = ({
+  isLogin,
+  categoriesList,
+  followedCategories,
+}: props) => {
+  const categories = isLogin
+    ? categoriesList
+    : categoriesList?.filter((c) => !followedCategories.includes(c));
+
   return (
     <div className="flex h-full w-full flex-col gap-5 overflow-y-scroll rounded-lg bg-dark-500 px-7 py-5 text-white shadow-lg">
       <h1 className="text-xl font-semibold">Categories to follow</h1>
       <div className="grid grid-cols-5 gap-4">
-        {categoriesList?.map((category) => (
+        {categories?.map((category) => (
           <CategoryChoice
-            id={category.id}
             key={category.id}
-            title={category.title}
+            isLogin={isLogin}
+            category={category}
           />
         ))}
       </div>

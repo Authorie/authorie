@@ -6,7 +6,7 @@ export const userRouter = createTRPCRouter({
   update: protectedProcedure
     .input(
       z.object({
-        name: z.string().optional(),
+        penname: z.string().optional(),
       })
     )
     .mutation(({ ctx, input }) => {

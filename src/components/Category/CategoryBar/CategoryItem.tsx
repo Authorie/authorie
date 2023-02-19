@@ -1,5 +1,4 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
 
 type props = {
   title: string;
@@ -11,14 +10,7 @@ type props = {
   };
 };
 
-const CategoryItem = ({ title, onClick, deleteProps, ...props }: props) => {
-  const [selected, setSelected] = useState(false);
-
-  // Clever fix for SSR, but needs POC to check performance issue
-  useEffect(() => {
-    setSelected(props.selected);
-  }, [props.selected]);
-
+const CategoryItem = ({ title, selected, onClick, deleteProps }: props) => {
   return (
     <div
       className={`group/categoryItem font-regular relative rounded-3xl text-sm text-white ${
@@ -33,7 +25,9 @@ const CategoryItem = ({ title, onClick, deleteProps, ...props }: props) => {
         onClick={onClick}
         className="py-2 px-4"
       >
-        <span className="text-white group-hover:text-black">{title}</span>
+        <span className="whitespace-nowrap text-white group-hover:text-black">
+          {title}
+        </span>
       </button>
       {deleteProps && title.toLowerCase() != "following" && (
         <button

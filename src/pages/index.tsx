@@ -12,6 +12,11 @@ import { type AppRouter, appRouter } from "@server/api/root";
 import superjson from "superjson";
 import ChapterPost from "@components/Chapter/ChapterPost";
 import { mockChapters } from "mocks";
+import { useSession } from "next-auth/react";
+import {
+  useFollowedCategories,
+  useSetFollowedCategories,
+} from "@hooks/followedCategories";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerAuthSession(context);
@@ -37,8 +42,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 // TODO: Guard categories with auth
 const Home: NextPage = () => {
+  const followedCategories = useFollowedCategories();
+  const setFollowedCategories = useSetFollowedCategories();
+  const { data: session } = useSession();
+  api.category.getFollowed.useQuery(undefined, {
+    enabled: Boolean(session),
+    onSuccess(data) {
+      setFollowedCategories(data);
+    },
+  });
   const { data: categories } = api.category.getAll.useQuery();
-  const { data: userCategories } = api.category.getFollowed.useQuery();
+
   const [showCategories, setShowCategories] = useState<boolean>(false);
 
   return (
@@ -51,18 +65,23 @@ const Home: NextPage = () => {
         />
       </Head>
       <div className="flex justify-center">
-        <NavigationSidebar />
+        <NavigationSidebar user={session?.user} />
         <div className="flex w-4/5 max-w-6xl flex-col gap-6 px-10 py-4">
           <div className="flex flex-col gap-3 overflow-hidden rounded-xl bg-neutral-500">
             <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
               {showCategories ? (
-                <CategorySelectionBoard categoriesList={categories} />
+                <CategorySelectionBoard
+                  isLogin={Boolean(session)}
+                  categoriesList={categories}
+                  followedCategories={followedCategories}
+                />
               ) : (
                 <h1 className="text-8xl text-white">For Ads</h1>
               )}
             </div>
             <CategoryBar
-              categories={userCategories}
+              isLogin={Boolean(session)}
+              categories={followedCategories}
               openCategories={showCategories}
               onOpenCategories={() => setShowCategories((prev) => !prev)}
             />

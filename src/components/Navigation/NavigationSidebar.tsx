@@ -9,22 +9,20 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
 import { useState } from "react";
+import { type Session } from "next-auth";
+import { useSelectCategory } from "@hooks/selectedCategory";
 
-const NavigationSidebar = () => {
-  const { data: session } = useSession();
+type props = {
+  user: Session["user"] | undefined;
+};
+
+const NavigationSidebar = ({ user }: props) => {
   const [openSearchModal, setOpenSearchModal] = useState<boolean>(false);
-
-  const onSearchHandler = () => {
-    setOpenSearchModal(true);
-  };
-
-  const onCloseSearchHandler = () => {
-    setOpenSearchModal(false);
-  };
+  const selectCategory = useSelectCategory();
 
   return (
     <nav className="text-md top-0 bottom-0 flex min-h-screen w-60 flex-col justify-center overflow-y-auto border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
@@ -47,17 +45,17 @@ const NavigationSidebar = () => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {session?.user && (
+        {user && (
           <Link href="/account">
             <Image
-              src={session.user.image || "/profile_image_placeholder.png"}
+              src={user.image || "/profile_image_placeholder.png"}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {session.user.name}
+              {user.penname}
             </span>
           </Link>
         )}
@@ -65,7 +63,7 @@ const NavigationSidebar = () => {
           <HomeIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
-        {session?.user && (
+        {user && (
           <>
             <Link href="/notifications">
               <BellIcon className="h-7 w-7" />
@@ -77,14 +75,14 @@ const NavigationSidebar = () => {
             </Link>
           </>
         )}
-        <Button onClick={onSearchHandler}>
+        <Button onClick={() => setOpenSearchModal(true)}>
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
         {openSearchModal && (
-          <SearchModal onCloseSearchHandler={onCloseSearchHandler} />
+          <SearchModal onCloseSearchHandler={() => setOpenSearchModal(false)} />
         )}
-        {session?.user && (
+        {user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
               src="/authorie_coin_logo.svg"
@@ -93,11 +91,11 @@ const NavigationSidebar = () => {
               height={30}
               className="h-7 w-7"
             />
-            <span className="text-amber-500">{session.user.coin} Au</span>
+            <span className="text-amber-500">{user.coin} Au</span>
           </Link>
         )}
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
-          {session?.user ? (
+          {user ? (
             <>
               <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
                 <PencilIcon width="24" height="24" />
@@ -105,7 +103,10 @@ const NavigationSidebar = () => {
               </Button>
               <Button
                 className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
-                onClick={() => void signOut()}
+                onClick={() => {
+                  void signOut();
+                  selectCategory("all");
+                }}
               >
                 <ArrowLeftOnRectangleIcon width="24" height="24" />
                 <span className="hidden sm:block">Signout</span>
@@ -114,7 +115,10 @@ const NavigationSidebar = () => {
           ) : (
             <Button
               className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
-              onClick={() => void signIn()}
+              onClick={() => {
+                void signIn();
+                selectCategory("all");
+              }}
             >
               <ArrowRightOnRectangleIcon width="24" height="24" />
               <span className="hidden sm:block">Login</span>
