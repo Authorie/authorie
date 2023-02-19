@@ -1,24 +1,22 @@
 import { api } from "@utils/api";
 import { useRouter } from "next/router";
-import { useForm, Resolver } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 
 type FormValues = {
   name: string;
 };
 
-const resolver: Resolver<FormValues> = async (values) => {
-  return {
-    values: values.name ? values : {},
-    errors: !values.name
-      ? {
-          name: {
-            type: "required",
-            message: "Author name is required.",
-          },
-        }
-      : {},
-  };
-};
+const resolver: Resolver<FormValues> = (values) => ({
+  values: values.name ? values : {},
+  errors: !values.name
+    ? {
+        name: {
+          type: "required",
+          message: "Author name is required.",
+        },
+      }
+    : {},
+});
 
 const NewUser = () => {
   const {
@@ -28,14 +26,14 @@ const NewUser = () => {
   } = useForm<FormValues>({ resolver });
   const router = useRouter();
   const updateUser = api.user.update.useMutation();
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(async (data) => {
     updateUser.mutate({ name: data.name });
-    router.replace("/");
+    await router.replace("/");
   });
 
   return (
     <form
-      onSubmit={onSubmit}
+      onSubmit={(e) => void onSubmit(e)}
       className="flex h-screen flex-col items-center justify-center gap-6"
     >
       <div className="grid items-center gap-x-6 gap-y-2">
