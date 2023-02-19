@@ -1,60 +1,70 @@
 import { api } from "@utils/api";
 import { useRouter } from "next/router";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 
-interface IFormInputs {
-  penName: string;
-}
+type FormValues = {
+  name: string;
+};
+
+const resolver: Resolver<FormValues> = async (values) => {
+  return {
+    values: values.name ? values : {},
+    errors: !values.name
+      ? {
+          name: {
+            type: "required",
+            message: "Author name is required.",
+          },
+        }
+      : {},
+  };
+};
 
 const NewUser = () => {
   const {
     register,
-    formState: { errors },
     handleSubmit,
-  } = useForm<IFormInputs>();
+    formState: { errors },
+  } = useForm<FormValues>({ resolver });
   const router = useRouter();
   const updateUser = api.user.update.useMutation();
-  const onSubmit: SubmitHandler<IFormInputs> = async (data) => {
-    updateUser.mutate({ name: data.penName });
-    try {
-      await router.replace("/");
-    } catch (error) {
-      console.error(error); // TODO: Handle error
-    }
-  };
+  const onSubmit = handleSubmit((data) => {
+    updateUser.mutate({ name: data.name });
+    router.replace("/");
+  });
 
   return (
     <form
-      onSubmit={() => handleSubmit(onSubmit)}
-      className="flex h-screen flex-col items-center justify-center"
+      onSubmit={onSubmit}
+      className="flex h-screen flex-col items-center justify-center gap-6"
     >
-      <div className="flex items-center gap-4">
+      <div className="grid items-center gap-x-6 gap-y-2">
         <label className="text-md font-bold text-gray-700">
-          Enter your pen name:
+          Enter your author name:
         </label>
-        <div className="flex-col align-top">
-          <input
-            {...register("penName", { required: true })}
-            aria-invalid={errors.penName ? "true" : "false"}
-            className={`focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
-              errors.penName ? "border-red-500" : ""
-            }`}
-            id="penName"
-            type="text"
-            placeholder="your pen name..."
-          />
+        <input
+          {...register("name")}
+          aria-invalid={Boolean(errors.name)}
+          className={`focus:shadow-outline w-[350px] appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
+            errors.name ? "border-red-500" : ""
+          }`}
+          id="username"
+          type="text"
+          placeholder="your pen name..."
+        />
+        <div className="col-start-2 self-start">
+          {errors.name?.type === "required" && (
+            <p role="alert" className="text-sm text-red-600">
+              Please enter your pen name
+            </p>
+          )}
         </div>
-      </div>
-      <div className="mb-5 ml-5 mt-1 h-[20px]">
-        {errors.penName?.type === "required" && (
-          <p role="alert" className="text-sm text-red-600">
-            Please enter your pen name
-          </p>
-        )}
       </div>
       <button
         type="submit"
-        className="rounded-full bg-green-500 py-2 px-8 font-bold text-white hover:bg-green-600"
+        disabled={updateUser.isLoading}
+        aria-disabled={updateUser.isLoading}
+        className="w-fit rounded-full bg-green-500 py-2 px-8 font-bold text-white hover:bg-green-600"
       >
         {updateUser.isLoading ? (
           <svg
