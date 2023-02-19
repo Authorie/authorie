@@ -13,7 +13,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
 import { useState } from "react";
-import user from "mocks/user";
+import { user } from "mocks";
 
 const NavigationSidebar = () => {
   const { data: session } = useSession();

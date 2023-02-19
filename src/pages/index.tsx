@@ -11,30 +11,7 @@ import { createInnerTRPCContext } from "@server/api/trpc";
 import { type AppRouter, appRouter } from "@server/api/root";
 import superjson from "superjson";
 import ChapterPost from "@components/Chapter/ChapterPost";
-
-const mockChapters = [
-  {
-    bookTitle: "The Book",
-    chapterNumber: 1,
-    chapterTitle: "The Beginning",
-    publishDate: new Date(),
-    content: "This is the beginning of the book",
-  },
-  {
-    bookTitle: "The Book",
-    chapterNumber: 2,
-    chapterTitle: "The Middle",
-    publishDate: new Date(),
-    content: "This is the middle of the book",
-  },
-  {
-    bookTitle: "The Book",
-    chapterNumber: 3,
-    chapterTitle: "The End",
-    publishDate: new Date(),
-    content: "This is the end of the book",
-  },
-];
+import { mockChapters } from "mocks";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerAuthSession(context);
