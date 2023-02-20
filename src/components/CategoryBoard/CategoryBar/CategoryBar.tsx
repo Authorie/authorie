@@ -1,5 +1,6 @@
 import CategoryItem from "./CategoryItem";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useSelectedCategory } from "@hooks/selectedCategory";
 import type { Category } from "@prisma/client";
 
 type props = {
@@ -15,6 +16,8 @@ const CategoryBar = ({
   onOpenCategories,
   openCategories,
 }: props) => {
+  const selectedCategory = useSelectedCategory();
+
   return (
     <div className="flex gap-3 overflow-auto bg-dark-600 py-3 px-4">
       <button
@@ -33,10 +36,25 @@ const CategoryBar = ({
           <PlusIcon className="h-4 w-4" />
         )}
       </button>
-      <CategoryItem isLogin={isLogin} category="all" />
-      {isLogin && <CategoryItem isLogin={isLogin} category="following" />}
+      <CategoryItem
+        isLogin={isLogin}
+        selected={selectedCategory === "all"}
+        category="all"
+      />
+      {isLogin && (
+        <CategoryItem
+          isLogin={isLogin}
+          selected={selectedCategory === "following"}
+          category="following"
+        />
+      )}
       {categories?.map((category) => (
-        <CategoryItem key={category.id} isLogin={isLogin} category={category} />
+        <CategoryItem
+          key={category.id}
+          isLogin={isLogin}
+          selected={selectedCategory === category}
+          category={category}
+        />
       ))}
     </div>
   );

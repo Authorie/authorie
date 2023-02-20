@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 import CategoryBar from "./CategoryBar/CategoryBar";
 import {
@@ -22,6 +22,9 @@ const CategoryBoard = ({ isLogin }: props) => {
       setFollowedCategories(data);
     },
   });
+  const onOpenCategoriesHandler = useCallback(() => {
+    setShowCategories((prev) => !prev);
+  }, [setShowCategories]);
 
   return (
     <div className="flex flex-col gap-3 overflow-hidden rounded-xl bg-neutral-500">
@@ -40,7 +43,7 @@ const CategoryBoard = ({ isLogin }: props) => {
         isLogin={isLogin}
         categories={followedCategories}
         openCategories={showCategories}
-        onOpenCategories={() => setShowCategories((prev) => !prev)}
+        onOpenCategories={onOpenCategoriesHandler}
       />
     </div>
   );

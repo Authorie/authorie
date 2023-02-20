@@ -1,28 +1,24 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useUnfollowCategory } from "@hooks/followedCategories";
-import {
-  useSelectCategory,
-  useSelectedCategory,
-} from "@hooks/selectedCategory";
-import { type Category } from "@prisma/client";
+import { useSelectCategory } from "@hooks/selectedCategory";
+import type { Category } from "@prisma/client";
 import { api } from "@utils/api";
 
 type props = {
   isLogin: boolean;
+  selected: boolean;
   category: "all" | "following" | Category;
 };
 
-const CategoryItem = ({ isLogin, category }: props) => {
+const CategoryItem = ({ isLogin, selected, category }: props) => {
   const utils = api.useContext();
   const selectCategory = useSelectCategory();
-  const selectedCategory = useSelectedCategory();
   const unfollowCategory = useUnfollowCategory();
   const unfollowCategoryMutation = api.category.unfollow.useMutation({
     onSuccess: () => {
       void utils.category.invalidate();
     },
   });
-  const selected = selectedCategory === category;
   const isValidCategory = typeof category !== "string";
 
   const onDeleteHandler = () => {
@@ -32,11 +28,14 @@ const CategoryItem = ({ isLogin, category }: props) => {
 
     if (isLogin) {
       unfollowCategoryMutation.mutate(category.id);
-      if (selectedCategory === category) {
+      if (selected) {
         selectCategory("following");
       }
     } else {
       unfollowCategory(category);
+      if (selected) {
+        selectCategory("all");
+      }
     }
   };
 
