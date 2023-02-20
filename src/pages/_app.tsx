@@ -1,8 +1,10 @@
+import type {
+  InferGetServerSidePropsType,
+  GetServerSidePropsContext,
+} from "next";
 import { type AppType } from "next/app";
-import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { getServerAuthSession } from "@server/auth";
-import { type GetServerSidePropsContext } from "next";
 
 import { api } from "@utils/api";
 
@@ -22,14 +24,15 @@ export const getServerSideProps = async (
   }
 
   return {
-    props: {},
+    props: {
+      session,
+    },
   };
 };
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+const MyApp: AppType<
+  InferGetServerSidePropsType<typeof getServerSideProps>
+> = ({ Component, pageProps: { session, ...pageProps } }) => {
   return (
     <SessionProvider session={session}>
       <Component {...pageProps} />
