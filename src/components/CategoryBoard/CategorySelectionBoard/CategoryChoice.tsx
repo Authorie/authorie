@@ -1,36 +1,19 @@
-import { useFollowCategory } from "@hooks/followedCategories";
-import { type Category } from "@prisma/client";
-import { api } from "@utils/api";
+import type { Category } from "@prisma/client";
 
 type props = {
   category: Category;
-  isLogin: boolean;
+  isLoading: boolean;
+  onClick: () => void;
 };
 
-const CategoryChoice = ({ category, isLogin }: props) => {
-  const utils = api.useContext();
-  const followCategory = useFollowCategory();
-  const followCategoryMutation = api.category.follow.useMutation({
-    onSuccess: async () => {
-      await utils.category.invalidate();
-    },
-  });
-
-  const followHandler = () => {
-    if (isLogin) {
-      followCategoryMutation.mutate(category.id);
-    } else {
-      followCategory(category);
-    }
-  };
-
+const CategoryChoice = ({ category, isLoading, onClick }: props) => {
   return (
     <button
-      disabled={followCategoryMutation.isLoading}
-      onClick={followHandler}
+      disabled={isLoading}
+      onClick={onClick}
       className="flex items-center justify-center rounded-3xl bg-authGreen-500 p-3 text-sm font-semibold hover:bg-authGreen-600"
     >
-      {followCategoryMutation.isLoading ? (
+      {isLoading ? (
         <svg
           className="h-4 w-4 animate-spin text-white"
           xmlns="http://www.w3.org/2000/svg"

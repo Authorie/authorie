@@ -1,5 +1,7 @@
 import type { Category } from "@prisma/client";
 import CategoryChoice from "./CategoryChoice";
+import { api } from "@utils/api";
+import { useFollowCategory } from "@hooks/followedCategories";
 
 type props = {
   isLogin: boolean;
@@ -12,6 +14,22 @@ const CategorySelectionBoard = ({
   categoriesList,
   followedCategories,
 }: props) => {
+  const utils = api.useContext();
+  const followCategory = useFollowCategory();
+  const followCategoryMutation = api.category.follow.useMutation({
+    onSuccess: async () => {
+      await utils.category.invalidate();
+    },
+  });
+
+  const followHandler = (category: Category) => {
+    if (isLogin) {
+      followCategoryMutation.mutate(category.id);
+    } else {
+      followCategory(category);
+    }
+  };
+
   const categories = isLogin
     ? categoriesList
     : categoriesList?.filter((c) => !followedCategories.includes(c));
@@ -23,8 +41,9 @@ const CategorySelectionBoard = ({
         {categories?.map((category) => (
           <CategoryChoice
             key={category.id}
-            isLogin={isLogin}
             category={category}
+            isLoading={followCategoryMutation.isLoading}
+            onClick={() => followHandler(category)}
           />
         ))}
       </div>

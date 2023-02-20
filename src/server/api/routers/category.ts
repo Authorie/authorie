@@ -3,31 +3,20 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
 export const categoryRouter = createTRPCRouter({
-  getAll: publicProcedure
-    .input(z.string().array().optional())
-    .query(({ ctx, input }) => {
-      if (ctx.session?.user) {
-        return ctx.prisma.category.findMany({
-          where: {
-            users: {
-              none: {
-                userId: ctx.session.user.id,
-              },
+  getAll: publicProcedure.query(({ ctx }) => {
+    if (ctx.session?.user) {
+      return ctx.prisma.category.findMany({
+        where: {
+          users: {
+            none: {
+              userId: ctx.session.user.id,
             },
           },
-        });
-      }
-      if (input) {
-        return ctx.prisma.category.findMany({
-          where: {
-            id: {
-              notIn: input,
-            },
-          },
-        });
-      }
-      return ctx.prisma.category.findMany();
-    }),
+        },
+      });
+    }
+    return ctx.prisma.category.findMany();
+  }),
   getFollowed: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.prisma.categoriesOnUsers.findMany({
       where: {
