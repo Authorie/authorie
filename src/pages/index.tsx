@@ -2,10 +2,6 @@ import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import { getServerAuthSession } from "@server/auth";
 import NavigationSidebar from "@components/Navigation/NavigationSidebar";
-import { useState } from "react";
-import CategoryBar from "@components/Category/CategoryBar/CategoryBar";
-import { api } from "@utils/api";
-import CategorySelectionBoard from "@components/Category/CategorySelectionBoard/CategorySelectionBoard";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { type AppRouter, appRouter } from "@server/api/root";
@@ -13,10 +9,8 @@ import superjson from "superjson";
 import ChapterPost from "@components/Chapter/ChapterPost";
 import { mockChapters } from "mocks";
 import { useSession } from "next-auth/react";
-import {
-  useFollowedCategories,
-  useSetFollowedCategories,
-} from "@hooks/followedCategories";
+import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
+import ChapterPostList from "@components/Chapter/ChapterPostList";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerAuthSession(context);
@@ -42,18 +36,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 // TODO: Guard categories with auth
 const Home: NextPage = () => {
-  const followedCategories = useFollowedCategories();
-  const setFollowedCategories = useSetFollowedCategories();
   const { data: session } = useSession();
-  api.category.getFollowed.useQuery(undefined, {
-    enabled: Boolean(session),
-    onSuccess(data) {
-      setFollowedCategories(data);
-    },
-  });
-  const { data: categories } = api.category.getAll.useQuery();
-
-  const [showCategories, setShowCategories] = useState<boolean>(false);
 
   return (
     <>
@@ -67,33 +50,8 @@ const Home: NextPage = () => {
       <div className="flex justify-center">
         <NavigationSidebar />
         <div className="flex w-4/5 max-w-6xl flex-col gap-6 px-10 py-4">
-          <div className="flex flex-col gap-3 overflow-hidden rounded-xl bg-neutral-500">
-            <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
-              {showCategories ? (
-                <CategorySelectionBoard
-                  isLogin={Boolean(session)}
-                  categoriesList={categories}
-                  followedCategories={followedCategories}
-                />
-              ) : (
-                <h1 className="text-8xl text-white">For Ads</h1>
-              )}
-            </div>
-            <CategoryBar
-              isLogin={Boolean(session)}
-              categories={followedCategories}
-              openCategories={showCategories}
-              onOpenCategories={() => setShowCategories((prev) => !prev)}
-            />
-          </div>
-          <div className="flex flex-col gap-8">
-            {mockChapters.map((chapter) => (
-              <ChapterPost
-                key={`${chapter.bookTitle}_${chapter.chapterNumber}_${chapter.chapterTitle}`}
-                {...chapter}
-              />
-            ))}
-          </div>
+          <CategoryBoard isLogin={Boolean(session)} />
+          <ChapterPostList />
         </div>
       </div>
     </>

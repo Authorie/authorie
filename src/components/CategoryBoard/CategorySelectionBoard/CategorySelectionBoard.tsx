@@ -17,7 +17,7 @@ const CategorySelectionBoard = ({
     : categoriesList?.filter((c) => !followedCategories.includes(c));
 
   return (
-    <div className="flex h-full w-full flex-col gap-5 overflow-y-scroll rounded-lg bg-dark-500 px-7 py-5 text-white shadow-lg">
+    <div className="flex h-full w-full flex-col gap-5 overflow-y-auto rounded-lg bg-dark-500 px-7 py-5 text-white shadow-lg">
       <h1 className="text-xl font-semibold">Categories to follow</h1>
       <div className="grid grid-cols-5 gap-4">
         {categories?.map((category) => (
