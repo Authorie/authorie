@@ -6,8 +6,6 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { type AppRouter, appRouter } from "@server/api/root";
 import superjson from "superjson";
-import ChapterPost from "@components/Chapter/ChapterPost";
-import { mockChapters } from "mocks";
 import { useSession } from "next-auth/react";
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
 import ChapterPostList from "@components/Chapter/ChapterPostList";
