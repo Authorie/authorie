@@ -4,18 +4,32 @@ import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 
 export const categoryRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.category.findMany();
-  }),
-  getFollowed: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.category.findMany({
-      where: {
-        users: {
-          some: {
-            userId: ctx.session.user.id,
+    if (ctx.session?.user) {
+      return ctx.prisma.category.findMany({
+        where: {
+          users: {
+            none: {
+              userId: ctx.session.user.id,
+            },
           },
         },
+      });
+    }
+    return ctx.prisma.category.findMany();
+  }),
+  getFollowed: protectedProcedure.query(async ({ ctx }) => {
+    const result = await ctx.prisma.categoriesOnUsers.findMany({
+      where: {
+        userId: ctx.session.user.id,
+      },
+      select: {
+        category: true,
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
+    return result.map((res) => res.category);
   }),
   follow: protectedProcedure.input(z.string()).mutation(({ ctx, input }) => {
     return ctx.prisma.user.update({
@@ -45,13 +59,6 @@ export const categoryRouter = createTRPCRouter({
             },
           },
         },
-      },
-    });
-  }),
-  create: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
-    return ctx.prisma.category.create({
-      data: {
-        name: input,
       },
     });
   }),

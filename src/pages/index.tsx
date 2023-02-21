@@ -1,37 +1,57 @@
-import type { GetServerSideProps, NextPage } from "next";
+import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
-import { useSession } from "next-auth/react";
-
-import user from "../mocks/user";
 import { getServerAuthSession } from "@server/auth";
 import NavigationSidebar from "@components/Navigation/NavigationSidebar";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { type AppRouter, appRouter } from "@server/api/root";
+import superjson from "superjson";
+import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
+import ChapterPostList from "@components/Chapter/ChapterPostList";
+import { useSession } from "next-auth/react";
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
   const session = await getServerAuthSession(context);
+  const ssg = createProxySSGHelpers<AppRouter>({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session }),
+    transformer: superjson,
+  });
+
+  const promises = [ssg.category.getAll.prefetch()];
+  if (session) {
+    promises.push(ssg.category.getFollowed.prefetch());
+  }
+
+  await Promise.allSettled(promises);
   return {
-    props: { session },
+    props: {
+      trpcState: ssg.dehydrate(),
+      session,
+    },
   };
 };
-
-const Home: NextPage = () => {
+// TODO: Guard categories with auth
+const Home = () => {
   const { data: session } = useSession();
-
   return (
     <>
       <Head>
         <title>Authorie</title>
-      </Head>
-      <main>
-        <NavigationSidebar
-          user={
-            session?.user && {
-              username: user.username,
-              coin: session.user.coin,
-              profileImage: user.profileImage,
-            }
-          }
+        <meta
+          name="description"
+          content="Social media and publishing platform!"
         />
-      </main>
+      </Head>
+      <div className="flex justify-center">
+        <NavigationSidebar user={session?.user} />
+        <div className="flex w-4/5 max-w-6xl flex-col gap-6 px-10 py-4">
+          <CategoryBoard isLogin={Boolean(session)} />
+          <ChapterPostList />
+        </div>
+      </div>
     </>
   );
 };

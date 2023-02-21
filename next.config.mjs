@@ -17,7 +17,7 @@ const config = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "thumbs.dreamstime.com",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },

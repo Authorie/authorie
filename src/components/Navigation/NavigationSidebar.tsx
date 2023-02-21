@@ -10,18 +10,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { signIn, signOut } from "next-auth/react";
-
+import SearchModal from "@components/Search/SearchModal";
 import { Link, Button } from "./Items";
+import { useState } from "react";
+import { useSelectCategory } from "@hooks/selectedCategory";
+import type { User } from "next-auth";
 
-type User = {
-  username: string;
-  profileImage: string;
-  coin: number;
+type props = {
+  user: User | undefined;
 };
 
-const NavigationSidebar = ({ user }: { user: User | undefined }) => {
+const NavigationSidebar = ({ user }: props) => {
+  const [openSearchModal, setOpenSearchModal] = useState<boolean>(false);
+  const selectCategory = useSelectCategory();
+
   return (
-    <nav className="text-md fixed top-0 bottom-0 flex min-h-screen w-44 flex-col justify-center overflow-y-auto bg-white px-3 pt-10 shadow-xl ring-1 ring-gray-900/5 sm:justify-start">
+    <nav className="text-md top-0 bottom-0 flex min-h-screen w-60 flex-col justify-center overflow-y-auto border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -44,14 +48,14 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
         {user && (
           <Link href="/account">
             <Image
-              src={user.profileImage}
+              src={user.image || "/profile_image_placeholder.png"}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {user.username}
+              {user.penname}
             </span>
           </Link>
         )}
@@ -71,10 +75,13 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
             </Link>
           </>
         )}
-        <Button>
+        <Button onClick={() => setOpenSearchModal(true)}>
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
+        {openSearchModal && (
+          <SearchModal onCloseSearchHandler={() => setOpenSearchModal(false)} />
+        )}
         {user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
@@ -96,7 +103,10 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
               </Button>
               <Button
                 className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
-                onClick={() => void signOut()}
+                onClick={() => {
+                  void signOut();
+                  selectCategory("all");
+                }}
               >
                 <ArrowLeftOnRectangleIcon width="24" height="24" />
                 <span className="hidden sm:block">Signout</span>
@@ -105,7 +115,10 @@ const NavigationSidebar = ({ user }: { user: User | undefined }) => {
           ) : (
             <Button
               className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
-              onClick={() => void signIn()}
+              onClick={() => {
+                void signIn();
+                selectCategory("all");
+              }}
             >
               <ArrowRightOnRectangleIcon width="24" height="24" />
               <span className="hidden sm:block">Login</span>
