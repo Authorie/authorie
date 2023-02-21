@@ -1,57 +1,57 @@
 import Image from "next/image";
+import { UserIcon } from "@heroicons/react/24/solid";
 
 type props = {
-  username: string;
+  penname: string;
   userId: number;
   reads: number;
   followers: number;
   following: number;
+  bio: string;
 };
 
 const SearchUserResult = ({
-  username,
+  penname,
   userId,
   reads,
   followers,
   following,
+  bio,
 }: props) => {
+
+  const onClickCard = () => {
+    //redirect to that user profile
+    console.log("redirect!")
+  }
+
   return (
-    <>
-      <div className="group/profile relative flex cursor-pointer justify-between rounded-lg bg-gradient-to-r from-dark-100 to-white p-7 shadow-lg">
-        <div>
-          <div className="mb-4 gap-2">
-            <p className="text-xs">{`UserID: ${userId}`}</p>
-            <h1 className="text-2xl font-semibold">{username}</h1>
-          </div>
-          <div className="my-5">
-            <Image
-              src="/favicon.ico"
-              width={100}
-              height={100}
-              alt="dummy-pic"
-            />
-          </div>
-          <div className="flex gap-[60px]">
-            <p>
-              <span className="font-semibold">{followers}</span> followers
-            </p>
-            <p>
-              <span className="font-semibold">{following}</span> following
-            </p>
-            <p>
-              <span className="font-semibold">{reads}</span> reads
-            </p>
-          </div>
-        </div>
-        <button className="invisible flex items-center text-dark-400 group-hover/profile:visible">
-          <p>view profile</p>
-        </button>
+    <div onClick={onClickCard} className="cursor-pointer transition ease-in-out flex shadow-lg rounded gap-4 hover:-translate-y-1 hover:scale-[1.01] duration-300">
+      <div className="w-2/12 rounded-l flex justify-center items-center bg-blue-300">
+        <UserIcon className="w-12 h-12 fill-white" />
       </div>
-      <button className="absolute right-[54%] top-[39%] rounded-lg bg-green-500 px-6 py-2 text-sm text-white hover:bg-green-600">
-        Follow
-      </button>
-    </>
-  );
+      <div className="py-3 w-8/12">
+        <p className="font-semibold text-dark-400 text-xs">{`User Id: ${userId}`}</p>
+        <h1 className="font-bold text-2xl text-black">{penname}</h1>
+        <div className="flex gap-[60px] text-sm">
+          <p>
+            <span className="font-semibold">{followers}</span> followers
+          </p>
+          <p>
+            <span className="font-semibold">{following}</span> following
+          </p>
+          <p>
+            <span className="font-semibold">{reads}</span> reads
+          </p>
+        </div>
+        <p className="text-xs text-dark-600 my-4">{bio}</p>
+      </div>
+      <div className="flex items-center justify-center w-4/12">
+        <div className="rounded-full overflow-hidden">
+        <Image src="/favicon.ico" width={100} height={100} alt="dummy-pic" />
+        </div>
+      </div>
+    </div>
+  )
 };
 
 export default SearchUserResult;
