@@ -25,6 +25,12 @@ module.exports = {
           500: "#94AF8E",
           600: "#718F6B",
         },
+        authBlue: {
+          500: "#6889A7",
+        },
+        authYellow: {
+          500: "#DCAE36",
+        },
       },
     },
   },
