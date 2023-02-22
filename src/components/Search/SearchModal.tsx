@@ -74,6 +74,7 @@ const SearchModal = ({ onDialogHandler, openDialog }: props) => {
             <div className="absolute -top-7 flex rounded">
               {allTab.map((selectedTab) => (
                 <button
+                  key={selectedTab}
                   onClick={() => onClickTabHandler(selectedTab)}
                   className={className(selectedTab)}
                 >
