@@ -1,7 +1,5 @@
 import type { Category } from "@prisma/client";
 import CategoryChoice from "./CategoryChoice";
-import { api } from "@utils/api";
-import { useFollowCategory } from "@hooks/followedCategories";
 
 type props = {
   isLogin: boolean;
