@@ -23,7 +23,6 @@ export const searchRouter = createTRPCRouter({
         where: {
           penname: {
             contains: input.search,
-            mode: "insensitive",
           },
         },
       });
