@@ -9,7 +9,7 @@ declare module "next-auth" {
   }
   interface User {
     id: string;
-    penname: string | null;
+    penname: string;
     coin: number;
   }
 }

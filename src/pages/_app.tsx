@@ -14,7 +14,7 @@ export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  if (session?.user && !session.user.penname) {
+  if (session?.user && session.user?.penname === "") {
     return {
       redirect: {
         destination: "/auth/new-user",
