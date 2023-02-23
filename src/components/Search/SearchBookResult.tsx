@@ -8,11 +8,11 @@ type props = {
   description: string;
 };
 
-const onClickCard = () => {
-  console.log("redirect!");
-};
-
 const SearchBookResult = ({ title, date, author, description }: props) => {
+  const onClickCard = () => {
+    console.log("redirect!");
+  };
+
   return (
     <div
       onClick={onClickCard}

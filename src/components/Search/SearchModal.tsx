@@ -85,7 +85,6 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const { data: searchResults } = api.search.search.useQuery({
     search: searchInput,
   });
-
   const onClickTabHandler = (selectedTab: string) => {
     setTab(selectedTab);
   };
@@ -143,37 +142,35 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
                 </button>
               ))}
             </div>
-            <>
-              {(tab === "All" || tab === "Users") &&
-                userInfo.map((userInfo) => (
-                  <SearchUserResult
-                    penname={userInfo.penname}
-                    reads={userInfo.reads}
-                    followers={userInfo.followers}
-                    following={userInfo.following}
-                    bio={userInfo.bio}
-                  />
-                ))}
-              {(tab === "Books" || tab === "All") &&
-                bookInfo.map((bookInfo) => (
-                  <SearchBookResult
-                    title={bookInfo.title}
-                    date={bookInfo.date}
-                    author={bookInfo.author}
-                    description={bookInfo.description}
-                  />
-                ))}
-              {(tab === "Chapters" || tab === "All") &&
-                chapterInfo.map((chapterInfo) => (
-                  <SearchChapterResult
-                    title={chapterInfo.title}
-                    date={chapterInfo.date}
-                    author={chapterInfo.author}
-                    book={chapterInfo.book}
-                    content={chapterInfo.content}
-                  />
-                ))}
-            </>
+            {(tab === "All" || tab === "Users") &&
+              userInfo.map((userInfo) => (
+                <SearchUserResult
+                  penname={userInfo.penname}
+                  reads={userInfo.reads}
+                  followers={userInfo.followers}
+                  following={userInfo.following}
+                  bio={userInfo.bio}
+                />
+              ))}
+            {(tab === "Books" || tab === "All") &&
+              bookInfo.map((bookInfo) => (
+                <SearchBookResult
+                  title={bookInfo.title}
+                  date={bookInfo.date}
+                  author={bookInfo.author}
+                  description={bookInfo.description}
+                />
+              ))}
+            {(tab === "Chapters" || tab === "All") &&
+              chapterInfo.map((chapterInfo) => (
+                <SearchChapterResult
+                  title={chapterInfo.title}
+                  date={chapterInfo.date}
+                  author={chapterInfo.author}
+                  book={chapterInfo.book}
+                  content={chapterInfo.content}
+                />
+              ))}
           </Dialog.Panel>
         </div>
       </Dialog>
