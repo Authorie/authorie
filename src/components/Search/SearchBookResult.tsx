@@ -16,7 +16,7 @@ const SearchBookResult = ({ title, date, author, description }: props) => {
   return (
     <div
       onClick={onClickCard}
-      className="flex h-44 cursor-pointer gap-4 rounded shadow-lg transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      className="mb-3 flex h-44 cursor-pointer gap-4 rounded shadow-lg transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
     >
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authGreen-500">
         <BookOpenIcon className="h-12 w-12 fill-white" />

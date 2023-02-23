@@ -79,7 +79,10 @@ const NavigationSidebar = ({ user }: props) => {
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
-        <SearchModal onDialogHandler={(open: boolean) => setOpenSearchDialog(open)} openDialog={openSearchDialog}/>
+        <SearchModal
+          onCloseDialog={() => setOpenSearchDialog(false)}
+          openDialog={openSearchDialog}
+        />
         {user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
