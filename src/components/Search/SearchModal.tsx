@@ -5,79 +5,12 @@ import { Dialog } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useState, ChangeEvent } from "react";
 import { api } from "@utils/api";
+import { userInfo, bookInfo, chapterInfo, allTab } from "mocks/search";
 
 type props = {
   onCloseDialog: () => void;
   openDialog: boolean;
 };
-
-const userInfo = [
-  {
-    penname: "four58",
-    reads: 50,
-    followers: 2400,
-    following: 25,
-    bio: "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-];
-
-const bookInfo = [
-  {
-    title: "A dusk delusion",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    description:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-  {
-    title: "A dusk delusion",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    description:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-  {
-    title: "A dusk delusion",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    description:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-  {
-    title: "A dusk delusion",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    description:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-  {
-    title: "A dusk delusion",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    description:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-  {
-    title: "A dusk delusion",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    description:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-];
-
-const chapterInfo = [
-  {
-    title: "Ordinary days",
-    date: new Date("2019-01-16"),
-    author: "four58",
-    book: "A dusk delusion",
-    content:
-      "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-  },
-];
-
-const allTab = ["All", "Users", "Books", "Chapters"];
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const [searchInput, setSearchInput] = useState("");
@@ -145,6 +78,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
             {(tab === "All" || tab === "Users") &&
               userInfo.map((userInfo) => (
                 <SearchUserResult
+                  key={userInfo.userId}
                   penname={userInfo.penname}
                   reads={userInfo.reads}
                   followers={userInfo.followers}
@@ -155,6 +89,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
             {(tab === "Books" || tab === "All") &&
               bookInfo.map((bookInfo) => (
                 <SearchBookResult
+                  key={bookInfo.bookId}
                   title={bookInfo.title}
                   date={bookInfo.date}
                   author={bookInfo.author}
@@ -164,6 +99,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
             {(tab === "Chapters" || tab === "All") &&
               chapterInfo.map((chapterInfo) => (
                 <SearchChapterResult
+                  key={chapterInfo.chapterId}
                   title={chapterInfo.title}
                   date={chapterInfo.date}
                   author={chapterInfo.author}

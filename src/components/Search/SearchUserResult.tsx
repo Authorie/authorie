@@ -34,13 +34,16 @@ const SearchUserResult = ({
         <h1 className="text-2xl font-bold text-authBlue-500">{penname}</h1>
         <div className="flex gap-16 text-sm">
           <p>
-            <span className="font-semibold">{followers}</span> followers
+            <span className="font-semibold text-authBlue-500">{followers}</span>{" "}
+            followers
           </p>
           <p>
-            <span className="font-semibold">{following}</span> following
+            <span className="font-semibold text-authBlue-500">{following}</span>{" "}
+            following
           </p>
           <p>
-            <span className="font-semibold">{reads}</span> reads
+            <span className="font-semibold text-authBlue-500">{reads}</span>{" "}
+            reads
           </p>
         </div>
         <p className="my-4 text-xs text-dark-600">{bio}</p>
