@@ -16,9 +16,10 @@ type props = {
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const [searchInput, setSearchInput] = useState("");
   const [tab, setTab] = useState<string>("Users");
-  const { data: searchResults } = api.search.search.useQuery({
-    search: searchInput,
-  });
+  //api
+  // const { data: searchResults } = api.search.search.useQuery({
+  //   search: searchInput,
+  // });
   const onClickTabHandler = (selectedTab: string) => {
     setTab(selectedTab);
   };
