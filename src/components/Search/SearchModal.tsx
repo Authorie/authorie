@@ -3,9 +3,10 @@ import SearchBookResult from "./SearchBookResult";
 import SearchChapterResult from "./SearchChapterResult";
 import { Dialog } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { api } from "@utils/api";
 import { userInfo, bookInfo, chapterInfo, allTab } from "mocks/search";
+import type { ChangeEvent } from "react";
 
 type props = {
   onCloseDialog: () => void;
