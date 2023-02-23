@@ -45,12 +45,9 @@ const Home = () => {
           content="Social media and publishing platform!"
         />
       </Head>
-      <div className="flex justify-center">
-        <NavigationSidebar user={session?.user} />
-        <div className="flex w-4/5 max-w-6xl flex-col gap-6 px-10 py-4">
-          <CategoryBoard isLogin={Boolean(session)} />
-          <ChapterPostList />
-        </div>
+      <div className="flex flex-col gap-6">
+        <CategoryBoard isLogin={Boolean(session)} />
+        <ChapterPostList />
       </div>
     </>
   );
