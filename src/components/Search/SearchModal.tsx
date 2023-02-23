@@ -4,7 +4,6 @@ import SearchChapterResult from "./SearchChapterResult";
 import { Dialog } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { api } from "@utils/api";
 import { userInfo, bookInfo, chapterInfo, allTab } from "mocks/search";
 import type { ChangeEvent } from "react";
 
@@ -16,10 +15,7 @@ type props = {
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const [searchInput, setSearchInput] = useState("");
   const [tab, setTab] = useState<string>("Users");
-  //api
-  // const { data: searchResults } = api.search.search.useQuery({
-  //   search: searchInput,
-  // });
+
   const onClickTabHandler = (selectedTab: string) => {
     setTab(selectedTab);
   };
