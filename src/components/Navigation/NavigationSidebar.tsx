@@ -21,7 +21,7 @@ type props = {
 };
 
 const NavigationSidebar = ({ user }: props) => {
-  const [openSearchModal, setOpenSearchModal] = useState<boolean>(false);
+  const [openSearchDialog, setOpenSearchDialog] = useState<boolean>(false);
   const selectCategory = useSelectCategory();
 
   return (
@@ -75,13 +75,14 @@ const NavigationSidebar = ({ user }: props) => {
             </Link>
           </>
         )}
-        <Button onClick={() => setOpenSearchModal(true)}>
+        <Button onClick={() => setOpenSearchDialog(true)}>
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
-        {openSearchModal && (
-          <SearchModal onCloseSearchHandler={() => setOpenSearchModal(false)} />
-        )}
+        <SearchModal
+          onCloseDialog={() => setOpenSearchDialog(false)}
+          openDialog={openSearchDialog}
+        />
         {user && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
