@@ -54,7 +54,7 @@ const CreatePage = () => {
       <div className="flex items-center rounded-b-2xl bg-gray-100 px-10 py-28">
         <div className="flex w-full flex-col items-end gap-4">
           <CreateBook />
-          <button className="rounded-2xl bg-authBlue-500 py-2 px-8 text-white">
+          <button className="rounded-xl bg-authBlue-500 py-2 px-8 text-white">
             Save
           </button>
         </div>

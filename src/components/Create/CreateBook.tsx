@@ -1,14 +1,22 @@
-import Image from "next/image";
+import Image from "next/legacy/image";
 import { PhotoIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import AddAuthorModal from "./AddAuthorModal";
 
 const CreateBook = () => {
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+
   return (
-    <div className="flex w-full gap-5 rounded-lg bg-white px-16 pt-14 pb-7 shadow-lg">
-      <div className="relative flex h-52 w-40 items-center justify-center overflow-hidden rounded bg-slate-400">
-        <Image src="/favicon.ico" width={100} height={100} alt="dummy-pic" />
-        <PhotoIcon className="absolute right-2 bottom-2 h-6 w-6" />
+    <div className="relative flex w-full gap-5 rounded-lg px-16 pt-20 pb-7 shadow-lg">
+      <div className="absolute inset-0 h-4/6 w-full overflow-hidden rounded-t-lg">
+        <Image src="/mockWallpaper.jpeg" layout="fill" />
+        <div className="-z-1 absolute inset-0 h-full w-full bg-gradient-to-t from-gray-100" />
       </div>
-      <div className="flex w-full flex-col justify-between">
+      <div className="relative flex h-52 w-48 items-center justify-center overflow-hidden rounded">
+        <Image src="/favicon.ico" layout="fill" alt="dummy-pic" />
+        <PhotoIcon className="absolute right-2 bottom-2 h-6 w-6 cursor-pointer" />
+      </div>
+      <div className="z-0 flex w-full flex-col justify-end">
         <div className="flex w-full flex-col gap-2">
           <PhotoIcon className="h-6 w-6" />
           <input
@@ -17,8 +25,8 @@ const CreateBook = () => {
             placeholder="Untitled"
           />
           <textarea
-            rows={5}
-            className="focus:shadow-outline min-h-auto max-h-24 w-full bg-transparent text-sm focus:outline-none"
+            rows={4}
+            className="focus:shadow-outline max-h-16 w-full bg-transparent text-sm focus:outline-none"
             placeholder="write the description down..."
           />
         </div>
@@ -31,7 +39,18 @@ const CreateBook = () => {
             <button className="rounded-full bg-gray-500 px-2 text-xs text-white">
               NongFameza
             </button>
-            <button className="w-6 rounded-full bg-white text-xs">+</button>
+            <button
+              onClick={() => setOpenDialog(true)}
+              className="w-6 rounded-full bg-white text-xs"
+            >
+              +
+            </button>
+            {openDialog && (
+              <AddAuthorModal
+                openDialog={openDialog}
+                onCloseDialog={() => setOpenDialog(false)}
+              />
+            )}
           </div>
         </div>
       </div>
