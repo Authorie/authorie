@@ -36,7 +36,7 @@ const CreatePage = () => {
   };
 
   return (
-    <div className="gap-3 rounded-2xl">
+    <div className="gap-3 rounded-2xl px-10 py-4">
       <div className="flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
         <button
           onClick={() => onClickTabHandler("Create book")}

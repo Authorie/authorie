@@ -44,7 +44,7 @@ const Home = () => {
           content="Social media and publishing platform!"
         />
       </Head>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 px-10 py-4">
         <CategoryBoard isLogin={Boolean(session)} />
         <ChapterPostList />
       </div>
