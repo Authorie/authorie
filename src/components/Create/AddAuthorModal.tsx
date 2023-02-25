@@ -7,7 +7,7 @@ const AddAuthorModal = () => {
       <div className="max-h-52 overflow-y-scroll border-b-2 border-gray-300 pt-2">
         <div className="h-fit">
           {userInfo.map((data) => (
-            <AuthorResult penname={data.penname} />
+            <AuthorResult penname={data.penname} key={data.userId} />
           ))}
         </div>
       </div>
