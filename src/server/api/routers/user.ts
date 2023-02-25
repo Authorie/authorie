@@ -1,10 +1,85 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
+  getData: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    return ctx.prisma.user.findUnique({
+      where: {
+        penname: input,
+      },
+      select: {
+        id: true,
+        penname: true,
+        image: true,
+        coin: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+          },
+        },
+      },
+    });
+  }),
+  getFollowing: publicProcedure
+    .input(
+      z.object({
+        penname: z.string(),
+        cursor: z.string().optional(),
+        take: z.number().default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.user.findMany({
+        where: {
+          NOT: {
+            penname: null,
+          },
+          followers: {
+            some: {
+              follower: {
+                penname: input.penname,
+              },
+            },
+          },
+        },
+        take: input.take,
+        cursor: {
+          penname: input.cursor,
+        },
+      });
+    }),
+  getFollowers: publicProcedure
+    .input(
+      z.object({
+        penname: z.string(),
+        cursor: z.string().optional(),
+        take: z.number().default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.user.findMany({
+        where: {
+          NOT: {
+            penname: null,
+          },
+          following: {
+            some: {
+              follower: {
+                penname: input.penname,
+              },
+            },
+          },
+        },
+        take: input.take,
+        cursor: {
+          penname: input.cursor,
+        },
+      });
+    }),
   update: protectedProcedure
     .input(
       z.object({

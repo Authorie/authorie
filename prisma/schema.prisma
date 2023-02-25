@@ -54,8 +54,23 @@ model User {
     accounts      Account[]
     sessions      Session[]
     categories    CategoriesOnUsers[]
+    following     FollowingFollower[] @relation("following")
+    followers     FollowingFollower[] @relation("followers")
 
     @@map("users")
+}
+
+model FollowingFollower {
+    following   User     @relation("following", fields: [followingId], references: [id])
+    followingId String
+    follower    User     @relation("followers", fields: [followerId], references: [id])
+    followerId  String
+    createdAt   DateTime @default(now())
+
+    @@id([followingId, followerId])
+    @@index([followerId])
+    @@index([followingId])
+    @@map("followingFollowers")
 }
 
 model VerificationToken {
