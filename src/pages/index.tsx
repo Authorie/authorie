@@ -1,7 +1,6 @@
 import type { GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import { getServerAuthSession } from "@server/auth";
-import NavigationSidebar from "@components/Navigation/NavigationSidebar";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { type AppRouter, appRouter } from "@server/api/root";
