@@ -38,11 +38,6 @@ export const getServerSideProps = async (
   };
 };
 
-const reloadSession = () => {
-  const event = new Event("visibilitychange");
-  document.dispatchEvent(event);
-};
-
 const NewUser = () => {
   const {
     register,
@@ -52,7 +47,6 @@ const NewUser = () => {
   const router = useRouter();
   const updateUser = api.user.update.useMutation({
     onSuccess() {
-      reloadSession();
       void router.replace("/");
     },
   });

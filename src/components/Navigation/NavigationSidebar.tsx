@@ -10,19 +10,22 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import type { User } from "next-auth";
 import { signIn, signOut } from "next-auth/react";
 import { Link, Button } from "./Items";
 import SearchModal from "./Search/SearchModal";
 import { useSelectCategory } from "@hooks/selectedCategory";
+import { api } from "@utils/api";
 
-type props = {
-  user: User | undefined;
-};
-
-const NavigationSidebar = ({ user }: props) => {
-  const [openSearchDialog, setOpenSearchDialog] = useState<boolean>(false);
+const NavigationSidebar = () => {
   const selectCategory = useSelectCategory();
+  const { data: user } = api.user.getData.useQuery(undefined, {
+    onError(error) {
+      if (error.data?.code === "UNAUTHORIZED") {
+        return undefined;
+      }
+    },
+  });
+  const [openSearchDialog, setOpenSearchDialog] = useState(false);
 
   return (
     <nav className="text-md top-0 bottom-0 flex min-h-screen w-60 flex-col justify-center overflow-y-auto border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
