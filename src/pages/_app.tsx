@@ -36,7 +36,7 @@ const MyApp: AppType<
 > = ({ Component, pageProps: { session, ...pageProps } }) => {
   return (
     <SessionProvider session={session}>
-      <Layout>
+      <Layout isLogin={Boolean(session)}>
         <Component {...pageProps} />
       </Layout>
     </SessionProvider>
