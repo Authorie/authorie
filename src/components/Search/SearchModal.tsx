@@ -31,6 +31,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     setSearchInput(event.target.value);
+    console.log(searchInput);
   };
 
   return (

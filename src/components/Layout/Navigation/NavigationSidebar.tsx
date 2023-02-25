@@ -98,10 +98,13 @@ const NavigationSidebar = ({ user }: props) => {
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
           {user ? (
             <>
-              <Button className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800">
+              <Link
+                href="/create"
+                className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
+              >
                 <PencilIcon width="24" height="24" />
                 <span className="hidden sm:block">Create</span>
-              </Button>
+              </Link>
               <Button
                 className="justify-center gap-4 bg-gray-500 text-white hover:bg-gray-600"
                 onClick={() => {

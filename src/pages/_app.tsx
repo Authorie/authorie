@@ -9,6 +9,7 @@ import { getServerAuthSession } from "@server/auth";
 import { api } from "@utils/api";
 
 import "../styles/globals.css";
+import Layout from "@components/Layout/Layout";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -35,7 +36,9 @@ const MyApp: AppType<
 > = ({ Component, pageProps: { session, ...pageProps } }) => {
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+      <Layout user={session?.user}>
+        <Component {...pageProps} />
+      </Layout>
     </SessionProvider>
   );
 };
