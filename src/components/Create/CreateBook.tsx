@@ -1,11 +1,9 @@
 import Image from "next/legacy/image";
 import { PhotoIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
 import AddAuthorModal from "./AddAuthorModal";
+import { Popover } from "@headlessui/react";
 
 const CreateBook = () => {
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-
   return (
     <div className="relative flex w-full gap-5 rounded-lg px-16 pt-20 pb-7 shadow-lg">
       <div className="absolute inset-0 h-4/6 w-full overflow-hidden rounded-t-lg">
@@ -39,18 +37,14 @@ const CreateBook = () => {
             <button className="rounded-full bg-gray-500 px-2 text-xs text-white">
               NongFameza
             </button>
-            <button
-              onClick={() => setOpenDialog(true)}
-              className="w-6 rounded-full bg-white text-xs"
-            >
-              +
-            </button>
-            {openDialog && (
-              <AddAuthorModal
-                openDialog={openDialog}
-                onCloseDialog={() => setOpenDialog(false)}
-              />
-            )}
+            <Popover className="relative">
+              <Popover.Panel className="absolute -left-20 bottom-8 z-10">
+                <AddAuthorModal />
+              </Popover.Panel>
+              <Popover.Button className="h-6 w-6 rounded-full bg-white text-xs">
+                +
+              </Popover.Button>
+            </Popover>
           </div>
         </div>
       </div>
