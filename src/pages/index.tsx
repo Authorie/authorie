@@ -1,9 +1,8 @@
 import type { GetServerSidePropsContext } from "next";
-import Head from "next/head";
 import { getServerAuthSession } from "@server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createInnerTRPCContext } from "@server/api/trpc";
-import { type AppRouter, appRouter } from "@server/api/root";
+import { appRouter } from "@server/api/root";
 import superjson from "superjson";
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
 import ChapterPostList from "@components/Chapter/ChapterPostList";
@@ -13,7 +12,7 @@ export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers<AppRouter>({
+  const ssg = createProxySSGHelpers({
     router: appRouter,
     ctx: createInnerTRPCContext({ session }),
     transformer: superjson,
