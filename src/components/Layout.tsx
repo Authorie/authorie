@@ -6,7 +6,7 @@ const Layout = ({ children }: PropsWithChildren) => {
   const router = useRouter();
 
   if (router.pathname === "/auth/new-user") {
-    return <>children</>;
+    return <>{children}</>;
   }
 
   return (
