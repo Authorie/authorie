@@ -2,11 +2,12 @@ import type { PropsWithChildren } from "react";
 import Head from "next/head";
 import NavigationSidebar from "./Navigation/NavigationSidebar";
 import { useRouter } from "next/router";
+import type { Session } from "next-auth";
 
 const Layout = ({
   children,
-  isLogin,
-}: PropsWithChildren<{ isLogin: boolean }>) => {
+  session,
+}: PropsWithChildren<{ session: Session | null }>) => {
   const router = useRouter();
 
   if (router.pathname === "/auth/new-user") {
@@ -23,7 +24,7 @@ const Layout = ({
         />
       </Head>
       <div className="flex 2xl:justify-center">
-        <NavigationSidebar isLogin={isLogin} />
+        <NavigationSidebar session={session} />
         <main className="w-4/5 max-w-6xl border-l-2 border-gray-200">
           {children}
         </main>

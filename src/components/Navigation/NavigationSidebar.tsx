@@ -15,12 +15,13 @@ import { Link, Button } from "./Items";
 import SearchModal from "./Search/SearchModal";
 import { useSelectCategory } from "@hooks/selectedCategory";
 import { api } from "@utils/api";
+import type { Session } from "next-auth";
 
 type props = {
-  isLogin: boolean;
+  session: Session | null;
 };
 
-const NavigationSidebar = ({ isLogin }: props) => {
+const NavigationSidebar = ({ session }: props) => {
   const selectCategory = useSelectCategory();
   const { data: user } = api.user.getData.useQuery(undefined, {
     onError(error) {
@@ -52,17 +53,21 @@ const NavigationSidebar = ({ isLogin }: props) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {isLogin && (
+        {session && (
           <Link href="/account">
             <Image
-              src={user?.image || "/profile_image_placeholder.png"}
+              src={
+                user?.image ||
+                session.user?.image ||
+                "/profile_image_placeholder.png"
+              }
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {user?.penname}
+              {user?.penname || session.user?.penname}
             </span>
           </Link>
         )}
@@ -70,7 +75,7 @@ const NavigationSidebar = ({ isLogin }: props) => {
           <HomeIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
-        {isLogin && (
+        {session && (
           <>
             <Link href="/notifications">
               <BellIcon className="h-7 w-7" />
@@ -90,7 +95,7 @@ const NavigationSidebar = ({ isLogin }: props) => {
           onCloseDialog={() => setOpenSearchDialog(false)}
           openDialog={openSearchDialog}
         />
-        {isLogin && (
+        {session && (
           <Link href="/coin-shop" className="hidden sm:flex">
             <Image
               src="/authorie_coin_logo.svg"
@@ -99,11 +104,13 @@ const NavigationSidebar = ({ isLogin }: props) => {
               height={30}
               className="h-7 w-7"
             />
-            <span className="text-amber-500">{user?.coin} Au</span>
+            <span className="text-amber-500">
+              {user?.coin || session.user?.coin} Au
+            </span>
           </Link>
         )}
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
-          {isLogin ? (
+          {session ? (
             <>
               <Link
                 href="/create"

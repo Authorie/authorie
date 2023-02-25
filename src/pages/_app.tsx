@@ -46,7 +46,7 @@ type AppPropsWithLayout = AppProps<
 };
 
 const commonLayout = (session: Session | null, page: ReactNode) => {
-  return <Layout isLogin={Boolean(session)}>{page}</Layout>;
+  return <Layout session={session}>{page}</Layout>;
 };
 
 const MyApp = ({
