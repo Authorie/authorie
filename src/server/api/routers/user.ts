@@ -5,43 +5,81 @@ import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
-  getData: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    try {
-      const user = await ctx.prisma.user.findUniqueOrThrow({
-        where: {
-          penname: input,
-        },
-        select: {
-          id: true,
-          penname: true,
-          image: true,
-          coin: true,
-          _count: {
-            select: {
-              followers: true,
-              following: true,
+  getData: publicProcedure
+    .input(z.string().optional())
+    .query(async ({ ctx, input }) => {
+      if (input) {
+        try {
+          const user = await ctx.prisma.user.findUniqueOrThrow({
+            where: {
+              penname: input,
             },
-          },
-        },
-      });
-      return user;
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2005") {
+            select: {
+              id: true,
+              penname: true,
+              image: true,
+              coin: true,
+              _count: {
+                select: {
+                  followers: true,
+                  following: true,
+                },
+              },
+            },
+          });
+          return user;
+        } catch (e) {
+          if (e instanceof Prisma.PrismaClientKnownRequestError) {
+            if (e.code === "P2005") {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: `user does not exist: ${
+                  input || ctx.session?.user?.id || ""
+                }`,
+                cause: e,
+              });
+            }
+          } else {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "something went wrong",
+              cause: e,
+            });
+          }
+        }
+      } else if (ctx.session?.user) {
+        try {
+          const user = await ctx.prisma.user.findUniqueOrThrow({
+            where: {
+              id: ctx.session.user.id,
+            },
+            select: {
+              id: true,
+              penname: true,
+              image: true,
+              coin: true,
+              _count: {
+                select: {
+                  followers: true,
+                  following: true,
+                },
+              },
+            },
+          });
+          return user;
+        } catch (e) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `user does not exist: ${input}`,
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
             cause: e,
           });
         }
       }
       throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: e,
+        code: "UNAUTHORIZED",
+        message: "you are not logged in",
       });
-    }
-  }),
+    }),
   getFollowing: publicProcedure
     .input(
       z.object({
