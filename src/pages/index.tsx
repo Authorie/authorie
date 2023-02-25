@@ -36,19 +36,10 @@ export const getServerSideProps = async (
 const Home = () => {
   const { data: session } = useSession();
   return (
-    <>
-      <Head>
-        <title>Authorie</title>
-        <meta
-          name="description"
-          content="Social media and publishing platform!"
-        />
-      </Head>
-      <div className="flex flex-col gap-6 px-10 py-4">
-        <CategoryBoard isLogin={Boolean(session)} />
-        <ChapterPostList />
-      </div>
-    </>
+    <div className="flex flex-col gap-6 px-10 py-4">
+      <CategoryBoard isLogin={Boolean(session)} />
+      <ChapterPostList />
+    </div>
   );
 };
 
