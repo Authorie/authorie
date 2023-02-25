@@ -1,15 +1,18 @@
 import type {
   InferGetServerSidePropsType,
   GetServerSidePropsContext,
+  NextPage,
 } from "next";
-import { type AppType } from "next/app";
+import type { AppProps } from "next/app";
+import type { ReactNode, ReactElement } from "react";
+import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
-import { getServerAuthSession } from "@server/auth";
 
 import { api } from "@utils/api";
+import Layout from "@components/Layout";
+import { getServerAuthSession } from "@server/auth";
 
 import "../styles/globals.css";
-import Layout from "@components/Layout";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -31,14 +34,30 @@ export const getServerSideProps = async (
   };
 };
 
-const MyApp: AppType<
+export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+type AppPropsWithLayout = AppProps<
   InferGetServerSidePropsType<typeof getServerSideProps>
-> = ({ Component, pageProps: { session, ...pageProps } }) => {
+> & {
+  Component: NextPageWithLayout;
+};
+
+const commonLayout = (session: Session | null, page: ReactNode) => {
+  return <Layout isLogin={Boolean(session)}>{page}</Layout>;
+};
+
+const MyApp = ({
+  Component,
+  pageProps: { session, ...pageProps },
+}: AppPropsWithLayout) => {
+  const getLayout =
+    Component.getLayout || ((page) => commonLayout(session, page));
+
   return (
     <SessionProvider session={session}>
-      <Layout isLogin={Boolean(session)}>
-        <Component {...pageProps} />
-      </Layout>
+      {getLayout(<Component {...pageProps} />)}
     </SessionProvider>
   );
 };

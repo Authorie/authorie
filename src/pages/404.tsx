@@ -1,3 +1,5 @@
+import type { ReactElement } from "react";
+
 export default function Custom404() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -5,3 +7,7 @@ export default function Custom404() {
     </div>
   );
 }
+
+Custom404.getLayout = function getLayout(page: ReactElement) {
+  return page;
+};
