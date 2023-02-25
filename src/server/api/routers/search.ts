@@ -8,18 +8,15 @@ export const searchRouter = createTRPCRouter({
       z.object({
         search: z.string(),
         take: z.number().default(5),
-        cursor: z
-          .object({
-            id: z.string(),
-            email: z.string().email(),
-          })
-          .optional(),
+        cursor: z.string().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
       const users = await ctx.prisma.user.findMany({
         take: input.take,
-        cursor: input.cursor,
+        cursor: {
+          penname: input.cursor,
+        },
         where: {
           penname: {
             contains: input.search,
