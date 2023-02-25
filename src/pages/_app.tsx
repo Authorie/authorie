@@ -9,7 +9,7 @@ import { getServerAuthSession } from "@server/auth";
 import { api } from "@utils/api";
 
 import "../styles/globals.css";
-import Layout from "@components/Layout/Layout";
+import Layout from "@components/Layout";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import NextLink from "next/link";
 import Image from "next/image";
 import {
@@ -9,12 +10,11 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { signIn, signOut } from "next-auth/react";
-import SearchModal from "@components/Search/SearchModal";
-import { Link, Button } from "./Items";
-import { useState } from "react";
-import { useSelectCategory } from "@hooks/selectedCategory";
 import type { User } from "next-auth";
+import { signIn, signOut } from "next-auth/react";
+import { Link, Button } from "./Items";
+import SearchModal from "./Search/SearchModal";
+import { useSelectCategory } from "@hooks/selectedCategory";
 
 type props = {
   user: User | undefined;
