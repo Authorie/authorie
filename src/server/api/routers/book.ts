@@ -61,12 +61,11 @@ export const bookRouter = createTRPCRouter({
             },
           });
         }
-        const books = await ctx.prisma.book.findMany({
+        return await ctx.prisma.book.findMany({
           where: { OR: or },
           cursor: cursor ? { id: cursor } : undefined,
-          take,
+          take
         });
-        return books;
       }
       if (!ctx.session?.user) {
         throw new TRPCError({
@@ -74,21 +73,20 @@ export const bookRouter = createTRPCRouter({
           message: "not authenticated",
         });
       }
-      const books = await ctx.prisma.book.findMany({
+      return await ctx.prisma.book.findMany({
         where: {
           status: {
-            in: input.status,
+            in: input.status
           },
           owners: {
             some: {
-              userId: ctx.session.user.id,
-            },
-          },
+              userId: ctx.session.user.id
+            }
+          }
         },
         cursor: input.cursor ? { id: input.cursor } : undefined,
         take: input.take,
       });
-      return books;
     }),
   create: protectedProcedure
     .input(
@@ -101,7 +99,7 @@ export const bookRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { title, description, invitees } = input;
       try {
-        const book = await ctx.prisma.book.create({
+        return await ctx.prisma.book.create({
           data: {
             title,
             description,
@@ -110,7 +108,7 @@ export const bookRouter = createTRPCRouter({
                 data: [
                   {
                     userId: ctx.session.user.id,
-                    status: BookOwnerStatus.OWNER,
+                    status: BookOwnerStatus.OWNER
                   },
                   ...invitees.map((invitee) => ({
                     userId: invitee,
@@ -121,7 +119,6 @@ export const bookRouter = createTRPCRouter({
             },
           },
         });
-        return book;
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
           if (e.code === "P2003") {

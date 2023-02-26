@@ -12,16 +12,15 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const users = await ctx.prisma.user.findMany({
+      return await ctx.prisma.user.findMany({
         take: input.take,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         where: {
           penname: {
-            contains: input.search,
-          },
-        },
+            contains: input.search
+          }
+        }
       });
-      return users;
     }),
   searchBooks: publicProcedure
     .input(
@@ -32,15 +31,15 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const books = await ctx.prisma.book.findMany({
+      return await ctx.prisma.book.findMany({
         take: input.take,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         where: {
           OR: [
             {
               title: {
-                contains: input.search,
-              },
+                contains: input.search
+              }
             },
             {
               description: {
@@ -50,6 +49,5 @@ export const searchRouter = createTRPCRouter({
           ],
         },
       });
-      return books;
     }),
 });
