@@ -93,10 +93,10 @@ export const bookRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        invitees: z.array(z.string()).default([]),
+        invitees: z.array(z.string()).default([])
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { title, description, invitees } = input;
       try {
         return await ctx.prisma.book.create({
