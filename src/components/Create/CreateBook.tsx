@@ -11,8 +11,16 @@ const CreateBook = () => {
         <div className="-z-1 absolute inset-0 h-full w-full bg-gradient-to-t from-gray-100" />
       </div>
       <div className="relative flex h-52 w-48 items-center justify-center overflow-hidden rounded">
-        <Image src="/favicon.ico" layout="fill" alt="dummy-pic" />
-        <PhotoIcon className="absolute right-2 bottom-2 h-6 w-6 cursor-pointer" />
+        <label className="cursor-pointer" htmlFor="book-profile">
+          <Image src="/favicon.ico" layout="fill" alt="dummy-pic" />
+          <PhotoIcon className="absolute right-2 bottom-2 h-6 w-6" />
+        </label>
+        <input
+          type="file"
+          id="book-profile"
+          className="none"
+          accept="image/png, image/jpeg"
+        />
       </div>
       <div className="z-0 flex w-full flex-col justify-end">
         <div className="flex w-full flex-col gap-2">

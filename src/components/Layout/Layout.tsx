@@ -1,8 +1,10 @@
 import type { PropsWithChildren } from "react";
 import Head from "next/head";
-import NavigationSidebar from "./Navigation/NavigationSidebar";
+import NavigationSidebar from "./NavigationSidebar";
 import { useRouter } from "next/router";
 import type { Session } from "next-auth";
+import UserBanner from "./UserBanner";
+import { userInfo } from "mocks/search";
 
 const Layout = ({
   children,
@@ -13,7 +15,7 @@ const Layout = ({
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;
   }
-
+  console.log(router);
   return (
     <>
       <Head>
@@ -25,7 +27,16 @@ const Layout = ({
       </Head>
       <div className="flex 2xl:justify-center">
         <NavigationSidebar session={session} />
-        <main className="w-4/5 max-w-6xl border-l-2 border-gray-200">
+        <main className="w-full border-l-2 border-gray-200 bg-gray-100">
+          {router.pathname === "/[penname]" && (
+            <UserBanner
+              penname={userInfo[0]?.penname}
+              bio={userInfo[0]?.bio}
+              followers={userInfo[0]?.followers}
+              following={userInfo[0]?.following}
+              followed={false}
+            />
+          )}
           {children}
         </main>
       </div>
