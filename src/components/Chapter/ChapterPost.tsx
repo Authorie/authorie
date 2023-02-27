@@ -14,7 +14,7 @@ const ChapterPost = ({
   content,
 }: props) => {
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-md">
+    <div className="max-w-5xl overflow-hidden rounded-xl bg-white shadow-md">
       <div className="flex flex-col gap-1 bg-gradient-to-l from-amber-400 to-amber-100 px-16 py-4">
         <h1 className="text-3xl font-bold">{bookTitle}</h1>
         <h3 className="text-2xl font-bold text-black">

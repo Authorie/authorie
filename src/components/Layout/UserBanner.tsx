@@ -1,6 +1,7 @@
 import Image from "next/legacy/image";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 type props = {
   penname: string | undefined;
@@ -21,6 +22,7 @@ const UserBanner = ({
 }: props) => {
   const [followedUser, setFollowedUser] = useState<boolean>(followed);
   const [selectedTab, setSelectedTab] = useState("HOME");
+  const router = useRouter();
 
   const onFollowHandler = () => {
     setFollowedUser(() => !followedUser);
@@ -34,6 +36,7 @@ const UserBanner = ({
 
   const onClickHandler = (title: string) => {
     setSelectedTab(title);
+    const penname = router.pathname;
   };
 
   const tabClassName = (title: string) => {
@@ -45,7 +48,7 @@ const UserBanner = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-w-full">
       <div className="absolute h-[22rem] w-full">
         <Image src="/mockWallpaper.jpeg" layout="fill" />
       </div>

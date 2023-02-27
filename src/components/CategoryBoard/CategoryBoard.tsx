@@ -27,17 +27,19 @@ const CategoryBoard = ({ isLogin }: props) => {
   }, [setShowCategories]);
 
   return (
-    <div className="flex flex-col gap-3 overflow-hidden rounded-xl bg-neutral-500">
-      <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
-        {showCategories ? (
-          <CategorySelectionBoard
-            isLogin={isLogin}
-            categoriesList={categories}
-            followedCategories={followedCategories}
-          />
-        ) : (
-          <h1 className="text-8xl text-white">For Ads</h1>
-        )}
+    <>
+      <div className="flex min-w-[1024px] max-w-5xl flex-col overflow-hidden rounded-t-xl bg-neutral-500 pb-2">
+        <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
+          {showCategories ? (
+            <CategorySelectionBoard
+              isLogin={isLogin}
+              categoriesList={categories}
+              followedCategories={followedCategories}
+            />
+          ) : (
+            <h1 className="text-8xl text-white">For Ads</h1>
+          )}
+        </div>
       </div>
       <CategoryBar
         isLogin={isLogin}
@@ -45,7 +47,7 @@ const CategoryBoard = ({ isLogin }: props) => {
         openCategories={showCategories}
         onOpenCategories={onOpenCategoriesHandler}
       />
-    </div>
+    </>
   );
 };
 

@@ -15,7 +15,6 @@ const Layout = ({
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;
   }
-  console.log(router);
   return (
     <>
       <Head>
@@ -25,9 +24,11 @@ const Layout = ({
           content="Social media and publishing platform!"
         />
       </Head>
-      <div className="flex 2xl:justify-center">
-        <NavigationSidebar session={session} />
-        <main className="w-full border-l-2 border-gray-200 bg-gray-100">
+      <div className="flex 2xl:container 2xl:mx-auto">
+        <div className="w-72">
+          <NavigationSidebar session={session} />
+        </div>
+        <main className="flex w-full flex-col items-center justify-center border-l-2 border-gray-200 bg-gray-100">
           {router.pathname === "/[penname]" && (
             <UserBanner
               penname={userInfo[0]?.penname}

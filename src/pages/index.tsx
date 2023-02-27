@@ -35,7 +35,7 @@ export const getServerSideProps = async (
 const Home = () => {
   const { data: session } = useSession();
   return (
-    <div className="flex flex-col gap-6 px-10 py-4">
+    <div className="flex flex-col px-10 py-4">
       <CategoryBoard isLogin={Boolean(session)} />
       <ChapterPostList />
     </div>
