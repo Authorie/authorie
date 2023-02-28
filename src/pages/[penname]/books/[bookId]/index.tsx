@@ -3,6 +3,7 @@ import ChapterCard from "@components/Chapter/ChapterCard";
 import {
   PencilSquareIcon,
   MagnifyingGlassIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 import {
   Bars3CenterLeftIcon,
@@ -16,9 +17,12 @@ const BookContent = () => {
   return (
     <div className="relative mx-14 my-8 flex flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg">
       {/* bookhead */}
-      <div className="absolute inset-0 z-0 h-96 w-full overflow-hidden rounded-t-lg">
+      <div className="absolute inset-0 z-0 h-96 w-full overflow-hidden rounded-lg">
         <Image src="/mockWallpaper.jpeg" layout="fill" />
         <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
+      </div>
+      <div className="absolute inset-0 top-2 left-2 z-10">
+        <ChevronLeftIcon className="h-8 w-8 rounded-full border border-gray-500 bg-gray-200 p-1" />
       </div>
       <div className="z-10 flex gap-7 pt-10 pb-5">
         <div className="ml-7 mb-20 flex flex-col">
