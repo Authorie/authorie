@@ -8,7 +8,7 @@ const CreateBook = () => {
     <div className="relative flex w-full gap-5 rounded-lg px-16 pt-20 pb-7 shadow-lg">
       <div className="absolute inset-0 h-4/6 w-full overflow-hidden rounded-t-lg">
         <Image src="/mockWallpaper.jpeg" layout="fill" alt="book's wallpaper" />
-        <div className="-z-1 absolute inset-0 h-full w-full bg-gradient-to-t from-gray-100" />
+        <div className="-z-1 absolute inset-0 h-full w-full bg-gradient-to-t from-white" />
       </div>
       <div className="relative flex h-52 w-48 items-center justify-center overflow-hidden rounded">
         <label className="cursor-pointer" htmlFor="book-profile">

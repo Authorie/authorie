@@ -11,6 +11,7 @@ const Layout = ({
   session,
 }: PropsWithChildren<{ session: Session | null }>) => {
   const router = useRouter();
+  const { penname } = router.query;
 
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;
@@ -28,8 +29,8 @@ const Layout = ({
         <div className="w-72">
           <NavigationSidebar session={session} />
         </div>
-        <main className="flex w-full flex-col items-center justify-center border-l-2 border-gray-200 bg-gray-100">
-          {router.pathname === "/[penname]" && (
+        <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
+          {penname && (
             <UserBanner
               penname={userInfo[0]?.penname}
               bio={userInfo[0]?.bio}
