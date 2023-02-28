@@ -1,3 +1,5 @@
+// noinspection ES6ConvertVarToLetConst
+
 import { PrismaClient } from "@prisma/client";
 
 import { env } from "@env/server.mjs";
