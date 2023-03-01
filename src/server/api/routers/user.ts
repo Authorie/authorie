@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
@@ -10,9 +10,9 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       if (input) {
         try {
-          const user = await ctx.prisma.user.findUniqueOrThrow({
+          return await ctx.prisma.user.findUniqueOrThrow({
             where: {
-              penname: input,
+              penname: input
             },
             select: {
               id: true,
@@ -27,7 +27,6 @@ export const userRouter = createTRPCRouter({
               },
             },
           });
-          return user;
         } catch (e) {
           if (e instanceof Prisma.PrismaClientKnownRequestError) {
             if (e.code === "P2005") {
@@ -49,9 +48,9 @@ export const userRouter = createTRPCRouter({
         }
       } else if (ctx.session?.user) {
         try {
-          const user = await ctx.prisma.user.findUniqueOrThrow({
+          return await ctx.prisma.user.findUniqueOrThrow({
             where: {
-              id: ctx.session.user.id,
+              id: ctx.session.user.id
             },
             select: {
               id: true,
@@ -66,7 +65,6 @@ export const userRouter = createTRPCRouter({
               },
             },
           });
-          return user;
         } catch (e) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -89,17 +87,17 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const following = await ctx.prisma.user.findMany({
+      return await ctx.prisma.user.findMany({
         where: {
           NOT: {
-            penname: null,
+            penname: null
           },
           followers: {
             some: {
               follower: {
-                penname: input.penname,
-              },
-            },
+                penname: input.penname
+              }
+            }
           },
         },
         take: input.take,
@@ -107,7 +105,6 @@ export const userRouter = createTRPCRouter({
           penname: input.cursor,
         },
       });
-      return following;
     }),
   getFollowers: publicProcedure
     .input(
@@ -118,17 +115,17 @@ export const userRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const followers = await ctx.prisma.user.findMany({
+      return await ctx.prisma.user.findMany({
         where: {
           NOT: {
-            penname: null,
+            penname: null
           },
           following: {
             some: {
               follower: {
-                penname: input.penname,
-              },
-            },
+                penname: input.penname
+              }
+            }
           },
         },
         take: input.take,
@@ -136,7 +133,6 @@ export const userRouter = createTRPCRouter({
           penname: input.cursor,
         },
       });
-      return followers;
     }),
   update: protectedProcedure
     .input(
