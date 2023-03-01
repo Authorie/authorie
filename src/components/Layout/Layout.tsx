@@ -1,19 +1,20 @@
 import type { PropsWithChildren } from "react";
 import Head from "next/head";
-import NavigationSidebar from "./Navigation/NavigationSidebar";
+import NavigationSidebar from "./NavigationSidebar";
 import { useRouter } from "next/router";
 import type { Session } from "next-auth";
+import { userInfo } from "mocks/search";
 
 const Layout = ({
   children,
   session,
 }: PropsWithChildren<{ session: Session | null }>) => {
   const router = useRouter();
+  const { penname } = router.query;
 
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;
   }
-
   return (
     <>
       <Head>
@@ -23,9 +24,11 @@ const Layout = ({
           content="Social media and publishing platform!"
         />
       </Head>
-      <div className="flex 2xl:justify-center">
-        <NavigationSidebar session={session} />
-        <main className="w-4/5 max-w-6xl border-l-2 border-gray-200">
+      <div className="flex 2xl:container 2xl:mx-auto">
+        <div className="w-72">
+          <NavigationSidebar session={session} />
+        </div>
+        <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
           {children}
         </main>
       </div>

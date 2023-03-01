@@ -10,7 +10,7 @@ import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react";
 
 import { api } from "@utils/api";
-import Layout from "@components/Layout";
+import Layout from "@components/Layout/Layout";
 import { getServerAuthSession } from "@server/auth";
 
 import "../styles/globals.css";
