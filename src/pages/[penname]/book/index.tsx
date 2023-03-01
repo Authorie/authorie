@@ -8,7 +8,7 @@ const BookPage = () => {
   const router = useRouter();
   const { penname } = router.query;
 
-  const { data: books } = api.book.getAll.useQuery({ penname: "nongfameza" });
+  const { data: books } = api.book.getAll.useQuery({ penname: "four58" });
 
   return (
     <div className="mb-8 mt-6 min-w-[1024px]">
@@ -22,9 +22,11 @@ const BookPage = () => {
             books.map((data) => (
               <Book
                 key={data.id}
-                bookId={data.id}
+                id={data.id}
                 title={data.title}
                 description={data.description}
+                like={100}
+                read={100}
               />
             ))}
         </div>

@@ -5,17 +5,19 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 
 type props = {
+  id: string;
   title: string;
   description: string | null;
-  bookId: string;
+  read: number;
+  like: number;
 };
 
-const Book = ({ title, description, bookId }: props) => {
+const Book = ({ title, description, read, like, id }: props) => {
   const router = useRouter();
 
   const onClickHandler = () => {
     const { penname } = router.query;
-    router.push(`/${penname}/books/${bookId}`);
+    router.push(`/${penname}/book/${id}`);
   };
 
   return (
@@ -32,16 +34,16 @@ const Book = ({ title, description, bookId }: props) => {
         <div className="px-2 pt-2">
           <div className="flex w-full flex-col justify-center gap-2">
             <h1 className="font-bold">{title}</h1>
-            <p className="line-clamp-6 text-xs font-light">{description}</p>
+            <p className="text-xs font-light line-clamp-6">{description}</p>
           </div>
           <div className="flex justify-between">
             <div className="mt-2 flex items-center gap-1">
               <EyeIcon className="h-5 w-5 text-authGreen-600" />
-              <p className="text-xs font-medium text-authGreen-600">200</p>
+              <p className="text-xs font-medium text-authGreen-600">{read}</p>
             </div>
             <div className="mt-2 flex items-center gap-1">
               <HeartIcon className="h-5 w-5 text-red-400" />
-              <p className="text-xs font-medium text-red-400">200</p>
+              <p className="text-xs font-medium text-red-400">{like}</p>
             </div>
           </div>
         </div>

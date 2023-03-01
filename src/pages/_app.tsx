@@ -45,16 +45,15 @@ type AppPropsWithLayout = AppProps<
   Component: NextPageWithLayout;
 };
 
-const commonLayout = (session: Session | null, page: ReactNode) => {
-  return <Layout session={session}>{page}</Layout>;
+const commonLayout = (page: ReactNode) => {
+  return <Layout>{page}</Layout>;
 };
 
 const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) => {
-  const getLayout =
-    Component.getLayout || ((page) => commonLayout(session, page));
+  const getLayout = Component.getLayout || ((page) => commonLayout(page));
 
   return (
     <SessionProvider session={session}>
