@@ -24,11 +24,11 @@ const Layout = ({
           content="Social media and publishing platform!"
         />
       </Head>
-      <div className="flex 2xl:container 2xl:mx-auto">
+      <div className="flex min-h-screen justify-center bg-gray-100">
         <div className="w-72">
           <NavigationSidebar session={session} />
         </div>
-        <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
+        <main className="w-4/5 max-w-6xl border-l-2 border-gray-200 ">
           {children}
         </main>
       </div>

@@ -4,21 +4,15 @@ import AddAuthorModal from "./AddAuthorModal";
 import { Popover } from "@headlessui/react";
 import { api } from "@utils/api";
 import { useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { useAuthorList, useAddAuthor } from "@hooks/addAuthor";
+import { useForm } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
 
-interface IFormInput {
+type FormInput = {
   title: string;
   description: string;
-}
+};
 
 const CreateBook = () => {
-  const authorList = useAuthorList();
-  const addAuthor = useAddAuthor();
-  useEffect(() => {
-    addAuthor("four58");
-  }, []);
-
   const {
     handleSubmit,
     reset,
@@ -37,11 +31,10 @@ const CreateBook = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<IFormInput> = (data) => {
+  const onSubmit: SubmitHandler<FormInput> = (data) => {
     bookCreateMutation.mutate({
       title: data.title,
       description: data.description,
-      invitees: authorList,
     });
     reset();
   };
@@ -87,7 +80,8 @@ const CreateBook = () => {
                 placeholder="write the description down..."
               />
             </div>
-            <div className="flex items-center gap-2">
+            {/* TODO */}
+            {/* <div className="flex items-center gap-2">
               <h5 className="text-sm font-semibold">Author :</h5>
               <div className="flex gap-2 rounded-xl bg-authGreen-500 px-3 py-1">
                 <div className="flex w-52 items-center gap-2 overflow-x-scroll">
@@ -97,7 +91,10 @@ const CreateBook = () => {
                   {authorList.map(
                     (data) =>
                       data != "four58" && (
-                        <button className="rounded-full bg-gray-500 px-5 py-1 text-xs text-white">
+                        <button
+                          key={data}
+                          className="rounded-full bg-gray-500 px-5 py-1 text-xs text-white"
+                        >
                           {data}
                         </button>
                       )
@@ -112,7 +109,7 @@ const CreateBook = () => {
                   </Popover.Button>
                 </Popover>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
         <button

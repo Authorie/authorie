@@ -5,9 +5,7 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 
 const AddAuthorModal = () => {
-  const [authorPenName, setAuthorPenName] = useState<string>("");
-  // to do search for users to add
-  // const { data: users } = api.search.searchUsers.useQuery();
+  const [authorPenName, setAuthorPenName] = useState("");
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -18,8 +16,12 @@ const AddAuthorModal = () => {
     <div className="flex w-fit flex-col items-start justify-center rounded-xl bg-gray-200 p-2 pt-0">
       <div className="max-h-52 overflow-y-scroll border-b-2 border-gray-300 pt-2">
         <div className="h-fit">
-          {userInfo.map((data) => (
-            <AuthorResult penname={data.penname} key={data.userId} />
+          {userInfo.map((user) => (
+            <AuthorResult
+              key={user.userId}
+              penname={user.penname}
+              onClickHandler={() => console.log(`add ${user.penname}`)}
+            />
           ))}
         </div>
       </div>

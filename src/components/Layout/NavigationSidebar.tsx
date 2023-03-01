@@ -33,7 +33,7 @@ const NavigationSidebar = ({ session }: props) => {
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
 
   return (
-    <nav className="text-md fixed flex h-full w-60 flex-col justify-center border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
+    <nav className="text-md fixed flex h-full w-60 flex-col justify-center border-gray-900/20 px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -54,7 +54,7 @@ const NavigationSidebar = ({ session }: props) => {
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
         {session && (
-          <Link href="/[penname]" as="/4444">
+          <Link href={`/${user?.penname || session.user?.penname}`}>
             <Image
               src={
                 user?.image ||

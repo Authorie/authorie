@@ -15,7 +15,7 @@ const Book = ({ title, description, bookId }: props) => {
 
   const onClickHandler = () => {
     const { penname } = router.query;
-    router.replace(`/${penname}/books/${bookId}`);
+    router.push(`/${penname}/books/${bookId}`);
   };
 
   return (

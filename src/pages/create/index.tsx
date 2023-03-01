@@ -23,13 +23,15 @@ export const getServerSideProps = async (
   };
 };
 
+type tab = "book" | "chapter";
+
 const CreatePage = () => {
-  const [tab, setTab] = useState<string>("Create book");
-  const onClickTabHandler = (selectedTab: string) => {
+  const [tab, setTab] = useState<tab>("book");
+  const onClickTabHandler = (selectedTab: tab) => {
     setTab(selectedTab);
   };
 
-  const buttonClassName = (selectedTab: string) => {
+  const buttonClassName = (selectedTab: tab) => {
     if (selectedTab === tab) {
       return "rounded-t-2xl bg-gray-100 px-4 font-bold text-authGreen-600";
     } else {
@@ -41,14 +43,14 @@ const CreatePage = () => {
     <div className="gap-3 rounded-2xl px-10 py-4">
       <div className="flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
         <button
-          onClick={() => onClickTabHandler("Create book")}
-          className={buttonClassName("Create book")}
+          onClick={() => onClickTabHandler("book")}
+          className={buttonClassName("book")}
         >
           Create book
         </button>
         <button
-          onClick={() => onClickTabHandler("Create chapter")}
-          className={buttonClassName("Create chapter")}
+          onClick={() => onClickTabHandler("chapter")}
+          className={buttonClassName("chapter")}
         >
           Create chapter
         </button>
