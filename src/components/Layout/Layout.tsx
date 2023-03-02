@@ -1,20 +1,13 @@
+import { users } from "mocks/users";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import NavigationSidebar from "./NavigationSidebar";
 import UserBanner, { parseUserTab } from "./UserBanner";
 
-const userInfo = {
-  userId: 1234,
-  penname: "four58",
-  reads: 50,
-  followers: 2400,
-  following: 25,
-  bio: "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
-};
-
 const Layout = ({ children }: PropsWithChildren) => {
   const router = useRouter();
+  const userInfo = users[0];
 
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;
