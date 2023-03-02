@@ -1,83 +1,49 @@
-import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
-  getData: publicProcedure
-    .input(z.string().optional())
-    .query(async ({ ctx, input }) => {
-      if (input) {
-        try {
-          return await ctx.prisma.user.findUniqueOrThrow({
-            where: {
-              penname: input
-            },
+  getData: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    try {
+      return await ctx.prisma.user.findUniqueOrThrow({
+        where: {
+          penname: input,
+        },
+        select: {
+          id: true,
+          penname: true,
+          image: true,
+          coin: true,
+          _count: {
             select: {
-              id: true,
-              penname: true,
-              image: true,
-              coin: true,
-              _count: {
-                select: {
-                  followers: true,
-                  following: true,
-                },
-              },
+              followers: true,
+              following: true,
             },
-          });
-        } catch (e) {
-          if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === "P2005") {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: `user does not exist: ${
-                  input || ctx.session?.user?.id || ""
-                }`,
-                cause: e,
-              });
-            }
-          } else {
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: "something went wrong",
-              cause: e,
-            });
-          }
-        }
-      } else if (ctx.session?.user) {
-        try {
-          return await ctx.prisma.user.findUniqueOrThrow({
-            where: {
-              id: ctx.session.user.id
-            },
-            select: {
-              id: true,
-              penname: true,
-              image: true,
-              coin: true,
-              _count: {
-                select: {
-                  followers: true,
-                  following: true,
-                },
-              },
-            },
-          });
-        } catch (e) {
+          },
+        },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === "P2005") {
           throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "something went wrong",
+            code: "BAD_REQUEST",
+            message: `user does not exist: ${
+              input || ctx.session?.user?.id || ""
+            }`,
             cause: e,
           });
         }
+      } else {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: e,
+        });
       }
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "you are not logged in",
-      });
-    }),
+    }
+  }),
   getFollowing: publicProcedure
     .input(
       z.object({
@@ -90,14 +56,14 @@ export const userRouter = createTRPCRouter({
       return await ctx.prisma.user.findMany({
         where: {
           NOT: {
-            penname: null
+            penname: null,
           },
           followers: {
             some: {
               follower: {
-                penname: input.penname
-              }
-            }
+                penname: input.penname,
+              },
+            },
           },
         },
         take: input.take,
@@ -118,14 +84,14 @@ export const userRouter = createTRPCRouter({
       return await ctx.prisma.user.findMany({
         where: {
           NOT: {
-            penname: null
+            penname: null,
           },
           following: {
             some: {
               follower: {
-                penname: input.penname
-              }
-            }
+                penname: input.penname,
+              },
+            },
           },
         },
         take: input.take,
@@ -133,6 +99,101 @@ export const userRouter = createTRPCRouter({
           penname: input.cursor,
         },
       });
+    }),
+  followUser: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await ctx.prisma.followingFollower.create({
+          data: {
+            follower: {
+              connect: {
+                id: ctx.session.user.id,
+              },
+            },
+            following: {
+              connect: {
+                id: input,
+              },
+            },
+          },
+        });
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (e.code === "P2002") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `user does not exist: ${input}`,
+              cause: e,
+            });
+          }
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `you are already following ${input}`,
+            cause: e,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: e,
+        });
+      }
+    }),
+  unfollowUser: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await ctx.prisma.followingFollower.delete({
+          where: {
+            followingId_followerId: {
+              followingId: input,
+              followerId: ctx.session.user.id,
+            },
+          },
+        });
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (e.code === "P2002") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `user does not exist: ${input}`,
+              cause: e,
+            });
+          }
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `you are already following ${input}`,
+            cause: e,
+          });
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: e,
+        });
+      }
+    }),
+  isFollowUser: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      try {
+        const following = await ctx.prisma.followingFollower.findFirst({
+          where: {
+            followerId: ctx.session.user.id,
+            following: {
+              penname: input,
+            },
+          },
+        });
+        return Boolean(following);
+      } catch (e) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: e,
+        });
+      }
     }),
   update: protectedProcedure
     .input(
