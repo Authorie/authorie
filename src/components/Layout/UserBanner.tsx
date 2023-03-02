@@ -43,7 +43,6 @@ const UserBanner = ({
 }: props) => {
   const router = useRouter();
   const [followedUser, setFollowedUser] = useState(followed);
-  const [selectedTab, setSelectedTab] = useState(tab);
 
   const onFollowHandler = () => {
     setFollowedUser(() => !followedUser);
@@ -58,7 +57,6 @@ const UserBanner = ({
 
   const onClickHandler = (title: UserTab, url: string) => {
     const penname = router.query["penname"] as string;
-    setSelectedTab(title);
     void router.push(`/${penname}/${url}`);
   };
 

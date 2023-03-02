@@ -9,7 +9,6 @@ import { userInfo } from "mocks/search";
 const Layout = ({ children }: PropsWithChildren) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const { penname } = router.query;
 
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;

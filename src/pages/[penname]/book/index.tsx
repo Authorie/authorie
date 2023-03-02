@@ -1,13 +1,9 @@
 import Book from "@components/Book/Book";
 import { Bars3CenterLeftIcon } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { useRouter } from "next/router";
 import { api } from "@utils/api";
 
 const BookPage = () => {
-  const router = useRouter();
-  // const { penname } = router.query;
-
   const { data: books } = api.book.getAll.useQuery({ penname: "four58" });
 
   return (
