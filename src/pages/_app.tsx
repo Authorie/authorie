@@ -5,12 +5,11 @@ import type {
 } from "next";
 import type { AppProps } from "next/app";
 import type { ReactNode, ReactElement } from "react";
-import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react";
 
 import { api } from "@utils/api";
-import Layout from "@components/Layout";
+import Layout from "@components/Layout/Layout";
 import { getServerAuthSession } from "@server/auth";
 
 import "../styles/globals.css";
@@ -45,16 +44,15 @@ type AppPropsWithLayout = AppProps<
   Component: NextPageWithLayout;
 };
 
-const commonLayout = (session: Session | null, page: ReactNode) => {
-  return <Layout session={session}>{page}</Layout>;
+const commonLayout = (page: ReactNode) => {
+  return <Layout>{page}</Layout>;
 };
 
 const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) => {
-  const getLayout =
-    Component.getLayout || ((page) => commonLayout(session, page));
+  const getLayout = Component.getLayout || ((page) => commonLayout(page));
 
   return (
     <SessionProvider session={session}>

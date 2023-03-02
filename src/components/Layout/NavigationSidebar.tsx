@@ -11,8 +11,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { signIn, signOut } from "next-auth/react";
-import { Link, Button } from "./Items";
-import SearchModal from "./Search/SearchModal";
+import { Link, Button } from "../Navigation/Items";
+import SearchModal from "@components/Search/SearchModal";
 import { useSelectCategory } from "@hooks/selectedCategory";
 import { api } from "@utils/api";
 import type { Session } from "next-auth";
@@ -25,7 +25,7 @@ const NavigationSidebar = ({ session }: props) => {
   const selectCategory = useSelectCategory();
   const { data: user } = api.user.getData.useQuery(undefined, {
     onError(error) {
-      if (error.data?.code === "UNAUTHORIZED") {
+      if (error.data != null && error.data?.code === "UNAUTHORIZED") {
         return undefined;
       }
     },
@@ -33,7 +33,7 @@ const NavigationSidebar = ({ session }: props) => {
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
 
   return (
-    <nav className="text-md top-0 bottom-0 flex min-h-screen w-60 flex-col justify-center overflow-y-auto border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
+    <nav className="text-md fixed flex h-full w-60 flex-col justify-center border-gray-900/20 px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -53,8 +53,8 @@ const NavigationSidebar = ({ session }: props) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {session && (
-          <Link href="/account">
+        {session?.user?.penname && (
+          <Link href={`/${user?.penname || session.user.penname}`}>
             <Image
               src={
                 user?.image ||

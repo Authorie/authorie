@@ -19,7 +19,7 @@ const CategoryBar = ({
   const selectedCategory = useSelectedCategory();
 
   return (
-    <div className="flex gap-3 overflow-auto bg-dark-600 py-3 px-4">
+    <div className="sticky top-0 mb-6 flex max-w-5xl gap-3 overflow-auto rounded-b-xl bg-dark-600 py-3 px-4">
       <button
         title="Open Categories"
         type="button"

@@ -7,85 +7,73 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 export const bookRouter = createTRPCRouter({
   getAll: publicProcedure
     .input(
-      z.union([
-        z.object({
-          userId: z.string().uuid(),
-          cursor: z.string().optional(),
-          take: z.number().default(10),
-        }),
-        z.object({
-          status: z
-            .enum([
-              BookStatus.INITIAL,
-              BookStatus.DRAFT,
-              BookStatus.PUBLISHED,
-              BookStatus.ARCHIVED,
-            ])
-            .array()
-            .default([
-              BookStatus.INITIAL,
-              BookStatus.DRAFT,
-              BookStatus.PUBLISHED,
-            ]),
-          cursor: z.string().optional(),
-          take: z.number().default(10),
-        }),
-      ])
+      z.object({
+        penname: z.string(),
+        cursor: z.string().optional(),
+        take: z.number().default(10),
+      })
     )
     .query(async ({ ctx, input }) => {
-      if ("userId" in input) {
-        const { userId, cursor, take } = input;
-        const or: Prisma.BookWhereInput[] = [
-          {
-            status: {
-              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-            },
+      const { penname, cursor, take } = input;
+      if (!ctx.session?.user?.penname) {
+        return await ctx.prisma.book.findMany({
+          where: {
+            status: BookStatus.PUBLISHED,
             owners: {
               some: {
-                userId: userId,
-              },
-            },
-          },
-        ];
-        if (ctx.session?.user) {
-          or.push({
-            status: {
-              in: [BookStatus.INITIAL, BookStatus.DRAFT],
-            },
-            owners: {
-              some: {
-                userId: {
-                  in: [ctx.session.user.id, userId],
+                user: {
+                  penname: penname,
                 },
               },
             },
-          });
-        }
-        return await ctx.prisma.book.findMany({
-          where: { OR: or },
+          },
           cursor: cursor ? { id: cursor } : undefined,
-          take
-        });
-      }
-      if (!ctx.session?.user) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "not authenticated",
+          take,
         });
       }
       return await ctx.prisma.book.findMany({
         where: {
-          status: {
-            in: input.status
-          },
-          owners: {
-            some: {
-              userId: ctx.session.user.id
-            }
-          }
+          OR: [
+            {
+              status: {
+                in: [BookStatus.INITIAL, BookStatus.DRAFT],
+              },
+              owners: {
+                some: {
+                  user: {
+                    penname: {
+                      in: [ctx.session.user.penname, penname],
+                    },
+                  },
+                },
+              },
+            },
+            {
+              status: {
+                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+              },
+              owners: {
+                some: {
+                  user: {
+                    penname: penname,
+                  },
+                },
+              },
+            },
+            {
+              status: BookStatus.ARCHIVED,
+              owners: {
+                some: {
+                  user: {
+                    penname: penname,
+                  },
+                },
+              },
+            },
+          ],
         },
-        cursor: input.cursor ? { id: input.cursor } : undefined,
-        take: input.take,
+        cursor: cursor ? { id: cursor } : undefined,
+        take,
       });
     }),
   create: protectedProcedure
@@ -93,7 +81,7 @@ export const bookRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
-        invitees: z.array(z.string()).default([])
+        invitees: z.array(z.string()).default([]),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -108,7 +96,7 @@ export const bookRouter = createTRPCRouter({
                 data: [
                   {
                     userId: ctx.session.user.id,
-                    status: BookOwnerStatus.OWNER
+                    status: BookOwnerStatus.OWNER,
                   },
                   ...invitees.map((invitee) => ({
                     userId: invitee,

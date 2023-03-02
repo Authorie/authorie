@@ -38,7 +38,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
     <>
       <Dialog open={openDialog} onClose={onCloseDialog}>
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-start justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4">
           <Dialog.Panel className="flex max-h-full w-[800px] flex-col overflow-y-scroll rounded-lg border-0 bg-white p-8 shadow-lg outline-none focus:outline-none">
             <div className="mb-5 flex items-start justify-between">
               <Dialog.Title className="text-xl font-semibold">

@@ -13,7 +13,7 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   book: bookRouter,
   search: searchRouter,
-  category: categoryRouter
+  category: categoryRouter,
 });
 
 // export type definition of API
