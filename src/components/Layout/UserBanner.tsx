@@ -57,7 +57,7 @@ const UserBanner = ({
   }
 
   const onClickHandler = (title: UserTab, url: string) => {
-    const { penname } = router.query;
+    const penname = router.query["penname"] as string;
     setSelectedTab(title);
     void router.push(`/${penname}/${url}`);
   };

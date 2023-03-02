@@ -16,8 +16,8 @@ const Book = ({ title, description, read, like, id }: props) => {
   const router = useRouter();
 
   const onClickHandler = () => {
-    const { penname } = router.query;
-    router.push(`/${penname}/book/${id}`);
+    const penname: string = router.query.penname as string;
+    void router.push(`/${penname}/book/${id}`);
   };
 
   return (
@@ -34,9 +34,7 @@ const Book = ({ title, description, read, like, id }: props) => {
         <div className="px-2 pt-2">
           <div className="flex w-full flex-col justify-center gap-2">
             <h1 className="font-bold">{title}</h1>
-            {description && (
-              <p className="text-xs font-light line-clamp-6">{description}</p>
-            )}
+            <p className="text-xs font-light line-clamp-6">{description}</p>
           </div>
           <div className="flex justify-between">
             <div className="mt-2 flex items-center gap-1">

@@ -25,7 +25,7 @@ const NavigationSidebar = ({ session }: props) => {
   const selectCategory = useSelectCategory();
   const { data: user } = api.user.getData.useQuery(undefined, {
     onError(error) {
-      if (error.data?.code === "UNAUTHORIZED") {
+      if (error.data != null && error.data?.code === "UNAUTHORIZED") {
         return undefined;
       }
     },
@@ -53,8 +53,8 @@ const NavigationSidebar = ({ session }: props) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {session && (
-          <Link href={`/${user?.penname || session.user?.penname}`}>
+        {session?.user?.penname && (
+          <Link href={`/${user?.penname || session.user.penname}`}>
             <Image
               src={
                 user?.image ||
