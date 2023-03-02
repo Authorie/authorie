@@ -45,8 +45,10 @@ const NewUser = () => {
     formState: { errors },
   } = useForm<FormValues>({ resolver });
   const router = useRouter();
+  const utils = api.useContext();
   const updateUser = api.user.update.useMutation({
     onSuccess() {
+      void utils.user.invalidate();
       void router.replace("/");
     },
   });
