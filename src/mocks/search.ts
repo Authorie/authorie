@@ -324,5 +324,3 @@ export const chapterInfo = [
       "when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time. when the dusk approached, the delusion following by. meticulous creating the splendid night to our night time.",
   },
 ];
-
-export const allTab = ["All", "Users", "Books", "Chapters"];
