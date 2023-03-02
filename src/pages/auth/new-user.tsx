@@ -25,7 +25,7 @@ export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  if (!session?.user || Boolean(session.user.penname)) {
+  if (!session || session.user.penname !== null) {
     return {
       redirect: {
         destination: "/",
@@ -39,6 +39,11 @@ export const getServerSideProps = async (
   };
 };
 
+const refocusWindow = () => {
+  window.blur();
+  window.focus();
+};
+
 const NewUser = () => {
   const {
     register,
@@ -49,6 +54,7 @@ const NewUser = () => {
   const utils = api.useContext();
   const updateUser = api.user.update.useMutation({
     onSuccess() {
+      refocusWindow();
       void utils.user.invalidate();
       void router.replace("/");
     },

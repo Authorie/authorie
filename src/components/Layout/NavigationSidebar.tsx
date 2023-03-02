@@ -10,19 +10,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { useSelectCategory } from "@hooks/selectedCategory";
-import { useUser } from "@hooks/user";
-import type { Session } from "next-auth";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useState } from "react";
 
-type props = {
-  session: Session | null;
-};
-
-const NavigationSidebar = ({ session }: props) => {
-  const user = useUser();
+const NavigationSidebar = () => {
+  const { data: session } = useSession();
+  const user = session?.user;
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
 
