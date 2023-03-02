@@ -1,4 +1,5 @@
 import SearchModal from "@components/Search/SearchModal";
+import { Button, Link } from "@components/ui/NavigationItems";
 import {
   ArrowLeftOnRectangleIcon,
   ArrowRightOnRectangleIcon,
@@ -15,7 +16,6 @@ import { signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useState } from "react";
-import { Button, Link } from "../Navigation/Items";
 
 type props = {
   session: Session | null;
