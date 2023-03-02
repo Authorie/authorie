@@ -1,35 +1,29 @@
-import { useState } from "react";
-import NextLink from "next/link";
-import Image from "next/image";
+import SearchModal from "@components/Search/SearchModal";
 import {
+  ArrowLeftOnRectangleIcon,
+  ArrowRightOnRectangleIcon,
   BellIcon,
   ChatBubbleOvalLeftEllipsisIcon,
   HomeIcon,
   MagnifyingGlassIcon,
-  ArrowLeftOnRectangleIcon,
-  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
-import { signIn, signOut } from "next-auth/react";
-import { Link, Button } from "../Navigation/Items";
-import SearchModal from "@components/Search/SearchModal";
 import { useSelectCategory } from "@hooks/selectedCategory";
-import { api } from "@utils/api";
+import { useUser } from "@hooks/user";
 import type { Session } from "next-auth";
+import { signIn, signOut } from "next-auth/react";
+import Image from "next/image";
+import NextLink from "next/link";
+import { useState } from "react";
+import { Button, Link } from "../Navigation/Items";
 
 type props = {
   session: Session | null;
 };
 
 const NavigationSidebar = ({ session }: props) => {
+  const user = useUser();
   const selectCategory = useSelectCategory();
-  const { data: user } = api.user.getData.useQuery(undefined, {
-    onError(error) {
-      if (error.data != null && error.data?.code === "UNAUTHORIZED") {
-        return undefined;
-      }
-    },
-  });
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
 
   return (
@@ -53,21 +47,17 @@ const NavigationSidebar = ({ session }: props) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {session?.user?.penname && (
-          <Link href={`/${user?.penname || session.user.penname}`}>
+        {user?.penname && (
+          <Link href={`/${user.penname}`}>
             <Image
-              src={
-                user?.image ||
-                session.user?.image ||
-                "/profile_image_placeholder.png"
-              }
+              src={user.image || "/profile_image_placeholder.png"}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {user?.penname || session.user?.penname}
+              {user.penname}
             </span>
           </Link>
         )}
