@@ -51,6 +51,7 @@ model User {
     emailVerified DateTime?
     image         String?
     coin          Int                 @default(0)
+    bio           String              @default("")
     accounts      Account[]
     sessions      Session[]
     categories    CategoriesOnUsers[]
