@@ -34,7 +34,9 @@ const Book = ({ title, description, read, like, id }: props) => {
         <div className="px-2 pt-2">
           <div className="flex w-full flex-col justify-center gap-2">
             <h1 className="font-bold">{title}</h1>
-            <p className="text-xs font-light line-clamp-6">{description}</p>
+            {description && (
+              <p className="text-xs font-light line-clamp-6">{description}</p>
+            )}
           </div>
           <div className="flex justify-between">
             <div className="mt-2 flex items-center gap-1">

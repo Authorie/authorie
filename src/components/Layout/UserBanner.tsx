@@ -74,7 +74,7 @@ const UserBanner = ({
     <>
       <div className="relative min-w-full">
         <div className="absolute h-[22rem] min-w-full">
-          <Image src="/mockWallpaper.jpeg" layout="fill" />
+          <Image src="/mockWallpaper.jpeg" layout="fill" alt="wallpaper" />
         </div>
         <div className="ml-40 max-w-xl bg-black/60 px-7 pb-1 pt-7 shadow-lg backdrop-blur-md">
           <div className="flex h-32 w-32 items-center overflow-hidden rounded-full">

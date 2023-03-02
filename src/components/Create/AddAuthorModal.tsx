@@ -1,6 +1,6 @@
 import AuthorResult from "./AuthorResult";
 import { userInfo } from "mocks/search";
-import { api } from "@utils/api";
+// import { api } from "@utils/api";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 
@@ -10,6 +10,7 @@ const AddAuthorModal = () => {
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     setAuthorPenName(event.target.value);
+    console.log(authorPenName);
   };
 
   return (

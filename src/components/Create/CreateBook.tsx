@@ -1,9 +1,8 @@
 import Image from "next/legacy/image";
 import { PhotoIcon } from "@heroicons/react/24/outline";
-import AddAuthorModal from "./AddAuthorModal";
-import { Popover } from "@headlessui/react";
+// import AddAuthorModal from "./AddAuthorModal";
+// import { Popover } from "@headlessui/react";
 import { api } from "@utils/api";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 

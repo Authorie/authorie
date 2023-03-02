@@ -81,6 +81,7 @@ const BookContent = () => {
             <div className="grid w-fit grid-cols-2 gap-x-4 gap-y-1 p-4">
               {chapterInfo.map((data) => (
                 <ChapterCard
+                  key={data.chapterId}
                   title={data.title}
                   read={data.read}
                   like={data.like}

@@ -6,7 +6,7 @@ import { api } from "@utils/api";
 
 const BookPage = () => {
   const router = useRouter();
-  const { penname } = router.query;
+  // const { penname } = router.query;
 
   const { data: books } = api.book.getAll.useQuery({ penname: "four58" });
 

@@ -5,7 +5,6 @@ import type {
 } from "next";
 import type { AppProps } from "next/app";
 import type { ReactNode, ReactElement } from "react";
-import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react";
 
