@@ -1,16 +1,20 @@
+import Layout from "@components/Layout/Layout";
+import { useSetUser } from "@hooks/user";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { getServerAuthSession } from "@server/auth";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { api } from "@utils/api";
+import { Analytics } from "@vercel/analytics/react";
 import type {
-  InferGetServerSidePropsType,
   GetServerSidePropsContext,
+  InferGetServerSidePropsType,
   NextPage,
 } from "next";
-import type { AppProps } from "next/app";
-import type { ReactNode, ReactElement } from "react";
 import { SessionProvider } from "next-auth/react";
-import { Analytics } from "@vercel/analytics/react";
-
-import { api } from "@utils/api";
-import Layout from "@components/Layout/Layout";
-import { getServerAuthSession } from "@server/auth";
+import type { AppProps } from "next/app";
+import type { ReactElement, ReactNode } from "react";
+import superjson from "superjson";
 
 import "../styles/globals.css";
 
@@ -27,8 +31,18 @@ export const getServerSideProps = async (
     };
   }
 
+  const ssg = createProxySSGHelpers({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session }),
+    transformer: superjson,
+  });
+  if (session?.user?.id) {
+    await ssg.user.getData.prefetch(session?.user?.id);
+  }
+
   return {
     props: {
+      trpcState: ssg.dehydrate(),
       session,
     },
   };
@@ -52,6 +66,14 @@ const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) => {
+  const setUser = useSetUser();
+  api.user.getData.useQuery(session?.user?.penname, {
+    enabled: Boolean(session?.user?.penname),
+    onSuccess: (user) => {
+      setUser(user);
+    },
+  });
+
   const getLayout = Component.getLayout || ((page) => commonLayout(page));
 
   return (

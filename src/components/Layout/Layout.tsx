@@ -1,10 +1,10 @@
-import type { PropsWithChildren } from "react";
-import Head from "next/head";
-import NavigationSidebar from "./NavigationSidebar";
-import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
-import UserBanner, { parseUserTab } from "./UserBanner";
 import { userInfo } from "mocks/search";
+import { useSession } from "next-auth/react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import type { PropsWithChildren } from "react";
+import NavigationSidebar from "./NavigationSidebar";
+import UserBanner, { parseUserTab } from "./UserBanner";
 
 const Layout = ({ children }: PropsWithChildren) => {
   const { data: session } = useSession();
