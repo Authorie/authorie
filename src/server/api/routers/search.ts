@@ -17,9 +17,17 @@ export const searchRouter = createTRPCRouter({
         cursor: input.cursor ? { id: input.cursor } : undefined,
         where: {
           penname: {
-            contains: input.search
-          }
-        }
+            contains: input.search,
+          },
+        },
+        include: {
+          _count: {
+            select: {
+              followers: true,
+              following: true,
+            },
+          },
+        },
       });
     }),
   searchBooks: publicProcedure
@@ -38,8 +46,8 @@ export const searchRouter = createTRPCRouter({
           OR: [
             {
               title: {
-                contains: input.search
-              }
+                contains: input.search,
+              },
             },
             {
               description: {

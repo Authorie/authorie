@@ -24,11 +24,15 @@ const SearchUserResult = ({ user }: props) => {
         <h1 className="text-2xl font-bold text-authBlue-500">{user.penname}</h1>
         <div className="flex gap-16 text-sm">
           <p>
-            <span className="font-semibold text-authBlue-500">MOCK</span>{" "}
+            <span className="font-semibold text-authBlue-500">
+              {user._count.followers}
+            </span>{" "}
             followers
           </p>
           <p>
-            <span className="font-semibold text-authBlue-500">MOCK</span>{" "}
+            <span className="font-semibold text-authBlue-500">
+              {user._count.following}
+            </span>{" "}
             following
           </p>
           <p>
