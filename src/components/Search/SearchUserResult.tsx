@@ -36,7 +36,7 @@ const SearchUserResult = ({ user }: props) => {
             following
           </p>
         </div>
-        <p className="my-4 text-xs text-dark-600">MOCK BIO</p>
+        <p className="my-4 text-xs text-dark-600">{user.bio}</p>
       </div>
       <div className="flex w-2/12 items-center">
         <div className="overflow-hidden rounded-full">

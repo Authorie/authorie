@@ -1,7 +1,8 @@
+import { env } from "@env/client.mjs";
 import { Dialog } from "@headlessui/react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { api } from "@utils/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchBookResult from "./SearchBookResult";
 import SearchUserResult from "./SearchUserResult";
 
@@ -26,25 +27,35 @@ const categoryButtonClassName = (
 };
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
-  const [searchInput, setSearchInput] = useState("");
+  const [enableSearch, setEnableSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
   const { data: users } = api.search.searchUsers.useQuery(
     {
-      search: searchInput,
+      search: searchTerm,
     },
     {
-      enabled: selectedCategory === "Users",
+      enabled: selectedCategory === "Users" && enableSearch,
     }
   );
   const { data: books } = api.search.searchBooks.useQuery(
     {
-      search: searchInput,
+      search: searchTerm,
     },
     {
-      enabled: selectedCategory === "Books",
+      enabled: selectedCategory === "Books" && enableSearch,
     }
   );
+
+  useEffect(() => {
+    setEnableSearch(false);
+    const delayDebounceFn = setTimeout(() => {
+      setEnableSearch(true);
+    }, env.NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   // TODO: handle loading, empty and error state
   const searchResults = (category: SearchCategory) => {
@@ -78,11 +89,11 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
               <MagnifyingGlassIcon className="h-6 w-6 stroke-dark-400" />
             </span>
             <input
-              className="block w-96 rounded border p-2 pl-10 text-sm text-white focus:bg-white focus:text-gray-900 focus:outline-none"
+              className="block w-96 rounded border p-2 pl-10 text-sm text-gray-900  focus:outline-none"
               id="search"
               type="text"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Enter pen name, book title, chapter title..."
             />
           </div>

@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
+let numSearchUsers = 0;
+
 export const searchRouter = createTRPCRouter({
   searchUsers: publicProcedure
     .input(
@@ -12,6 +14,8 @@ export const searchRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
+      numSearchUsers++;
+      console.log("search", numSearchUsers);
       return await ctx.prisma.user.findMany({
         take: input.take,
         cursor: input.cursor ? { id: input.cursor } : undefined,
