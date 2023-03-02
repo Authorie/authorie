@@ -35,9 +35,6 @@ const SearchUserResult = ({ user }: props) => {
             </span>{" "}
             following
           </p>
-          <p>
-            <span className="font-semibold text-authBlue-500">MOCK</span> reads
-          </p>
         </div>
         <p className="my-4 text-xs text-dark-600">MOCK BIO</p>
       </div>
