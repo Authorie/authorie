@@ -1,10 +1,10 @@
-import Image from "next/legacy/image";
 import { PhotoIcon } from "@heroicons/react/24/outline";
+import Image from "next/legacy/image";
 // import AddAuthorModal from "./AddAuthorModal";
 // import { Popover } from "@headlessui/react";
 import { api } from "@utils/api";
-import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 type FormInput = {
   title: string;
@@ -41,7 +41,7 @@ const CreateBook = () => {
   return (
     <form
       onSubmit={void handleSubmit(onSubmit)}
-      className="items-centegr flex rounded-b-2xl bg-gray-100 px-10 py-28"
+      className="flex items-center rounded-b-2xl bg-gray-100 px-10 py-28"
     >
       <div className="flex w-full flex-col items-end gap-4">
         <div className="relative flex w-full gap-5 rounded-lg px-16 pt-20 pb-7 shadow-lg">

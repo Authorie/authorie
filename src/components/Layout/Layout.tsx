@@ -26,7 +26,7 @@ const Layout = ({ children }: PropsWithChildren) => {
         </div>
         <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
           {router.pathname.includes("[penname]") && <UserBanner />}
-          <div className="my-auto">{children}</div>
+          {children}
         </main>
       </div>
     </>
