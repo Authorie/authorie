@@ -86,7 +86,7 @@ const UserBanner = () => {
           </div>
           <div className="mb-2 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">{penname}</h1>
-            {status === "authenticated" && user?.id != session.user.id && (
+            {status === "authenticated" && user?.id !== session.user.id && (
               <button
                 type="button"
                 onClick={followButtonOnClickHandler}
