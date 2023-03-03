@@ -1,4 +1,4 @@
-import { userInfo } from "mocks/search";
+import { users } from "mocks/users";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
@@ -7,6 +7,7 @@ import UserBanner, { parseUserTab } from "./UserBanner";
 
 const Layout = ({ children }: PropsWithChildren) => {
   const router = useRouter();
+  const userInfo = users[0];
 
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;
@@ -28,10 +29,10 @@ const Layout = ({ children }: PropsWithChildren) => {
         <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
           {router.pathname.includes("[penname]") && (
             <UserBanner
-              penname={userInfo[0]?.penname}
-              bio={userInfo[0]?.bio}
-              followers={userInfo[0]?.followers}
-              following={userInfo[0]?.following}
+              penname={userInfo.penname}
+              bio={userInfo.bio}
+              followers={userInfo.followers}
+              following={userInfo.following}
               followed={false}
               tab={parseUserTab(router.pathname.split("/")[2])}
             />

@@ -1,14 +1,12 @@
-import Image from "next/image";
 import { BookOpenIcon } from "@heroicons/react/24/solid";
+import type { RouterOutputs } from "@utils/api";
+import Image from "next/image";
 
 type props = {
-  title: string;
-  date: Date;
-  author: string;
-  description: string;
+  book: RouterOutputs["search"]["searchBooks"][number];
 };
 
-const SearchBookResult = ({ title, date, author, description }: props) => {
+const SearchBookResult = ({ book }: props) => {
   const onClickCard = () => {
     console.log("redirect!");
   };
@@ -23,16 +21,21 @@ const SearchBookResult = ({ title, date, author, description }: props) => {
       </div>
       <div className="w-8/12 py-3">
         <p className="text-xs font-semibold text-authGreen-500">BOOK</p>
-        <h1 className="text-2xl font-bold text-authGreen-500">{title}</h1>
+        <h1 className="text-2xl font-bold text-authGreen-500">{book.title}</h1>
         <div className="flex gap-24 text-xs text-dark-400">
-          <p>{`publish : ${date.toLocaleDateString()}`}</p>
-          <p>{`author : ${author}`}</p>
+          <p>{`publish : ${book.createdAt.toLocaleDateString()}`}</p>
+          <p>{`author : MOCK`}</p>
         </div>
-        <p className="my-4 text-xs text-dark-600">{description}</p>
+        <p className="my-4 text-xs text-dark-600">{book.description || ""}</p>
       </div>
       <div className="flex w-2/12 items-center justify-center">
         <div className="overflow-hidden rounded-full">
-          <Image src="/favicon.ico" width={100} height={100} alt="dummy-pic" />
+          <Image
+            src="/placeholder_book_cover.png"
+            width={100}
+            height={100}
+            alt="book cover image"
+          />
         </div>
       </div>
     </div>

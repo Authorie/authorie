@@ -45,7 +45,7 @@ const NavigationSidebar = () => {
         {user?.penname && (
           <Link href={`/${user.penname}`}>
             <Image
-              src={user.image || "/profile_image_placeholder.png"}
+              src={user.image || "/placeholder_profile.png"}
               alt="profile picture"
               width={30}
               height={30}
