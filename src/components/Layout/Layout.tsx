@@ -6,6 +6,7 @@ import UserBanner from "./UserBanner";
 
 const Layout = ({ children }: PropsWithChildren) => {
   const router = useRouter();
+  const userInfo = users[0];
 
   if (router.pathname === "/auth/new-user") {
     return <>{children}</>;

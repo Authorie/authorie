@@ -1,8 +1,7 @@
-import AuthorResult from "./AuthorResult";
-import { userInfo } from "mocks/search";
-// import { api } from "@utils/api";
-import { useState } from "react";
+import { users } from "mocks/users";
 import type { ChangeEvent } from "react";
+import { useState } from "react";
+import AuthorResult from "./AuthorResult";
 
 const AddAuthorModal = () => {
   const [authorPenName, setAuthorPenName] = useState("");
@@ -17,7 +16,7 @@ const AddAuthorModal = () => {
     <div className="flex w-fit flex-col items-start justify-center rounded-xl bg-gray-200 p-2 pt-0">
       <div className="max-h-52 overflow-y-scroll border-b-2 border-gray-300 pt-2">
         <div className="h-fit">
-          {userInfo.map((user) => (
+          {users.map((user) => (
             <AuthorResult
               key={user.userId}
               penname={user.penname}

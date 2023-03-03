@@ -1,23 +1,13 @@
-import Image from "next/image";
 import { UserIcon } from "@heroicons/react/24/solid";
+import type { RouterOutputs } from "@utils/api";
+import Image from "next/image";
 
 type props = {
-  penname: string;
-  reads: number;
-  followers: number;
-  following: number;
-  bio: string;
+  user: RouterOutputs["search"]["searchUsers"][number];
 };
 
-const SearchUserResult = ({
-  penname,
-  reads,
-  followers,
-  following,
-  bio,
-}: props) => {
+const SearchUserResult = ({ user }: props) => {
   const onClickCard = () => {
-    //redirect to that user profile
     console.log("redirect!");
   };
 
@@ -31,26 +21,31 @@ const SearchUserResult = ({
       </div>
       <div className="w-8/12 py-3">
         <p className="text-xs font-semibold text-authBlue-500">AUTHOR</p>
-        <h1 className="text-2xl font-bold text-authBlue-500">{penname}</h1>
+        <h1 className="text-2xl font-bold text-authBlue-500">{user.penname}</h1>
         <div className="flex gap-16 text-sm">
           <p>
-            <span className="font-semibold text-authBlue-500">{followers}</span>{" "}
+            <span className="font-semibold text-authBlue-500">
+              {user._count.followers}
+            </span>{" "}
             followers
           </p>
           <p>
-            <span className="font-semibold text-authBlue-500">{following}</span>{" "}
+            <span className="font-semibold text-authBlue-500">
+              {user._count.following}
+            </span>{" "}
             following
           </p>
-          <p>
-            <span className="font-semibold text-authBlue-500">{reads}</span>{" "}
-            reads
-          </p>
         </div>
-        <p className="my-4 text-xs text-dark-600">{bio}</p>
+        <p className="my-4 text-xs text-dark-600">{user.bio}</p>
       </div>
       <div className="flex w-2/12 items-center">
         <div className="overflow-hidden rounded-full">
-          <Image src="/favicon.ico" width={100} height={100} alt="dummy-pic" />
+          <Image
+            src={user.image || "/placeholder_profile.png"}
+            width={100}
+            height={100}
+            alt="user profile image"
+          />
         </div>
       </div>
     </div>
