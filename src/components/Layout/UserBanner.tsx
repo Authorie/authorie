@@ -1,16 +1,7 @@
+import { api } from "@utils/api";
+import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
-import { EnvelopeIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
 import { useRouter } from "next/router";
-
-type props = {
-  penname: string | undefined;
-  bio: string | undefined;
-  followers: number | undefined;
-  following: number | undefined;
-  followed: boolean;
-  tab: UserTab;
-};
 
 type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
 
@@ -33,49 +24,59 @@ const AuthorTab: { title: UserTab; url: string }[] = [
   { title: "ABOUT", url: "about" },
 ];
 
-const UserBanner = ({
-  penname,
-  bio,
-  followers,
-  following,
-  followed,
-  tab,
-}: props) => {
-  const router = useRouter();
-  const [followedUser, setFollowedUser] = useState(followed);
-
-  const onFollowHandler = () => {
-    setFollowedUser(() => !followedUser);
-  };
-
-  let followedButtonClassName =
-    "w-24 h-7 rounded bg-green-300 text-sm hover:bg-green-400";
-  if (!followedUser === true) {
-    followedButtonClassName =
-      "w-24 h-7 rounded text-sm bg-blue-300 hover:bg-blue-400";
+const getFollowedButtonClassName = (followed: boolean) => {
+  if (followed) {
+    return "w-24 h-7 rounded text-sm bg-blue-300 hover:bg-blue-400";
+  } else {
+    return "w-24 h-7 rounded bg-green-300 text-sm hover:bg-green-400";
   }
+};
 
-  const onClickHandler = (title: UserTab, url: string) => {
-    const penname = router.query["penname"] as string;
-    void router.push(`/${penname}/${url}`);
+const UserBanner = () => {
+  const context = api.useContext();
+  const router = useRouter();
+  const penname = router.query.penname as string;
+  const tab = parseUserTab(router.pathname.split("/")[2]);
+  const { status, data: session } = useSession();
+  const { data: user } = api.user.getData.useQuery(penname);
+  const { data: isFollowed, isLoading: queryLoading } =
+    api.user.isFollowUser.useQuery(penname);
+  const followUserMutation = api.user.followUser.useMutation({
+    onSuccess: () => {
+      void context.user.invalidate();
+    },
+  });
+  const unfollowUserMutation = api.user.unfollowUser.useMutation({
+    onSuccess: () => {
+      void context.user.invalidate();
+    },
+  });
+
+  const followButtonOnClickHandler = () => {
+    if (!user) return;
+    if (Boolean(isFollowed)) {
+      unfollowUserMutation.mutate(user.id);
+    } else {
+      followUserMutation.mutate(user.id);
+    }
   };
 
   const tabClassName = (title: UserTab) => {
     if (title !== tab) {
-      return "text-white cursor-pointer text-sm";
+      return "text-white cursor-pointer text-sm select-none";
     } else {
-      return "text-green-500 text-sm underline underline-offset-4 decoration-green-500";
+      return "text-green-500 text-sm underline underline-offset-2 decoration-green-500 select-none";
     }
   };
 
   return (
     <>
       <div className="relative min-w-full">
-        <div className="absolute h-[22rem] min-w-full">
+        <div className="absolute h-80 w-full">
           <Image src="/mockWallpaper.jpeg" layout="fill" alt="wallpaper" />
         </div>
-        <div className="ml-40 max-w-xl bg-black/60 px-7 pb-1 pt-7 shadow-lg backdrop-blur-md">
-          <div className="flex h-32 w-32 items-center overflow-hidden rounded-full">
+        <div className="ml-40 h-80 max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg">
+          <div className="mb-3 h-32 w-32 overflow-hidden rounded-full">
             <Image
               src="/favicon.ico"
               alt="profile picture"
@@ -83,35 +84,46 @@ const UserBanner = ({
               height="250"
             />
           </div>
-          <div className="mt-5 mb-2 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-white">{penname}</h1>
-            <div className="flex items-center gap-2">
-              <EnvelopeIcon className="w-10 text-white" />
+            {status === "authenticated" && user?.id !== session.user.id && (
               <button
-                onClick={onFollowHandler}
-                className={followedButtonClassName}
+                type="button"
+                onClick={followButtonOnClickHandler}
+                disabled={
+                  queryLoading ||
+                  followUserMutation.isLoading ||
+                  unfollowUserMutation.isLoading
+                }
+                className={getFollowedButtonClassName(Boolean(isFollowed))}
               >
-                {followedUser ? "Followed" : "Follow"}
+                {Boolean(isFollowed) ? "Followed" : "Follow"}
               </button>
-            </div>
+            )}
           </div>
-          <div className="mb-4 flex gap-20 text-white">
+          <div className="mb-3 flex gap-20 text-white">
             <p>
-              <span className="font-semibold">{followers}</span> followers
+              <span className="font-semibold">
+                {user?._count.followers || 0}
+              </span>{" "}
+              followers
             </p>
             <p>
-              <span className="font-semibold">{following}</span> following
+              <span className="font-semibold">
+                {user?._count.following || 0}
+              </span>{" "}
+              following
             </p>
           </div>
-          <p className="mb-5 max-h-24 w-4/5 text-sm text-white">{bio}</p>
+          <p className="max-h-24 w-4/5 text-sm text-white">MOCK</p>
         </div>
       </div>
       <div className="sticky top-0 z-40 min-w-full">
-        <div className="ml-40 flex max-w-xl justify-between bg-black/60 px-7 py-3 shadow-lg backdrop-blur-md">
+        <div className="ml-40 flex max-w-xl items-center justify-between bg-black/60 px-7 py-3 shadow-lg backdrop-blur-lg">
           {AuthorTab.map((data) => (
             <button
               key={data.title}
-              onClick={() => onClickHandler(data.title, data.url)}
+              onClick={() => void router.push(`/${penname}/${data.url}`)}
               className={tabClassName(data.title)}
             >
               {data.title}
