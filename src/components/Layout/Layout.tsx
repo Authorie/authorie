@@ -5,11 +5,24 @@ import type { PropsWithChildren } from "react";
 import NavigationSidebar from "./NavigationSidebar";
 import UserBanner, { parseUserTab } from "./UserBanner";
 
+const NoLayoutPaths = ["/auth/new-user", "/auth/signin"];
+
 const Layout = ({ children }: PropsWithChildren) => {
   const router = useRouter();
 
-  if (router.pathname === "/auth/new-user") {
-    return <>{children}</>;
+  if (NoLayoutPaths.includes(router.pathname)) {
+    return (
+      <>
+        <Head>
+          <title>Authorie</title>
+          <meta
+            name="description"
+            content="Social media and publishing platform!"
+          />
+        </Head>
+        {children}
+      </>
+    );
   }
 
   return (

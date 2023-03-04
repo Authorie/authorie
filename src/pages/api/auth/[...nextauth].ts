@@ -25,6 +25,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: "login",
@@ -36,11 +37,12 @@ export const authOptions: NextAuthOptions = {
     FacebookProvider({
       clientId: env.FACEBOOK_CLIENT_ID,
       clientSecret: env.FACEBOOK_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   debug: env.NODE_ENV !== "production",
   useSecureCookies: env.NODE_ENV === "production",
-  pages: { newUser: "/auth/new-user" },
+  pages: { newUser: "/auth/new-user", signIn: "/auth/signin" },
 };
 
 export default NextAuth(authOptions);
