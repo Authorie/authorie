@@ -60,6 +60,7 @@ const NewUser = () => {
   const onSubmit = handleSubmit((data) => {
     updateUser.mutate({ penname: data.penname });
   });
+  const errorsExist = Boolean(errors.penname || updateUser.isError);
 
   return (
     <form
@@ -72,20 +73,24 @@ const NewUser = () => {
         </label>
         <input
           {...register("penname")}
-          aria-invalid={Boolean(errors.penname)}
+          aria-invalid={errorsExist}
           className={`focus:shadow-outline w-96 appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
-            errors.penname ? "border-red-500" : ""
+            errorsExist ? "border-red-500" : ""
           }`}
           id="username"
           type="text"
           placeholder="your pen name..."
         />
         <div
-          aria-hidden={!errors.penname}
+          aria-hidden={!errorsExist}
           className="visible col-start-2 self-start aria-hidden:invisible"
         >
           <p role="alert" className="text-sm text-red-600">
-            Please enter your pen name
+            {errors.penname
+              ? "Please enter your pen name."
+              : updateUser.isError
+              ? "The pen name already exists. Please enter a new one."
+              : ""}
           </p>
         </div>
       </div>
