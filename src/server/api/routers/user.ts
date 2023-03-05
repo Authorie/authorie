@@ -199,6 +199,8 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string().trim().optional(),
+        image: z.string().url().optional(),
+        bio: z.string().trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -211,7 +213,13 @@ export const userRouter = createTRPCRouter({
         });
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (e.code === "P2002" && input.penname) {
+          if (
+            e.code === "P2002" &&
+            e.meta &&
+            "target" in e.meta &&
+            typeof e.meta.target === "string" &&
+            e.meta.target.includes("penname")
+          ) {
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: `penname already taken: ${input.penname}`,
