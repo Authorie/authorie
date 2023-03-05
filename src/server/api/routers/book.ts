@@ -156,4 +156,30 @@ export const bookRouter = createTRPCRouter({
         });
       }
     }),
+  isFavorite: protectedProcedure
+    .input(
+      z.object({
+        bookId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { bookId } = input;
+        const favorite = await ctx.prisma.favoriteBook.findUnique({
+          where: {
+            bookId_userId: {
+              bookId,
+              userId: ctx.session.user.id,
+            },
+          },
+        });
+        return Boolean(favorite);
+      } catch (e) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to check favorite",
+          cause: e,
+        });
+      }
+    }),
 });
