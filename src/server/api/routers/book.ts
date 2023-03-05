@@ -124,4 +124,36 @@ export const bookRouter = createTRPCRouter({
         });
       }
     }),
+  favorite: protectedProcedure
+    .input(
+      z.object({
+        bookId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { bookId } = input;
+      try {
+        await ctx.prisma.favoriteBook.create({
+          data: {
+            bookId,
+            userId: ctx.session.user.id,
+          },
+        });
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (e.code === "P2002") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "book not found: " + bookId,
+              cause: e,
+            });
+          }
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to favorite book",
+          cause: e,
+        });
+      }
+    }),
 });

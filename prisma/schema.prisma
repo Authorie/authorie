@@ -58,6 +58,7 @@ model User {
     following     FollowingFollower[] @relation("following")
     followers     FollowingFollower[] @relation("followers")
     BookOwner     BookOwner[]
+    FavoriteBook  FavoriteBook[]
 
     @@map("users")
 }
@@ -114,13 +115,14 @@ enum BookStatus {
 }
 
 model Book {
-    id          String      @id @default(cuid())
-    title       String
-    description String?
-    status      BookStatus  @default(INITIAL)
-    createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt
-    owners      BookOwner[]
+    id           String         @id @default(cuid())
+    title        String
+    description  String?
+    status       BookStatus     @default(INITIAL)
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+    owners       BookOwner[]
+    FavoriteBook FavoriteBook[]
 
     @@map("books")
 }
@@ -143,4 +145,17 @@ model BookOwner {
     @@index([userId])
     @@index([bookId])
     @@map("bookOwners")
+}
+
+model FavoriteBook {
+    book      Book     @relation(fields: [bookId], references: [id])
+    bookId    String
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@id([bookId, userId])
+    @@index([userId])
+    @@index([bookId])
+    @@map("favoriteBooks")
 }
