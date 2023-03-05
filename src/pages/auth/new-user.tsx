@@ -11,14 +11,15 @@ type FormValues = {
 
 const resolver: Resolver<FormValues> = (values) => ({
   values: values.penname ? values : {},
-  errors: !values.penname
-    ? {
-        penname: {
-          type: "required",
-          message: "penname is required.",
-        },
-      }
-    : {},
+  errors:
+    values.penname.trim() === ""
+      ? {
+          penname: {
+            type: "required",
+            message: "penname is required.",
+          },
+        }
+      : {},
 });
 
 export const getServerSideProps = async (
