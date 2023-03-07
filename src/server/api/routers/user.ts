@@ -218,6 +218,7 @@ export const userRouter = createTRPCRouter({
             e.meta &&
             "target" in e.meta &&
             typeof e.meta.target === "string" &&
+            input.penname &&
             e.meta.target.includes("penname")
           ) {
             throw new TRPCError({
