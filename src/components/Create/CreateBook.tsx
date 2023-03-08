@@ -40,7 +40,7 @@ const CreateBook = () => {
 
   return (
     <form
-      onSubmit={void handleSubmit(onSubmit)}
+      onSubmit={(e) => void handleSubmit(onSubmit)(e)}
       className="flex items-center rounded-b-2xl bg-gray-100 px-10 py-28"
     >
       <div className="flex w-full flex-col items-end gap-4">
