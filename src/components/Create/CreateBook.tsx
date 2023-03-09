@@ -1,10 +1,11 @@
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import Image from "next/legacy/image";
-// import AddAuthorModal from "./AddAuthorModal";
-// import { Popover } from "@headlessui/react";
 import { api } from "@utils/api";
 import type { SubmitHandler } from "react-hook-form";
 import { useForm } from "react-hook-form";
+import AuthorSelection from "./AuthorSelection";
+import TabInput from "./TabInput";
+import CategorySelection from "./CategorySelection";
 
 type FormInput = {
   title: string;
@@ -41,7 +42,7 @@ const CreateBook = () => {
   return (
     <form
       onSubmit={void handleSubmit(onSubmit)}
-      className="flex items-center rounded-b-2xl bg-gray-100 px-10 py-28"
+      className="flex items-center rounded-b-2xl bg-white px-10 py-28 shadow-lg"
     >
       <div className="flex w-full flex-col items-end gap-4">
         <div className="relative flex w-full gap-5 rounded-lg px-16 pt-20 pb-7 shadow-lg">
@@ -51,7 +52,7 @@ const CreateBook = () => {
               layout="fill"
               alt="book's wallpaper"
             />
-            <div className="-z-1 absolute inset-0 h-full w-full bg-gradient-to-t from-gray-100" />
+            <div className="-z-1 absolute inset-0 h-full w-full bg-gradient-to-t from-white" />
           </div>
           <div className="relative flex h-52 w-48 items-center justify-center overflow-hidden rounded">
             <Image src="/favicon.ico" layout="fill" alt="dummy-pic" />
@@ -64,7 +65,7 @@ const CreateBook = () => {
                 {...register("title", { required: true })}
                 aria-invalid={errors.title ? "true" : "false"}
                 type="text"
-                className="focus:shadow-outline h-18 w-full bg-transparent text-3xl font-semibold focus:outline-none"
+                className="focus:shadow-outline h-18 w-full bg-transparent text-3xl font-semibold placeholder-gray-500 focus:outline-none"
                 placeholder="Untitled"
               />
               {errors.title?.type === "required" && (
@@ -75,45 +76,25 @@ const CreateBook = () => {
               <textarea
                 {...register("description")}
                 rows={4}
-                className="focus:shadow-outline max-h-16 w-full bg-transparent text-sm focus:outline-none"
+                className="focus:shadow-outline h-36 w-full bg-transparent text-sm placeholder-gray-500 focus:outline-none"
                 placeholder="write the description down..."
               />
             </div>
-            {/* TODO */}
-            {/* <div className="flex items-center gap-2">
-              <h5 className="text-sm font-semibold">Author :</h5>
-              <div className="flex gap-2 rounded-xl bg-authGreen-500 px-3 py-1">
-                <div className="flex w-52 items-center gap-2 overflow-x-scroll">
-                  <button className="rounded-full bg-emerald-800 px-5 py-1 text-xs font-semibold text-white">
-                    four58
-                  </button>
-                  {authorList.map(
-                    (data) =>
-                      data != "four58" && (
-                        <button
-                          key={data}
-                          className="rounded-full bg-gray-500 px-5 py-1 text-xs text-white"
-                        >
-                          {data}
-                        </button>
-                      )
-                  )}
-                </div>
-                <Popover className="relative">
-                  <Popover.Panel className="absolute -left-20 bottom-8 z-10">
-                    <AddAuthorModal />
-                  </Popover.Panel>
-                  <Popover.Button className="h-6 w-6 rounded-full bg-white text-xs">
-                    +
-                  </Popover.Button>
-                </Popover>
-              </div>
-            </div> */}
+            <TabInput
+              isAuthor={true}
+              inputList={["fame", "ken"]}
+              popover={<AuthorSelection />}
+            />
+            <TabInput
+              isAuthor={false}
+              inputList={["stock", "finance"]}
+              popover={<CategorySelection />}
+            />
           </div>
         </div>
         <button
           type="submit"
-          className="rounded-xl bg-authBlue-500 py-2 px-8 text-white"
+          className="hover:bg-authb rounded-xl bg-btnBlue-700 py-2 px-8 font-semibold text-white hover:bg-btnBlue-900"
         >
           Save
         </button>

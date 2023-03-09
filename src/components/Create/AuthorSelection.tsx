@@ -3,7 +3,7 @@ import type { ChangeEvent } from "react";
 import { useState } from "react";
 import AuthorResult from "./AuthorResult";
 
-const AddAuthorModal = () => {
+const AuthorSelection = () => {
   const [authorPenName, setAuthorPenName] = useState("");
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
@@ -35,4 +35,4 @@ const AddAuthorModal = () => {
   );
 };
 
-export default AddAuthorModal;
+export default AuthorSelection;
