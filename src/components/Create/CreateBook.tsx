@@ -111,7 +111,7 @@ const CreateBook = () => {
             <textarea
               rows={4}
               id="description"
-              className="focus:shadow-outline flex-1 rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
+              className="focus:shadow-outline flex-1 resize-none rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
               placeholder="write the description down..."
               {...register("description")}
             />
