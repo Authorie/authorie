@@ -85,9 +85,10 @@ model VerificationToken {
 }
 
 model Category {
-    id    String              @id @default(cuid())
-    title String
-    users CategoriesOnUsers[]
+    id           String              @id @default(cuid())
+    title        String
+    users        CategoriesOnUsers[]
+    BookCategory BookCategory[]
 
     @@map("categories")
 }
@@ -114,13 +115,14 @@ enum BookStatus {
 }
 
 model Book {
-    id          String      @id @default(cuid())
+    id          String         @id @default(cuid())
     title       String
     description String?
-    status      BookStatus  @default(INITIAL)
-    createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt
+    status      BookStatus     @default(INITIAL)
+    createdAt   DateTime       @default(now())
+    updatedAt   DateTime       @updatedAt
     owners      BookOwner[]
+    categories  BookCategory[]
 
     @@map("books")
 }
@@ -143,4 +145,16 @@ model BookOwner {
     @@index([userId])
     @@index([bookId])
     @@map("bookOwners")
+}
+
+model BookCategory {
+    book       Book     @relation(fields: [bookId], references: [id])
+    bookId     String
+    category   Category @relation(fields: [categoryId], references: [id])
+    categoryId String
+
+    @@id([bookId, categoryId])
+    @@index([categoryId])
+    @@index([bookId])
+    @@map("bookCategories")
 }

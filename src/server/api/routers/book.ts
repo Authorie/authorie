@@ -82,6 +82,7 @@ export const bookRouter = createTRPCRouter({
         title: z.string(),
         description: z.string().optional(),
         invitees: z.array(z.string()).default([]),
+        categoryIds: z.array(z.string()).default([]),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -105,14 +106,39 @@ export const bookRouter = createTRPCRouter({
                 ],
               },
             },
+            categories: {
+              createMany: {
+                data: input.categoryIds.map((categoryId) => ({ categoryId })),
+              },
+            },
           },
         });
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
           if (e.code === "P2003") {
+            if (
+              e.meta &&
+              "target" in e.meta &&
+              typeof e.meta.target === "string"
+            ) {
+              if (e.meta.target.includes("categories")) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message:
+                    "category not found: " + input.categoryIds.join(", "),
+                  cause: e,
+                });
+              } else if (e.meta.target.includes("owners")) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message: "user not found: " + invitees.join(", "),
+                  cause: e,
+                });
+              }
+            }
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: "user not found: " + invitees.join(", "),
+              message: "failed to create book",
               cause: e,
             });
           }

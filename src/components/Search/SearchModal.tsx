@@ -108,7 +108,9 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
               </button>
             ))}
           </div>
-          {searchResults(selectedCategory)}
+          <div className="grid-flow-rol grid max-h-full gap-3">
+            {searchResults(selectedCategory)}
+          </div>
         </Dialog.Panel>
       </div>
     </Dialog>
