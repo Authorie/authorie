@@ -98,7 +98,7 @@ const CreateBook = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <h5 className="text-sm text-gray-500">Author</h5>
+                <h5 className="text-sm text-gray-500">Category</h5>
                 <div className="flex gap-2 rounded-xl bg-authYellow-300 px-2 py-1">
                   <div className="max-w-52 flex items-center gap-2 overflow-x-auto">
                     <span className="select-none rounded-full bg-authYellow-500 px-2 py-0.5 text-xs text-white">
