@@ -1,5 +1,5 @@
 import { Popover } from "@headlessui/react";
-import { MinusIcon, PhotoIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { PhotoIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
 import { api } from "@utils/api";
@@ -45,7 +45,11 @@ const CreateBook = () => {
   });
   const [addedCategories, setAddedCategories] = useState<Category[]>([]);
   const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
-    await bookCreateMutation.mutateAsync(data);
+    await bookCreateMutation.mutateAsync({
+      title: data.title,
+      description: data.description,
+      categoryIds: addedCategories.map((category) => category.id),
+    });
     reset();
   };
 
@@ -117,11 +121,16 @@ const CreateBook = () => {
                 <h5 className="text-sm text-gray-500">Category</h5>
                 <div className="flex items-center gap-2">
                   <div className="flex w-80 items-center gap-2 overflow-x-auto rounded-xl bg-authYellow-300 px-2 py-1">
-                    <div className="h-4" />
+                    {addedCategories.length === 0 && <div className="h-5" />}
                     {addedCategories.map((category) => (
                       <span
+                        onClick={() =>
+                          setAddedCategories((prev) =>
+                            prev.filter((c) => c.id !== category.id)
+                          )
+                        }
                         key={category.id}
-                        className="select-none whitespace-nowrap rounded-full bg-authYellow-500 px-2 py-0.5 text-xs text-white"
+                        className="cursor-pointer select-none whitespace-nowrap rounded-full bg-authYellow-500 px-2 py-0.5 text-xs text-white hover:bg-red-600"
                       >
                         {category.title}
                       </span>
@@ -129,60 +138,27 @@ const CreateBook = () => {
                   </div>
                   {categories && (
                     <Popover className="relative">
-                      <Popover.Panel className="absolute left-10 bottom-0 z-10">
-                        <div className="flex w-fit flex-col items-start justify-center rounded-xl bg-gray-200 p-2 pt-0">
-                          <div className="max-h-52 overflow-y-scroll border-b-2 border-gray-300 pt-2">
-                            <div className="h-fit">
-                              {categories.map((category) => (
-                                <div
-                                  key={category.id}
-                                  className="mb-2 flex w-72 items-center justify-between rounded-lg bg-white p-2 shadow-md"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex items-center justify-center overflow-hidden rounded-full">
-                                      <Image
-                                        src="/mockWallpaper.jpeg"
-                                        alt="user profile"
-                                        width={40}
-                                        height={40}
-                                      />
-                                    </div>
-                                    <h1 className="font-bold">
-                                      {category.title}
-                                    </h1>
-                                  </div>
-                                  {addedCategories.includes(category) ? (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        setAddedCategories((prev) =>
-                                          prev.filter(
-                                            (c) => c.id !== category.id
-                                          )
-                                        )
-                                      }
-                                      className="flex items-center justify-center rounded-full  bg-red-500 p-1  text-white hover:bg-red-600"
-                                    >
-                                      <MinusIcon className="h-4 w-4 stroke-[4]" />
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        setAddedCategories((prev) => [
-                                          ...prev,
-                                          category,
-                                        ])
-                                      }
-                                      className="flex items-center justify-center rounded-full bg-authGreen-500 p-1 text-white hover:bg-authGreen-600"
-                                    >
-                                      <PlusIcon className="h-4 w-4 stroke-[4]" />
-                                    </button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                      <Popover.Panel className="absolute bottom-0 left-7 z-10">
+                        <div className="grid w-max grid-cols-2 gap-2 rounded-xl bg-gray-200 p-2">
+                          {categories
+                            .filter(
+                              (category) => !addedCategories.includes(category)
+                            )
+                            .map((category) => (
+                              <button
+                                key={category.id}
+                                type="button"
+                                onClick={() =>
+                                  setAddedCategories((prev) => [
+                                    ...prev,
+                                    category,
+                                  ])
+                                }
+                                className="mb-2 flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
+                              >
+                                {category.title}
+                              </button>
+                            ))}
                         </div>
                       </Popover.Panel>
                       <Popover.Button
