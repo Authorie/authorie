@@ -1,8 +1,9 @@
 import Image from "next/legacy/image";
-import { StarIcon } from "@heroicons/react/24/outline";
-import { EyeIcon } from "@heroicons/react/24/outline";
-import { HeartIcon } from "@heroicons/react/24/outline";
+import { StarIcon, HeartIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
+import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
+import { useState } from "react";
+import { api } from "@utils/api";
 
 type props = {
   id: string;
@@ -14,6 +15,7 @@ type props = {
 
 const Book = ({ title, description, read, like, id }: props) => {
   const router = useRouter();
+  const [favorite, setFavorite] = useState(false);
 
   const onClickHandler = () => {
     const penname: string = router.query.penname as string;
@@ -30,6 +32,7 @@ const Book = ({ title, description, read, like, id }: props) => {
         <div className="relative h-28 w-full overflow-hidden rounded-tl-lg">
           <Image src="/mockWallpaper.jpeg" alt="book picture" layout="fill" />
           <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400" />
+          <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400" />
         </div>
         <div className="px-2 pt-2">
           <div className="flex w-full flex-col justify-center gap-2">
