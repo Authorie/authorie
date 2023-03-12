@@ -36,6 +36,11 @@ export const userRouter = createTRPCRouter({
             cause: e,
           });
         }
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "can't get user's data",
+          cause: e,
+        });
       } else {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -206,7 +211,7 @@ export const userRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.prisma.user.update({
+        return await ctx.prisma.user.update({
           where: {
             id: ctx.session.user.id,
           },
