@@ -52,7 +52,7 @@ const NavigationSidebar = ({ user }: props) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {user?.penname && (
+        {session && user?.penname && (
           <Link href={`/${user.penname}`}>
             <Image
               src={user.image || "/placeholder_profile.png"}
