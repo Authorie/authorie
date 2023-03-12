@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
+import ErrorDialog from "@components/Error/ErrorDialog";
 
 type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
 
@@ -60,6 +61,7 @@ const UserBanner = ({ user, penname }: props) => {
   const [isEdit, setIsEdit] = useState(false);
   const [updatedPenname, setUpdatedPenname] = useState(penname);
   const [updatedBio, setUpdatedBio] = useState(user?.bio || "");
+  const [errorOccured, setErrorOccured] = useState(false);
 
   const updateProfile = api.user.update.useMutation({
     onSuccess: () => {
@@ -102,17 +104,25 @@ const UserBanner = ({ user, penname }: props) => {
           }
           setIsEdit(false);
         },
+        onError() {
+          setErrorOccured(true);
+        },
       }
     );
   }, [router, tab, updateProfile, updatedBio, updatedPenname]);
 
   return (
     <>
+      <ErrorDialog
+        isOpen={errorOccured}
+        isCloseHandler={() => setErrorOccured(false)}
+        onSaveHandler={onSaveHandler}
+      />
       <div className="relative h-80 min-w-full">
         {user ? (
           <>
             <div className="absolute inset-0">
-              <Image src="/mockWallpaper.jpeg" layout="fill" alt="wallpaper" />
+              <Image src="/mockWallpaper.jpeg" fill alt="wallpaper" />
             </div>
             <div className="ml-40 h-full max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg">
               <div className="flex justify-between">
