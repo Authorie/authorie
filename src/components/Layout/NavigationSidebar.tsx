@@ -53,16 +53,16 @@ const NavigationSidebar = ({ user }: props) => {
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
         {session && user?.penname && (
-          <Link href={`/${user.penname}`}>
+          <Link href={`/${session.user.penname as string}`}>
             <Image
-              src={user.image || "/placeholder_profile.png"}
+              src={session.user.image || "/placeholder_profile.png"}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {user.penname}
+              {session.user.penname}
             </span>
           </Link>
         )}
