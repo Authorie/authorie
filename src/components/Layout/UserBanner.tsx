@@ -1,3 +1,4 @@
+import ErrorDialog from "@components/Error/ErrorDialog";
 import LoadingSpinner from "@components/ui/LoadingSpinner";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import type { RouterOutputs } from "@utils/api";
@@ -6,7 +7,6 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useReducer } from "react";
-import ErrorDialog from "@components/Error/ErrorDialog";
 
 type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
 

@@ -1,12 +1,18 @@
 import { Dialog } from "@headlessui/react";
 
 type props = {
+  content?: string;
   isOpen: boolean;
   isCloseHandler: () => void;
   onSaveHandler: () => void;
 };
 
-const ErrorDialog = ({ isOpen, isCloseHandler, onSaveHandler }: props) => {
+const ErrorDialog = ({
+  isOpen,
+  isCloseHandler,
+  onSaveHandler,
+  content,
+}: props) => {
   const tryAgainHandler = () => {
     isCloseHandler();
     onSaveHandler();
@@ -21,7 +27,9 @@ const ErrorDialog = ({ isOpen, isCloseHandler, onSaveHandler }: props) => {
             Unable to Update Profile
           </Dialog.Title>
           <div>
-            <p className="text-black">An error occured while saving changes.</p>
+            <p className="text-black">
+              {content || "An error occured while saving changes."}
+            </p>
           </div>
           <div className="mt-5 flex gap-6">
             <button
