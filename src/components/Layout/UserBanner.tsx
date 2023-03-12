@@ -5,7 +5,7 @@ import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import ErrorDialog from "@components/Error/ErrorDialog";
 
 type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
@@ -43,6 +43,44 @@ type props = {
   penname: string;
 };
 
+enum UpdateType {
+  is_edit = "is_edit",
+  is_editToggle = "is_editToggle",
+  update_penname = "update_penname",
+  update_bio = "update_bio",
+  error_occured = "error_occured",
+}
+
+interface UpdateAction {
+  type: UpdateType;
+  payload: string | boolean | null;
+}
+
+interface UpdateState {
+  isEdit: boolean;
+  updatedPenname: string;
+  updatedBio: string;
+  errorOccured: boolean;
+}
+
+const updateReducer = (state: UpdateState, action: UpdateAction) => {
+  const { type, payload } = action;
+  switch (type) {
+    case UpdateType.update_penname:
+      return { ...state, updatedPenname: payload as string };
+    case UpdateType.update_bio:
+      return { ...state, updatedBio: payload as string };
+    case UpdateType.is_edit:
+      return { ...state, isEdit: payload as boolean };
+    case UpdateType.is_editToggle:
+      return { ...state, isEdit: !state.isEdit };
+    case UpdateType.error_occured:
+      return { ...state, errorOccured: payload as boolean };
+    default:
+      return state;
+  }
+};
+
 const UserBanner = ({ user, penname }: props) => {
   const router = useRouter();
   const context = api.useContext();
@@ -58,10 +96,13 @@ const UserBanner = ({ user, penname }: props) => {
     api.user.isFollowUser.useQuery(user?.penname as string, {
       enabled: !isOwner && user?.penname != null,
     });
-  const [isEdit, setIsEdit] = useState(false);
-  const [updatedPenname, setUpdatedPenname] = useState(penname);
-  const [updatedBio, setUpdatedBio] = useState(user?.bio || "");
-  const [errorOccured, setErrorOccured] = useState(false);
+
+  const [updateState, dispatchUpdate] = useReducer(updateReducer, {
+    isEdit: false,
+    updatedPenname: penname,
+    updatedBio: user?.bio || "",
+    errorOccured: false,
+  });
 
   const updateProfile = api.user.update.useMutation({
     onSuccess: () => {
@@ -89,33 +130,41 @@ const UserBanner = ({ user, penname }: props) => {
     }
   }, [followUserMutation, isFollowed, isOwner, unfollowUserMutation, user]);
   const toggleIsEditHandler = useCallback(() => {
-    setIsEdit((prev) => !prev);
+    dispatchUpdate({ type: UpdateType.is_editToggle, payload: null });
   }, []);
   const onSaveHandler = useCallback(() => {
     updateProfile.mutate(
       {
-        penname: updatedPenname,
-        bio: updatedBio,
+        penname: updateState.updatedPenname,
+        bio: updateState.updatedBio,
       },
       {
         onSuccess(data) {
           if (data.penname) {
             void router.replace(`${data.penname}/${tab.url}`);
           }
-          setIsEdit(false);
+          dispatchUpdate({ type: UpdateType.is_edit, payload: false });
         },
         onError() {
-          setErrorOccured(true);
+          dispatchUpdate({ type: UpdateType.error_occured, payload: true });
         },
       }
     );
-  }, [router, tab, updateProfile, updatedBio, updatedPenname]);
+  }, [
+    router,
+    tab,
+    updateProfile,
+    updateState.updatedBio,
+    updateState.updatedPenname,
+  ]);
 
   return (
     <>
       <ErrorDialog
-        isOpen={errorOccured}
-        isCloseHandler={() => setErrorOccured(false)}
+        isOpen={updateState.errorOccured}
+        isCloseHandler={() =>
+          dispatchUpdate({ type: UpdateType.error_occured, payload: false })
+        }
         onSaveHandler={onSaveHandler}
       />
       <div className="relative h-80 min-w-full">
@@ -138,7 +187,7 @@ const UserBanner = ({ user, penname }: props) => {
                 <div>
                   {isOwner && (
                     <div className="w-fit">
-                      {isEdit ? (
+                      {updateState.isEdit ? (
                         <div className="flex gap-3">
                           <button
                             onClick={toggleIsEditHandler}
@@ -158,7 +207,7 @@ const UserBanner = ({ user, penname }: props) => {
                           width={25}
                           height={25}
                           onClick={toggleIsEditHandler}
-                          className="text-white hover:text-gray-500"
+                          className="cursor-pointer text-white hover:text-gray-500"
                         />
                       )}
                     </div>
@@ -166,12 +215,17 @@ const UserBanner = ({ user, penname }: props) => {
                 </div>
               </div>
               <div className="mb-2 flex items-center justify-between">
-                {isEdit ? (
+                {updateState.isEdit ? (
                   <input
-                    placeholder={updatedPenname}
+                    placeholder={updateState.updatedPenname}
                     className="bg-transparent text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
-                    onChange={(e) => setUpdatedPenname(e.target.value)}
-                    value={updatedPenname}
+                    onChange={(e) =>
+                      dispatchUpdate({
+                        type: UpdateType.update_penname,
+                        payload: e.target.value,
+                      })
+                    }
+                    value={updateState.updatedPenname}
                   />
                 ) : (
                   <h2 className="text-2xl font-bold text-white">{penname}</h2>
@@ -202,12 +256,17 @@ const UserBanner = ({ user, penname }: props) => {
                 </p>
               </div>
               <div className="max-h-24 w-4/5 text-sm text-gray-100">
-                {isEdit ? (
+                {updateState.isEdit ? (
                   <textarea
                     rows={2}
                     placeholder={user.bio === "" ? "Put bio here" : user.bio}
-                    value={updatedBio}
-                    onChange={(e) => setUpdatedBio(e.target.value)}
+                    value={updateState.updatedBio}
+                    onChange={(e) =>
+                      dispatchUpdate({
+                        type: UpdateType.update_bio,
+                        payload: e.target.value,
+                      })
+                    }
                     className="w-full resize-none bg-transparent placeholder-gray-400 outline-none"
                   />
                 ) : (
