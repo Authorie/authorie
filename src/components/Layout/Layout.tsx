@@ -12,9 +12,9 @@ const Layout = ({ children }: PropsWithChildren) => {
   const router = useRouter();
   const { data: session } = useSession();
   const { data: user } = api.user.getData.useQuery(
-    router.query.penname as string | undefined,
+    router.query.penname ? (router.query.penname as string) : undefined,
     {
-      enabled: Boolean(session),
+      enabled: Boolean(session || router.query.penname),
     }
   );
 
