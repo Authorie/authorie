@@ -34,6 +34,7 @@ const CreateBook = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<ValidationSchema>({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     resolver: zodResolver(validationSchema),
   });
   const utils = api.useContext();
