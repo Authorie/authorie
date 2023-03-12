@@ -1,10 +1,11 @@
+import LoadingSpinner from "@components/ui/LoadingSpinner";
+import { PencilSquareIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
 import { useRouter } from "next/router";
-import { PencilSquareIcon, PhotoIcon } from "@heroicons/react/24/outline";
-import { useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 
 type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
 
@@ -38,12 +39,22 @@ const getFollowedButtonClassName = (followed: boolean) => {
 const UserBanner = () => {
   const context = api.useContext();
   const router = useRouter();
-  let penname = router.query.penname as string;
+  const penname = router.query.penname as string;
   const tab = parseUserTab(router.pathname.split("/")[2]);
   const { status, data: session } = useSession();
-  const { data: user } = api.user.getData.useQuery(penname);
+  const isOwner = session?.user.penname === penname;
+  const { data: user, isLoading: userIsLoading } = api.user.getData.useQuery(
+    penname,
+    {
+      onError() {
+        void router.push("/404");
+      },
+    }
+  );
   const { data: isFollowed, isLoading: queryLoading } =
-    api.user.isFollowUser.useQuery(penname);
+    api.user.isFollowUser.useQuery(penname, {
+      enabled: !isOwner,
+    });
   const [edit, setEdit] = useState(false);
   const [updatedPenname, setUpdatedPenname] = useState("");
   const [updatedBio, setUpdatedBio] = useState("");
@@ -57,7 +68,6 @@ const UserBanner = () => {
   useEffect(() => {
     setUpdatedPenname(user?.penname as string);
     setUpdatedImage(user?.image as string);
-    console.log("check");
   }, [user?.image, user?.penname]);
   const followUserMutation = api.user.followUser.useMutation({
     onSuccess: () => {
@@ -107,127 +117,130 @@ const UserBanner = () => {
       image: updatedImage,
       bio: updatedBio,
     });
-    penname = updatedPenname;
-    void router.push(`/${penname}`);
+    void router.push(`/${updatedPenname}`);
   };
 
   return (
     <>
-      <div className="relative min-w-full">
-        <div className="absolute h-80 w-full">
-          <Image src="/mockWallpaper.jpeg" layout="fill" alt="wallpaper" />
-        </div>
-        <div className="ml-40 h-80 max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg">
-          <div className="flex justify-between">
-            {!edit ? (
-              <div className="mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border">
-                <Image
-                  src={user?.image as string}
-                  alt="profile picture"
-                  width="250"
-                  height="250"
-                />
+      <div className="relative h-80 min-w-full">
+        {userIsLoading ? (
+          <div className="flex items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <>
+            <div className="absolute inset-0">
+              <Image src="/mockWallpaper.jpeg" layout="fill" alt="wallpaper" />
+            </div>
+            <div className="ml-40 h-full max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg">
+              <div className="flex justify-between">
+                <div className="relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border">
+                  {edit && (
+                    <>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        className="absolute z-20 h-full w-full cursor-pointer opacity-0"
+                        onChange={onChangeImage}
+                      />
+                      <PhotoIcon
+                        width={25}
+                        height={25}
+                        className="absolute z-10 text-white"
+                      />
+                    </>
+                  )}
+                  <Image
+                    src={updatedImage}
+                    alt="profile picture"
+                    width="250"
+                    height="250"
+                    className="absolute z-0 opacity-70"
+                  />
+                </div>
+                <div>
+                  <div onClick={onEditHandler} className="w-fit cursor-pointer">
+                    {edit ? (
+                      <div className="flex gap-3">
+                        <button
+                          onClick={onEditHandler}
+                          className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
+                        >
+                          cancel
+                        </button>
+                        <button
+                          onClick={onSaveHandler}
+                          className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
+                        >
+                          save
+                        </button>
+                      </div>
+                    ) : (
+                      <PencilSquareIcon
+                        width={25}
+                        height={25}
+                        className="text-white hover:text-gray-500"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border">
-                <input
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  className="absolute z-20 h-full w-full cursor-pointer opacity-0"
-                  onChange={onChangeImage}
-                />
-                <PhotoIcon
-                  width={25}
-                  height={25}
-                  className="absolute z-10 text-white"
-                />
-                <Image
-                  src={updatedImage}
-                  alt="profile picture"
-                  width="250"
-                  height="250"
-                  className="absolute z-0 opacity-70"
-                />
-              </div>
-            )}
-            <div>
-              <div onClick={onEditHandler} className="w-fit cursor-pointer">
+              <div className="mb-2 flex items-center justify-between">
                 {!edit ? (
-                  <PencilSquareIcon
-                    width={25}
-                    height={25}
-                    className="text-white hover:text-gray-500"
+                  <h1 className="text-2xl font-bold text-white">{penname}</h1>
+                ) : (
+                  <input
+                    placeholder={updatedPenname}
+                    className="bg-transparent text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
+                    onChange={(e) => setUpdatedPenname(e.target.value)}
+                    value={updatedPenname}
+                  />
+                )}
+                {status === "authenticated" && user?.id !== session.user.id && (
+                  <button
+                    type="button"
+                    onClick={followButtonOnClickHandler}
+                    disabled={
+                      queryLoading ||
+                      followUserMutation.isLoading ||
+                      unfollowUserMutation.isLoading
+                    }
+                    className={getFollowedButtonClassName(Boolean(isFollowed))}
+                  >
+                    {Boolean(isFollowed) ? "Followed" : "Follow"}
+                  </button>
+                )}
+              </div>
+              <div className="mb-3 flex gap-20 text-white">
+                <p>
+                  <span className="font-semibold">
+                    {user?._count.followers || 0}
+                  </span>{" "}
+                  followers
+                </p>
+                <p>
+                  <span className="font-semibold">
+                    {user?._count.following || 0}
+                  </span>{" "}
+                  following
+                </p>
+              </div>
+              <div className="max-h-24 w-4/5 text-sm text-gray-100">
+                {edit ? (
+                  <textarea
+                    rows={2}
+                    placeholder={user?.bio || "Put bio here"}
+                    value={updatedBio}
+                    onChange={(e) => setUpdatedBio(e.target.value)}
+                    className="w-full resize-none bg-transparent placeholder-gray-400 outline-none"
                   />
                 ) : (
-                  <div className="flex gap-3">
-                    <button
-                      onClick={onEditHandler}
-                      className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
-                    >
-                      cancel
-                    </button>
-                    <button
-                      onClick={onSaveHandler}
-                      className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
-                    >
-                      save
-                    </button>
-                  </div>
+                  <p>{user?.bio || ""}</p>
                 )}
               </div>
             </div>
-          </div>
-          <div className="mb-2 flex items-center justify-between">
-            {!edit ? (
-              <h1 className="text-2xl font-bold text-white">{penname}</h1>
-            ) : (
-              <input
-                placeholder={updatedPenname}
-                className="bg-transparent text-2xl text-white placeholder-gray-400 outline-none focus:outline-none"
-                onChange={(e) => setUpdatedPenname(e.target.value)}
-                value={updatedPenname}
-              />
-            )}
-            {status === "authenticated" && user?.id !== session.user.id && (
-              <button
-                type="button"
-                onClick={followButtonOnClickHandler}
-                disabled={
-                  queryLoading ||
-                  followUserMutation.isLoading ||
-                  unfollowUserMutation.isLoading
-                }
-                className={getFollowedButtonClassName(Boolean(isFollowed))}
-              >
-                {Boolean(isFollowed) ? "Followed" : "Follow"}
-              </button>
-            )}
-          </div>
-          <div className="mb-3 flex gap-20 text-white">
-            <p>
-              <span className="font-semibold">
-                {user?._count.followers || 0}
-              </span>{" "}
-              followers
-            </p>
-            <p>
-              <span className="font-semibold">
-                {user?._count.following || 0}
-              </span>{" "}
-              following
-            </p>
-          </div>
-          {!edit ? (
-            <p className="max-h-24 w-4/5 text-sm text-white">MOCK</p>
-          ) : (
-            <input
-              placeholder="MOCK"
-              value={updatedBio}
-              onChange={(e) => setUpdatedBio(e.target.value)}
-              className="max-h-24 w-4/5 bg-transparent text-sm text-white placeholder-gray-400 outline-none focus:outline-none"
-            />
-          )}
-        </div>
+          </>
+        )}
       </div>
       <div className="sticky top-0 z-40 min-w-full">
         <div className="ml-40 flex max-w-xl items-center justify-between bg-black/60 px-7 py-3 shadow-lg backdrop-blur-lg">

@@ -16,6 +16,7 @@ export const userRouter = createTRPCRouter({
           penname: true,
           image: true,
           coin: true,
+          bio: true,
           _count: {
             select: {
               followers: true,
