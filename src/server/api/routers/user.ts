@@ -239,13 +239,20 @@ export const userRouter = createTRPCRouter({
               message: `penname already taken: ${input.penname}`,
               cause: e,
             });
+          } else {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "can't update user's data",
+              cause: e,
+            });
           }
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
+            cause: e,
+          });
         }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "something went wrong",
-          cause: e,
-        });
       }
     }),
 });
