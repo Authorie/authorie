@@ -1,11 +1,10 @@
 import LoadingSpinner from "@components/ui/LoadingSpinner";
-import { PencilSquareIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
 import { useRouter } from "next/router";
-import type { ChangeEvent } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
 
@@ -36,18 +35,42 @@ const getFollowedButtonClassName = (followed: boolean) => {
   }
 };
 
-const UserBanner = () => {
-  const context = api.useContext();
+const getTabClassName = (tab: UserTab, selectedTab: UserTab) => {
+  if (tab !== selectedTab) {
+    return "text-white cursor-pointer text-sm select-none";
+  } else {
+    return "text-green-500 text-sm underline underline-offset-2 decoration-green-500 select-none";
+  }
+};
+
+type props = {
+  penname: string;
+};
+
+const UserBanner = ({ penname }: props) => {
   const router = useRouter();
-  const penname = router.query.penname as string;
-  const tab = parseUserTab(router.pathname.split("/")[2]);
+  const context = api.useContext();
+  const tab = useMemo(
+    () => parseUserTab(router.pathname.split("/")[2]),
+    [router.pathname]
+  );
   const { status, data: session } = useSession();
-  const isOwner = session?.user.penname === penname;
+  const isOwner = useMemo(
+    () => session?.user.penname === penname,
+    [penname, session?.user.penname]
+  );
   const { data: user, isLoading: userIsLoading } = api.user.getData.useQuery(
     penname,
     {
+      enabled: penname != null,
       onError() {
         void router.push("/404");
+      },
+      onSuccess(data) {
+        if (data && data.penname) {
+          setUpdatedPenname(data.penname);
+          setUpdatedBio(data.bio);
+        }
       },
     }
   );
@@ -55,20 +78,15 @@ const UserBanner = () => {
     api.user.isFollowUser.useQuery(penname, {
       enabled: !isOwner,
     });
-  const [edit, setEdit] = useState(false);
-  const [updatedPenname, setUpdatedPenname] = useState("");
+  const [isEdit, setIsEdit] = useState(false);
+  const [updatedPenname, setUpdatedPenname] = useState(penname);
   const [updatedBio, setUpdatedBio] = useState("");
-  const [updatedImage, setUpdatedImage] = useState("");
+
   const updateProfile = api.user.update.useMutation({
     onSuccess: () => {
       void context.user.invalidate();
     },
   });
-
-  useEffect(() => {
-    setUpdatedPenname(user?.penname as string);
-    setUpdatedImage(user?.image as string);
-  }, [user?.image, user?.penname]);
   const followUserMutation = api.user.followUser.useMutation({
     onSuccess: () => {
       void context.user.invalidate();
@@ -80,45 +98,25 @@ const UserBanner = () => {
     },
   });
 
-  const followButtonOnClickHandler = () => {
+  const followButtonOnClickHandler = useCallback(() => {
     if (!user) return;
+    if (isOwner) return;
     if (Boolean(isFollowed)) {
       unfollowUserMutation.mutate(user.id);
     } else {
       followUserMutation.mutate(user.id);
     }
-  };
-
-  const onEditHandler = () => {
-    setEdit(() => !edit);
-  };
-
-  const tabClassName = (title: UserTab) => {
-    if (title !== tab) {
-      return "text-white cursor-pointer text-sm select-none";
-    } else {
-      return "text-green-500 text-sm underline underline-offset-2 decoration-green-500 select-none";
-    }
-  };
-
-  const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const imageURL = window.URL.createObjectURL(e.target.files[0]);
-      setUpdatedImage(imageURL);
-      console.log("imageurl " + imageURL);
-      URL.revokeObjectURL(imageURL);
-      console.log("update image " + updatedImage);
-    }
-  };
-
-  const onSaveHandler = () => {
+  }, [followUserMutation, isFollowed, isOwner, unfollowUserMutation, user]);
+  const toggleIsEditHandler = useCallback(() => {
+    setIsEdit((prev) => !prev);
+  }, []);
+  const onSaveHandler = useCallback(() => {
     updateProfile.mutate({
       penname: updatedPenname,
-      image: updatedImage,
       bio: updatedBio,
     });
-    void router.push(`/${updatedPenname}`);
-  };
+    void router.replace(`/${updatedPenname}`);
+  }, [router, updateProfile, updatedBio, updatedPenname]);
 
   return (
     <>
@@ -135,23 +133,8 @@ const UserBanner = () => {
             <div className="ml-40 h-full max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg">
               <div className="flex justify-between">
                 <div className="relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border">
-                  {edit && (
-                    <>
-                      <input
-                        type="file"
-                        accept="image/png, image/jpeg"
-                        className="absolute z-20 h-full w-full cursor-pointer opacity-0"
-                        onChange={onChangeImage}
-                      />
-                      <PhotoIcon
-                        width={25}
-                        height={25}
-                        className="absolute z-10 text-white"
-                      />
-                    </>
-                  )}
                   <Image
-                    src={updatedImage}
+                    src={session?.user.image || "/placeholder_profile.png"}
                     alt="profile picture"
                     width="250"
                     height="250"
@@ -159,11 +142,11 @@ const UserBanner = () => {
                   />
                 </div>
                 <div>
-                  <div onClick={onEditHandler} className="w-fit cursor-pointer">
-                    {edit ? (
+                  <div className="w-fit cursor-pointer">
+                    {isEdit ? (
                       <div className="flex gap-3">
                         <button
-                          onClick={onEditHandler}
+                          onClick={toggleIsEditHandler}
                           className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
                         >
                           cancel
@@ -179,6 +162,7 @@ const UserBanner = () => {
                       <PencilSquareIcon
                         width={25}
                         height={25}
+                        onClick={toggleIsEditHandler}
                         className="text-white hover:text-gray-500"
                       />
                     )}
@@ -186,15 +170,15 @@ const UserBanner = () => {
                 </div>
               </div>
               <div className="mb-2 flex items-center justify-between">
-                {!edit ? (
-                  <h1 className="text-2xl font-bold text-white">{penname}</h1>
-                ) : (
+                {isEdit ? (
                   <input
                     placeholder={updatedPenname}
                     className="bg-transparent text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
                     onChange={(e) => setUpdatedPenname(e.target.value)}
                     value={updatedPenname}
                   />
+                ) : (
+                  <h2 className="text-2xl font-bold text-white">{penname}</h2>
                 )}
                 {status === "authenticated" && user?.id !== session.user.id && (
                   <button
@@ -226,7 +210,7 @@ const UserBanner = () => {
                 </p>
               </div>
               <div className="max-h-24 w-4/5 text-sm text-gray-100">
-                {edit ? (
+                {isEdit ? (
                   <textarea
                     rows={2}
                     placeholder={user?.bio || "Put bio here"}
@@ -248,7 +232,7 @@ const UserBanner = () => {
             <button
               key={data.title}
               onClick={() => void router.push(`/${penname}/${data.url}`)}
-              className={tabClassName(data.title)}
+              className={getTabClassName(data.title, tab)}
             >
               {data.title}
             </button>

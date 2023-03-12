@@ -38,7 +38,9 @@ const Layout = ({ children }: PropsWithChildren) => {
           <NavigationSidebar />
         </div>
         <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
-          {router.pathname.includes("[penname]") && <UserBanner />}
+          {router.pathname.includes("[penname]") && (
+            <UserBanner penname={router.query.penname as string} />
+          )}
           {children}
         </main>
       </div>

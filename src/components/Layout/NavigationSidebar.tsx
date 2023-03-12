@@ -13,13 +13,19 @@ import { useSelectCategory } from "@hooks/selectedCategory";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const NavigationSidebar = () => {
   const { data: session } = useSession();
   const user = session?.user;
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
+
+  const onOpenDialogHandler = useCallback(() => setOpenSearchDialog(true), []);
+  const onCloseDialogHandler = useCallback(
+    () => setOpenSearchDialog(false),
+    []
+  );
 
   return (
     <nav className="text-md fixed flex h-full w-60 flex-col justify-center border-gray-900/20 px-10 pt-10 sm:justify-start">
@@ -72,12 +78,12 @@ const NavigationSidebar = () => {
             </Link>
           </>
         )}
-        <Button onClick={() => setOpenSearchDialog(true)}>
+        <Button onClick={onOpenDialogHandler}>
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
         <SearchModal
-          onCloseDialog={() => setOpenSearchDialog(false)}
+          onCloseDialog={onCloseDialogHandler}
           openDialog={openSearchDialog}
         />
         {session && (
