@@ -233,14 +233,7 @@ export const userRouter = createTRPCRouter({
         });
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (
-            e.code === "P2002" &&
-            e.meta &&
-            "target" in e.meta &&
-            typeof e.meta.target === "string" &&
-            input.penname &&
-            e.meta.target.includes("penname")
-          ) {
+          if (e.code === "P2002" && input.penname) {
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: `penname already taken: ${input.penname}`,
