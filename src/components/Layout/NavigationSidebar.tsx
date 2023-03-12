@@ -10,14 +10,18 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { useSelectCategory } from "@hooks/selectedCategory";
+import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useCallback, useState } from "react";
 
-const NavigationSidebar = () => {
+type props = {
+  user: RouterOutputs["user"]["getData"] | undefined;
+};
+
+const NavigationSidebar = ({ user }: props) => {
   const { data: session } = useSession();
-  const user = session?.user;
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
 

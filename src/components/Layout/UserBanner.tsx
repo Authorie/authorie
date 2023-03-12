@@ -1,4 +1,5 @@
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import type { RouterOutputs } from "@utils/api";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
@@ -36,10 +37,11 @@ const getTabClassName = (tab: UserTab, selectedTab: UserTab) => {
 };
 
 type props = {
+  user: RouterOutputs["user"]["getData"] | undefined;
   penname: string;
 };
 
-const UserBanner = ({ penname }: props) => {
+const UserBanner = ({ user, penname }: props) => {
   const router = useRouter();
   const context = api.useContext();
   const tab = useMemo(
@@ -47,33 +49,20 @@ const UserBanner = ({ penname }: props) => {
     [router.pathname]
   );
   const { status, data: session } = useSession();
-  const isOwner = useMemo(
-    () => session?.user.penname === penname,
-    [penname, session?.user.penname]
-  );
-  const { data: user } = api.user.getData.useQuery(penname, {
-    enabled: penname != null,
-    onError() {
-      void router.push("/404");
-    },
-    onSuccess(data) {
-      if (data && data.penname) {
-        setUpdatedPenname(data.penname);
-        setUpdatedBio(data.bio);
-      }
-    },
-  });
+  const isOwner = useMemo(() => {
+    return session?.user.id === user?.id;
+  }, [session?.user.id, user?.id]);
   const { data: isFollowed, isLoading: queryLoading } =
-    api.user.isFollowUser.useQuery(penname, {
-      enabled: !isOwner,
+    api.user.isFollowUser.useQuery(user?.penname as string, {
+      enabled: !isOwner && user?.penname != null,
     });
   const [isEdit, setIsEdit] = useState(false);
   const [updatedPenname, setUpdatedPenname] = useState(penname);
-  const [updatedBio, setUpdatedBio] = useState("");
+  const [updatedBio, setUpdatedBio] = useState(user?.bio || "");
 
   const updateProfile = api.user.update.useMutation({
     onSuccess: () => {
-      void context.user.invalidate();
+      void context.user.getData.invalidate();
     },
   });
   const followUserMutation = api.user.followUser.useMutation({
@@ -134,45 +123,47 @@ const UserBanner = ({ penname }: props) => {
               />
             </div>
             <div>
-              <div className="w-fit cursor-pointer">
-                {isEdit ? (
-                  <div className="flex gap-3">
-                    <button
+              {isOwner && (
+                <div className="w-fit">
+                  {isEdit ? (
+                    <div className="flex gap-3">
+                      <button
+                        onClick={toggleIsEditHandler}
+                        className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
+                      >
+                        cancel
+                      </button>
+                      <button
+                        onClick={onSaveHandler}
+                        className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
+                      >
+                        save
+                      </button>
+                    </div>
+                  ) : (
+                    <PencilSquareIcon
+                      width={25}
+                      height={25}
                       onClick={toggleIsEditHandler}
-                      className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
-                    >
-                      cancel
-                    </button>
-                    <button
-                      onClick={onSaveHandler}
-                      className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
-                    >
-                      save
-                    </button>
-                  </div>
-                ) : (
-                  <PencilSquareIcon
-                    width={25}
-                    height={25}
-                    onClick={toggleIsEditHandler}
-                    className="text-white hover:text-gray-500"
-                  />
-                )}
-              </div>
+                      className="text-white hover:text-gray-500"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="mb-2 flex items-center justify-between">
             {isEdit ? (
               <input
-                placeholder={updatedPenname}
+                placeholder={penname}
                 className="bg-transparent text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
                 onChange={(e) => setUpdatedPenname(e.target.value)}
-                value={updatedPenname}
+                value={penname}
               />
             ) : (
               <h2 className="text-2xl font-bold text-white">{penname}</h2>
             )}
-            {status === "authenticated" && user?.id !== session.user.id && (
+            {status === "authenticated" && !isOwner && (
               <button
                 type="button"
                 onClick={followButtonOnClickHandler}
