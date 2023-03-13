@@ -10,16 +10,26 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { useSelectCategory } from "@hooks/selectedCategory";
+import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-const NavigationSidebar = () => {
+type props = {
+  user: RouterOutputs["user"]["getData"] | undefined;
+};
+
+const NavigationSidebar = ({ user }: props) => {
   const { data: session } = useSession();
-  const user = session?.user;
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
+
+  const onOpenDialogHandler = useCallback(() => setOpenSearchDialog(true), []);
+  const onCloseDialogHandler = useCallback(
+    () => setOpenSearchDialog(false),
+    []
+  );
 
   return (
     <nav className="text-md fixed flex h-full w-60 flex-col justify-center border-gray-900/20 px-10 pt-10 sm:justify-start">
@@ -42,7 +52,7 @@ const NavigationSidebar = () => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {user?.penname && (
+        {session && user?.penname && (
           <Link href={`/${user.penname}`}>
             <Image
               src={user.image || "/placeholder_profile.png"}
@@ -72,12 +82,12 @@ const NavigationSidebar = () => {
             </Link>
           </>
         )}
-        <Button onClick={() => setOpenSearchDialog(true)}>
+        <Button onClick={onOpenDialogHandler}>
           <MagnifyingGlassIcon className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
         <SearchModal
-          onCloseDialog={() => setOpenSearchDialog(false)}
+          onCloseDialog={onCloseDialogHandler}
           openDialog={openSearchDialog}
         />
         {session && (

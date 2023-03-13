@@ -5,45 +5,65 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
-  getData: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    try {
-      return await ctx.prisma.user.findUniqueOrThrow({
-        where: {
-          penname: input,
-        },
-        select: {
-          id: true,
-          penname: true,
-          image: true,
-          coin: true,
-          _count: {
-            select: {
-              followers: true,
-              following: true,
+  getData: publicProcedure
+    .input(z.string().optional())
+    .query(async ({ ctx, input }) => {
+      if (input == undefined && ctx.session?.user.penname == undefined) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "user does not exist",
+        });
+      }
+
+      if (input == undefined && ctx.session?.user.penname != undefined) {
+        input = ctx.session.user.penname;
+      }
+
+      try {
+        return await ctx.prisma.user.findUniqueOrThrow({
+          where: {
+            penname: input,
+          },
+          select: {
+            id: true,
+            penname: true,
+            image: true,
+            coin: true,
+            bio: true,
+            _count: {
+              select: {
+                followers: true,
+                following: true,
+              },
             },
           },
-        },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2005") {
+        });
+      } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (e.code === "P2005") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `user does not exist: ${
+                input || ctx.session?.user?.id || ""
+              }`,
+              cause: e,
+            });
+          } else {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "can't get user's data",
+              cause: e,
+            });
+          }
+        } else {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `user does not exist: ${
-              input || ctx.session?.user?.id || ""
-            }`,
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
             cause: e,
           });
         }
-      } else {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "something went wrong",
-          cause: e,
-        });
       }
-    }
-  }),
+    }),
   getFollowing: publicProcedure
     .input(
       z.object({
@@ -199,11 +219,13 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string().trim().optional(),
+        image: z.string().url().optional(),
+        bio: z.string().trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        await ctx.prisma.user.update({
+        return await ctx.prisma.user.update({
           where: {
             id: ctx.session.user.id,
           },
@@ -217,13 +239,20 @@ export const userRouter = createTRPCRouter({
               message: `penname already taken: ${input.penname}`,
               cause: e,
             });
+          } else {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "can't update user's data",
+              cause: e,
+            });
           }
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
+            cause: e,
+          });
         }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "something went wrong",
-          cause: e,
-        });
       }
     }),
 });

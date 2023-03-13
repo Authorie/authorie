@@ -36,7 +36,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       search: searchTerm,
     },
     {
-      enabled: selectedCategory === "Users" && enableSearch,
+      enabled: openDialog && selectedCategory === "Users" && enableSearch,
     }
   );
   const { data: books } = api.search.searchBooks.useQuery(
@@ -44,7 +44,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       search: searchTerm,
     },
     {
-      enabled: selectedCategory === "Books" && enableSearch,
+      enabled: openDialog && selectedCategory === "Books" && enableSearch,
     }
   );
 
