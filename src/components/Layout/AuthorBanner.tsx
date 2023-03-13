@@ -57,7 +57,10 @@ type UpdateAction =
     }
   | {
       type: "error_occured";
-      payload: string;
+      payload: {
+        message: string;
+        penname: string;
+      };
     }
   | {
       type: "clear_error";
@@ -84,7 +87,11 @@ const updateReducer = (state: UpdateState, action: UpdateAction) => {
     case "update_bio":
       return { ...state, bio: action.payload };
     case "error_occured":
-      return { ...state, error: action.payload };
+      return {
+        ...state,
+        error: action.payload.message,
+        penname: action.payload.penname,
+      };
     case "clear_error":
       return { ...state, error: false as const };
     default:
@@ -161,11 +168,14 @@ const AuthorBanner = ({
           formDispatch({ type: "toggle_edit" });
         },
         onError(err) {
-          formDispatch({ type: "error_occured", payload: err.message });
+          formDispatch({
+            type: "error_occured",
+            payload: { message: err.message, penname: user.penname as string },
+          });
         },
       }
     );
-  }, [form.bio, form.penname, router, tab.url, updateProfile]);
+  }, [form.bio, form.penname, router, tab.url, updateProfile, user.penname]);
 
   return (
     <>
