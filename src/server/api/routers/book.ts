@@ -150,4 +150,45 @@ export const bookRouter = createTRPCRouter({
         });
       }
     }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        category: z.string().array().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, title, description, category } = input;
+      try {
+        await ctx.prisma.book.update({
+          where: { id },
+          data: {
+            title,
+            description,
+            categories: category
+              ? {
+                  upsert: category.map((categoryId) => ({
+                    where: { bookId_categoryId: { bookId: id, categoryId } },
+                    create: { categoryId },
+                    update: {},
+                  })),
+                  deleteMany: {
+                    categoryId: {
+                      notIn: category,
+                    },
+                  },
+                }
+              : undefined,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to update book",
+          cause: err,
+        });
+      }
+    }),
 });
