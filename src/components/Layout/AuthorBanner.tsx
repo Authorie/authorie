@@ -121,8 +121,8 @@ const AuthorBanner = ({
   const [form, formDispatch] = useReducer(updateReducer, {
     isOwner,
     isEdit: false,
-    penname: user?.penname || "",
-    bio: user?.bio || "",
+    penname: user.penname || "",
+    bio: user.bio,
     error: false,
   });
 
@@ -175,7 +175,7 @@ const AuthorBanner = ({
         },
       }
     );
-  }, [form.bio, form.penname, router, tab.url, updateProfile, user.penname]);
+  }, [form.bio, form.penname, router, tab.url, updateProfile]);
 
   return (
     <>

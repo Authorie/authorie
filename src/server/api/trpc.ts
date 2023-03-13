@@ -39,6 +39,7 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
+    s3,
   };
 };
 
@@ -64,6 +65,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
+import { s3 } from "@server/s3";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 

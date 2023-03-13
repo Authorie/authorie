@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { env } from "@env/server.mjs";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -28,6 +30,7 @@ export const userRouter = createTRPCRouter({
             id: true,
             penname: true,
             image: true,
+            wallpaperImage: true,
             coin: true,
             bio: true,
             _count: {
@@ -219,40 +222,125 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string().trim().optional(),
-        image: z.string().url().optional(),
+        image: z.string().optional(),
+        wallpaperImage: z.string().optional(),
         bio: z.string().trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      try {
-        return await ctx.prisma.user.update({
-          where: {
-            id: ctx.session.user.id,
-          },
-          data: input,
-        });
-      } catch (e) {
-        if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (e.code === "P2002" && input.penname) {
+      const { penname, image, wallpaperImage, bio } = input;
+
+      if (penname) {
+        try {
+          const exists = await ctx.prisma.user.findUnique({
+            where: {
+              penname: penname,
+            },
+          });
+          if (exists !== null && exists.id !== ctx.session.user.id) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message: `penname already taken: ${input.penname}`,
-              cause: e,
-            });
-          } else {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "can't update user's data",
-              cause: e,
+              message: `penname already taken: ${penname}`,
             });
           }
-        } else {
+        } catch (e) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "something went wrong",
             cause: e,
           });
         }
+      }
+
+      const userData: Prisma.UserUpdateInput = {
+        penname,
+        bio,
+      };
+
+      if (image) {
+        try {
+          const base64Data = Buffer.from(
+            image.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          );
+          const type = image.split(";")[0]?.split("/")[1] || "jpeg";
+          const key = `user/${ctx.session.user.id}/image.${type}`;
+          const res = await ctx.s3.send(
+            new PutObjectCommand({
+              Bucket: env.R2_BUCKET_NAME,
+              Key: key,
+              Body: base64Data,
+              ACL: "public-read",
+              ContentEncoding: "base64",
+              ContentType: `image/${type}`,
+            })
+          );
+          if (res.$metadata.httpStatusCode !== 200) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "something went wrong",
+            });
+          } else {
+            userData.image = `https://${env.R2_OBJECT_URL}/${key}`;
+          }
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
+            cause: err,
+          });
+        }
+      }
+
+      if (wallpaperImage) {
+        try {
+          const base64Data = Buffer.from(
+            wallpaperImage.replace(/^data:image\/\w+;base64,/, ""),
+            "base64"
+          );
+          const type = wallpaperImage.split(";")[0]?.split("/")[1] || "jpeg";
+          const key = `user/${ctx.session.user.id}/wallpaperImage.${type}`;
+          const res = await ctx.s3.send(
+            new PutObjectCommand({
+              Bucket: env.R2_BUCKET_NAME,
+              Key: key,
+              Body: base64Data,
+              ACL: "public-read",
+              ContentEncoding: "base64",
+              ContentType: `image/${type}`,
+            })
+          );
+          if (res.$metadata.httpStatusCode !== 200) {
+            console.error(res);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "something went wrong",
+            });
+          } else {
+            userData.wallpaperImage = `https://${env.R2_OBJECT_URL}/${key}`;
+          }
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
+            cause: err,
+          });
+        }
+      }
+
+      try {
+        return await ctx.prisma.user.update({
+          where: {
+            id: ctx.session.user.id,
+          },
+          data: userData,
+        });
+      } catch (e) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: e,
+        });
       }
     }),
 });
