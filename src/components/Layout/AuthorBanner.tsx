@@ -57,13 +57,13 @@ type UpdateAction =
     }
   | {
       type: "error_occured";
-      payload: {
-        message: string;
-        penname: string;
-      };
+      payload: string;
     }
   | {
       type: "clear_error";
+      payload: {
+        penname: string;
+      };
     };
 
 type UpdateState = {
@@ -87,13 +87,13 @@ const updateReducer = (state: UpdateState, action: UpdateAction) => {
     case "update_bio":
       return { ...state, bio: action.payload };
     case "error_occured":
+      return { ...state, error: action.payload };
+    case "clear_error":
       return {
         ...state,
-        error: action.payload.message,
+        error: false as const,
         penname: action.payload.penname,
       };
-    case "clear_error":
-      return { ...state, error: false as const };
     default:
       console.error("Invalid action type", action);
       return state;
@@ -170,7 +170,7 @@ const AuthorBanner = ({
         onError(err) {
           formDispatch({
             type: "error_occured",
-            payload: { message: err.message, penname: user.penname as string },
+            payload: err.message,
           });
         },
       }
@@ -182,7 +182,12 @@ const AuthorBanner = ({
       <ErrorDialog
         isOpen={form.error !== false}
         content={form.error !== false ? form.error : undefined}
-        isCloseHandler={() => formDispatch({ type: "clear_error" })}
+        isCloseHandler={() =>
+          formDispatch({
+            type: "clear_error",
+            payload: { penname: user.penname as string },
+          })
+        }
       />
       <div className="absolute inset-0">
         <Image src="/mockWallpaper.jpeg" fill alt="wallpaper" />
