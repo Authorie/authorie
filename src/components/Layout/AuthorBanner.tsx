@@ -171,9 +171,8 @@ const AuthorBanner = ({
     <>
       <ErrorDialog
         isOpen={form.error !== false}
-        content={form.error as string}
+        content={form.error !== false ? form.error : undefined}
         isCloseHandler={() => formDispatch({ type: "clear_error" })}
-        onSaveHandler={onSaveHandler}
       />
       <div className="absolute inset-0">
         <Image src="/mockWallpaper.jpeg" fill alt="wallpaper" />
