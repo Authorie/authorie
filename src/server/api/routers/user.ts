@@ -1,8 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "@env/server.mjs";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
@@ -222,13 +220,13 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string().trim().optional(),
-        image: z.string().optional(),
-        wallpaperImage: z.string().optional(),
+        imageUrl: z.string().url().optional(),
+        wallpaperImageUrl: z.string().url().optional(),
         bio: z.string().trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { penname, image, wallpaperImage, bio } = input;
+      const { penname, imageUrl, wallpaperImageUrl, bio } = input;
 
       if (penname) {
         try {
@@ -255,78 +253,9 @@ export const userRouter = createTRPCRouter({
       const userData: Prisma.UserUpdateInput = {
         penname,
         bio,
+        image: imageUrl,
+        wallpaperImage: wallpaperImageUrl,
       };
-
-      if (image) {
-        try {
-          const base64Data = Buffer.from(
-            image.replace(/^data:image\/\w+;base64,/, ""),
-            "base64"
-          );
-          const type = image.split(";")[0]?.split("/")[1] || "jpeg";
-          const key = `user/${ctx.session.user.id}/image.${type}`;
-          const res = await ctx.s3.send(
-            new PutObjectCommand({
-              Bucket: env.R2_BUCKET_NAME,
-              Key: key,
-              Body: base64Data,
-              ACL: "public-read",
-              ContentEncoding: "base64",
-              ContentType: `image/${type}`,
-            })
-          );
-          if (res.$metadata.httpStatusCode !== 200) {
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: "something went wrong",
-            });
-          } else {
-            userData.image = `https://${env.R2_OBJECT_URL}/${key}`;
-          }
-        } catch (err) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "something went wrong",
-            cause: err,
-          });
-        }
-      }
-
-      if (wallpaperImage) {
-        try {
-          const base64Data = Buffer.from(
-            wallpaperImage.replace(/^data:image\/\w+;base64,/, ""),
-            "base64"
-          );
-          const type = wallpaperImage.split(";")[0]?.split("/")[1] || "jpeg";
-          const key = `user/${ctx.session.user.id}/wallpaperImage.${type}`;
-          const res = await ctx.s3.send(
-            new PutObjectCommand({
-              Bucket: env.R2_BUCKET_NAME,
-              Key: key,
-              Body: base64Data,
-              ACL: "public-read",
-              ContentEncoding: "base64",
-              ContentType: `image/${type}`,
-            })
-          );
-          if (res.$metadata.httpStatusCode !== 200) {
-            console.error(res);
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: "something went wrong",
-            });
-          } else {
-            userData.wallpaperImage = `https://${env.R2_OBJECT_URL}/${key}`;
-          }
-        } catch (err) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "something went wrong",
-            cause: err,
-          });
-        }
-      }
 
       try {
         return await ctx.prisma.user.update({
