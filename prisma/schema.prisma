@@ -58,7 +58,8 @@ model User {
     categories     CategoriesOnUsers[]
     following      FollowingFollower[] @relation("following")
     followers      FollowingFollower[] @relation("followers")
-    BookOwner      BookOwner[]
+    ownedBooks     BookOwner[]
+    favorites      FavoriteBook[]
 
     @@map("users")
 }
@@ -124,6 +125,7 @@ model Book {
     updatedAt   DateTime       @updatedAt
     owners      BookOwner[]
     categories  BookCategory[]
+    favoritees  FavoriteBook[]
 
     @@map("books")
 }
@@ -158,4 +160,17 @@ model BookCategory {
     @@index([categoryId])
     @@index([bookId])
     @@map("bookCategories")
+}
+
+model FavoriteBook {
+    book      Book     @relation(fields: [bookId], references: [id])
+    bookId    String
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@id([bookId, userId])
+    @@index([userId])
+    @@index([bookId])
+    @@map("favoriteBooks")
 }

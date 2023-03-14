@@ -191,4 +191,71 @@ export const bookRouter = createTRPCRouter({
         });
       }
     }),
+  isFavorite: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const favorite = await ctx.prisma.favoriteBook.findUnique({
+          where: {
+            bookId_userId: {
+              bookId: input.id,
+              userId: ctx.session.user.id,
+            },
+          },
+        });
+        return favorite !== null;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to check favorite",
+          cause: err,
+        });
+      }
+    }),
+  favorite: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await ctx.prisma.favoriteBook.create({
+          data: {
+            bookId: input.id,
+            userId: ctx.session.user.id,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to favorite",
+          cause: err,
+        });
+      }
+    }),
+  unfavorite: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await ctx.prisma.favoriteBook.delete({
+          where: {
+            bookId_userId: {
+              bookId: input.id,
+              userId: ctx.session.user.id,
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to unfavorite",
+          cause: err,
+        });
+      }
+    }),
 });
