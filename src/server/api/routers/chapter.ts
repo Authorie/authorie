@@ -1,4 +1,4 @@
-import type { Book, Prisma } from "@prisma/client";
+import type { Book, Chapter, Prisma } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -108,9 +108,127 @@ export const chapterRouter = createTRPCRouter({
         });
       }
     }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        title: z.string().optional(),
+        content: z
+          .unknown()
+          .transform((v) => v as Prisma.JsonObject)
+          .optional(),
+        publishedAt: z
+          .date()
+          .refine((v) => v.getTime() >= Date.now(), {
+            message: "Date in the past",
+          })
+          .optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      let chapter: Chapter & { book: { status: BookStatus } };
+      const { id, title, content, publishedAt } = input;
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id,
+          },
+          include: {
+            book: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      if (chapter.ownerId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not the owner of this chapter",
+        });
+      }
+
+      if (chapter.publishedAt.getTime() < Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't update a published chapter",
+        });
+      }
+
+      const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
+      if (!validBookStatus.includes(chapter.book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't update chapters of this book",
+        });
+      }
+
+      try {
+        return await ctx.prisma.chapter.update({
+          where: { id },
+          data: {
+            title,
+            content,
+            publishedAt,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+          cause: err,
+        });
+      }
+    }),
   read: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
+      let chapter: Chapter & { book: { status: BookStatus } };
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            book: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      if (chapter.publishedAt.getTime() > Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chapter not published yet",
+        });
+      }
+
+      // needs discussion about whether to add views of archived books
+      const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
+      if (!validBookStatus.includes(chapter.book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't read chapters of this book",
+        });
+      }
+
       try {
         await ctx.prisma.chapter.update({
           where: { id: input.id },
@@ -131,6 +249,44 @@ export const chapterRouter = createTRPCRouter({
   like: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
+      let chapter: Chapter & { book: { status: BookStatus } };
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            book: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      if (chapter.publishedAt.getTime() > Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chapter not published yet",
+        });
+      }
+
+      // needs discussion about whether to like archived books
+      const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
+      if (!validBookStatus.includes(chapter.book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't like chapters of this book",
+        });
+      }
+
       try {
         await ctx.prisma.chapterLike.upsert({
           where: {
@@ -166,9 +322,48 @@ export const chapterRouter = createTRPCRouter({
       z.object({
         id: z.string().uuid(),
         content: z.string(),
+        parent: z.string().uuid().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
+      let chapter: Chapter & { book: { status: BookStatus } };
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            book: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      if (chapter.publishedAt.getTime() > Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chapter not published yet",
+        });
+      }
+
+      // needs discussion about whether to comment archived books
+      const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
+      if (!validBookStatus.includes(chapter.book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't comment chapters of this book",
+        });
+      }
+
       try {
         await ctx.prisma.chapterComment.create({
           data: {
@@ -181,6 +376,11 @@ export const chapterRouter = createTRPCRouter({
             user: {
               connect: {
                 id: ctx.session.user.id,
+              },
+            },
+            parent: {
+              connect: {
+                id: input.parent,
               },
             },
           },
