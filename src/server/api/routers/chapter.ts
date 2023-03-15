@@ -1,4 +1,4 @@
-import type { Book, Chapter, Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -44,7 +44,7 @@ export const chapterRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let book: Book & { owners: { userId: string }[] };
+      let book;
       const { title, content, bookId, publishedAt } = input;
       try {
         book = await ctx.prisma.book.findUniqueOrThrow({
