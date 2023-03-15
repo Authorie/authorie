@@ -24,7 +24,7 @@ export const chapterRouter = createTRPCRouter({
     .input(
       z.object({
         title: z.string(),
-        content: z.record(z.any()),
+        content: z.unknown().transform((v) => v as Prisma.JsonObject),
         bookId: z.string().uuid(),
         publishedAt: z
           .date()
@@ -40,7 +40,7 @@ export const chapterRouter = createTRPCRouter({
         return await ctx.prisma.chapter.create({
           data: {
             title: title,
-            content: content as Prisma.InputJsonObject,
+            content: content,
             publishedAt: publishedAt,
             book: {
               connect: {
