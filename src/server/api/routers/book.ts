@@ -192,11 +192,7 @@ export const bookRouter = createTRPCRouter({
       }
     }),
   isFavorite: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-      })
-    )
+    .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       try {
         const favorite = await ctx.prisma.favoriteBook.findUnique({
@@ -217,11 +213,7 @@ export const bookRouter = createTRPCRouter({
       }
     }),
   favorite: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-      })
-    )
+    .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
         await ctx.prisma.favoriteBook.create({
@@ -254,6 +246,91 @@ export const bookRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "failed to unfavorite",
+          cause: err,
+        });
+      }
+    }),
+  moveState: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        status: z.enum([
+          BookStatus.DRAFT,
+          BookStatus.PUBLISHED,
+          BookStatus.COMPLETED,
+          BookStatus.ARCHIVED,
+        ]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, status } = input;
+      let book;
+      try {
+        book = await ctx.prisma.book.findUniqueOrThrow({
+          where: { id: input.id },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "book not found",
+          cause: err,
+        });
+      }
+
+      switch (book.status) {
+        case BookStatus.INITIAL:
+          if (status !== BookStatus.DRAFT) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "initial status can only be changed to draft status",
+            });
+          }
+        case BookStatus.DRAFT:
+          if (
+            status !== BookStatus.PUBLISHED &&
+            status !== BookStatus.COMPLETED
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "draft status can only be changed to published or completed status",
+            });
+          }
+        case BookStatus.PUBLISHED:
+          if (
+            status !== BookStatus.COMPLETED &&
+            status !== BookStatus.ARCHIVED
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "published status can only be changed to completed or archived status",
+            });
+          }
+        case BookStatus.COMPLETED:
+          if (status !== BookStatus.ARCHIVED) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "completed status can only be changed to archived status",
+            });
+          }
+        case BookStatus.ARCHIVED:
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "archived status cannot be changed",
+          });
+      }
+
+      try {
+        await ctx.prisma.book.update({
+          where: { id },
+          data: { status },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to move book state",
           cause: err,
         });
       }
