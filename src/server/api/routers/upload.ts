@@ -10,14 +10,10 @@ const getImageData = (imageFile: string) => {
     imageFile.replace(/^data:image\/\w+;base64,/, ""),
     "base64"
   );
-  const imageDataString = imageData.toString();
   const hash: string = createHash("sha256")
-    .update(imageDataString)
+    .update(imageData.toString())
     .digest("hex");
-  const md5hash: string = createHash("md5")
-    .update(imageDataString)
-    .digest("hex");
-  return { imageData, hash, md5hash };
+  return { imageData, hash };
 };
 
 const extractImageType = (imageFile: string) => {
@@ -35,7 +31,7 @@ export const uploadRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { title, image } = input;
-      const { imageData, hash, md5hash } = getImageData(image);
+      const { imageData, hash } = getImageData(image);
       const imageType = extractImageType(image);
       if (imageType === undefined) {
         throw new TRPCError({
@@ -56,7 +52,6 @@ export const uploadRouter = createTRPCRouter({
             ACL: "public-read",
             ContentEncoding: "base64",
             ContentType: `image/${imageType}`,
-            ContentMd5: md5hash,
           })
         );
         if (res.$metadata.httpStatusCode !== 200) {
