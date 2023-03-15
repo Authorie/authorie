@@ -1,9 +1,10 @@
-import { createTRPCRouter } from "./trpc";
-import { categoryRouter } from "./routers/category";
-import { userRouter } from "./routers/user";
-import { searchRouter } from "./routers/search";
 import { bookRouter } from "./routers/book";
+import { categoryRouter } from "./routers/category";
+import { chapterRouter } from "./routers/chapter";
+import { searchRouter } from "./routers/search";
 import { uploadRouter } from "./routers/upload";
+import { userRouter } from "./routers/user";
+import { createTRPCRouter } from "./trpc";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   book: bookRouter,
   upload: uploadRouter,
   search: searchRouter,
+  chapter: chapterRouter,
   category: categoryRouter,
 });
 
