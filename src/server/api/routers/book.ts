@@ -203,7 +203,47 @@ export const bookRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      let book;
       const { id, title, description, category } = input;
+      try {
+        book = await ctx.prisma.book.findUniqueOrThrow({
+          where: { id },
+          include: {
+            owners: {
+              where: {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "book not found",
+          cause: err,
+        });
+      }
+
+      if (book.owners.length === 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "you are not the owner of this book",
+        });
+      }
+
+      const validStatus = [
+        BookStatus.DRAFT,
+        BookStatus.PUBLISHED,
+        BookStatus.COMPLETED,
+      ];
+      if (!validStatus.includes(book.status)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "you cannot update this book",
+        });
+      }
+
       try {
         await ctx.prisma.book.update({
           where: { id },
