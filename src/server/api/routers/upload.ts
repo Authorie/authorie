@@ -10,8 +10,8 @@ const getImageData = (imageFile: string) => {
     imageFile.replace(/^data:image\/\w+;base64,/, ""),
     "base64"
   );
-  const hash: string = createHash("sha256").update(imageData).digest("hex");
-  const md5hash: string = createHash("md5").update(imageData).digest("base64");
+  const hash = createHash("sha256").update(imageData).digest("hex");
+  const md5hash = createHash("md5").update(imageData).digest("base64");
   return { imageData, hash, md5hash };
 };
 
