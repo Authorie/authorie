@@ -48,6 +48,16 @@ export const bookRouter = createTRPCRouter({
                 },
               },
             },
+            categories: {
+              select: {
+                category: {
+                  select: {
+                    id: true,
+                    title: true,
+                  },
+                },
+              },
+            },
           },
           cursor: cursor ? { id: cursor } : undefined,
           take,
