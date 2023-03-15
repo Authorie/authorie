@@ -176,19 +176,21 @@ export const bookRouter = createTRPCRouter({
                   cause: e,
                 });
               }
+            } else {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "failed to create book",
+                cause: e,
+              });
             }
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "failed to create book",
-              cause: e,
-            });
           }
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "failed to create book",
+            cause: e,
+          });
         }
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "failed to create book",
-          cause: e,
-        });
       }
     }),
   update: protectedProcedure
@@ -309,12 +311,22 @@ export const bookRouter = createTRPCRouter({
       try {
         book = await ctx.prisma.book.findUniqueOrThrow({
           where: { id: input.id },
+          include: {
+            owners: true,
+          },
         });
       } catch (err) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "book not found",
           cause: err,
+        });
+      }
+
+      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "you are not owner of this book",
         });
       }
 
@@ -361,6 +373,7 @@ export const bookRouter = createTRPCRouter({
             code: "BAD_REQUEST",
             message: "archived status cannot be changed",
           });
+        default:
       }
 
       try {

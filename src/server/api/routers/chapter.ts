@@ -126,7 +126,7 @@ export const chapterRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let chapter: Chapter & { book: { status: BookStatus } };
+      let chapter;
       const { id, title, content, publishedAt } = input;
       try {
         chapter = await ctx.prisma.chapter.findUniqueOrThrow({
@@ -191,7 +191,7 @@ export const chapterRouter = createTRPCRouter({
   read: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      let chapter: Chapter & { book: { status: BookStatus } };
+      let chapter;
       try {
         chapter = await ctx.prisma.chapter.findUniqueOrThrow({
           where: {
@@ -249,7 +249,7 @@ export const chapterRouter = createTRPCRouter({
   like: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      let chapter: Chapter & { book: { status: BookStatus } };
+      let chapter;
       try {
         chapter = await ctx.prisma.chapter.findUniqueOrThrow({
           where: {
@@ -326,7 +326,7 @@ export const chapterRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      let chapter: Chapter & { book: { status: BookStatus } };
+      let chapter;
       try {
         chapter = await ctx.prisma.chapter.findUniqueOrThrow({
           where: {
