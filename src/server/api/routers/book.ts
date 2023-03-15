@@ -27,6 +27,20 @@ export const bookRouter = createTRPCRouter({
               },
             },
           },
+          include: {
+            chapters: {
+              where: {
+                publishedAt: {
+                  lte: new Date(),
+                },
+              },
+              select: {
+                id: true,
+                title: true,
+                publishedAt: true,
+              },
+            },
+          },
           cursor: cursor ? { id: cursor } : undefined,
           take,
         });
@@ -71,6 +85,15 @@ export const bookRouter = createTRPCRouter({
               },
             },
           ],
+        },
+        include: {
+          chapters: {
+            select: {
+              id: true,
+              title: true,
+              publishedAt: true,
+            },
+          },
         },
         cursor: cursor ? { id: cursor } : undefined,
         take,
