@@ -1,4 +1,5 @@
-import type { Prisma } from "@prisma/client";
+import type { Book, Prisma } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -43,7 +44,44 @@ export const chapterRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      let book: Book & { owners: { userId: string }[] };
       const { title, content, bookId, publishedAt } = input;
+      try {
+        book = await ctx.prisma.book.findUniqueOrThrow({
+          where: {
+            id: bookId,
+          },
+          include: {
+            owners: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Book not found",
+          cause: err,
+        });
+      }
+
+      if (!book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not the owner of this book",
+        });
+      }
+
+      const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
+      if (!validBookStatus.includes(book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't add chapters to this book",
+        });
+      }
+
       try {
         return await ctx.prisma.chapter.create({
           data: {
