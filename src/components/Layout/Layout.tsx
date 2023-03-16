@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import AuthorBanner from "./AuthorBanner";
 import NavigationSidebar from "./NavigationSidebar";
+import CreateLayout from "./CreateLayout";
 
 const NoLayoutPaths = ["/auth/new-user", "/auth/signin"];
 
@@ -53,7 +54,11 @@ const Layout = ({ children }: PropsWithChildren) => {
               penname={router.query.penname as string}
             />
           )}
-          {children}
+          {router.pathname.includes("create") ? (
+            <CreateLayout>{children}</CreateLayout>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </>
