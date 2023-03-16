@@ -8,8 +8,6 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useReducer } from "react";
 
-type UserTab = "HOME" | "COMMUNITY" | "BOOK" | "ABOUT";
-
 const AuthorTab = [
   { title: "HOME", url: "" },
   { title: "COMMUNITY", url: "community" },
@@ -27,14 +25,6 @@ const getFollowedButtonClassName = (followed: boolean) => {
     return "w-24 h-7 rounded text-sm bg-blue-300 hover:bg-blue-400";
   } else {
     return "w-24 h-7 rounded bg-green-300 text-sm hover:bg-green-400";
-  }
-};
-
-const getTabClassName = (tab: UserTab, selectedTab: UserTab) => {
-  if (tab !== selectedTab) {
-    return "text-white cursor-pointer text-sm select-none";
-  } else {
-    return "text-green-500 text-sm underline underline-offset-2 decoration-green-500 select-none";
   }
 };
 
@@ -175,7 +165,7 @@ const AuthorBanner = ({
         },
       }
     );
-  }, [form.bio, form.penname, router, tab.url, updateProfile, user.penname]);
+  }, [form.bio, form.penname, router, tab.url, updateProfile]);
 
   return (
     <>
@@ -321,7 +311,12 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
             <button
               key={data.title}
               onClick={() => void router.push(`/${penname}/${data.url}`)}
-              className={getTabClassName(data.title, tab.title)}
+              className={
+                router.pathname.includes(data.title.toLocaleLowerCase()) ||
+                (data.title == "HOME" && router.pathname.split("/")[2] == null)
+                  ? "select-none text-sm text-green-500 underline decoration-green-500 underline-offset-2"
+                  : "cursor-pointer select-none text-sm text-white"
+              }
             >
               {data.title}
             </button>
