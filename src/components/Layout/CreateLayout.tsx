@@ -1,12 +1,15 @@
-import CreateBook from "@components/Create/CreateBook";
 import { useState } from "react";
+import type { PropsWithChildren } from "react";
+import { useRouter } from "next/router";
 
 type tab = "book" | "chapter";
 
-const CreatePage = () => {
-  const [tab, setTab] = useState<tab>("book");
+const CreateLayout = ({ children }: PropsWithChildren) => {
+  const router = useRouter();
+  const [tab, setTab] = useState(router.pathname.split("/")[2]);
   const onClickTabHandler = (selectedTab: tab) => {
     setTab(selectedTab);
+    void router.push(`/create/${selectedTab}`);
   };
 
   const buttonClassName = (selectedTab: tab) => {
@@ -18,7 +21,7 @@ const CreatePage = () => {
   };
 
   return (
-    <div className="w-full gap-3 rounded-2xl px-10 py-4">
+    <div className="w-full gap-3 rounded-2xl p-4">
       <div className="flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
         <button
           onClick={() => onClickTabHandler("book")}
@@ -33,9 +36,9 @@ const CreatePage = () => {
           Create chapter
         </button>
       </div>
-      <CreateBook />
+      {children}
     </div>
   );
 };
 
-export default CreatePage;
+export default CreateLayout;

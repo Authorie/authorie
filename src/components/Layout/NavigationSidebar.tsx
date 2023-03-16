@@ -108,7 +108,7 @@ const NavigationSidebar = ({ user }: props) => {
           {session ? (
             <>
               <Link
-                href="/create"
+                href="/create/book"
                 className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
               >
                 <PencilIcon width="24" height="24" />
