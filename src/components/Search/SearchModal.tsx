@@ -61,11 +61,11 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const searchResults = (category: SearchCategory) => {
     switch (category) {
       case "Users":
-        return users?.map((user) => (
+        return users?.items.map((user) => (
           <SearchUserResult key={user.id} user={user} />
         ));
       case "Books":
-        return books?.map((book) => (
+        return books?.items.map((book) => (
           <SearchBookResult key={book.id} book={book} />
         ));
     }

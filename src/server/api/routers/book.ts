@@ -1,22 +1,91 @@
 import { BookOwnerStatus, BookStatus, Prisma } from "@prisma/client";
+import { makePagination } from "@server/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const bookRouter = createTRPCRouter({
+  getData: publicProcedure
+    .input(z.string().uuid())
+    .query(async ({ ctx, input }) => {
+      let isOwner = false;
+      if (ctx.session?.user.id) {
+        isOwner = !!(await ctx.prisma.bookOwner.findFirst({
+          where: {
+            bookId: input,
+            userId: ctx.session.user.id,
+            status: {
+              in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+            },
+          },
+        }));
+      }
+
+      const book = await ctx.prisma.book.findUnique({
+        where: {
+          id: input,
+        },
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
+          owners: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  penname: true,
+                  image: true,
+                },
+              },
+            },
+          },
+          chapters: {
+            where: isOwner
+              ? {
+                  publishedAt: {
+                    lte: new Date(),
+                  },
+                }
+              : undefined,
+            select: {
+              id: true,
+              title: true,
+              publishedAt: true,
+            },
+            include: {
+              _count: {
+                select: {
+                  likes: true,
+                  comments: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return book;
+    }),
   getAll: publicProcedure
     .input(
       z.object({
         penname: z.string(),
-        cursor: z.string().optional(),
-        take: z.number().default(10),
+        cursor: z.string().uuid().optional(),
+        limit: z.number().int().default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { penname, cursor, take } = input;
+      const { penname, cursor, limit } = input;
       if (!ctx.session?.user?.penname) {
-        return await ctx.prisma.book.findMany({
+        const books = await ctx.prisma.book.findMany({
           where: {
             status: BookStatus.PUBLISHED,
             owners: {
@@ -28,26 +97,6 @@ export const bookRouter = createTRPCRouter({
             },
           },
           include: {
-            chapters: {
-              where: {
-                publishedAt: {
-                  lte: new Date(),
-                },
-              },
-              select: {
-                id: true,
-                title: true,
-                publishedAt: true,
-              },
-              include: {
-                _count: {
-                  select: {
-                    likes: true,
-                    comments: true,
-                  },
-                },
-              },
-            },
             categories: {
               select: {
                 category: {
@@ -60,62 +109,65 @@ export const bookRouter = createTRPCRouter({
             },
           },
           cursor: cursor ? { id: cursor } : undefined,
-          take,
+          take: limit + 1,
         });
-      }
-      return await ctx.prisma.book.findMany({
-        where: {
-          OR: [
-            {
-              status: {
-                in: [BookStatus.INITIAL, BookStatus.DRAFT],
-              },
-              owners: {
-                some: {
-                  user: {
-                    penname: {
-                      in: [ctx.session.user.penname, penname],
+        return makePagination(books, limit);
+      } else {
+        const books = await ctx.prisma.book.findMany({
+          where: {
+            OR: [
+              {
+                status: {
+                  in: [BookStatus.INITIAL, BookStatus.DRAFT],
+                },
+                owners: {
+                  some: {
+                    user: {
+                      penname: {
+                        in: [ctx.session.user.penname, penname],
+                      },
                     },
                   },
                 },
               },
-            },
-            {
-              status: {
-                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-              },
-              owners: {
-                some: {
-                  user: {
-                    penname: penname,
+              {
+                status: {
+                  in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+                },
+                owners: {
+                  some: {
+                    user: {
+                      penname: penname,
+                    },
                   },
                 },
               },
-            },
-            {
-              status: BookStatus.ARCHIVED,
-              owners: {
-                some: {
-                  user: {
-                    penname: penname,
+              {
+                status: BookStatus.ARCHIVED,
+                owners: {
+                  some: {
+                    user: {
+                      penname: penname,
+                    },
                   },
                 },
               },
-            },
-          ],
-        },
-        include: {
-          chapters: {
-            select: {
-              id: true,
-              title: true,
-              publishedAt: true,
+            ],
+          },
+          include: {
+            chapters: {
+              select: {
+                id: true,
+                title: true,
+                publishedAt: true,
+              },
             },
           },
-        },
-        cursor: cursor ? { id: cursor } : undefined,
-        take,
-      });
+          cursor: cursor ? { id: cursor } : undefined,
+          take: limit + 1,
+        });
+        return makePagination(books, limit);
+      }
     }),
   create: protectedProcedure
     .input(

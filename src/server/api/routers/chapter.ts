@@ -1,11 +1,141 @@
 import type { Prisma } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
+import { makePagination } from "@server/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const chapterRouter = createTRPCRouter({
+  getAll: publicProcedure
+    .input(
+      z.object({
+        all: z.boolean().default(true),
+        categoryIds: z.string().uuid().array().optional(),
+        cursor: z.string().uuid().optional(),
+        limit: z.number().int().default(20),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { all, categoryIds, cursor, limit } = input;
+      if (all) {
+        try {
+          const chapters = await ctx.prisma.chapter.findMany({
+            take: limit + 1,
+            cursor: cursor ? { id: cursor } : undefined,
+            orderBy: {
+              createdAt: "desc",
+            },
+          });
+
+          return makePagination(chapters, limit);
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to get chapters",
+            cause: err,
+          });
+        }
+      }
+
+      if (categoryIds) {
+        try {
+          const chapters = await ctx.prisma.chapter.findMany({
+            where: {
+              book: {
+                status: {
+                  in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+                },
+                categories: {
+                  some: {
+                    categoryId: {
+                      in: categoryIds,
+                    },
+                  },
+                },
+              },
+            },
+            take: limit + 1,
+            cursor: cursor ? { id: cursor } : undefined,
+            orderBy: {
+              createdAt: "desc",
+            },
+          });
+          let nextCursor: typeof cursor | undefined = undefined;
+          if (chapters.length > limit) {
+            const nextItem = chapters.pop();
+            nextCursor = nextItem?.id;
+          }
+
+          return {
+            chapters,
+            nextCursor,
+          };
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to get chapters",
+            cause: err,
+          });
+        }
+      }
+
+      if (ctx.session?.user?.id) {
+        try {
+          const followingCategories = await ctx.prisma.category.findMany({
+            where: {
+              users: {
+                some: {
+                  userId: ctx.session.user.id,
+                },
+              },
+            },
+          });
+          const chapters = await ctx.prisma.chapter.findMany({
+            where: {
+              book: {
+                status: {
+                  in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+                },
+                categories: {
+                  some: {
+                    categoryId: {
+                      in: followingCategories.map((c) => c.id),
+                    },
+                  },
+                },
+              },
+            },
+            take: limit + 1,
+            cursor: cursor ? { id: cursor } : undefined,
+            orderBy: {
+              createdAt: "desc",
+            },
+          });
+          let nextCursor: typeof cursor | undefined = undefined;
+          if (chapters.length > limit) {
+            const nextItem = chapters.pop();
+            nextCursor = nextItem?.id;
+          }
+
+          return {
+            chapters,
+            nextCursor,
+          };
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to get chapters",
+            cause: err,
+          });
+        }
+      }
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Invalid request",
+      });
+    }),
   getData: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
@@ -364,6 +494,22 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
+      if (input.parent) {
+        try {
+          await ctx.prisma.chapterComment.findUniqueOrThrow({
+            where: {
+              id: input.parent,
+            },
+          });
+        } catch (err) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Parent comment not found",
+            cause: err,
+          });
+        }
+      }
+
       try {
         await ctx.prisma.chapterComment.create({
           data: {
@@ -378,11 +524,13 @@ export const chapterRouter = createTRPCRouter({
                 id: ctx.session.user.id,
               },
             },
-            parent: {
-              connect: {
-                id: input.parent,
-              },
-            },
+            parent: input.parent
+              ? {
+                  connect: {
+                    id: input.parent,
+                  },
+                }
+              : undefined,
           },
         });
       } catch (err) {

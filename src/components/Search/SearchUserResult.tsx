@@ -3,7 +3,7 @@ import type { RouterOutputs } from "@utils/api";
 import Image from "next/image";
 
 type props = {
-  user: RouterOutputs["search"]["searchUsers"][number];
+  user: RouterOutputs["search"]["searchUsers"]["items"][number];
 };
 
 const SearchUserResult = ({ user }: props) => {
