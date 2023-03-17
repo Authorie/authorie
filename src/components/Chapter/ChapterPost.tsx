@@ -80,7 +80,7 @@ const ChapterPost = ({
         </div>
       </div>
       {commentClicked && (
-        <div className="bg-gray-300 px-4 py-4">
+        <div className="bg-gray-300 px-4 pb-4 pt-2">
           <CommentInput />
           {comment &&
             comment.map((comment) => (
