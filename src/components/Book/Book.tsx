@@ -18,13 +18,25 @@ const Book = ({ title, description, read, like, id }: props) => {
   const utils = api.useContext();
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
   const unfavoriteBook = api.book.unfavorite.useMutation({
-    onSuccess: async () => {
-      await utils.book.invalidate();
+    onMutate: async () => {
+      await utils.book.isFavorite.cancel();
+      const previousFavorite = utils.book.isFavorite.getData();
+      utils.book.isFavorite.setData({ id: id }, (old) => !old);
+      return { previousFavorite };
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
     },
   });
   const favoriteBook = api.book.favorite.useMutation({
-    onSuccess: async () => {
-      await utils.book.invalidate();
+    onMutate: async () => {
+      await utils.book.isFavorite.cancel();
+      const previousFavorite = utils.book.isFavorite.getData();
+      utils.book.isFavorite.setData({ id: id }, (old) => !old);
+      return { previousFavorite };
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
     },
   });
 
