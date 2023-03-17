@@ -7,7 +7,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const bookRouter = createTRPCRouter({
   getData: publicProcedure
-    .input(z.string().uuid())
+    .input(z.string().cuid())
     .query(async ({ ctx, input }) => {
       let isOwner = false;
       if (ctx.session?.user.id) {
@@ -78,7 +78,7 @@ export const bookRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string(),
-        cursor: z.string().uuid().optional(),
+        cursor: z.string().cuid().optional(),
         limit: z.number().int().default(20),
       })
     )
@@ -343,7 +343,7 @@ export const bookRouter = createTRPCRouter({
       }
     }),
   isFavorite: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
         const favorite = await ctx.prisma.favoriteBook.findUnique({
@@ -364,7 +364,7 @@ export const bookRouter = createTRPCRouter({
       }
     }),
   favorite: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
         await ctx.prisma.favoriteBook.create({
@@ -382,7 +382,7 @@ export const bookRouter = createTRPCRouter({
       }
     }),
   unfavorite: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       try {
         await ctx.prisma.favoriteBook.delete({
@@ -404,7 +404,7 @@ export const bookRouter = createTRPCRouter({
   moveState: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.string().cuid(),
         status: z.enum([
           BookStatus.DRAFT,
           BookStatus.PUBLISHED,
