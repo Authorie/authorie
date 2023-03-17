@@ -11,8 +11,8 @@ export const chapterRouter = createTRPCRouter({
     .input(
       z.object({
         all: z.boolean().default(true),
-        categoryIds: z.string().uuid().array().optional(),
-        cursor: z.string().uuid().optional(),
+        categoryIds: z.string().cuid().array().optional(),
+        cursor: z.string().cuid().optional(),
         limit: z.number().int().default(20),
       })
     )
@@ -137,7 +137,7 @@ export const chapterRouter = createTRPCRouter({
       });
     }),
   getData: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       try {
         return await ctx.prisma.chapter.findUniqueOrThrow({
@@ -164,7 +164,7 @@ export const chapterRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         content: z.unknown().transform((v) => v as Prisma.JsonObject),
-        bookId: z.string().uuid(),
+        bookId: z.string().cuid(),
         publishedAt: z
           .date()
           .refine((v) => v.getTime() >= Date.now(), {
@@ -241,7 +241,7 @@ export const chapterRouter = createTRPCRouter({
   update: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.string().cuid(),
         title: z.string().optional(),
         content: z
           .unknown()
@@ -319,7 +319,7 @@ export const chapterRouter = createTRPCRouter({
       }
     }),
   read: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       let chapter;
       try {
@@ -377,7 +377,7 @@ export const chapterRouter = createTRPCRouter({
       }
     }),
   like: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       let chapter;
       try {
@@ -450,9 +450,9 @@ export const chapterRouter = createTRPCRouter({
   comment: protectedProcedure
     .input(
       z.object({
-        id: z.string().uuid(),
+        id: z.string().cuid(),
         content: z.string(),
-        parent: z.string().uuid().optional(),
+        parent: z.string().cuid().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
