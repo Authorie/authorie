@@ -1,0 +1,56 @@
+export const comment = [
+  {
+    id: "1",
+    penname: "cosz",
+    comment: "the best content i ever see",
+    image: "",
+    commentImage: "",
+    like: 12,
+    commentNumber: 4,
+    replyData: [
+      {
+        id: "2",
+        penname: "cosz",
+        comment: "the best content i ever see",
+        image: "",
+        commentImage: "",
+        like: 12,
+      },
+      {
+        id: "3",
+        penname: "cosz",
+        comment: "the best content i ever see",
+        image: "",
+        commentImage: "",
+        like: 12,
+      },
+    ],
+  },
+  {
+    id: "1",
+    penname: "cosz",
+    comment: "the best content i ever see",
+    image: "",
+    commentImage: "",
+    like: 12,
+    commentNumber: 4,
+    replyData: [
+      {
+        id: "23",
+        penname: "cosz",
+        comment: "the best content i ever see",
+        image: "",
+        commentImage: "",
+        like: 12,
+      },
+      {
+        id: "4",
+        penname: "cosz",
+        comment: "the best content i ever see",
+        image: "",
+        commentImage: "",
+        like: 12,
+      },
+    ],
+  },
+];
