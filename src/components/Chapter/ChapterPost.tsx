@@ -1,12 +1,11 @@
-import HeartIconOutline from "@heroicons/react/24/outline/HeartIcon";
-import HeartIconSolid from "@heroicons/react/24/solid/HeartIcon";
-import ChatBubbleBottomCenterTextIcon from "@heroicons/react/24/outline/ChatBubbleBottomCenterTextIcon";
 import ArrowTopRightOnSquareIcon from "@heroicons/react/24/outline/ArrowTopRightOnSquareIcon";
 import { useState } from "react";
+import LikeButton from "@components/Button/LikeButton";
 import CommentInput from "@components/Comment/CommentInput";
-import Comment from "@components/Comment/Comment";
+import CommentBoard from "@components/Comment/CommentBoard";
 import { comment } from "mocks/comment";
 import Image from "next/image";
+import CommentButton from "@components/Button/CommentButton";
 
 type props = {
   bookTitle: string;
@@ -16,7 +15,7 @@ type props = {
   publishDate: Date;
   content: string;
   like: number;
-  share: number;
+  numberOfComment: number;
 };
 
 const ChapterPost = ({
@@ -25,10 +24,9 @@ const ChapterPost = ({
   publishDate,
   content,
   like,
-  share,
   author,
+  numberOfComment,
 }: props) => {
-  const [isLike, setIsLike] = useState(false);
   const [commentClicked, setCommentClicked] = useState(false);
   return (
     <div className="max-w-5xl overflow-hidden rounded-xl bg-white shadow-md">
@@ -57,25 +55,15 @@ const ChapterPost = ({
         {content}
       </div>
       <div className="flex items-center justify-between px-8 py-2">
-        <div
-          className="flex cursor-pointer items-center gap-1 transition duration-100 ease-in-out hover:-translate-y-[1px] hover:scale-105 hover:text-red-400"
-          onClick={() => setIsLike(() => !isLike)}
-        >
-          {!isLike && <HeartIconOutline className="h-6 w-6" />}
-          {isLike && <HeartIconSolid className="h-6 w-6 text-red-500" />}
-          <span className={isLike ? "text-sm text-red-500" : "text-sm"}>
-            {like}
-          </span>
-        </div>
-        <div
+        <LikeButton numberOfLike={like} width={6} height={6} textSize="sm" />
+        <CommentButton
           onClick={() => setCommentClicked(() => !commentClicked)}
-          className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100"
-        >
-          <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />
-          <span className="text-sm">Comments</span>
-        </div>
+          width={6}
+          height={6}
+          textSize="sm"
+          numberOfComment={numberOfComment}
+        />
         <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
-          <span className="text-sm">{share}</span>
           <ArrowTopRightOnSquareIcon className="h-6 w-6" />
         </div>
       </div>
@@ -84,7 +72,7 @@ const ChapterPost = ({
           <CommentInput />
           {comment &&
             comment.map((comment) => (
-              <Comment
+              <CommentBoard
                 key={comment.id}
                 penname={comment.penname}
                 comment={comment.comment}

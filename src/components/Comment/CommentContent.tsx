@@ -1,10 +1,8 @@
 import Image from "next/image";
-import ChatBubbleBottomCenterTextIcon from "@heroicons/react/24/outline/ChatBubbleBottomCenterTextIcon";
 import EllipsisHorizontalIcon from "@heroicons/react/24/solid/EllipsisHorizontalIcon";
-import HeartIconOutline from "@heroicons/react/24/outline/HeartIcon";
-import HeartIconSolid from "@heroicons/react/24/solid/HeartIcon";
-import { useState } from "react";
 import type { ReactNode } from "react";
+import LikeButton from "@components/Button/LikeButton";
+import CommentButton from "@components/Button/CommentButton";
 
 type props = {
   penname: string;
@@ -15,7 +13,7 @@ type props = {
   commentNumber?: number;
   isReplyComment: boolean;
   children?: ReactNode;
-  commentClick?: () => void;
+  commentClick: () => void;
 };
 
 const CommentContent = ({
@@ -29,7 +27,6 @@ const CommentContent = ({
   children,
   commentClick,
 }: props) => {
-  const [isLike, setIsLike] = useState(false);
   return (
     <div className="mt-3 rounded-xl bg-white py-1 pl-3 pr-1">
       <div className="flex gap-3 ">
@@ -53,24 +50,21 @@ const CommentContent = ({
             </div>
           </div>
           <div className="mt-1 flex items-center gap-7">
-            <div
-              className="flex cursor-pointer items-center gap-1 transition duration-100 ease-in-out hover:-translate-y-[1px] hover:scale-105 hover:text-red-400"
-              onClick={() => setIsLike(() => !isLike)}
-            >
-              {!isLike && <HeartIconOutline className="h-4 w-4" />}
-              {isLike && <HeartIconSolid className="h-4 w-4 text-red-500" />}
-              <span className={isLike ? "text-xs text-red-500" : "text-xs"}>
-                {like}
-              </span>
-            </div>
+            <LikeButton
+              width={4}
+              height={4}
+              textSize="xs"
+              numberOfLike={like}
+            />
             {!isReplyComment && (
-              <div
-                onClick={commentClick}
-                className="flex cursor-pointer items-center gap-1 rounded-lg p-1 hover:bg-slate-100"
-              >
-                <ChatBubbleBottomCenterTextIcon className="h-4 w-4" />
-                <span className="text-xs">{commentNumber}</span>
-              </div>
+              <CommentButton
+                onClick={() => commentClick()}
+                width={4}
+                height={4}
+                textSize="xs"
+                numberOfComment={commentNumber ?? 0}
+                small
+              />
             )}
             <p className="text-xs text-dark-400">date time</p>
           </div>

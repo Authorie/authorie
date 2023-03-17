@@ -21,7 +21,7 @@ type props = {
   replyData: ReplyComment[];
 };
 
-const Comment = ({
+const CommentBoard = ({
   penname,
   image,
   commentImage,
@@ -54,6 +54,7 @@ const Comment = ({
                 comment={comment.comment}
                 like={comment.like}
                 isReplyComment={true}
+                commentClick={() => setCommentClicked(() => !commentClicked)}
               />
             </div>
           ))}
@@ -63,4 +64,4 @@ const Comment = ({
   );
 };
 
-export default Comment;
+export default CommentBoard;
