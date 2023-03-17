@@ -15,9 +15,17 @@ const BookPage = () => {
           <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
           <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
         </div>
-        <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-          {books &&
-            books.items.map((data) => (
+        {books && books.items.length == 0 && (
+          <div className="flex flex-col items-center gap-4">
+            <p>You still don&apos;t have any book yet. Wanna create one?</p>
+            <button className="rounded-lg bg-green-600 px-3 py-2 text-white hover:bg-green-700">
+              Create book now!
+            </button>
+          </div>
+        )}
+        {books && (
+          <div className="grid grid-cols-4 gap-x-8 gap-y-6">
+            {books.items.map((data) => (
               <Book
                 key={data.id}
                 id={data.id}
@@ -27,7 +35,8 @@ const BookPage = () => {
                 read={100}
               />
             ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
