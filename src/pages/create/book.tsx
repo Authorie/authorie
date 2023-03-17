@@ -8,6 +8,7 @@ import Image from "next/legacy/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import type { ChangeEvent } from "react";
 import * as z from "zod";
 
 const validationSchema = z.object({
@@ -21,6 +22,8 @@ const validationSchema = z.object({
 type ValidationSchema = z.infer<typeof validationSchema>;
 
 const CreateBook = () => {
+  const [bookCover, setBookCover] = useState<string>();
+  const [bookBackground, setBookBackground] = useState<string>();
   const router = useRouter();
   const { data: session } = useSession({
     required: true,
@@ -34,7 +37,6 @@ const CreateBook = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<ValidationSchema>({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     resolver: zodResolver(validationSchema),
   });
   const utils = api.useContext();
@@ -54,33 +56,76 @@ const CreateBook = () => {
     reset();
   };
 
+  const convertToBase64 = (
+    e: ChangeEvent<HTMLInputElement>,
+    cover: boolean
+  ) => {
+    if (e.target.files != null) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        if (cover) {
+          setBookCover(reader.result?.toString());
+        } else {
+          setBookBackground(reader.result?.toString());
+        }
+      };
+      console.log("book cover file", bookCover);
+      if (file != undefined) {
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
   return (
     <form
       onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-      className="items-center rounded-b-2xl bg-white px-10 py-28"
+      className="items-center rounded-b-2xl bg-white py-10 px-10"
     >
       <div className="flex flex-col gap-10">
-        <div className="relative flex gap-5 rounded-lg bg-gray-100 px-24 pt-24 pb-11 drop-shadow-lg">
-          <div className="absolute top-0 left-0 right-0 -z-10 h-4/6 overflow-hidden rounded-t-lg">
+        <div className="relative flex h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pt-24 pb-11 drop-shadow-lg">
+          <div className="absolute top-0 left-0 right-0 -z-10 h-72 overflow-hidden rounded-t-lg">
             <Image
-              src="/mockWallpaper.jpeg"
+              src={bookBackground ? bookBackground : "/mockWallpaper.jpeg"}
               layout="fill"
               alt="book's wallpaper"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-100" />
           </div>
-          <div className="relative h-72 w-52 drop-shadow-md">
+          <label
+            htmlFor="BookCover"
+            className="relative h-72 w-52 cursor-pointer self-end drop-shadow-md"
+          >
+            <input
+              id="BookCover"
+              type="file"
+              accept="image/png, image/jpeg"
+              name="BookCover"
+              className="hidden"
+              onChange={(e) => convertToBase64(e, true)}
+            />
             <Image
-              src="/placeholder_book_cover.png"
+              src={bookCover ? bookCover : "/placeholder_book_cover.png"}
               alt="dummy-pic"
               width={208}
               height={288}
               className="rounded-md object-cover"
             />
-            <PhotoIcon className="absolute right-2 bottom-2 w-8 cursor-pointer" />
-          </div>
-          <div className="flex flex-1 flex-col gap-2 pt-6">
-            <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
+            <PhotoIcon className="absolute right-2 bottom-2 w-8 rounded-md bg-gray-100" />
+          </label>
+          <div className="flex flex-1 flex-col justify-end gap-2 pt-6">
+            <label htmlFor="BookWallpaper" className="relative h-7 w-8">
+              <input
+                type="file"
+                accept="image/png, image/jpeg"
+                name="BookWallpaper"
+                id="BookWallpaper"
+                className="hidden cursor-pointer"
+                onChange={(e) => convertToBase64(e, false)}
+              />
+              <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
+            </label>
             <input
               aria-invalid={errors.title ? "true" : "false"}
               id="title"
@@ -181,7 +226,7 @@ const CreateBook = () => {
             <textarea
               rows={2}
               id="description"
-              className="focus:shadow-outline flex-1 resize-none rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
+              className="focus:shadow-outline h-32 resize-none rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
               placeholder="write the description down..."
               {...register("description")}
             />
