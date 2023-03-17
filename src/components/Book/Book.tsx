@@ -1,7 +1,5 @@
+import { EyeIcon, HeartIcon, StarIcon } from "@heroicons/react/24/outline";
 import Image from "next/legacy/image";
-import { StarIcon } from "@heroicons/react/24/outline";
-import { EyeIcon } from "@heroicons/react/24/outline";
-import { HeartIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/router";
 
 type props = {

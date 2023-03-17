@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
+import { makePagination } from "@server/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -26,16 +27,8 @@ export const chapterRouter = createTRPCRouter({
               createdAt: "desc",
             },
           });
-          let nextCursor: typeof cursor | undefined = undefined;
-          if (chapters.length > limit) {
-            const nextItem = chapters.pop();
-            nextCursor = nextItem?.id;
-          }
 
-          return {
-            chapters,
-            nextCursor,
-          };
+          return makePagination(chapters, limit);
         } catch (err) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",

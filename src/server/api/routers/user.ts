@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { makePagination } from "@server/utils";
 import { z } from "zod";
 
 import { TRPCError } from "@trpc/server";
@@ -69,57 +70,73 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string(),
-        cursor: z.string().optional(),
-        take: z.number().default(10),
+        cursor: z.string().uuid().optional(),
+        limit: z.number().int().default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.prisma.user.findMany({
-        where: {
-          NOT: {
-            penname: null,
-          },
-          followers: {
-            some: {
-              follower: {
-                penname: input.penname,
+      const { penname, cursor, limit } = input;
+      try {
+        const followings = await ctx.prisma.user.findMany({
+          where: {
+            NOT: {
+              penname: null,
+            },
+            followers: {
+              some: {
+                follower: {
+                  penname,
+                },
               },
             },
           },
-        },
-        take: input.take,
-        cursor: {
-          penname: input.cursor,
-        },
-      });
+          take: limit + 1,
+          cursor: cursor ? { id: cursor } : undefined,
+        });
+        return makePagination(followings, limit);
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: err,
+        });
+      }
     }),
   getFollowers: publicProcedure
     .input(
       z.object({
         penname: z.string(),
-        cursor: z.string().optional(),
-        take: z.number().default(10),
+        cursor: z.string().uuid().optional(),
+        limit: z.number().int().default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.prisma.user.findMany({
-        where: {
-          NOT: {
-            penname: null,
-          },
-          following: {
-            some: {
-              follower: {
-                penname: input.penname,
+      const { penname, cursor, limit } = input;
+      try {
+        const followers = await ctx.prisma.user.findMany({
+          where: {
+            NOT: {
+              penname: null,
+            },
+            following: {
+              some: {
+                follower: {
+                  penname,
+                },
               },
             },
           },
-        },
-        take: input.take,
-        cursor: {
-          penname: input.cursor,
-        },
-      });
+          take: limit + 1,
+          cursor: cursor ? { id: cursor } : undefined,
+        });
+        return makePagination(followers, limit);
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: err,
+        });
+      }
     }),
   followUser: protectedProcedure
     .input(z.string())

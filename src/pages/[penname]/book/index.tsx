@@ -1,6 +1,8 @@
 import Book from "@components/Book/Book";
-import { Bars3CenterLeftIcon } from "@heroicons/react/24/outline";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3CenterLeftIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 import { api } from "@utils/api";
 
 const BookPage = () => {
@@ -15,7 +17,7 @@ const BookPage = () => {
         </div>
         <div className="grid grid-cols-4 gap-x-8 gap-y-6">
           {books &&
-            books.map((data) => (
+            books.items.map((data) => (
               <Book
                 key={data.id}
                 id={data.id}
