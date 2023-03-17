@@ -364,6 +364,22 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
+      if (input.parent) {
+        try {
+          await ctx.prisma.chapterComment.findUniqueOrThrow({
+            where: {
+              id: input.parent,
+            },
+          });
+        } catch (err) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Parent comment not found",
+            cause: err,
+          });
+        }
+      }
+
       try {
         await ctx.prisma.chapterComment.create({
           data: {
@@ -378,11 +394,13 @@ export const chapterRouter = createTRPCRouter({
                 id: ctx.session.user.id,
               },
             },
-            parent: {
-              connect: {
-                id: input.parent,
-              },
-            },
+            parent: input.parent
+              ? {
+                  connect: {
+                    id: input.parent,
+                  },
+                }
+              : undefined,
           },
         });
       } catch (err) {
