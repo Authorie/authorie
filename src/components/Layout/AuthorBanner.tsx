@@ -186,7 +186,7 @@ const AuthorBanner = ({
         <div className="flex justify-between">
           <div className="relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border">
             <Image
-              src={user.profileImage || "/placeholder_profile.png"}
+              src={user.image || "/placeholder_profile.png"}
               alt="profile picture"
               width="250"
               height="250"

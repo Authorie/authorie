@@ -49,7 +49,7 @@ model User {
     name           String?
     email          String?             @unique
     emailVerified  DateTime?
-    profileImage   String?
+    image          String?
     wallpaperImage String?
     coin           Int                 @default(0)
     bio            String              @default("")

@@ -43,7 +43,7 @@ export const bookRouter = createTRPCRouter({
                 select: {
                   id: true,
                   penname: true,
-                  profileImage: true,
+                  image: true,
                 },
               },
             },
