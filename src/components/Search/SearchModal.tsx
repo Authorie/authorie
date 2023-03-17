@@ -36,7 +36,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       search: searchTerm,
     },
     {
-      enabled: selectedCategory === "Users" && enableSearch,
+      enabled: openDialog && selectedCategory === "Users" && enableSearch,
     }
   );
   const { data: books } = api.search.searchBooks.useQuery(
@@ -44,7 +44,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       search: searchTerm,
     },
     {
-      enabled: selectedCategory === "Books" && enableSearch,
+      enabled: openDialog && selectedCategory === "Books" && enableSearch,
     }
   );
 
@@ -61,11 +61,11 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const searchResults = (category: SearchCategory) => {
     switch (category) {
       case "Users":
-        return users?.map((user) => (
+        return users?.items.map((user) => (
           <SearchUserResult key={user.id} user={user} />
         ));
       case "Books":
-        return books?.map((book) => (
+        return books?.items.map((book) => (
           <SearchBookResult key={book.id} book={book} />
         ));
     }
@@ -108,7 +108,9 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
               </button>
             ))}
           </div>
-          {searchResults(selectedCategory)}
+          <div className="grid-flow-rol grid max-h-full gap-3">
+            {searchResults(selectedCategory)}
+          </div>
         </Dialog.Panel>
       </div>
     </Dialog>

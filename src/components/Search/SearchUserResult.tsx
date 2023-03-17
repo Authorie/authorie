@@ -3,7 +3,7 @@ import type { RouterOutputs } from "@utils/api";
 import Image from "next/image";
 
 type props = {
-  user: RouterOutputs["search"]["searchUsers"][number];
+  user: RouterOutputs["search"]["searchUsers"]["items"][number];
 };
 
 const SearchUserResult = ({ user }: props) => {
@@ -14,12 +14,12 @@ const SearchUserResult = ({ user }: props) => {
   return (
     <div
       onClick={onClickCard}
-      className="mb-3 flex h-44 cursor-pointer gap-4 rounded shadow-lg transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      className="flex cursor-pointer gap-4 rounded shadow-md drop-shadow-xl transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
     >
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
         <UserIcon className="h-12 w-12 fill-white" />
       </div>
-      <div className="w-8/12 py-3">
+      <div className="flex-1 py-3">
         <p className="text-xs font-semibold text-authBlue-500">AUTHOR</p>
         <h1 className="text-2xl font-bold text-authBlue-500">{user.penname}</h1>
         <div className="flex gap-16 text-sm">
@@ -39,7 +39,7 @@ const SearchUserResult = ({ user }: props) => {
         <p className="my-4 text-xs text-dark-600">{user.bio}</p>
       </div>
       <div className="flex w-2/12 items-center">
-        <div className="overflow-hidden rounded-full">
+        <div className="drop-shadow-l overflow-hidden rounded-full">
           <Image
             src={user.image || "/placeholder_profile.png"}
             width={100}

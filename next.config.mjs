@@ -54,6 +54,10 @@ const config = {
         protocol: "https",
         hostname: "platform-lookaside.fbsbx.com",
       },
+      {
+        protocol: "https",
+        hostname: `${process.env.R2_OBJECT_URL}`,
+      },
     ],
   },
   async headers() {

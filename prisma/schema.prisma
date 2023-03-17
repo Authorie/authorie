@@ -44,21 +44,25 @@ model Session {
 }
 
 model User {
-    id            String              @id @default(cuid())
-    penname       String?             @unique
-    name          String?
-    email         String?             @unique
-    emailVerified DateTime?
-    image         String?
-    coin          Int                 @default(0)
-    bio           String              @default("")
-    accounts      Account[]
-    sessions      Session[]
-    categories    CategoriesOnUsers[]
-    following     FollowingFollower[] @relation("following")
-    followers     FollowingFollower[] @relation("followers")
-    BookOwner     BookOwner[]
-    FavoriteBook  FavoriteBook[]
+    id             String              @id @default(cuid())
+    penname        String?             @unique
+    name           String?
+    email          String?             @unique
+    emailVerified  DateTime?
+    image          String?
+    wallpaperImage String?
+    coin           Int                 @default(0)
+    bio            String              @default("")
+    accounts       Account[]
+    sessions       Session[]
+    categories     CategoriesOnUsers[]
+    following      FollowingFollower[] @relation("following")
+    followers      FollowingFollower[] @relation("followers")
+    ownedBooks     BookOwner[]
+    favorites      FavoriteBook[]
+    ownedChapters  Chapter[]
+    likedChapters  ChapterLike[]
+    comments       ChapterComment[]
 
     @@map("users")
 }
@@ -86,9 +90,10 @@ model VerificationToken {
 }
 
 model Category {
-    id    String              @id @default(cuid())
-    title String
-    users CategoriesOnUsers[]
+    id           String              @id @default(cuid())
+    title        String
+    users        CategoriesOnUsers[]
+    BookCategory BookCategory[]
 
     @@map("categories")
 }
@@ -115,14 +120,16 @@ enum BookStatus {
 }
 
 model Book {
-    id           String         @id @default(cuid())
-    title        String
-    description  String?
-    status       BookStatus     @default(INITIAL)
-    createdAt    DateTime       @default(now())
-    updatedAt    DateTime       @updatedAt
-    owners       BookOwner[]
-    FavoriteBook FavoriteBook[]
+    id          String         @id @default(cuid())
+    title       String
+    description String?
+    status      BookStatus     @default(INITIAL)
+    createdAt   DateTime       @default(now())
+    updatedAt   DateTime       @updatedAt
+    owners      BookOwner[]
+    categories  BookCategory[]
+    favoritees  FavoriteBook[]
+    chapters    Chapter[]
 
     @@map("books")
 }
@@ -147,6 +154,18 @@ model BookOwner {
     @@map("bookOwners")
 }
 
+model BookCategory {
+    book       Book     @relation(fields: [bookId], references: [id])
+    bookId     String
+    category   Category @relation(fields: [categoryId], references: [id])
+    categoryId String
+
+    @@id([bookId, categoryId])
+    @@index([categoryId])
+    @@index([bookId])
+    @@map("bookCategories")
+}
+
 model FavoriteBook {
     book      Book     @relation(fields: [bookId], references: [id])
     bookId    String
@@ -158,4 +177,56 @@ model FavoriteBook {
     @@index([userId])
     @@index([bookId])
     @@map("favoriteBooks")
+}
+
+model Chapter {
+    id          String           @id @default(cuid())
+    title       String
+    content     Json
+    views       Int              @default(0)
+    publishedAt DateTime         @default(now())
+    createdAt   DateTime         @default(now())
+    updatedAt   DateTime         @updatedAt
+    book        Book             @relation(fields: [bookId], references: [id])
+    bookId      String
+    owner       User             @relation(fields: [ownerId], references: [id])
+    ownerId     String
+    likes       ChapterLike[]
+    comments    ChapterComment[]
+
+    @@index([ownerId])
+    @@index([bookId])
+    @@map("chapters")
+}
+
+model ChapterLike {
+    chapter   Chapter  @relation(fields: [chapterId], references: [id])
+    chapterId String
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@id([chapterId, userId])
+    @@index([userId])
+    @@index([chapterId])
+    @@map("chapterLikes")
+}
+
+model ChapterComment {
+    id               String           @id @default(cuid())
+    content          String
+    createdAt        DateTime         @default(now())
+    updatedAt        DateTime         @updatedAt
+    chapter          Chapter          @relation(fields: [chapterId], references: [id])
+    chapterId        String
+    user             User             @relation(fields: [userId], references: [id])
+    userId           String
+    replies          ChapterComment[] @relation("replies")
+    parent           ChapterComment?  @relation("replies", fields: [chapterCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    chapterCommentId String?
+
+    @@index([userId])
+    @@index([chapterId])
+    @@index([chapterCommentId])
+    @@map("chapterComments")
 }
