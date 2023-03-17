@@ -41,7 +41,7 @@ const SearchUserResult = ({ user }: props) => {
       <div className="flex w-2/12 items-center">
         <div className="drop-shadow-l overflow-hidden rounded-full">
           <Image
-            src={user.image || "/placeholder_profile.png"}
+            src={user.profileImage || "/placeholder_profile.png"}
             width={100}
             height={100}
             alt="user profile image"

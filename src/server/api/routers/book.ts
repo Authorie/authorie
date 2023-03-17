@@ -43,7 +43,7 @@ export const bookRouter = createTRPCRouter({
                 select: {
                   id: true,
                   penname: true,
-                  image: true,
+                  profileImage: true,
                 },
               },
             },
@@ -174,17 +174,22 @@ export const bookRouter = createTRPCRouter({
       z.object({
         title: z.string(),
         description: z.string().optional(),
+        coverImageUrl: z.string().url().optional(),
+        wallpaperImageUrl: z.string().url().optional(),
         invitees: z.array(z.string()).default([]),
         categoryIds: z.array(z.string()).default([]),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, description, invitees } = input;
+      const { title, description, coverImageUrl, wallpaperImageUrl, invitees } =
+        input;
       try {
         return await ctx.prisma.book.create({
           data: {
             title,
             description,
+            coverImage: coverImageUrl,
+            wallpaperImage: wallpaperImageUrl,
             owners: {
               createMany: {
                 data: [
@@ -251,12 +256,21 @@ export const bookRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().optional(),
         description: z.string().optional(),
+        coverImageUrl: z.string().url().optional(),
+        wallpaperImageUrl: z.string().url().optional(),
         category: z.string().array().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       let book;
-      const { id, title, description, category } = input;
+      const {
+        id,
+        title,
+        description,
+        coverImageUrl,
+        wallpaperImageUrl,
+        category,
+      } = input;
       try {
         book = await ctx.prisma.book.findUniqueOrThrow({
           where: { id },
@@ -302,6 +316,8 @@ export const bookRouter = createTRPCRouter({
           data: {
             title,
             description,
+            coverImage: coverImageUrl,
+            wallpaperImage: wallpaperImageUrl,
             categories: category
               ? {
                   upsert: category.map((categoryId) => ({

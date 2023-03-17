@@ -55,7 +55,7 @@ const NavigationSidebar = ({ user }: props) => {
         {session && user?.penname && (
           <Link href={`/${user.penname}`}>
             <Image
-              src={user.image || "/placeholder_profile.png"}
+              src={user.profileImage || "/placeholder_profile.png"}
               alt="profile picture"
               width={30}
               height={30}

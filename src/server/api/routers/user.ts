@@ -28,7 +28,7 @@ export const userRouter = createTRPCRouter({
           select: {
             id: true,
             penname: true,
-            image: true,
+            profileImage: true,
             wallpaperImage: true,
             coin: true,
             bio: true,
@@ -237,13 +237,13 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string().trim().optional(),
-        imageUrl: z.string().url().optional(),
+        profileImageUrl: z.string().url().optional(),
         wallpaperImageUrl: z.string().url().optional(),
         bio: z.string().trim().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { penname, imageUrl, wallpaperImageUrl, bio } = input;
+      const { penname, profileImageUrl, wallpaperImageUrl, bio } = input;
 
       if (penname) {
         try {
@@ -270,7 +270,7 @@ export const userRouter = createTRPCRouter({
       const userData: Prisma.UserUpdateInput = {
         penname,
         bio,
-        image: imageUrl,
+        profileImage: profileImageUrl,
         wallpaperImage: wallpaperImageUrl,
       };
 
