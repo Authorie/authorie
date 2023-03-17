@@ -28,7 +28,7 @@ export const userRouter = createTRPCRouter({
           select: {
             id: true,
             penname: true,
-            profileImage: true,
+            image: true,
             wallpaperImage: true,
             coin: true,
             bio: true,
@@ -270,7 +270,7 @@ export const userRouter = createTRPCRouter({
       const userData: Prisma.UserUpdateInput = {
         penname,
         bio,
-        profileImage: profileImageUrl,
+        image: profileImageUrl,
         wallpaperImage: wallpaperImageUrl,
       };
 
