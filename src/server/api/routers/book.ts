@@ -107,106 +107,110 @@ export const bookRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { penname, cursor, limit } = input;
+      const bookFindManyArgs = {
+        where: {},
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
+          chapters: {
+            select: {
+              views: true,
+              _count: {
+                select: {
+                  likes: true,
+                },
+              },
+            },
+          },
+        },
+        cursor: cursor ? { id: cursor } : undefined,
+        take: limit + 1,
+      };
       if (!ctx.session?.user.id) {
-        const books = await ctx.prisma.book.findMany({
-          where: {
-            status: {
-              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-            },
-            owners: {
-              some: {
-                user: {
-                  penname: penname,
-                },
+        bookFindManyArgs.where = {
+          status: {
+            in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+          },
+          owners: {
+            some: {
+              user: {
+                penname: penname,
               },
             },
           },
-          include: {
-            categories: {
-              select: {
-                category: {
-                  select: {
-                    id: true,
-                    title: true,
-                  },
-                },
-              },
-            },
-            chapters: {
-              select: {
-                views: true,
-                _count: {
-                  select: {
-                    likes: true,
-                  },
-                },
-              },
-            },
-          },
-          cursor: cursor ? { id: cursor } : undefined,
-          take: limit + 1,
-        });
-        return makePagination(books, limit);
+        };
       } else {
-        const books = await ctx.prisma.book.findMany({
-          where: {
-            OR: [
-              {
-                status: {
-                  in: [BookStatus.INITIAL, BookStatus.DRAFT],
-                },
-                owners: {
-                  some: {
-                    user: {
-                      AND: [
-                        {
-                          penname: penname,
-                        },
-                        {
-                          id: ctx.session.user.id,
-                        },
-                      ],
-                    },
+        bookFindManyArgs.where = {
+          OR: [
+            {
+              status: {
+                in: [BookStatus.INITIAL, BookStatus.DRAFT],
+              },
+              owners: {
+                some: {
+                  user: {
+                    AND: [
+                      {
+                        penname: penname,
+                      },
+                      {
+                        id: ctx.session.user.id,
+                      },
+                    ],
                   },
                 },
-              },
-              {
-                status: {
-                  in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-                },
-                owners: {
-                  some: {
-                    user: {
-                      penname: penname,
-                    },
-                  },
-                },
-              },
-              {
-                status: BookStatus.ARCHIVED,
-                owners: {
-                  some: {
-                    user: {
-                      penname: penname,
-                    },
-                  },
-                },
-              },
-            ],
-          },
-          include: {
-            chapters: {
-              select: {
-                id: true,
-                title: true,
-                publishedAt: true,
               },
             },
-          },
-          cursor: cursor ? { id: cursor } : undefined,
-          take: limit + 1,
-        });
+            {
+              status: {
+                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+              },
+              owners: {
+                some: {
+                  user: {
+                    penname: penname,
+                  },
+                },
+              },
+            },
+            {
+              status: BookStatus.ARCHIVED,
+              owners: {
+                some: {
+                  user: {
+                    penname: penname,
+                  },
+                },
+              },
+            },
+          ],
+        };
+      }
+      try {
+        const books = await ctx.prisma.book.findMany(bookFindManyArgs);
         return makePagination(books, limit);
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+            cause: err,
+          });
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Something went wrong",
+            cause: err,
+          });
+        }
       }
     }),
   create: protectedProcedure
