@@ -45,20 +45,6 @@ export const chapterRouter = createTRPCRouter({
               createdAt: true,
             },
           },
-          comments: {
-            select: {
-              id: true,
-              content: true,
-              createdAt: true,
-              user: {
-                select: {
-                  id: true,
-                  penname: true,
-                  image: true,
-                },
-              },
-            },
-          },
           _count: {
             select: {
               likes: true,
@@ -163,20 +149,6 @@ export const chapterRouter = createTRPCRouter({
                 createdAt: true,
               },
             },
-            comments: {
-              select: {
-                id: true,
-                content: true,
-                createdAt: true,
-                user: {
-                  select: {
-                    id: true,
-                    penname: true,
-                    image: true,
-                  },
-                },
-              },
-            },
             _count: {
               select: {
                 likes: true,
@@ -189,6 +161,64 @@ export const chapterRouter = createTRPCRouter({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
+          cause: err,
+        });
+      }
+    }),
+  getChapterComments: publicProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        await ctx.prisma.chapter.findFirstOrThrow({
+          where: {
+            id: input.id,
+            book: {
+              status: {
+                in: [
+                  BookStatus.PUBLISHED,
+                  BookStatus.COMPLETED,
+                  BookStatus.ARCHIVED,
+                ],
+              },
+            },
+            publishedAt: {
+              lte: new Date(),
+            },
+          },
+          include: { book: true },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      try {
+        const comments = await ctx.prisma.chapterComment.findMany({
+          where: {
+            chapterId: input.id,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                penname: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+
+        return comments;
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to get chapter comments",
           cause: err,
         });
       }
