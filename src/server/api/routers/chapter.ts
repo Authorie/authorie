@@ -19,10 +19,46 @@ export const chapterRouter = createTRPCRouter({
       const chapterFindManyArgs = {
         where: {},
         include: {
-          book: true,
-          owner: true,
-          likes: true,
-          comments: true,
+          book: {
+            select: {
+              id: true,
+              title: true,
+              coverImage: true,
+            },
+          },
+          owner: {
+            select: {
+              id: true,
+              penname: true,
+              image: true,
+            },
+          },
+          likes: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  penname: true,
+                  image: true,
+                },
+              },
+              createdAt: true,
+            },
+          },
+          comments: {
+            select: {
+              id: true,
+              content: true,
+              createdAt: true,
+              user: {
+                select: {
+                  id: true,
+                  penname: true,
+                  image: true,
+                },
+              },
+            },
+          },
           _count: {
             select: {
               likes: true,
@@ -101,10 +137,46 @@ export const chapterRouter = createTRPCRouter({
         return await ctx.prisma.chapter.findUniqueOrThrow({
           where: { id: input.id },
           include: {
-            book: true,
-            owner: true,
-            likes: true,
-            comments: true,
+            book: {
+              select: {
+                id: true,
+                title: true,
+                coverImage: true,
+              },
+            },
+            owner: {
+              select: {
+                id: true,
+                penname: true,
+                image: true,
+              },
+            },
+            likes: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+                createdAt: true,
+              },
+            },
+            comments: {
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+              },
+            },
             _count: {
               select: {
                 likes: true,
