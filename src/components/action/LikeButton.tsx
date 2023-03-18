@@ -6,7 +6,7 @@ type props = {
   isLike: boolean;
   numberOfLike: number;
   onClickHandler: () => void;
-  small: boolean;
+  small?: boolean;
 };
 
 export const LikeButton = ({
