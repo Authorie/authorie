@@ -4,6 +4,7 @@ import { Fragment } from 'react'
 
 import TextEditorMenuItem from './TextEditorMenuToggle'
 import FontCOlorSelection from './FontColorSelection'
+import LinkInputButton from './LinkInputButton'
 
 const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
     const ToggleButtons = [
@@ -107,6 +108,8 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
                 </Fragment>
             ))}
             <FontCOlorSelection editor={editor}></FontCOlorSelection>
+            <TextEditorMenuItem {... {icon: '', title: 'divider',}}></TextEditorMenuItem>
+            <LinkInputButton editor={editor}></LinkInputButton>
         </div>
     );
 };

@@ -4,6 +4,7 @@ import Underline from '@tiptap/extension-underline'
 import Highlight from '@tiptap/extension-highlight'
 import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
+import Link from '@tiptap/extension-link'
 
 import { Heading } from './TextEditorMenu/Heading';
 import TextEditorMenuBar from './TextEditorMenu/TextEditorMenuBar';
@@ -34,6 +35,13 @@ const TextEditor = () => {
       Highlight,
       TextStyle,
       Color,
+      Link.configure({
+        HTMLAttributes: {
+          class: 'rounded shadow-md bg-white p-1 hover:underline hover:bg-slate-100 text-blue-500'
+        },
+
+      }),
+
     ],
     content: '',
     editorProps: {
@@ -46,7 +54,7 @@ const TextEditor = () => {
       console.log(output);
       // send the content to an API here
     },
-    autofocus: 'start',
+    autofocus: 'start', 
   })
 
   return (
