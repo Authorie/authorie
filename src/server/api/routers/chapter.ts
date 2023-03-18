@@ -227,7 +227,6 @@ export const chapterRouter = createTRPCRouter({
                 id: ctx.session.user.id,
               },
             },
-            s,
           },
         });
       } catch (err) {
