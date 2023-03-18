@@ -59,6 +59,7 @@ export const bookRouter = createTRPCRouter({
             select: {
               id: true,
               title: true,
+              views: true,
               publishedAt: true,
             },
             include: {
