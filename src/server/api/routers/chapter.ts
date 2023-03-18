@@ -17,6 +17,7 @@ export const chapterRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { categoryIds, cursor, limit } = input;
       const chapterFindManyArgs = {
+        where: {},
         include: {
           book: true,
           owner: true,
