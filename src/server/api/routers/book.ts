@@ -7,13 +7,13 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const bookRouter = createTRPCRouter({
   getData: publicProcedure
-    .input(z.string().cuid())
+    .input(z.object({ id: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
       let isOwner = false;
       if (ctx.session?.user.id) {
         isOwner = !!(await ctx.prisma.bookOwner.findFirst({
           where: {
-            bookId: input,
+            bookId: input.id,
             userId: ctx.session.user.id,
             status: {
               in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
@@ -21,59 +21,81 @@ export const bookRouter = createTRPCRouter({
           },
         }));
       }
-
-      const book = await ctx.prisma.book.findUnique({
-        where: {
-          id: input,
-        },
-        include: {
-          categories: {
-            select: {
-              category: {
-                select: {
-                  id: true,
-                  title: true,
-                },
-              },
+      try {
+        return await ctx.prisma.book.findFirstOrThrow({
+          where: {
+            id: input.id,
+            status: {
+              in: isOwner
+                ? [
+                    BookStatus.INITIAL,
+                    BookStatus.DRAFT,
+                    BookStatus.PUBLISHED,
+                    BookStatus.COMPLETED,
+                  ]
+                : [BookStatus.PUBLISHED, BookStatus.COMPLETED],
             },
           },
-          owners: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  penname: true,
-                  image: true,
-                },
-              },
-            },
-          },
-          chapters: {
-            where: isOwner
-              ? {
-                  publishedAt: {
-                    lte: new Date(),
+          include: {
+            categories: {
+              select: {
+                category: {
+                  select: {
+                    id: true,
+                    title: true,
                   },
-                }
-              : undefined,
-            select: {
-              id: true,
-              title: true,
-              views: true,
-              publishedAt: true,
+                },
+              },
             },
-            include: {
-              _count: {
-                select: {
-                  likes: true,
-                  comments: true,
+            owners: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+              },
+            },
+            chapters: {
+              where: isOwner
+                ? {
+                    publishedAt: {
+                      lte: new Date(),
+                    },
+                  }
+                : undefined,
+              select: {
+                id: true,
+                title: true,
+                views: true,
+                publishedAt: true,
+                _count: {
+                  select: {
+                    likes: true,
+                    comments: true,
+                  },
                 },
               },
             },
           },
-        },
-      });
-      return book;
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Book not found",
+            cause: err,
+          });
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Something went wrong",
+            cause: err,
+          });
+        }
+      }
     }),
   getAll: publicProcedure
     .input(
