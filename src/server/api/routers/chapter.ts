@@ -9,63 +9,47 @@ export const chapterRouter = createTRPCRouter({
   getAll: publicProcedure
     .input(
       z.object({
-        all: z.boolean().default(true),
         categoryIds: z.string().cuid().array().optional(),
         cursor: z.string().cuid().optional(),
         limit: z.number().int().default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { all, categoryIds, cursor, limit } = input;
-      let chapters;
-      if (all) {
-        try {
-          chapters = await ctx.prisma.chapter.findMany({
-            take: limit + 1,
-            cursor: cursor ? { id: cursor } : undefined,
-            orderBy: {
-              createdAt: "desc",
+      const { categoryIds, cursor, limit } = input;
+      const chapterFindManyArgs: Prisma.ChapterFindManyArgs = {
+        include: {
+          book: true,
+          likes: true,
+          comments: true,
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
             },
-          });
+          },
+        },
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+          createdAt: "desc",
+        },
+      };
 
-          return makePagination(chapters, limit);
-        } catch (err) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to get chapters",
-            cause: err,
-          });
-        }
-      } else if (categoryIds) {
-        try {
-          chapters = await ctx.prisma.chapter.findMany({
-            where: {
-              book: {
-                status: {
-                  in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-                },
-                categories: {
-                  some: {
-                    categoryId: {
-                      in: categoryIds,
-                    },
-                  },
+      if (categoryIds) {
+        chapterFindManyArgs.where = {
+          book: {
+            status: {
+              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+            },
+            categories: {
+              some: {
+                categoryId: {
+                  in: categoryIds,
                 },
               },
             },
-            take: limit + 1,
-            cursor: cursor ? { id: cursor } : undefined,
-            orderBy: {
-              createdAt: "desc",
-            },
-          });
-        } catch (err) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to get chapters",
-            cause: err,
-          });
-        }
+          },
+        };
       } else if (ctx.session?.user?.id) {
         try {
           const followingCategories = await ctx.prisma.category.findMany({
@@ -77,27 +61,20 @@ export const chapterRouter = createTRPCRouter({
               },
             },
           });
-          chapters = await ctx.prisma.chapter.findMany({
-            where: {
-              book: {
-                status: {
-                  in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-                },
-                categories: {
-                  some: {
-                    categoryId: {
-                      in: followingCategories.map((c) => c.id),
-                    },
+          chapterFindManyArgs.where = {
+            book: {
+              status: {
+                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+              },
+              categories: {
+                some: {
+                  categoryId: {
+                    in: followingCategories.map((c) => c.id),
                   },
                 },
               },
             },
-            take: limit + 1,
-            cursor: cursor ? { id: cursor } : undefined,
-            orderBy: {
-              createdAt: "desc",
-            },
-          });
+          };
         } catch (err) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -112,6 +89,7 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
+      const chapters = await ctx.prisma.chapter.findMany(chapterFindManyArgs);
       return makePagination(chapters, limit);
     }),
   getData: publicProcedure
