@@ -99,6 +99,9 @@ export const chapterRouter = createTRPCRouter({
         return await ctx.prisma.chapter.findUniqueOrThrow({
           where: { id: input.id },
           include: {
+            book: true,
+            likes: true,
+            comments: true,
             _count: {
               select: {
                 likes: true,
