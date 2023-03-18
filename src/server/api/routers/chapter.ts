@@ -17,9 +17,10 @@ export const chapterRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { all, categoryIds, cursor, limit } = input;
+      let chapters;
       if (all) {
         try {
-          const chapters = await ctx.prisma.chapter.findMany({
+          chapters = await ctx.prisma.chapter.findMany({
             take: limit + 1,
             cursor: cursor ? { id: cursor } : undefined,
             orderBy: {
@@ -35,11 +36,9 @@ export const chapterRouter = createTRPCRouter({
             cause: err,
           });
         }
-      }
-
-      if (categoryIds) {
+      } else if (categoryIds) {
         try {
-          const chapters = await ctx.prisma.chapter.findMany({
+          chapters = await ctx.prisma.chapter.findMany({
             where: {
               book: {
                 status: {
@@ -60,16 +59,6 @@ export const chapterRouter = createTRPCRouter({
               createdAt: "desc",
             },
           });
-          let nextCursor: typeof cursor | undefined = undefined;
-          if (chapters.length > limit) {
-            const nextItem = chapters.pop();
-            nextCursor = nextItem?.id;
-          }
-
-          return {
-            chapters,
-            nextCursor,
-          };
         } catch (err) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -77,9 +66,7 @@ export const chapterRouter = createTRPCRouter({
             cause: err,
           });
         }
-      }
-
-      if (ctx.session?.user?.id) {
+      } else if (ctx.session?.user?.id) {
         try {
           const followingCategories = await ctx.prisma.category.findMany({
             where: {
@@ -90,7 +77,7 @@ export const chapterRouter = createTRPCRouter({
               },
             },
           });
-          const chapters = await ctx.prisma.chapter.findMany({
+          chapters = await ctx.prisma.chapter.findMany({
             where: {
               book: {
                 status: {
@@ -111,16 +98,6 @@ export const chapterRouter = createTRPCRouter({
               createdAt: "desc",
             },
           });
-          let nextCursor: typeof cursor | undefined = undefined;
-          if (chapters.length > limit) {
-            const nextItem = chapters.pop();
-            nextCursor = nextItem?.id;
-          }
-
-          return {
-            chapters,
-            nextCursor,
-          };
         } catch (err) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -128,12 +105,14 @@ export const chapterRouter = createTRPCRouter({
             cause: err,
           });
         }
+      } else {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid request",
+        });
       }
 
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Invalid request",
-      });
+      return makePagination(chapters, limit);
     }),
   getData: publicProcedure
     .input(z.object({ id: z.string().cuid() }))
