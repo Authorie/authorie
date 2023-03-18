@@ -16,7 +16,7 @@ export const chapterRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { categoryIds, cursor, limit } = input;
-      const chapterFindManyArgs: Prisma.ChapterFindManyArgs = {
+      const chapterFindManyArgs = {
         include: {
           book: true,
           owner: true,
@@ -32,7 +32,7 @@ export const chapterRouter = createTRPCRouter({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: {
-          createdAt: "desc",
+          createdAt: "desc" as const,
         },
       };
 
