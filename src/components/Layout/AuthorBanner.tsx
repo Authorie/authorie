@@ -190,7 +190,9 @@ const AuthorBanner = ({
               alt="profile picture"
               width="250"
               height="250"
-              className="absolute z-0 opacity-70"
+              className={
+                form.isEdit ? "absolute z-0 opacity-70" : "absolute z-0"
+              }
             />
           </div>
           <div>
