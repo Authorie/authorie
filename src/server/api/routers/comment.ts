@@ -53,6 +53,23 @@ export const commentRouter = createTRPCRouter({
                 replies: true,
               },
             },
+            replies: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+                _count: {
+                  select: {
+                    likes: true,
+                    replies: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: {
             createdAt: "desc",
