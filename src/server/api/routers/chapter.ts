@@ -19,6 +19,7 @@ export const chapterRouter = createTRPCRouter({
       const chapterFindManyArgs: Prisma.ChapterFindManyArgs = {
         include: {
           book: true,
+          owner: true,
           likes: true,
           comments: true,
           _count: {
@@ -100,6 +101,7 @@ export const chapterRouter = createTRPCRouter({
           where: { id: input.id },
           include: {
             book: true,
+            owner: true,
             likes: true,
             comments: true,
             _count: {
