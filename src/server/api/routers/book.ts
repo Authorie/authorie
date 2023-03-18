@@ -132,6 +132,16 @@ export const bookRouter = createTRPCRouter({
                 },
               },
             },
+            chapters: {
+              select: {
+                views: true,
+                _count: {
+                  select: {
+                    likes: true,
+                  },
+                },
+              },
+            },
           },
           cursor: cursor ? { id: cursor } : undefined,
           take: limit + 1,
