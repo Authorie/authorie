@@ -5,6 +5,30 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
+interface owners {
+  owners: {
+    user: {
+      id: string;
+    };
+  }[];
+}
+
+type WithIsOwner<T> = T & {
+  isOwner: boolean;
+};
+
+function computeIsOwner<User extends owners>(
+  userId: string | undefined,
+  user: User
+): WithIsOwner<User> {
+  return {
+    ...user,
+    isOwner: userId
+      ? user.owners.some((owner) => owner.user.id === userId)
+      : false,
+  };
+}
+
 export const bookRouter = createTRPCRouter({
   getData: publicProcedure
     .input(z.object({ id: z.string().cuid() }))
@@ -22,65 +46,68 @@ export const bookRouter = createTRPCRouter({
         }));
       }
       try {
-        return await ctx.prisma.book.findFirstOrThrow({
-          where: {
-            id: input.id,
-            status: {
-              in: isOwner
-                ? [
-                    BookStatus.INITIAL,
-                    BookStatus.DRAFT,
-                    BookStatus.PUBLISHED,
-                    BookStatus.COMPLETED,
-                  ]
-                : [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-            },
-          },
-          include: {
-            categories: {
-              select: {
-                category: {
-                  select: {
-                    id: true,
-                    title: true,
-                  },
-                },
+        return computeIsOwner(
+          ctx.session?.user?.id,
+          await ctx.prisma.book.findFirstOrThrow({
+            where: {
+              id: input.id,
+              status: {
+                in: isOwner
+                  ? [
+                      BookStatus.INITIAL,
+                      BookStatus.DRAFT,
+                      BookStatus.PUBLISHED,
+                      BookStatus.COMPLETED,
+                    ]
+                  : [BookStatus.PUBLISHED, BookStatus.COMPLETED],
               },
             },
-            owners: {
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    penname: true,
-                    image: true,
-                  },
-                },
-              },
-            },
-            chapters: {
-              where: isOwner
-                ? {
-                    publishedAt: {
-                      lte: new Date(),
+            include: {
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      title: true,
                     },
-                  }
-                : undefined,
-              select: {
-                id: true,
-                title: true,
-                views: true,
-                publishedAt: true,
-                _count: {
-                  select: {
-                    likes: true,
-                    comments: true,
+                  },
+                },
+              },
+              owners: {
+                select: {
+                  user: {
+                    select: {
+                      id: true,
+                      penname: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
+              chapters: {
+                where: isOwner
+                  ? {
+                      publishedAt: {
+                        lte: new Date(),
+                      },
+                    }
+                  : undefined,
+                select: {
+                  id: true,
+                  title: true,
+                  views: true,
+                  publishedAt: true,
+                  _count: {
+                    select: {
+                      likes: true,
+                      comments: true,
+                    },
                   },
                 },
               },
             },
-          },
-        });
+          })
+        );
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
           throw new TRPCError({
@@ -110,6 +137,17 @@ export const bookRouter = createTRPCRouter({
       const bookFindManyArgs = {
         where: {},
         include: {
+          owners: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  penname: true,
+                  image: true,
+                },
+              },
+            },
+          },
           categories: {
             select: {
               category: {
@@ -195,7 +233,11 @@ export const bookRouter = createTRPCRouter({
         };
       }
       try {
-        const books = await ctx.prisma.book.findMany(bookFindManyArgs);
+        const books = (await ctx.prisma.book.findMany(bookFindManyArgs)).map(
+          (book) => {
+            return computeIsOwner(ctx.session?.user.id, book);
+          }
+        );
         return makePagination(books, limit);
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
