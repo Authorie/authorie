@@ -1,10 +1,18 @@
-import { Editor } from '@tiptap/react'
+import type { Editor } from '@tiptap/react'
 
 import { Fragment } from 'react'
 
 import TextEditorMenuItem from './TextEditorMenuToggle'
 import FontCOlorSelection from './FontColorSelection'
 import LinkInputButton from './LinkInputButton'
+import TableMenu from './TableMenu'
+import ImageInputButton from './ImageInputButton'
+import type { CharacterCountStorage } from '@tiptap/extension-character-count'
+
+function isCharacterCountStorage(characterCount: unknown): characterCount is CharacterCountStorage {
+    const temp = characterCount as CharacterCountStorage;
+    return temp.characters !== undefined && temp.words !== undefined;
+}
 
 const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
     const ToggleButtons = [
@@ -100,6 +108,7 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
             title: 'divider',
         },
     ]
+
     return (
         <div className='flex flex-row flex-nowrap justify-start content-center pb-4'>
             {ToggleButtons.map((item, index) => (
@@ -108,9 +117,22 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
                 </Fragment>
             ))}
             <FontCOlorSelection editor={editor}></FontCOlorSelection>
-            <TextEditorMenuItem {... {icon: '', title: 'divider',}}></TextEditorMenuItem>
+            <TextEditorMenuItem {... { icon: '', title: 'divider', }}></TextEditorMenuItem>
             <LinkInputButton editor={editor}></LinkInputButton>
+            <TableMenu editor={editor}></TableMenu>
+            <ImageInputButton editor={editor}></ImageInputButton>
+            <TextEditorMenuItem {... { icon: '', title: 'divider', }}></TextEditorMenuItem>
+            <div className='self-center text-slate-500'>
+                {'characterCount' in editor.storage && isCharacterCountStorage(editor.storage.characterCount) 
+                && editor.storage.characterCount.words()} words
+            </div>
+            <TextEditorMenuItem {... { icon: '', title: 'divider', }}></TextEditorMenuItem>
+            <div className='self-center text-slate-500'>
+                {'characterCount' in editor.storage && isCharacterCountStorage(editor.storage.characterCount) 
+                && editor.storage.characterCount.characters()} characters
+            </div>
         </div>
+
     );
 };
 

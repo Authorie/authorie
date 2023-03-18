@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/react'
 import { Popover } from '@headlessui/react'
-import { ChangeEvent, useState } from 'react'
+import type { ChangeEvent} from 'react';
+import { useState } from 'react'
 
 import 'remixicon/fonts/remixicon.css'
 
@@ -24,7 +25,7 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
 
                 }}
                     className='flex'>
-                    <input className='w-50 focus:outline-none'
+                    <input className='w-50 focus:outline-none mx-2'
                         type='url' placeholder='Paste link here'
                         onChange={handleChange}></input>
                     <input type='reset' value='x' className='bold m-1'></input>

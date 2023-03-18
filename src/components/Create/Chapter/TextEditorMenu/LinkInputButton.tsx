@@ -1,13 +1,14 @@
-import { Editor } from '@tiptap/react'
+import type { Editor } from '@tiptap/react'
 import { Popover } from '@headlessui/react'
-import { ChangeEvent, useState } from 'react'
+import type { ChangeEvent} from 'react';
+import { useState } from 'react'
 
 import 'remixicon/fonts/remixicon.css'
 
 const LinkInputButton = ({ editor }: { editor: Editor }) => {
-    const [InputUrl, setInputUrl] = useState({value: ''})
-    const handleChange = (e:ChangeEvent<HTMLInputElement>) => {
-        setInputUrl({value: e.target.value})
+    const [InputUrl, setInputUrl] = useState({ value: '' })
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setInputUrl({ value: e.target.value })
     }
 
 
@@ -17,17 +18,17 @@ const LinkInputButton = ({ editor }: { editor: Editor }) => {
                 <i className='ri-link'></i>
             </Popover.Button>
 
-            <Popover.Panel className="absolute translate-y-10 z-10 p-1 bg-white drop-shadow-lg">
+            <Popover.Panel className="absolute translate-y-10 z-10 p-1 bg-white drop-shadow-lg rounded">
                 <form onSubmit={(e) => {
                     e.preventDefault();
-                    editor.chain().focus().setLink({ href: InputUrl.value}).run()
+                    editor.chain().focus().setLink({ href: InputUrl.value }).run()
 
                 }}
-                className='flex'>
-                    <input className='w-50 focus:outline-none' 
-                    type='url' placeholder='Paste link here'
-                    onChange={handleChange}></input>
-                    <input type='reset' value='X'></input>
+                    className='flex'>
+                    <input className='w-50 focus:outline-none mx-2'
+                        type='url' placeholder='Paste link here'
+                        onChange={handleChange}></input>
+                    <input type='reset' value='x' className='bold m-1'></input>
                 </form>
 
             </Popover.Panel>
