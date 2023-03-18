@@ -32,7 +32,7 @@ const FontColorSelection = ({ editor }: { editor: Editor }) => {
         <div className='flex relative'>
             <Listbox value={selectedColor} by='id' onChange={fontHandler}>
                 <Listbox.Button onFocus={() => editor?.commands.focus()} className='rounded hover:bg-slate-200 p-2 h-fit w-fit place-self-center'>
-                    <div className={`h-3 w-3 bg-${TempColorChecker()? TempColorChecker()?.tailwindcolor : 'black'}`}></div>
+                    <div className={`h-3 w-3 bg-${TempColorChecker()? TempColorChecker()?.tailwindcolor : 'black'} rounded`}></div>
                 </Listbox.Button>
                 <Listbox.Options className='flex absolute translate-y-10 z-10 rounded bg-white drop-shadow-lg'>
                     {colors.map((color) => (
@@ -43,7 +43,7 @@ const FontColorSelection = ({ editor }: { editor: Editor }) => {
                             className={`${editor.isActive('textStyle', { color: color.value }) ? 'bg-slate-300' : 'bg-white'} 
                             rounded-md p-2 m-1 h-7 hover:bg-slate-200`}
                         >
-                            <div className={`bg-${color.tailwindcolor} h-3 w-3`}></div>
+                            <div className={`bg-${color.tailwindcolor} h-3 w-3 rounded`}></div>
                         </Listbox.Option>
                     ))}
                 </Listbox.Options>
