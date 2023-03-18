@@ -118,7 +118,7 @@ const AuthorBanner = ({
 
   const updateProfile = api.user.update.useMutation({
     onSuccess: () => {
-      void context.user.getData.invalidate();
+      void context.user.getData.invalidate(undefined);
     },
   });
   const followUserMutation = api.user.followUser.useMutation({
@@ -315,7 +315,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
               onClick={() => void router.push(`/${penname}/${data.url}`)}
               className={
                 router.pathname.includes(data.title.toLocaleLowerCase()) ||
-                (data.title == "HOME" && router.pathname.split("/")[2] == null)
+                (data.title === "HOME" && router.pathname.split("/")[2] == null)
                   ? "select-none text-sm text-green-500 underline decoration-green-500 underline-offset-2"
                   : "cursor-pointer select-none text-sm text-white"
               }
