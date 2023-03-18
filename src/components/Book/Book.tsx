@@ -1,5 +1,5 @@
 import { EyeIcon, HeartIcon, StarIcon } from "@heroicons/react/24/outline";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
 import type { MouseEvent } from "react";
@@ -11,9 +11,19 @@ type props = {
   description: string | null;
   read: number;
   like: number;
+  isOwner: boolean;
+  coverImage: string | null;
 };
 
-const Book = ({ title, description, read, like, id }: props) => {
+const Book = ({
+  title,
+  description,
+  read,
+  like,
+  id,
+  isOwner,
+  coverImage,
+}: props) => {
   const router = useRouter();
   const utils = api.useContext();
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
@@ -41,20 +51,17 @@ const Book = ({ title, description, read, like, id }: props) => {
   });
 
   const onClickHandler = () => {
-    const penname: string = router.query.penname as string;
+    const penname = router.query.penname as string;
     void router.push(`/${penname}/book/${id}`);
   };
 
-  const addFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
+  const toggleFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    favoriteBook.mutate({ id: id });
-    console.log("add");
-  };
-
-  const removeFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    unfavoriteBook.mutate({ id: id });
-    console.log("remove");
+    if (isFavorite) {
+      unfavoriteBook.mutate({ id: id });
+    } else {
+      favoriteBook.mutate({ id: id });
+    }
   };
 
   return (
@@ -65,15 +72,18 @@ const Book = ({ title, description, read, like, id }: props) => {
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
         <div className="relative h-28 w-full overflow-hidden rounded-tl-lg">
-          <Image src="/mockWallpaper.jpeg" alt="book picture" layout="fill" />
-          {!isFavorite && (
-            <button onClick={addFavoriteHandler}>
-              <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
-            </button>
+          {coverImage ? (
+            <Image src={coverImage} alt="book picture" fill />
+          ) : (
+            <div className="h-full w-full bg-authGreen-400" />
           )}
-          {isFavorite && (
-            <button onClick={removeFavoriteHandler}>
-              <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+          {!isOwner && (
+            <button onClick={toggleFavoriteHandler}>
+              {isFavorite ? (
+                <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+              ) : (
+                <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+              )}
             </button>
           )}
         </div>
