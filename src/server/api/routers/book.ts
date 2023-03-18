@@ -84,7 +84,7 @@ export const bookRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { penname, cursor, limit } = input;
-      if (!ctx.session?.user?.penname) {
+      if (!ctx.session?.user.id) {
         const books = await ctx.prisma.book.findMany({
           where: {
             status: BookStatus.PUBLISHED,
@@ -123,9 +123,14 @@ export const bookRouter = createTRPCRouter({
                 owners: {
                   some: {
                     user: {
-                      penname: {
-                        in: [ctx.session.user.penname, penname],
-                      },
+                      AND: [
+                        {
+                          penname: penname,
+                        },
+                        {
+                          id: ctx.session.user.id,
+                        },
+                      ],
                     },
                   },
                 },
