@@ -5,8 +5,10 @@ import { createInnerTRPCContext } from "@server/api/trpc";
 import { appRouter } from "@server/api/root";
 import superjson from "superjson";
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import ChapterPostList from "@components/Chapter/ChapterPostList";
 import { useSession } from "next-auth/react";
+import { api } from "@utils/api";
+import { Fragment } from "react";
+import ChapterPost from "@components/Chapter/ChapterPost";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -18,7 +20,12 @@ export const getServerSideProps = async (
     transformer: superjson,
   });
 
-  const promises = [ssg.category.getAll.prefetch()];
+  const promises = [
+    ssg.category.getAll.prefetch(),
+    ssg.chapter.getAll.prefetchInfinite({
+      limit: 10,
+    }),
+  ];
   if (session) {
     promises.push(ssg.category.getFollowed.prefetch());
   }
@@ -34,10 +41,28 @@ export const getServerSideProps = async (
 // TODO: Guard categories with auth
 const Home = () => {
   const { data: session } = useSession();
+  const { data, isSuccess } = api.chapter.getAll.useInfiniteQuery(
+    {
+      limit: 10,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
+
   return (
     <div className="flex flex-col px-10 py-4">
       <CategoryBoard isLogin={Boolean(session)} />
-      <ChapterPostList />
+      <div className="flex flex-col gap-8">
+        {isSuccess &&
+          data?.pages.map((page, index) => (
+            <Fragment key={index}>
+              {page.items.map((chapter) => (
+                <ChapterPost key={chapter.id} chapter={chapter} />
+              ))}
+            </Fragment>
+          ))}
+      </div>
     </div>
   );
 };
