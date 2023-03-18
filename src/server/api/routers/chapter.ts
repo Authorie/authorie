@@ -1,5 +1,4 @@
-import type { Prisma } from "@prisma/client";
-import { BookStatus } from "@prisma/client";
+import { BookStatus, Prisma } from "@prisma/client";
 import { makePagination } from "@server/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -228,6 +227,7 @@ export const chapterRouter = createTRPCRouter({
                 id: ctx.session.user.id,
               },
             },
+            s,
           },
         });
       } catch (err) {
@@ -376,6 +376,64 @@ export const chapterRouter = createTRPCRouter({
         });
       }
     }),
+  isLike: protectedProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      let chapter;
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            book: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      if (chapter.publishedAt.getTime() > Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chapter not published yet",
+        });
+      }
+
+      // needs discussion about whether to like archived books
+      const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
+      if (!validBookStatus.includes(chapter.book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't like chapters of this book",
+        });
+      }
+
+      try {
+        return !!(await ctx.prisma.chapterLike.findUnique({
+          where: {
+            chapterId_userId: {
+              chapterId: input.id,
+              userId: ctx.session.user.id,
+            },
+          },
+        }));
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+          cause: err,
+        });
+      }
+    }),
   like: protectedProcedure
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
@@ -443,6 +501,88 @@ export const chapterRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "failed to like",
+          cause: err,
+        });
+      }
+    }),
+  unlike: protectedProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      let chapter;
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            book: {
+              select: {
+                status: true,
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+
+      if (chapter.publishedAt.getTime() > Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chapter not published yet",
+        });
+      }
+
+      // needs discussion about whether to like archived books
+      const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
+      if (!validBookStatus.includes(chapter.book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't like chapters of this book",
+        });
+      }
+
+      try {
+        await ctx.prisma.chapterLike.findUniqueOrThrow({
+          where: {
+            chapterId_userId: {
+              chapterId: input.id,
+              userId: ctx.session.user.id,
+            },
+          },
+        });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You haven't liked this chapter yet",
+          });
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Something went wrong",
+            cause: err,
+          });
+        }
+      }
+
+      try {
+        await ctx.prisma.chapterLike.delete({
+          where: {
+            chapterId_userId: {
+              chapterId: input.id,
+              userId: ctx.session.user.id,
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to unlike",
           cause: err,
         });
       }
