@@ -1,5 +1,8 @@
 import Layout from "@components/Layout/Layout";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import { Analytics } from "@vercel/analytics/react";
 import type {
@@ -10,6 +13,7 @@ import type {
 import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import type { ReactElement, ReactNode } from "react";
+import superjson from "superjson";
 
 import "../styles/globals.css";
 
@@ -17,17 +21,26 @@ export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  if (session && !session.user.penname) {
-    return {
-      redirect: {
-        destination: "/auth/new-user",
-        permanent: false,
-      },
-    };
+  const ssg = createProxySSGHelpers({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session }),
+    transformer: superjson,
+  });
+  if (session) {
+    await ssg.user.getData.prefetch();
+    if (!session.user.penname) {
+      return {
+        redirect: {
+          destination: "/auth/new-user",
+          permanent: false,
+        },
+      };
+    }
   }
 
   return {
     props: {
+      trpcState: ssg.dehydrate(),
       session,
     },
   };

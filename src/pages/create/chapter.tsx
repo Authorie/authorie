@@ -1,12 +1,26 @@
 import BookComboBox from "@components/Create/Chapter/BookComboBox";
 import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
-import TextEditor from "@components/Create/Chapter/TextEditor";
+import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
+import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { BookStatus, type Book } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
+import CharacterCount from "@tiptap/extension-character-count";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import Table from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import TextStyle from "@tiptap/extension-text-style";
+import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
@@ -49,11 +63,76 @@ export const getServerSideProps = async (
 
 const CreateChapter = () => {
   const { status } = useSession();
-  const [chapterId, setChapterId] = useState<string | undefined>();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState<JSONContent | null>(null);
-  const [book, setBook] = useState<Book | null>(null);
   const context = api.useContext();
+  const [title, setTitle] = useState("");
+  const [book, setBook] = useState<Book | null>(null);
+  const [chapterId, setChapterId] = useState<string | undefined>();
+  const editor = useEditor({
+    content: "",
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        paragraph: {
+          HTMLAttributes: {
+            class: "text-base",
+          },
+        },
+        bulletList: {
+          HTMLAttributes: {
+            class: "list-disc px-4",
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: "list-decimal px-4",
+          },
+        },
+      }),
+      Underline,
+      Heading,
+      Highlight,
+      TextStyle,
+      Color,
+      Link.configure({
+        HTMLAttributes: {
+          class:
+            "rounded shadow-md bg-white p-1 hover:underline hover:bg-slate-100 text-blue-500",
+        },
+      }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class:
+            "border-collapse m-0 select-all overflow-hidden w-full table-auto",
+        },
+      }),
+      TableRow.configure({
+        HTMLAttributes: {
+          class: "select-all",
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class:
+            "border-slate-500 border-2 border-solid bg-slate-200 relative text-left select-all",
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class:
+            "border-slate-500 border-2 border-solid w-20 text-left select-all",
+        },
+      }),
+      Image,
+      CharacterCount,
+    ],
+    editorProps: {
+      attributes: {
+        class: "focus:outline-none min-h-[500px] w-full px-5",
+      },
+    },
+    autofocus: "start",
+  });
   const { data: user } = api.user.getData.useQuery(undefined, {
     enabled: status === "authenticated",
   });
@@ -62,12 +141,12 @@ const CreateChapter = () => {
   });
   const createChapterMutation = api.chapter.create.useMutation();
   const onSaveHandler = () => {
-    if (title !== "" && content) {
+    if (editor && title !== "") {
       createChapterMutation.mutate(
         {
           chapterId,
           title,
-          content,
+          content: editor.getJSON(),
           bookId: book ? book.id : undefined,
         },
         {
@@ -79,12 +158,12 @@ const CreateChapter = () => {
     }
   };
   const onPublishHandler = () => {
-    if (title !== "" && content) {
+    if (editor && title !== "") {
       createChapterMutation.mutate(
         {
           chapterId,
           title,
-          content,
+          content: editor.getJSON(),
           bookId: book ? book.id : undefined,
           publishedAt: true,
         },
@@ -97,11 +176,12 @@ const CreateChapter = () => {
     }
   };
   const selectDraftHandler = (id: string) => {
+    if (!editor) return;
     const draft = draftChapters?.find((chapter) => chapter.id === id);
     if (draft) {
       setChapterId(draft.id);
       setTitle(draft.title);
-      setContent(draft.content as JSONContent);
+      editor?.commands.setContent(draft.content as JSONContent);
       setBook(draft.book as Book);
     }
   };
@@ -146,28 +226,33 @@ const CreateChapter = () => {
             </div>
           )}
         </div>
-        <div className="h-full bg-white px-8 py-6">
-          <TextEditor content={content} onEditorUpdate={setContent} />
-          <div className="flex justify-between">
-            <button className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white">
-              Delete
-            </button>
-            <div className="flex gap-3">
-              <button
-                className="h-6 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
-                onClick={onSaveHandler}
-              >
-                Save
+        {editor && (
+          <div className="h-full bg-white px-8 py-6">
+            <div className="flex flex-1 flex-col">
+              <TextEditorMenuBar editor={editor} />
+              <EditorContent className="max-h-full flex-1" editor={editor} />
+            </div>
+            <div className="flex justify-between">
+              <button className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white">
+                Delete
               </button>
-              <button
-                className="h-6 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
-                onClick={onPublishHandler}
-              >
-                Publish
-              </button>
+              <div className="flex gap-3">
+                <button
+                  className="h-6 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
+                  onClick={onSaveHandler}
+                >
+                  Save
+                </button>
+                <button
+                  className="h-6 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
+                  onClick={onPublishHandler}
+                >
+                  Publish
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
