@@ -10,6 +10,7 @@ import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import * as z from "zod";
+import useImageUpload from "@hooks/imageUpload";
 
 const validationSchema = z.object({
   title: z
@@ -22,8 +23,10 @@ const validationSchema = z.object({
 type ValidationSchema = z.infer<typeof validationSchema>;
 
 const CreateBook = () => {
-  const [bookCover, setBookCover] = useState<string>();
-  const [bookBackground, setBookBackground] = useState<string>();
+  const { imageData: bookCover, uploadHandler: setBookCover } =
+    useImageUpload();
+  const { imageData: bookBackground, uploadHandler: setBookBackground } =
+    useImageUpload();
   const router = useRouter();
   const { data: session } = useSession({
     required: true,
@@ -56,28 +59,6 @@ const CreateBook = () => {
     reset();
   };
 
-  const convertToBase64 = (
-    e: ChangeEvent<HTMLInputElement>,
-    cover: boolean
-  ) => {
-    if (e.target.files != null) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        if (cover) {
-          setBookCover(reader.result?.toString());
-        } else {
-          setBookBackground(reader.result?.toString());
-        }
-      };
-      console.log("book cover file", bookCover);
-      if (file != undefined) {
-        reader.readAsDataURL(file);
-      }
-    }
-  };
-
   return (
     <form
       onSubmit={(e) => void handleSubmit(onSubmit)(e)}
@@ -107,7 +88,7 @@ const CreateBook = () => {
               accept="image/png, image/jpeg"
               name="BookCover"
               className="hidden"
-              onChange={(e) => convertToBase64(e, true)}
+              onChange={setBookCover}
             />
             <Image
               src={bookCover ? bookCover : "/placeholder_book_cover.png"}
@@ -126,7 +107,7 @@ const CreateBook = () => {
                 name="BookWallpaper"
                 id="BookWallpaper"
                 className="hidden cursor-pointer"
-                onChange={(e) => convertToBase64(e, false)}
+                onChange={setBookBackground}
               />
               <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
             </label>

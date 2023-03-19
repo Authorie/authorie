@@ -1,4 +1,4 @@
-import { useCallback, useState, type ChangeEvent } from "react";
+import { useState, useCallback, type ChangeEvent } from "react";
 
 const useImageUpload = () => {
   const [imageData, setImageData] = useState("");
@@ -6,14 +6,20 @@ const useImageUpload = () => {
     const file = e.target.files?.[0];
     if (file !== undefined) {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
       reader.onloadend = () => {
-        const base64 = reader.result;
-        if (typeof base64 === "string") setImageData(base64);
+        if (reader.result) {
+          setImageData(reader.result?.toString());
+        }
       };
+      reader.readAsDataURL(file);
     }
   }, []);
-  return { imageData, uploadHandler, setImageData };
+
+  const resetImageData = useCallback(() => {
+    setImageData("");
+  }, []);
+
+  return { imageData, uploadHandler, resetImageData };
 };
 
 export default useImageUpload;
