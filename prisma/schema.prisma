@@ -187,7 +187,7 @@ model Chapter {
     title       String
     content     Json
     views       Int              @default(0)
-    publishedAt DateTime         @default(now())
+    publishedAt DateTime?
     createdAt   DateTime         @default(now())
     updatedAt   DateTime         @updatedAt
     book        Book?            @relation(fields: [bookId], references: [id])

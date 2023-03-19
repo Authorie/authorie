@@ -141,6 +141,31 @@ export const chapterRouter = createTRPCRouter({
         });
       }
     }),
+  getDrafts: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.prisma.chapter.findMany({
+        where: {
+          ownerId: ctx.session.user.id,
+          OR: [
+            {
+              publishedAt: null,
+            },
+            {
+              publishedAt: {
+                gt: new Date(),
+              },
+            },
+          ],
+        },
+      });
+    } catch (err) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to get drafts",
+        cause: err,
+      });
+    }
+  }),
   getChapterLikes: publicProcedure
     .input(z.object({ id: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
@@ -339,7 +364,7 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
-      if (chapter.publishedAt.getTime() < Date.now()) {
+      if (chapter.publishedAt && chapter.publishedAt.getTime() < Date.now()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't update a published chapter",
@@ -388,7 +413,7 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
-      if (chapter.publishedAt.getTime() > Date.now()) {
+      if (chapter.publishedAt && chapter.publishedAt.getTime() > Date.now()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chapter not published yet",
@@ -437,7 +462,7 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
-      if (chapter.publishedAt.getTime() > Date.now()) {
+      if (chapter.publishedAt && chapter.publishedAt.getTime() > Date.now()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chapter not published yet",
@@ -486,7 +511,7 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
-      if (chapter.publishedAt.getTime() > Date.now()) {
+      if (chapter.publishedAt && chapter.publishedAt.getTime() > Date.now()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chapter not published yet",
@@ -548,7 +573,7 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
-      if (chapter.publishedAt.getTime() > Date.now()) {
+      if (chapter.publishedAt && chapter.publishedAt.getTime() > Date.now()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chapter not published yet",
