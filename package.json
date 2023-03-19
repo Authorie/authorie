@@ -42,6 +42,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.43.7",
+    "react-toastify": "^9.1.1",
     "remixicon": "^2.5.0",
     "remixicon-react": "^1.0.0",
     "superjson": "1.12.2",

@@ -6,7 +6,6 @@ import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
 import { useRouter } from "next/router";
-import type { ChangeEvent } from "react";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import * as z from "zod";

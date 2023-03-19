@@ -3,6 +3,7 @@ import AddCircleLineIcon from "remixicon-react/AddCircleLineIcon";
 import DeleteBinLineIcon from "remixicon-react/DeleteBinLineIcon";
 import MergeCellsHorizontalIcon from "remixicon-react/MergeCellsHorizontalIcon";
 import SplitCellsHorizontalIcon from "remixicon-react/SplitCellsHorizontalIcon";
+import TableLineIcon from "remixicon-react/TableLineIcon";
 
 import type { Editor } from "@tiptap/react";
 
@@ -83,7 +84,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
     <div className="relative flex content-center">
       <Menu>
         <Menu.Button className=" h-fit self-center rounded p-1 hover:bg-slate-100">
-          <i className="ri-table-line"></i>
+          <TableLineIcon className="h-4 w-4" />
         </Menu.Button>
         <Menu.Items className="absolute z-10 flex w-fit translate-y-10 flex-col rounded bg-white p-1 drop-shadow-lg">
           {tableItems.map((item, index) => (
@@ -96,7 +97,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
                     onClick={item.action}
                     className={`justify-content-start m-1 flex gap-1 whitespace-nowrap rounded-md p-1 hover:bg-slate-200`}
                   >
-                    <item.Icon className="w-4 h-4" />
+                    <item.Icon className="h-4 w-4" />
                     {item.name}
                   </button>
                 )}

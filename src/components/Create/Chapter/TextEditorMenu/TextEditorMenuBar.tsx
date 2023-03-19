@@ -124,32 +124,24 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
   ];
 
   return (
-    <div className="flex flex-row flex-nowrap content-center justify-start pb-4">
+    <div className="flex flex-row flex-nowrap content-center justify-start">
       {ToggleButtons.map((item, index) => (
-        <Fragment key={index}>
-          <TextEditorMenuItem {...item}></TextEditorMenuItem>
-        </Fragment>
+        <TextEditorMenuItem key={item.title + String(index)} {...item} />
       ))}
-      <FontColorSelection editor={editor}></FontColorSelection>
-      <TextEditorMenuItem
-        {...{ icon: Fragment, title: "divider" }}
-      ></TextEditorMenuItem>
-      <LinkInputButton editor={editor}></LinkInputButton>
-      <TableMenu editor={editor}></TableMenu>
-      <ImageInputButton editor={editor}></ImageInputButton>
-      <TextEditorMenuItem
-        {...{ icon: Fragment, title: "divider" }}
-      ></TextEditorMenuItem>
-      <div className="self-center text-slate-500">
+      <FontColorSelection editor={editor} />
+      <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
+      <LinkInputButton editor={editor} />
+      <TableMenu editor={editor} />
+      <ImageInputButton editor={editor} />
+      <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
+      <div className="w-14 self-center text-xs text-slate-500">
         {"characterCount" in editor.storage &&
           isCharacterCountStorage(editor.storage.characterCount) &&
           editor.storage.characterCount.words()}{" "}
         words
       </div>
-      <TextEditorMenuItem
-        {...{ icon: Fragment, title: "divider" }}
-      ></TextEditorMenuItem>
-      <div className="self-center text-slate-500">
+      <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
+      <div className="w-20 self-center text-xs text-slate-500">
         {"characterCount" in editor.storage &&
           isCharacterCountStorage(editor.storage.characterCount) &&
           editor.storage.characterCount.characters()}{" "}

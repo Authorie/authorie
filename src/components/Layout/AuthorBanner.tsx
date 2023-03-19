@@ -1,4 +1,4 @@
-import ErrorDialog from "@components/Error/ErrorDialog";
+import ErrorDialog from "@components/alert/ErrorDialog";
 import LoadingSpinner from "@components/ui/LoadingSpinner";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import type { RouterOutputs } from "@utils/api";

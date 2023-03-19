@@ -1,5 +1,4 @@
 import { type RemixiconReactIconComponentType } from "remixicon-react";
-import "remixicon/fonts/remixicon.css";
 
 type props = {
   icon: RemixiconReactIconComponentType;

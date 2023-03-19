@@ -13,7 +13,7 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
   return (
     <Popover className="relative flex content-center">
       <Popover.Button className="h-fit self-center rounded p-1 hover:bg-slate-100">
-        <ImageLineIcon />
+        <ImageLineIcon className="h-4 w-4" />
       </Popover.Button>
 
       <Popover.Panel className="absolute z-10 flex translate-y-10 flex-col rounded bg-white p-1 drop-shadow-lg">

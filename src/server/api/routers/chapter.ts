@@ -332,32 +332,42 @@ export const chapterRouter = createTRPCRouter({
             message: "You can't change the book of a chapter",
           });
         }
+
+        try {
+          return await ctx.prisma.chapter.update({
+            where: { id: chapterId },
+            data: {
+              title: title,
+              content: content,
+              publishedAt:
+                typeof publishedAt === "boolean" ? new Date() : publishedAt,
+              book: bookId
+                ? {
+                    connect: {
+                      id: bookId,
+                    },
+                  }
+                : undefined,
+              owner: {
+                connect: {
+                  id: ctx.session.user.id,
+                },
+              },
+            },
+          });
+        } catch (err) {
+          console.error(err);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Something went wrong",
+            cause: err,
+          });
+        }
       }
 
       try {
-        return await ctx.prisma.chapter.upsert({
-          where: {
-            id: chapterId,
-          },
-          create: {
-            title: title,
-            content: content,
-            publishedAt:
-              typeof publishedAt === "boolean" ? new Date() : publishedAt,
-            book: bookId
-              ? {
-                  connect: {
-                    id: bookId,
-                  },
-                }
-              : undefined,
-            owner: {
-              connect: {
-                id: ctx.session.user.id,
-              },
-            },
-          },
-          update: {
+        return await ctx.prisma.chapter.create({
+          data: {
             title: title,
             content: content,
             publishedAt:
@@ -377,6 +387,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Something went wrong",
