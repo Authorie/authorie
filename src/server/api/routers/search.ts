@@ -1,4 +1,4 @@
-import { BookOwnerStatus } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { makePagination } from "@server/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -47,9 +47,11 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         search: z.object({
+          userId: z.string().cuid().optional(),
           penname: z.string().optional(),
           title: z.string().optional(),
           description: z.string().optional(),
+          status: z.nativeEnum(BookStatus).array().optional(),
         }),
         cursor: z.string().uuid().optional(),
         limit: z.number().int().min(1).max(10).optional(),
@@ -62,21 +64,23 @@ export const searchRouter = createTRPCRouter({
           take: limit ? limit + 1 : undefined,
           cursor: cursor ? { id: cursor } : undefined,
           where: {
-            OR: [
-              {
-                owners: {
-                  some: {
-                    user: {
+            owners: {
+              some: {
+                user: search.userId
+                  ? {
+                      id: search.userId,
+                    }
+                  : {
                       penname: {
                         contains: search.penname,
                       },
                     },
-                    status: {
-                      in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
-                    },
-                  },
+                status: {
+                  in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
                 },
               },
+            },
+            OR: [
               {
                 title: {
                   contains: search.title,
@@ -85,6 +89,11 @@ export const searchRouter = createTRPCRouter({
               {
                 description: {
                   contains: search.description,
+                },
+              },
+              {
+                status: {
+                  in: search.status,
                 },
               },
             ],
