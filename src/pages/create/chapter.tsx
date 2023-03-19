@@ -192,7 +192,7 @@ const CreateChapter = () => {
 
   return (
     <div className="flex h-full gap-4 rounded-b-2xl bg-white px-3 py-5">
-      <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-100 p-4 shadow-lg">
+      <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
         <h1 className="text-xl font-bold">Chapter drafts</h1>
         <p className="text-xs">
           Select one of previous chapter drafts, or you can create a new one.
@@ -206,7 +206,7 @@ const CreateChapter = () => {
             />
           ))}
       </div>
-      <div className="flex flex-1 flex-col overflow-hidden rounded-lg bg-gray-100 shadow-lg">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-lg bg-gray-100 shadow-xl drop-shadow">
         <div className="relative flex flex-col bg-gray-200 px-4 py-3">
           <label
             className="absolute inset-0 cursor-pointer"
