@@ -3,6 +3,7 @@ import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
 import { PhotoIcon } from "@heroicons/react/24/outline";
+import useImageUpload from "@hooks/imageUpload";
 import { BookStatus, type Book } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
@@ -25,6 +26,7 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
+import NextImage from "next/image";
 import { useState } from "react";
 import superjson from "superjson";
 
@@ -67,6 +69,7 @@ const CreateChapter = () => {
   const [title, setTitle] = useState("");
   const [book, setBook] = useState<Book | null>(null);
   const [chapterId, setChapterId] = useState<string | undefined>();
+  const { imageData, uploadHandler, setImageData } = useImageUpload();
   const editor = useEditor({
     content: "",
     extensions: [
@@ -128,7 +131,7 @@ const CreateChapter = () => {
     ],
     editorProps: {
       attributes: {
-        class: "focus:outline-none min-h-[500px] w-full px-5",
+        class: "focus:outline-none h-full w-full px-5",
       },
     },
     autofocus: "start",
@@ -183,12 +186,13 @@ const CreateChapter = () => {
       setTitle(draft.title);
       editor?.commands.setContent(draft.content as JSONContent);
       setBook(draft.book as Book);
+      setImageData(""); // set image data to empty string to reset image preview
     }
   };
 
   return (
-    <div className="flex gap-4 rounded-b-2xl bg-white px-3 py-5">
-      <div className="flex w-1/4 flex-col gap-3 rounded-lg bg-gray-100 p-4 shadow-lg">
+    <div className="flex h-full gap-4 rounded-b-2xl bg-white px-3 py-5">
+      <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-100 p-4 shadow-lg">
         <h1 className="text-xl font-bold">Chapter drafts</h1>
         <p className="text-xs">
           Select one of previous chapter drafts, or you can create a new one.
@@ -202,35 +206,52 @@ const CreateChapter = () => {
             />
           ))}
       </div>
-      <div className="w-3/4 overflow-hidden rounded-lg bg-gray-100 shadow-lg">
-        <div className="flex flex-col bg-gray-200 px-4 py-3">
-          <PhotoIcon className="h-6 w-6" />
-          <input
-            placeholder="Untitled"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            className="my-2 bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
-          />
-          <div className="mb-2 flex items-center">
-            <span className="mr-4 text-xs text-gray-600">Author: </span>
-            {user && <span className="text-xs">{user.penname}</span>}
-          </div>
-          {user && (
-            <div className="flex items-center">
-              <span className="mr-4 text-xs text-gray-600">Book: </span>
-              <BookComboBox
-                user={user}
-                selectedBook={book}
-                onSelectBook={setBook}
-              />
+      <div className="flex flex-1 flex-col overflow-hidden rounded-lg bg-gray-100 shadow-lg">
+        <div className="relative flex flex-col bg-gray-200 px-4 py-3">
+          <label
+            className="absolute inset-0 cursor-pointer"
+            htmlFor="chapter-cover-image-upload"
+          >
+            {imageData && (
+              <NextImage src={imageData} alt="chapter's cover" fill />
+            )}
+            <input
+              hidden
+              id="chapter-cover-image-upload"
+              type="file"
+              accept="image/jpeg; image/png"
+              onChange={uploadHandler}
+            />
+          </label>
+          <PhotoIcon className="h-6 w-6 cursor-pointer" />
+          <div className="z-10">
+            <input
+              placeholder="Untitled"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              className="my-2 w-fit bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
+            />
+            <div className="mb-2 flex items-center">
+              <span className="mr-4 text-xs text-gray-600">Author: </span>
+              {user && <span className="text-xs">{user.penname}</span>}
             </div>
-          )}
+            {user && (
+              <div className="flex items-center">
+                <span className="mr-4 text-xs text-gray-600">Book: </span>
+                <BookComboBox
+                  user={user}
+                  selectedBook={book}
+                  onSelectBook={setBook}
+                />
+              </div>
+            )}
+          </div>
         </div>
         {editor && (
-          <div className="h-full bg-white px-8 py-6">
+          <div className="flex flex-1 flex-col bg-white px-8 py-6">
             <div className="flex flex-1 flex-col">
               <TextEditorMenuBar editor={editor} />
-              <EditorContent className="max-h-full flex-1" editor={editor} />
+              <EditorContent editor={editor} />
             </div>
             <div className="flex justify-between">
               <button className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white">
