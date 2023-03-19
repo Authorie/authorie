@@ -190,8 +190,8 @@ model Chapter {
     publishedAt DateTime         @default(now())
     createdAt   DateTime         @default(now())
     updatedAt   DateTime         @updatedAt
-    book        Book             @relation(fields: [bookId], references: [id])
-    bookId      String
+    book        Book?            @relation(fields: [bookId], references: [id])
+    bookId      String?
     owner       User             @relation(fields: [ownerId], references: [id])
     ownerId     String
     likes       ChapterLike[]
