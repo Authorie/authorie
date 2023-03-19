@@ -1,10 +1,11 @@
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import useSearch from "@hooks/search";
 import { BookStatus } from "@prisma/client";
 import type { RouterOutputs } from "@utils/api";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment } from "react";
 
 type Books = RouterOutputs["book"]["getAll"]["items"];
 
@@ -14,34 +15,22 @@ type props = {
   onSelectBook: (book: Books[number]) => void;
 };
 
-const bookFilter = (book: Books[number], query: string) => {
-  const title = book.title.toLowerCase();
-  const queryLower = query.toLowerCase();
-  return title.includes(queryLower);
-};
-
-const bookStatusFilter = (book: Books[number]) => {
-  return (
-    book.status === BookStatus.DRAFT || book.status === BookStatus.PUBLISHED
-  );
-};
-
 const BookComboBox = ({ user, selectedBook, onSelectBook }: props) => {
   const { status } = useSession();
-  const [query, setQuery] = useState("");
-  const { data: books } = api.book.getAll.useInfiniteQuery(
-    { penname: user?.penname as string, limit: 10 },
+  const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
+  const { data: books } = api.search.searchBooks.useQuery(
     {
-      enabled: status === "authenticated" && user !== undefined,
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      search: {
+        userId: user?.id,
+        title: searchTerm,
+        status: [BookStatus.DRAFT, BookStatus.PUBLISHED],
+      },
+      limit: 5,
+    },
+    {
+      enabled: status === "authenticated" && user !== undefined && enableSearch,
     }
   );
-
-  const filteredBooks = useMemo(() => {
-    return (books?.pages || [])
-      .reduce((acc, page) => [...acc, ...page.items], [] as Books)
-      .filter((book) => bookStatusFilter(book) && bookFilter(book, query));
-  }, [books, query]);
 
   return (
     <Combobox value={selectedBook} onChange={onSelectBook} by="id">
@@ -49,7 +38,7 @@ const BookComboBox = ({ user, selectedBook, onSelectBook }: props) => {
         <div className="flex w-full items-center overflow-hidden rounded-lg shadow-md outline outline-gray-600">
           <Combobox.Input
             className="w-full border-none bg-transparent pl-3 pr-10 text-xs leading-5 text-gray-900 focus:outline-none"
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={searchTermChangeHandler}
             displayValue={(book) =>
               "title" in (book as Books[number])
                 ? (book as Books[number]).title
@@ -71,12 +60,12 @@ const BookComboBox = ({ user, selectedBook, onSelectBook }: props) => {
         >
           {books && (
             <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              {filteredBooks.length === 0 ? (
+              {books.items.length === 0 ? (
                 <div className="relative cursor-default select-none bg-gray-200 py-2 px-4 text-gray-700">
                   No books found
                 </div>
               ) : (
-                filteredBooks.map((book) => (
+                books.items.map((book) => (
                   <Combobox.Option
                     key={book.id}
                     className={({ active }) =>
