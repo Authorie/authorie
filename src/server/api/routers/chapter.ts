@@ -157,6 +157,9 @@ export const chapterRouter = createTRPCRouter({
             },
           ],
         },
+        include: {
+          book: true,
+        },
       });
     } catch (err) {
       throw new TRPCError({
@@ -227,20 +230,21 @@ export const chapterRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
+        chapterId: z.string().cuid().optional(),
         title: z.string(),
         content: z.unknown().transform((v) => v as Prisma.JsonObject),
         bookId: z.string().cuid().optional(),
         publishedAt: z
-          .date()
-          .refine((v) => v.getTime() >= Date.now(), {
-            message: "Date in the past",
-          })
+          .union([
+            z.date().refine((date) => date.getTime() > Date.now()),
+            z.boolean(),
+          ])
           .optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       let book;
-      const { title, content, bookId, publishedAt } = input;
+      const { chapterId, title, content, bookId, publishedAt } = input;
       if (bookId) {
         try {
           book = await ctx.prisma.book.findUniqueOrThrow({
@@ -288,12 +292,58 @@ export const chapterRouter = createTRPCRouter({
         }
       }
 
+      if (chapterId) {
+        let chapter;
+        try {
+          chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+            where: {
+              id: chapterId,
+            },
+          });
+        } catch (err) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Chapter not found",
+            cause: err,
+          });
+        }
+
+        if (chapter.ownerId !== ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You are not the owner of this chapter",
+          });
+        }
+
+        if (
+          publishedAt &&
+          chapter.publishedAt &&
+          chapter.publishedAt.getTime() < Date.now()
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You can't update a published chapter",
+          });
+        }
+
+        if (bookId && chapter.bookId && chapter.bookId !== bookId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "You can't change the book of a chapter",
+          });
+        }
+      }
+
       try {
-        return await ctx.prisma.chapter.create({
-          data: {
+        return await ctx.prisma.chapter.upsert({
+          where: {
+            id: chapterId,
+          },
+          create: {
             title: title,
             content: content,
-            publishedAt: publishedAt,
+            publishedAt:
+              typeof publishedAt === "boolean" ? new Date() : publishedAt,
             book: bookId
               ? {
                   connect: {
@@ -307,77 +357,23 @@ export const chapterRouter = createTRPCRouter({
               },
             },
           },
-        });
-      } catch (err) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong",
-          cause: err,
-        });
-      }
-    }),
-  update: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().cuid(),
-        title: z.string().optional(),
-        content: z
-          .unknown()
-          .transform((v) => v as Prisma.JsonObject)
-          .optional(),
-        publishedAt: z
-          .date()
-          .refine((v) => v.getTime() >= Date.now(), {
-            message: "Date in the past",
-          })
-          .optional(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      let chapter;
-      const { id, title, content, publishedAt } = input;
-      try {
-        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
-          where: {
-            id,
-          },
-          include: {
-            book: {
-              select: {
-                status: true,
+          update: {
+            title: title,
+            content: content,
+            publishedAt:
+              typeof publishedAt === "boolean" ? new Date() : publishedAt,
+            book: bookId
+              ? {
+                  connect: {
+                    id: bookId,
+                  },
+                }
+              : undefined,
+            owner: {
+              connect: {
+                id: ctx.session.user.id,
               },
             },
-          },
-        });
-      } catch (err) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Chapter not found",
-          cause: err,
-        });
-      }
-
-      if (chapter.ownerId !== ctx.session.user.id) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You are not the owner of this chapter",
-        });
-      }
-
-      if (chapter.publishedAt && chapter.publishedAt.getTime() < Date.now()) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You can't update a published chapter",
-        });
-      }
-
-      try {
-        return await ctx.prisma.chapter.update({
-          where: { id },
-          data: {
-            title,
-            content,
-            publishedAt,
           },
         });
       } catch (err) {

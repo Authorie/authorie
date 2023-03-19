@@ -11,16 +11,19 @@ import TextStyle from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { useEffect } from "react";
 
 import { Heading } from "./TextEditorMenu/Heading";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";
 
 type props = {
+  content: JSONContent | null;
   onEditorUpdate: (content: JSONContent) => void;
 };
 
-const TextEditor = ({ onEditorUpdate }: props) => {
+const TextEditor = ({ content, onEditorUpdate }: props) => {
   const editor = useEditor({
+    content,
     extensions: [
       StarterKit.configure({
         heading: false,
@@ -78,7 +81,6 @@ const TextEditor = ({ onEditorUpdate }: props) => {
       Image,
       CharacterCount,
     ],
-    content: "",
     editorProps: {
       attributes: {
         class: "focus:outline-none min-h-[500px] w-full px-5",
@@ -89,6 +91,10 @@ const TextEditor = ({ onEditorUpdate }: props) => {
     },
     autofocus: "start",
   });
+
+  useEffect(() => {
+    editor?.commands.setContent(content, false);
+  }, [content, editor]);
 
   return (
     <div className="min-h-[500px]">

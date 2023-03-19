@@ -1,17 +1,11 @@
 import { PencilSquareIcon } from "@heroicons/react/24/solid";
-import { useRouter } from "next/router";
 
 type props = {
   title: string;
-  id: string;
+  onClickHandler: () => void;
 };
 
-const ChapterDraftCard = ({ title, id }: props) => {
-  const router = useRouter();
-  const onClickHandler = () => {
-    void router.push(`/create/chapter/${id}`);
-  };
-
+const ChapterDraftCard = ({ title, onClickHandler }: props) => {
   return (
     <div
       onClick={onClickHandler}

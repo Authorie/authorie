@@ -1,21 +1,24 @@
 import { Combobox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import useSearch from "@hooks/search";
+import type { Book } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
-import type { RouterOutputs } from "@utils/api";
-import { api } from "@utils/api";
+import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
 import { Fragment } from "react";
 
-type Books = RouterOutputs["book"]["getAll"]["items"];
-
 type props = {
   user: RouterOutputs["user"]["getData"];
-  selectedBook: Books[number] | undefined;
-  onSelectBook: (book: Books[number]) => void;
+  selectedBook: Book | null;
+  onSelectBook: (book: Book) => void;
 };
 
-const BookComboBox = ({ user, selectedBook, onSelectBook }: props) => {
+const BookComboBox = ({
+  user,
+
+  selectedBook,
+  onSelectBook,
+}: props) => {
   const { status } = useSession();
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const { data: books } = api.search.searchBooks.useQuery(
@@ -40,8 +43,10 @@ const BookComboBox = ({ user, selectedBook, onSelectBook }: props) => {
             className="w-full border-none bg-transparent pl-3 pr-10 text-xs leading-5 text-gray-900 focus:outline-none"
             onChange={searchTermChangeHandler}
             displayValue={(book) =>
-              "title" in (book as Books[number])
-                ? (book as Books[number]).title
+              book
+                ? "title" in (book as Book)
+                  ? (book as Book).title
+                  : ""
                 : ""
             }
           />
