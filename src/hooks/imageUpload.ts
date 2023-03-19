@@ -7,7 +7,9 @@ const useImageUpload = () => {
     if (file !== undefined) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImageData(reader.result?.toString() as string);
+        if (reader.result) {
+          setImageData(reader.result?.toString());
+        }
       };
       reader.readAsDataURL(file);
     }
