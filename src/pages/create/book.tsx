@@ -86,11 +86,15 @@ const CreateBook = () => {
       <div className="flex flex-col gap-10">
         <div className="relative flex h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pt-24 pb-11 drop-shadow-lg">
           <div className="absolute top-0 left-0 right-0 -z-10 h-72 overflow-hidden rounded-t-lg">
-            <Image
-              src={bookBackground ? bookBackground : "/mockWallpaper.jpeg"}
-              layout="fill"
-              alt="book's wallpaper"
-            />
+            {bookBackground ? (
+              <Image
+                src={bookBackground}
+                layout="fill"
+                alt="book's wallpaper"
+              />
+            ) : (
+              <div className="h-full w-full bg-authGreen-500"></div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-gray-100" />
           </div>
           <label
