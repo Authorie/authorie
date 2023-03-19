@@ -34,11 +34,6 @@ export const getServerSideProps = async (
   };
 };
 
-const refocusWindow = () => {
-  window.blur();
-  window.focus();
-};
-
 const NewUser = () => {
   const {
     register,
@@ -50,7 +45,6 @@ const NewUser = () => {
   const router = useRouter();
   const updateUser = api.user.update.useMutation({
     onSuccess() {
-      refocusWindow();
       void router.replace("/");
     },
   });
