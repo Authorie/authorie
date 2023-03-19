@@ -3,24 +3,18 @@ import { getServerAuthSession } from "@server/auth";
 import { api } from "@utils/api";
 import { type GetServerSidePropsContext } from "next";
 import { useRouter } from "next/router";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type FormValues = {
-  penname: string;
-};
-
-const resolver: Resolver<FormValues> = (values) => ({
-  values: values.penname ? values : {},
-  errors:
-    values.penname.trim() === ""
-      ? {
-          penname: {
-            type: "required",
-            message: "penname is required.",
-          },
-        }
-      : {},
+const validationSchema = z.object({
+  penname: z
+    .string()
+    .max(50, { message: "Your penname is too long" })
+    .min(1, { message: "Your oenname is required" }),
 });
+
+type ValidationSchema = z.infer<typeof validationSchema>;
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -40,32 +34,28 @@ export const getServerSideProps = async (
   };
 };
 
-const refocusWindow = () => {
-  window.blur();
-  window.focus();
-};
-
 const NewUser = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>({ resolver });
+  } = useForm<ValidationSchema>({
+    resolver: zodResolver(validationSchema),
+  });
   const router = useRouter();
   const updateUser = api.user.update.useMutation({
     onSuccess() {
-      refocusWindow();
       void router.replace("/");
     },
   });
-  const onSubmit = handleSubmit((data) => {
+  const onSubmitHandler: SubmitHandler<ValidationSchema> = (data) => {
     updateUser.mutate({ penname: data.penname });
-  });
+  };
   const errorsExist = Boolean(errors.penname || updateUser.isError);
 
   return (
     <form
-      onSubmit={(e) => void onSubmit(e)}
+      onSubmit={(e) => void handleSubmit(onSubmitHandler)(e)}
       className="flex h-screen flex-col items-center justify-center gap-3"
     >
       <div className="grid items-center gap-x-6 gap-y-2">

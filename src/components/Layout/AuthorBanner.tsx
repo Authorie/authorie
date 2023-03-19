@@ -7,6 +7,11 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useReducer } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
+import * as z from "zod";
+import { PhotoIcon } from "@heroicons/react/24/outline";
 
 const AuthorTab = [
   { title: "HOME", url: "" },
@@ -14,6 +19,16 @@ const AuthorTab = [
   { title: "BOOK", url: "book" },
   { title: "ABOUT", url: "about" },
 ] as const;
+
+const validationSchema = z.object({
+  updatedPenname: z
+    .string()
+    .max(50, { message: "Your penname is too long" })
+    .min(1, { message: "Your oenname is required" }),
+  updatedBio: z.string().max(150, { message: "Your bio is too long" }),
+});
+
+type ValidationSchema = z.infer<typeof validationSchema>;
 
 const parseUserTab = (pathname: string | undefined) => {
   const tab = AuthorTab.find((t) => pathname?.includes(t.url));
@@ -38,14 +53,6 @@ type UpdateAction =
       type: "toggle_edit";
     }
   | {
-      type: "update_penname";
-      payload: string;
-    }
-  | {
-      type: "update_bio";
-      payload: string;
-    }
-  | {
       type: "error_occured";
       payload: string;
     }
@@ -59,8 +66,6 @@ type UpdateAction =
 type UpdateState = {
   isOwner: boolean;
   isEdit: boolean;
-  penname: string;
-  bio: string;
   error: string | false;
 };
 
@@ -72,10 +77,6 @@ const updateReducer = (state: UpdateState, action: UpdateAction) => {
   switch (action.type) {
     case "toggle_edit":
       return { ...state, isEdit: !state.isEdit };
-    case "update_penname":
-      return { ...state, penname: action.payload };
-    case "update_bio":
-      return { ...state, bio: action.payload };
     case "error_occured":
       return { ...state, error: action.payload };
     case "clear_error":
@@ -107,12 +108,32 @@ const AuthorBanner = ({
     api.user.isFollowUser.useQuery(user.penname as string, {
       enabled: !isOwner && user.penname != null,
     });
+  const {
+    imageData: profileImage,
+    uploadHandler: uploadProfileImageHandler,
+    resetImageData: resetProfileImage,
+  } = useImageUpload();
+  const {
+    imageData: wallpaperImage,
+    uploadHandler: uploadWallpaperImageHandler,
+    resetImageData: resetWallpaperImage,
+  } = useImageUpload();
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ValidationSchema>({
+    resolver: zodResolver(validationSchema),
+    defaultValues: {
+      updatedPenname: user.penname as string,
+      updatedBio: user.bio,
+    },
+  });
 
   const [form, formDispatch] = useReducer(updateReducer, {
     isOwner,
     isEdit: false,
-    penname: user.penname || "",
-    bio: user.bio,
     error: false,
   });
 
@@ -144,28 +165,72 @@ const AuthorBanner = ({
   const toggleIsEditHandler = useCallback(() => {
     formDispatch({ type: "toggle_edit" });
   }, []);
-  const onSaveHandler = useCallback(() => {
-    updateProfile.mutate(
-      {
-        penname: form.penname,
-        bio: form.bio,
-      },
-      {
-        onSuccess(data) {
-          if (data.penname) {
-            void router.replace(`${data.penname}/${tab.url}`);
-          }
-          formDispatch({ type: "toggle_edit" });
-        },
-        onError(err) {
-          formDispatch({
-            type: "error_occured",
-            payload: err.message,
-          });
-        },
+
+  const onCancelHandler = () => {
+    reset();
+    resetProfileImage();
+    resetWallpaperImage();
+    toggleIsEditHandler();
+  };
+
+  const uploadImage = api.upload.uploadImage.useMutation();
+
+  const onSubmitHandler: SubmitHandler<ValidationSchema> = useCallback(
+    async (data) => {
+      let profileImageUrl;
+      let wallpaperImageUrl;
+      if (profileImage) {
+        profileImageUrl = await uploadImage.mutateAsync({
+          image: profileImage,
+          title: `${user.penname as string}'s profile image`,
+        });
+      } else {
+        profileImageUrl = user.image;
       }
-    );
-  }, [form.bio, form.penname, router, tab.url, updateProfile]);
+      if (wallpaperImage) {
+        wallpaperImageUrl = await uploadImage.mutateAsync({
+          image: wallpaperImage,
+          title: `${user.penname as string}'s wallpaper image`,
+        });
+      } else {
+        wallpaperImageUrl = user.wallpaperImage;
+      }
+
+      updateProfile.mutate(
+        {
+          penname: data.updatedPenname,
+          bio: data.updatedBio,
+          profileImageUrl: profileImageUrl as string,
+          wallpaperImageUrl: wallpaperImageUrl as string,
+        },
+        {
+          onSuccess(data) {
+            if (data.penname) {
+              void router.replace(`/${data.penname}/${tab.url}`);
+            }
+            formDispatch({ type: "toggle_edit" });
+          },
+          onError(err) {
+            formDispatch({
+              type: "error_occured",
+              payload: err.message,
+            });
+          },
+        }
+      );
+    },
+    [
+      router,
+      tab.url,
+      updateProfile,
+      profileImage,
+      wallpaperImage,
+      user.penname,
+      uploadImage,
+      user.image,
+      user.wallpaperImage,
+    ]
+  );
 
   return (
     <>
@@ -179,35 +244,95 @@ const AuthorBanner = ({
           })
         }
       />
-      <div className="absolute inset-0">
-        <Image src="/mockWallpaper.jpeg" fill alt="wallpaper" />
-      </div>
-      <div className="ml-40 h-full max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg">
+      <label
+        htmlFor="upload-wallpaper"
+        className={`absolute inset-0 h-72 ${
+          form.isEdit ? "cursor-pointer" : ""
+        }`}
+      >
+        {form.isEdit && (
+          <div>
+            <input
+              hidden
+              type="file"
+              accept="image/jpeg, image/png"
+              name="upload-wallpaper"
+              id="upload-wallpaper"
+              onChange={uploadWallpaperImageHandler}
+            />
+            <PhotoIcon className="absolute left-2 top-2 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
+          </div>
+        )}
+        {user.wallpaperImage || wallpaperImage !== "" ? (
+          <Image
+            src={
+              wallpaperImage !== ""
+                ? wallpaperImage
+                : (user.wallpaperImage as string)
+            }
+            alt="wallpaper"
+            fill
+            className={form.isEdit ? "opacity-90" : ""}
+          />
+        ) : (
+          <div
+            className={`${
+              form.isEdit ? "opacity-90" : ""
+            } h-full w-full bg-authGreen-400`}
+          />
+        )}
+      </label>
+      <form
+        onSubmit={(e) => void handleSubmit(onSubmitHandler)(e)}
+        className="ml-40 h-full max-w-xl bg-black/50 px-7 pt-7 backdrop-blur-lg"
+      >
         <div className="flex justify-between">
-          <div className="relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border">
+          <label
+            htmlFor="upload-profile"
+            className={`${
+              form.isEdit ? "cursor-pointer" : ""
+            } relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
+          >
+            {form.isEdit && (
+              <div>
+                <PhotoIcon className="absolute left-4 top-4 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
+                <input
+                  hidden
+                  type="file"
+                  accept="image/jpeg, image/png"
+                  name="upload-profile"
+                  id="upload-profile"
+                  onChange={uploadProfileImageHandler}
+                />
+              </div>
+            )}
             <Image
-              src={user.image || "/placeholder_profile.png"}
+              src={
+                profileImage === ""
+                  ? user.image || "/placeholder_profile.png"
+                  : profileImage
+              }
               alt="profile picture"
               width="250"
               height="250"
               className={
-                form.isEdit ? "absolute z-0 opacity-70" : "absolute z-0"
+                form.isEdit ? "absolute z-0 opacity-90" : "absolute z-0"
               }
             />
-          </div>
+          </label>
           <div>
             {isOwner && (
               <div className="w-fit">
                 {form.isEdit ? (
                   <div className="flex gap-3">
                     <button
-                      onClick={toggleIsEditHandler}
+                      onClick={onCancelHandler}
                       className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
                     >
                       cancel
                     </button>
                     <button
-                      onClick={onSaveHandler}
+                      type="submit"
                       className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
                     >
                       save
@@ -226,21 +351,24 @@ const AuthorBanner = ({
           </div>
         </div>
         <div className="mb-2 flex items-center justify-between">
-          {form.isEdit ? (
-            <input
-              placeholder={form.penname}
-              className="bg-transparent text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
-              onChange={(e) =>
-                formDispatch({
-                  type: "update_penname",
-                  payload: e.target.value,
-                })
-              }
-              value={form.penname}
-            />
-          ) : (
-            <h2 className="text-2xl font-bold text-white">{user.penname}</h2>
-          )}
+          <div className="h-fit">
+            {form.isEdit ? (
+              <div className="w-full">
+                <input
+                  placeholder={user.penname as string}
+                  className="w-full rounded-lg border border-gray-400 bg-transparent px-2 text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
+                  {...register("updatedPenname")}
+                />
+                {errors.updatedPenname && (
+                  <p className="text-xs text-red-400" role="alert">
+                    {errors.updatedPenname.message}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <h2 className="text-2xl font-bold text-white">{user.penname}</h2>
+            )}
+          </div>
           {status === "authenticated" && !isOwner && (
             <button
               type="button"
@@ -266,25 +394,26 @@ const AuthorBanner = ({
             following
           </p>
         </div>
-        <div className="max-h-24 w-4/5 text-sm text-gray-100">
+        <div className="h-fit w-4/5 pb-2 text-sm text-white">
           {form.isEdit ? (
-            <textarea
-              rows={2}
-              placeholder={form.bio === "" ? "Put bio here" : form.bio}
-              value={form.bio}
-              onChange={(e) =>
-                formDispatch({
-                  type: "update_bio",
-                  payload: e.target.value,
-                })
-              }
-              className="w-full resize-none bg-transparent placeholder-gray-400 outline-none"
-            />
+            <div className="h-16S">
+              <textarea
+                rows={2}
+                placeholder={user.bio === "" ? "Put bio here" : user.bio}
+                {...register("updatedBio")}
+                className="w-full resize-none rounded-lg border border-gray-400 bg-transparent px-1.5 placeholder-gray-400 outline-none"
+              />
+              {errors.updatedBio && (
+                <p className="text-xs text-red-400" role="alert">
+                  {errors.updatedBio.message}
+                </p>
+              )}
+            </div>
           ) : (
             <p>{user.bio}</p>
           )}
         </div>
-      </div>
+      </form>
     </>
   );
 };
@@ -298,7 +427,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
 
   return (
     <>
-      <div className="relative h-80 min-w-full">
+      <div className="relative h-fit min-w-full">
         {user ? (
           <AuthorBanner tab={tab} user={user} />
         ) : (
@@ -308,7 +437,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
         )}
       </div>
       <div className="sticky top-0 z-40 min-w-full">
-        <div className="ml-40 flex max-w-xl items-center justify-between bg-black/60 px-7 py-3 shadow-lg backdrop-blur-lg">
+        <div className="ml-40 flex max-w-xl items-center justify-between bg-black/70 px-7 py-3 shadow-lg backdrop-blur-lg">
           {AuthorTab.map((data) => (
             <button
               key={data.title}
