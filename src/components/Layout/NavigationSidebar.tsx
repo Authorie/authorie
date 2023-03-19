@@ -10,12 +10,17 @@ import {
 } from "@heroicons/react/24/outline";
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { useSelectCategory } from "@hooks/selectedCategory";
+import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useCallback, useState } from "react";
 
-const NavigationSidebar = () => {
+type props = {
+  user: RouterOutputs["user"]["getData"] | undefined;
+};
+
+const NavigationSidebar = ({ user }: props) => {
   const { data: session } = useSession();
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
@@ -47,17 +52,17 @@ const NavigationSidebar = () => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {session && (
-          <Link href={`/${session.user.penname as string}`}>
+        {session && user?.penname && (
+          <Link href={`/${user.penname}`}>
             <Image
-              src={session.user.image || "/placeholder_profile.png"}
+              src={user.image || "/placeholder_profile.png"}
               alt="profile picture"
               width={30}
               height={30}
               className="h-7 w-7 rounded-full"
             />
             <span className="hidden truncate sm:inline-block ">
-              {session.user.penname}
+              {user.penname}
             </span>
           </Link>
         )}
@@ -94,7 +99,9 @@ const NavigationSidebar = () => {
               height={30}
               className="h-7 w-7"
             />
-            <span className="text-amber-500">{session.user?.coin} Au</span>
+            <span className="text-amber-500">
+              {user?.coin || session.user?.coin} Au
+            </span>
           </Link>
         )}
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
