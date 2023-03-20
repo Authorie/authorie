@@ -4,8 +4,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import AuthorBanner from "./AuthorBanner";
-import NavigationSidebar from "./NavigationSidebar";
 import CreateLayout from "./CreateLayout";
+import NavigationSidebar from "./NavigationSidebar";
 
 const NoLayoutPaths = ["/auth/new-user", "/auth/signin"];
 
@@ -51,7 +51,7 @@ const Layout = ({ children }: PropsWithChildren) => {
           <div className="shrink-0 basis-60">
             <NavigationSidebar user={userFromSession} />
           </div>
-          <main className="flex h-full flex-1 flex-col items-center border-l-2 border-gray-200 bg-gray-100">
+          <main className="flex h-screen flex-1 flex-col items-center border-l-2 border-gray-200 bg-gray-100">
             {router.pathname.includes("[penname]") && (
               <AuthorBanner
                 user={userFromBanner}
