@@ -1,14 +1,14 @@
-import ArrowTopRightOnSquareIcon from "@heroicons/react/24/outline/ArrowTopRightOnSquareIcon";
-import { useState } from "react";
 import Comment from "@components/Comment/Comment";
 import CommentInput from "@components/Comment/CommentInput";
-import Image from "next/image";
-import { type RouterOutputs, api } from "@utils/api";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { CommentButton, LikeButton } from "@components/action";
+import ArrowTopRightOnSquareIcon from "@heroicons/react/24/outline/ArrowTopRightOnSquareIcon";
 import type { Content } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
-import { LikeButton, CommentButton } from "@components/action";
+import Image from "next/image";
+import { useState } from "react";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getAll"]["items"][number];
@@ -72,8 +72,10 @@ const ChapterPost = ({ chapter }: props) => {
           <Image src="/mockWallpaper.jpeg" alt="wallpaper" fill />
         </div>
         <div className="z-10">
-          <h1 className="my-1 text-2xl font-bold">{chapter.title}</h1>
-          <h1 className="text-dark-400">{chapter.book.title}</h1>
+          <h2 className="my-1 text-2xl font-bold">{chapter.title}</h2>
+          {chapter.book && (
+            <h3 className="text-dark-400">{chapter.book.title}</h3>
+          )}
           <p className="text-sm text-dark-600">
             Author:
             <span className="font-semibold">{chapter.owner.penname}</span>
@@ -81,9 +83,11 @@ const ChapterPost = ({ chapter }: props) => {
         </div>
       </div>
       <div className="my-3 px-8">
-        <p className="mb-2 text-xs text-dark-400">
-          publish: {chapter.publishedAt.toDateString()}
-        </p>
+        {chapter.publishedAt && (
+          <p className="mb-2 text-xs text-dark-400">
+            publish: {chapter.publishedAt.toDateString()}
+          </p>
+        )}
         <EditorContent editor={editor} />
       </div>
       <div className="flex items-center justify-between px-8 py-2">
