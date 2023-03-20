@@ -2,6 +2,7 @@ import BookComboBox from "@components/Create/Chapter/BookComboBox";
 import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BookStatus, type Book } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
@@ -26,12 +27,11 @@ import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import NextImage from "next/image";
 import { useState } from "react";
-import superjson from "superjson";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+import superjson from "superjson";
+import * as z from "zod";
 
 const validationSchema = z.object({
   title: z
@@ -161,6 +161,28 @@ const CreateChapter = () => {
     enabled: status === "authenticated",
   });
   const createChapterMutation = api.chapter.create.useMutation();
+  const deleteChapterMutation = api.chapter.deleteDraft.useMutation();
+  const onDeleteHandler = async () => {
+    if (chapterId) {
+      const promise = deleteChapterMutation.mutateAsync(
+        {
+          id: chapterId,
+        },
+        {
+          onSettled() {
+            void context.chapter.getDrafts.invalidate();
+          },
+        }
+      );
+      await toast.promise(promise, {
+        pending: "Deleting...",
+        success: "Deleted!",
+        error: "Error deleting",
+      });
+    } else {
+      toast.error("Chapter not saved yet");
+    }
+  };
   const onSaveHandler: SubmitHandler<ValidationSchema> = async (data) => {
     if (editor && data.title !== "") {
       const promise = createChapterMutation.mutateAsync(
@@ -292,7 +314,11 @@ const CreateChapter = () => {
               </div>
               <EditorContent className="flex-1 rounded py-2" editor={editor} />
               <div className="sticky bottom-0 flex justify-between bg-white px-4 py-4">
-                <button className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white">
+                <button
+                  type="button"
+                  className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white"
+                  onClick={() => void onDeleteHandler()}
+                >
                   Delete
                 </button>
                 <div className="flex gap-3">
