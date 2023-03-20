@@ -51,7 +51,13 @@ const Layout = ({ children }: PropsWithChildren) => {
           <div className="shrink-0 basis-60">
             <NavigationSidebar user={userFromSession} />
           </div>
-          <main className="flex h-screen flex-1 flex-col items-center border-l-2 border-gray-200 bg-gray-100">
+          <main
+            className={`h-screen grow border-l-2 border-gray-200 bg-gray-100 ${
+              router.pathname.includes("create")
+                ? ""
+                : "flex flex-col items-center"
+            }`}
+          >
             {router.pathname.includes("[penname]") && (
               <AuthorBanner
                 user={userFromBanner}

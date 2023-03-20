@@ -8,7 +8,7 @@ type props = {
 
 const ChapterDraftCard = ({ title, selected, onClickHandler }: props) => {
   return (
-    <div
+    <li
       onClick={onClickHandler}
       className={`flex cursor-pointer items-center justify-between rounded-lg p-4 ${
         selected ? "bg-white" : " bg-dark-200"
@@ -16,7 +16,7 @@ const ChapterDraftCard = ({ title, selected, onClickHandler }: props) => {
     >
       <span className="font-bold">{title}</span>
       <PencilSquareIcon className="text-bold h-5 w-5 text-authGreen-600" />
-    </div>
+    </li>
   );
 };
 

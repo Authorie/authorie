@@ -2,8 +2,7 @@ import BookComboBox from "@components/Create/Chapter/BookComboBox";
 import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { BookStatus, type Book } from "@prisma/client";
+import { BookStatus, type Book, type Chapter } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
@@ -27,11 +26,11 @@ import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import NextImage from "next/image";
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 import superjson from "superjson";
 import * as z from "zod";
+import { ToastContainer, toast } from "react-toastify";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import "react-toastify/dist/ReactToastify.min.css";
 
 const validationSchema = z.object({
   title: z
@@ -39,8 +38,6 @@ const validationSchema = z.object({
     .max(80, { message: "Your title is too long" })
     .min(1, { message: "Your title is required" }),
 });
-
-type ValidationSchema = z.infer<typeof validationSchema>;
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -78,16 +75,13 @@ export const getServerSideProps = async (
 const CreateChapter = () => {
   const { status } = useSession();
   const context = api.useContext();
+  const [title, setTitle] = useState("");
+  const [errors, setErrors] = useState<{ title: string | undefined }>({
+    title: undefined,
+  });
+  const [animationParent] = useAutoAnimate();
   const [book, setBook] = useState<Book | null>(null);
   const [chapterId, setChapterId] = useState<string | undefined>();
-  const {
-    register,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ValidationSchema>({
-    resolver: zodResolver(validationSchema),
-  });
   const editor = useEditor({
     content: "",
     extensions: [
@@ -149,7 +143,7 @@ const CreateChapter = () => {
     ],
     editorProps: {
       attributes: {
-        class: "focus:outline-none h-full w-full px-5",
+        class: "focus:outline-none px-4",
       },
     },
     autofocus: "start",
@@ -162,15 +156,20 @@ const CreateChapter = () => {
   });
   const createChapterMutation = api.chapter.create.useMutation();
   const deleteChapterMutation = api.chapter.deleteDraft.useMutation();
-  const onDeleteHandler = async () => {
+  const validateInput = () => {
+    const validationResult = validationSchema.safeParse({ title });
+    return validationResult.success ? undefined : validationResult.error;
+  };
+  const deleteDraftChapterHandler = async () => {
     if (chapterId) {
       const promise = deleteChapterMutation.mutateAsync(
         {
           id: chapterId,
         },
         {
-          onSettled() {
-            void context.chapter.getDrafts.invalidate();
+          async onSettled(data) {
+            await context.chapter.getDrafts.invalidate();
+            if (data) selectDraftHandler(undefined);
           },
         }
       );
@@ -183,18 +182,25 @@ const CreateChapter = () => {
       toast.error("Chapter not saved yet");
     }
   };
-  const onSaveHandler: SubmitHandler<ValidationSchema> = async (data) => {
-    if (editor && data.title !== "") {
+  const saveDraftChapterHandler = async () => {
+    if (!editor) return;
+    const validationError = validateInput();
+    if (validationError) {
+      setErrors({
+        title: validationError.formErrors.fieldErrors.title?.toString(),
+      });
+    } else {
       const promise = createChapterMutation.mutateAsync(
         {
           chapterId,
-          title: data.title,
+          title,
           content: editor.getJSON(),
           bookId: book ? book.id : undefined,
         },
         {
-          onSettled() {
-            void context.chapter.getDrafts.invalidate();
+          async onSettled(data) {
+            await context.chapter.getDrafts.invalidate();
+            if (data) selectDraftHandler(undefined, data);
           },
         }
       );
@@ -205,71 +211,96 @@ const CreateChapter = () => {
       });
     }
   };
-  const onPublishHandler: SubmitHandler<ValidationSchema> = (data) => {
-    if (editor && data.title !== "") {
+  const publishDraftChapterHandler = async () => {
+    if (!editor) return;
+    const validationError = validateInput();
+    if (validationError) {
+      setErrors({
+        title: validationError.formErrors.fieldErrors.title?.toString(),
+      });
+    } else {
       const promise = createChapterMutation.mutateAsync(
         {
           chapterId,
-          title: data.title,
+          title: title,
           content: editor.getJSON(),
           bookId: book ? book.id : undefined,
           publishedAt: true,
         },
         {
-          onSettled() {
-            void context.chapter.getDrafts.invalidate();
+          async onSettled(data) {
+            await context.chapter.getDrafts.invalidate();
+            if (data) selectDraftHandler(undefined, data);
           },
         }
       );
-      void toast
-        .promise(promise, {
-          pending: "Publishing...",
-          success: "Published!",
-          error: "Error publishing",
-        })
-        .catch((err) => console.error(err));
+      await toast.promise(promise, {
+        pending: "Publishing...",
+        success: "Published!",
+        error: "Error publishing",
+      });
     }
   };
-  const selectDraftHandler = (id: string | undefined) => {
+  const selectDraftHandler = (
+    id: string | undefined,
+    chapter?: Chapter & { book: Book | null }
+  ) => {
     if (!editor) return;
-    const draft = draftChapters?.find((chapter) => chapter.id === id);
-    if (draft) {
-      setChapterId(draft.id);
-      setValue("title", draft.title);
-      editor?.commands.setContent(draft.content as JSONContent);
-      setBook(draft.book as Book);
+    if (!chapter) chapter = draftChapters?.find((chapter) => chapter.id === id);
+    if (chapter !== undefined) {
+      setChapterId(chapter.id);
+      setTitle(chapter.title);
+      editor.commands.setContent(chapter.content as JSONContent);
+      setBook(chapter.book as Book);
+      return;
     } else {
       setChapterId(undefined);
-      setValue("title", "");
+      setTitle("");
       editor?.commands.setContent("");
       setBook(null);
     }
   };
+  const toggleBookHandler = (book: Book) => {
+    setBook((prev) => {
+      if (prev === book) {
+        return null;
+      }
+      return book;
+    });
+  };
+  const editorFocusHandler = () => {
+    if (!editor) return;
+    editor.commands.focus();
+  };
 
   return (
     <>
-      <div className="flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
-        <div className="flex h-[88vh] basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
-          <h1 className="text-xl font-bold">Draft Chapters</h1>
-          <p className="text-xs">
-            Select one of previous drafts, or you can create a new one.
-          </p>
-          <ChapterDraftCard
-            title="Create a new chapter"
-            selected={chapterId === undefined}
-            onClickHandler={() => selectDraftHandler(undefined)}
-          />
-          {draftChapters &&
-            draftChapters.map((chapter) => (
-              <ChapterDraftCard
-                key={chapter.id}
-                title={chapter.title}
-                selected={chapterId === chapter.id}
-                onClickHandler={() => selectDraftHandler(chapter.id)}
-              />
-            ))}
+      <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
+        <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-xl font-bold">Draft Chapters</h1>
+            <p className="text-xs">
+              Select one of previous drafts, or you can create a new one.
+            </p>
+          </div>
+          <ul ref={animationParent} className="flex flex-col gap-3">
+            <ChapterDraftCard
+              title="Create a new chapter"
+              selected={chapterId === undefined}
+              onClickHandler={() => selectDraftHandler(undefined)}
+            />
+            {draftChapters &&
+              draftChapters.map((chapter) => (
+                <ChapterDraftCard
+                  key={chapter.id}
+                  title={chapter.title}
+                  selected={chapterId === chapter.id}
+                  onClickHandler={() => selectDraftHandler(chapter.id)}
+                />
+              ))}
+          </ul>
         </div>
-        <form className="flex h-[88vh] w-[830px] grow flex-col overflow-y-scroll rounded-lg bg-gray-100 shadow-xl drop-shadow">
+        <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow">
           <div className="relative flex flex-col bg-gray-200 px-4 py-3">
             <div className="absolute inset-0 cursor-pointer">
               {book && book.wallpaperImage && (
@@ -280,44 +311,53 @@ const CreateChapter = () => {
                 />
               )}
             </div>
-            <div className="z-10">
-              <input
-                placeholder="Untitled"
-                {...register("title")}
-                className="w-fit bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
-              />
-              {errors.title && (
-                <p className="text-xs text-red-400" role="alert">
-                  {errors.title.message}
-                </p>
-              )}
-              <div className="my-2 flex items-center">
-                <span className="mr-4 text-xs text-gray-600">Author </span>
+            <div className="z-20 flex flex-col gap-2">
+              <div>
+                <input
+                  placeholder="Untitled"
+                  className="w-fit bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+                {errors.title && (
+                  <p className="text-xs text-red-400" role="alert">
+                    {errors.title}
+                  </p>
+                )}
+              </div>
+              <div className="flex w-fit items-center gap-4">
+                <span className="text-xs text-gray-600">Author </span>
                 {user && <span className="text-xs">{user.penname}</span>}
               </div>
               {user && (
-                <div className="flex items-center">
-                  <span className="mr-4 text-xs text-gray-600">Book </span>
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-gray-600">Book </span>
                   <BookComboBox
                     user={user}
                     selectedBook={book}
-                    onSelectBook={setBook}
+                    onToggleBook={toggleBookHandler}
                   />
                 </div>
               )}
             </div>
           </div>
           {editor && (
-            <div className="flex flex-1 flex-col bg-white px-4">
+            <div className="flex grow flex-col bg-white px-4">
               <div className="sticky top-0 z-10 my-2 rounded-lg bg-gray-200 py-1">
                 <TextEditorMenuBar editor={editor} />
               </div>
-              <EditorContent className="flex-1 rounded py-2" editor={editor} />
+              <EditorContent
+                editor={editor}
+                className="h-[70px] w-[880px] grow cursor-text overflow-y-auto overflow-x-hidden"
+                onClick={editorFocusHandler}
+              />
+              {/* <div className="grow"></div> */}
               <div className="sticky bottom-0 flex justify-between bg-white px-4 py-4">
                 <button
                   type="button"
-                  className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white"
-                  onClick={() => void onDeleteHandler()}
+                  className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
+                  disabled={chapterId === undefined}
+                  onClick={() => void deleteDraftChapterHandler()}
                 >
                   Delete
                 </button>
@@ -325,13 +365,13 @@ const CreateChapter = () => {
                   <button
                     type="button"
                     className="h-6 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
-                    onClick={(e) => void handleSubmit(onSaveHandler)(e)}
+                    onClick={() => void saveDraftChapterHandler()}
                   >
                     Save
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => void handleSubmit(onPublishHandler)(e)}
+                    onClick={() => void publishDraftChapterHandler()}
                     className="h-6 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
                   >
                     Publish
@@ -340,7 +380,7 @@ const CreateChapter = () => {
               </div>
             </div>
           )}
-        </form>
+        </div>
       </div>
       <ToastContainer />
     </>

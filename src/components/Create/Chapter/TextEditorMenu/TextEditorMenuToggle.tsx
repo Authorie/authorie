@@ -16,7 +16,7 @@ const TextEditorMenuToggle = ({
   if (action) {
     return (
       <button
-        onClick={action}
+        onClick={(e) => {action(); e.preventDefault(); }}
         title={title}
         className={`${
           isActive && isActive() ? "bg-slate-300" : "bg-transparent"

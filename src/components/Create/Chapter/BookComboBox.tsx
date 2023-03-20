@@ -5,19 +5,17 @@ import type { Book } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
 import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
-import { Fragment } from "react";
 
 type props = {
   user: RouterOutputs["user"]["getData"];
   selectedBook: Book | null;
-  onSelectBook: (book: Book) => void;
+  onToggleBook: (book: Book) => void;
 };
 
 const BookComboBox = ({
   user,
-
   selectedBook,
-  onSelectBook,
+  onToggleBook,
 }: props) => {
   const { status } = useSession();
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
@@ -36,12 +34,12 @@ const BookComboBox = ({
   );
 
   return (
-    <Combobox value={selectedBook} onChange={onSelectBook} by="id">
+    <Combobox value={selectedBook} onChange={onToggleBook} by="id">
       <div className="relative">
-        <div className="flex w-full items-center overflow-hidden rounded-lg shadow-md outline outline-gray-600">
+        <div className="flex w-full items-center overflow-hidden rounded-lg shadow-md outline-2 outline outline-gray-600">
           <Combobox.Input
             className="w-full border-none bg-transparent pl-3 pr-10 text-xs leading-5 text-gray-900 focus:outline-none"
-            onChange={searchTermChangeHandler}
+            onChange={searchTermChangeHandler}  
             displayValue={(book) =>
               book
                 ? "title" in (book as Book)
@@ -58,13 +56,12 @@ const BookComboBox = ({
           </Combobox.Button>
         </div>
         <Transition
-          as={Fragment}
-          leave="transition ease-in duration-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+          leave="transition-opacity duration-150"
+          leaveFrom="opacity-0"
+          leaveTo="opacity-100"
         >
           {books && (
-            <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+            <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-20">
               {books.items.length === 0 ? (
                 <div className="relative cursor-default select-none bg-gray-200 py-2 px-4 text-gray-700">
                   No books found

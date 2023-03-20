@@ -124,7 +124,7 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
   ];
 
   return (
-    <div className="flex flex-row flex-nowrap content-center justify-start">
+    <div className="flex flex-row flex-nowrap justify-center items-center">
       {ToggleButtons.map((item, index) => (
         <TextEditorMenuItem key={item.title + String(index)} {...item} />
       ))}
@@ -134,18 +134,11 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
       <TableMenu editor={editor} />
       <ImageInputButton editor={editor} />
       <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
-      <div className="w-14 self-center text-xs text-slate-500">
+      <div className="w-14 self-center text-xs text-slate-500 truncate">
         {"characterCount" in editor.storage &&
           isCharacterCountStorage(editor.storage.characterCount) &&
           editor.storage.characterCount.words()}{" "}
         words
-      </div>
-      <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
-      <div className="w-20 self-center text-xs text-slate-500">
-        {"characterCount" in editor.storage &&
-          isCharacterCountStorage(editor.storage.characterCount) &&
-          editor.storage.characterCount.characters()}{" "}
-        characters
       </div>
     </div>
   );

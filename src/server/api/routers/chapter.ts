@@ -361,6 +361,9 @@ export const chapterRouter = createTRPCRouter({
                 },
               },
             },
+            include: {
+              book: true,
+            }
           });
         } catch (err) {
           console.error(err);
@@ -392,6 +395,9 @@ export const chapterRouter = createTRPCRouter({
               },
             },
           },
+          include: {
+            book: true,
+          }
         });
       } catch (err) {
         console.error(err);

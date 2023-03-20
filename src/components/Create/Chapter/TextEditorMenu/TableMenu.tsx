@@ -97,7 +97,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
                     onClick={item.action}
                     className={`justify-content-start m-1 flex gap-1 whitespace-nowrap rounded-md p-1 hover:bg-slate-200`}
                   >
-                    <item.Icon className="h-4 w-4" />
+                    <item.Icon className="h-4 w-4 self-center" />
                     {item.name}
                   </button>
                 )}

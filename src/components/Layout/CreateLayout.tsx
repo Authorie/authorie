@@ -21,8 +21,8 @@ const CreateLayout = ({ children }: PropsWithChildren) => {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col rounded-2xl px-4 py-4">
-      <div className="flex-0 flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
+    <div className="flex h-full w-full flex-col rounded-2xl px-4 py-4">
+      <div className="grow-0 flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
         <button
           onClick={() => onClickTabHandler("book")}
           className={buttonClassName("book")}
@@ -36,7 +36,7 @@ const CreateLayout = ({ children }: PropsWithChildren) => {
           Create chapter
         </button>
       </div>
-      <div className="h-fit w-full">{children}</div>
+      <div className="grow">{children}</div>
     </div>
   );
 };
