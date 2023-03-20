@@ -88,6 +88,7 @@ export const chapterRouter = createTRPCRouter({
             },
           };
         } catch (err) {
+          console.error(err);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to get chapters",
@@ -134,6 +135,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
@@ -162,6 +164,7 @@ export const chapterRouter = createTRPCRouter({
         },
       });
     } catch (err) {
+      console.error(err);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to get drafts",
@@ -192,6 +195,7 @@ export const chapterRouter = createTRPCRouter({
           include: { book: true },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
@@ -220,6 +224,7 @@ export const chapterRouter = createTRPCRouter({
 
         return likes;
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to get chapter comments",
@@ -260,6 +265,7 @@ export const chapterRouter = createTRPCRouter({
             },
           });
         } catch (err) {
+          console.error(err);
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Book not found",
@@ -301,6 +307,7 @@ export const chapterRouter = createTRPCRouter({
             },
           });
         } catch (err) {
+          console.error(err);
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Chapter not found",
@@ -395,6 +402,54 @@ export const chapterRouter = createTRPCRouter({
         });
       }
     }),
+  deleteDraft: protectedProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      let chapter;
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+          where: {
+            id: input.id,
+          },
+          include: {
+            owner: true,
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
+      if (chapter.ownerId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not the owner of this chapter",
+        });
+      }
+      if (chapter.publishedAt && chapter.publishedAt.getTime() < Date.now()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't delete a published chapter",
+        });
+      }
+      try {
+        return await ctx.prisma.chapter.delete({
+          where: {
+            id: input.id,
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+          cause: err,
+        });
+      }
+    }),
   read: publicProcedure
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
@@ -413,6 +468,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
@@ -437,6 +493,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Something went wrong",
@@ -462,6 +519,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
@@ -486,6 +544,7 @@ export const chapterRouter = createTRPCRouter({
           },
         }));
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Something went wrong",
@@ -511,6 +570,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
@@ -548,6 +608,7 @@ export const chapterRouter = createTRPCRouter({
           update: {},
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "failed to like",
@@ -573,6 +634,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Chapter not found",
@@ -597,6 +659,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -621,6 +684,7 @@ export const chapterRouter = createTRPCRouter({
           },
         });
       } catch (err) {
+        console.error(err);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "failed to unlike",
