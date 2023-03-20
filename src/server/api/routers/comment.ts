@@ -117,7 +117,7 @@ export const commentRouter = createTRPCRouter({
         });
       }
 
-      if (chapter.publishedAt.getTime() > Date.now()) {
+      if (!chapter.publishedAt || chapter.publishedAt.getTime() > Date.now()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chapter not published yet",
@@ -126,7 +126,7 @@ export const commentRouter = createTRPCRouter({
 
       // needs discussion about whether to comment archived books
       const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
-      if (!validBookStatus.includes(chapter.book.status)) {
+      if (!chapter.book || !validBookStatus.includes(chapter.book.status)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't comment chapters of this book",
