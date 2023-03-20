@@ -342,20 +342,21 @@ const CreateChapter = () => {
             </div>
           </div>
           {editor && (
-            <div className="flex grow flex-col bg-white px-4">
-              <div className="sticky top-0 z-10 my-2 rounded-lg bg-gray-200 py-1">
-                <TextEditorMenuBar editor={editor} />
+            <>
+              <div className="flex h-1 grow flex-col overflow-y-auto bg-white px-4">
+                <div className="sticky top-0 z-10 my-2 flex items-center justify-center">
+                  <TextEditorMenuBar editor={editor} />
+                </div>
+                <EditorContent
+                  editor={editor}
+                  className="my-3 w-[800px] grow cursor-text"
+                  onClick={editorFocusHandler}
+                />
               </div>
-              <EditorContent
-                editor={editor}
-                className="h-[70px] w-[880px] grow cursor-text overflow-y-auto overflow-x-hidden"
-                onClick={editorFocusHandler}
-              />
-              {/* <div className="grow"></div> */}
-              <div className="sticky bottom-0 flex justify-between bg-white px-4 py-4">
+              <div className="flex justify-between bg-white px-4 py-4">
                 <button
                   type="button"
-                  className="h-6 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
+                  className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
                   disabled={chapterId === undefined}
                   onClick={() => void deleteDraftChapterHandler()}
                 >
@@ -364,7 +365,7 @@ const CreateChapter = () => {
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    className="h-6 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
+                    className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
                     onClick={() => void saveDraftChapterHandler()}
                   >
                     Save
@@ -372,13 +373,13 @@ const CreateChapter = () => {
                   <button
                     type="button"
                     onClick={() => void publishDraftChapterHandler()}
-                    className="h-6 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
+                    className="h-8 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
                   >
                     Publish
                   </button>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

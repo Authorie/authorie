@@ -11,7 +11,7 @@ const ChapterDraftCard = ({ title, selected, onClickHandler }: props) => {
     <li
       onClick={onClickHandler}
       className={`flex cursor-pointer items-center justify-between rounded-lg p-4 ${
-        selected ? "bg-white" : " bg-dark-200"
+        selected ? "bg-dark-200 shadow-inner" : " bg-white shadow-xl"
       }`}
     >
       <span className="font-bold">{title}</span>
