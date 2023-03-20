@@ -36,7 +36,7 @@ const FontColorSelection = ({ editor }: { editor: Editor }) => {
       <Listbox value={selectedColor} by="id" onChange={colorChangeHandler}>
         <Listbox.Button
           onFocus={() => editor.commands.focus()}
-          className="h-fit w-fit place-self-center rounded p-2 hover:bg-slate-200"
+          className="h-fit w-fit place-self-center rounded p-2 hover:bg-gray-300"
         >
           <div className={`h-3 w-3 ${activeColorChecker()} rounded`} />
         </Listbox.Button>

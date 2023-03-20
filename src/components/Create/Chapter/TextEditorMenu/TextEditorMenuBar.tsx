@@ -8,11 +8,11 @@ import BoldIcon from "remixicon-react/BoldIcon";
 import FormatClearIcon from "remixicon-react/FormatClearIcon";
 import H1Icon from "remixicon-react/H1Icon";
 import H2Icon from "remixicon-react/H2Icon";
+import H3Icon from "remixicon-react/H3Icon";
 import ItalicIcon from "remixicon-react/ItalicIcon";
 import ListOrderedIcon from "remixicon-react/ListOrderedIcon";
 import ListUnorderedIcon from "remixicon-react/ListUnorderedIcon";
 import MarkPenLineIcon from "remixicon-react/MarkPenLineIcon";
-import ParagraphIcon from "remixicon-react/ParagraphIcon";
 import StrikethroughIcon from "remixicon-react/StrikethroughIcon";
 import UnderlineIcon from "remixicon-react/UnderlineIcon";
 import FontColorSelection from "./FontColorSelection";
@@ -86,15 +86,15 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
     },
     {
       icon: H2Icon,
-      title: "Heading 2",
-      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      isActive: () => editor.isActive("heading", { level: 2 }),
-    },
-    {
-      icon: ParagraphIcon,
       title: "Paragraph",
       action: () => editor.chain().focus().setParagraph().run(),
       isActive: () => editor.isActive("paragraph"),
+    },
+    {
+      icon: H3Icon,
+      title: "Heading 3",
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      isActive: () => editor.isActive("heading", { level: 2 }),
     },
     {
       icon: ListUnorderedIcon,

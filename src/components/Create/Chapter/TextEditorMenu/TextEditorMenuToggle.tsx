@@ -16,18 +16,21 @@ const TextEditorMenuToggle = ({
   if (action) {
     return (
       <button
-        onClick={(e) => {action(); e.preventDefault(); }}
+        onClick={(e) => {
+          action();
+          e.preventDefault();
+        }}
         title={title}
         className={`${
-          isActive && isActive() ? "bg-slate-300" : "bg-transparent"
+          isActive && isActive() ? "bg-gray-300" : "bg-transparent"
         } 
-                m-1 rounded-md p-1 hover:bg-slate-200`}
+                m-1 rounded-md p-1 hover:bg-gray-300`}
       >
         <Icon className="h-4 w-4" />
       </button>
     );
   } else {
-    return <div className="ml-2 mr-3 h-5 w-0.5 self-center bg-slate-300"></div>;
+    return <div className="ml-2 mr-3 h-5 w-0.5 self-center bg-gray-300"></div>;
   }
 };
 

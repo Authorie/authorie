@@ -19,7 +19,7 @@ const LinkInputButton = ({ editor }: { editor: Editor }) => {
 
   return (
     <Popover className="relative flex content-center">
-      <Popover.Button className="h-fit self-center rounded p-1 hover:bg-slate-100">
+      <Popover.Button className="h-fit self-center rounded p-1 hover:bg-gray-300">
         <LinkIcon className="h-4 w-4" />
       </Popover.Button>
 

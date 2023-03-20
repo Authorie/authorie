@@ -83,7 +83,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
   return (
     <div className="relative flex content-center">
       <Menu>
-        <Menu.Button className=" h-fit self-center rounded p-1 hover:bg-slate-100">
+        <Menu.Button className=" h-fit self-center rounded p-1 hover:bg-gray-300">
           <TableLineIcon className="h-4 w-4" />
         </Menu.Button>
         <Menu.Items className="absolute z-10 flex w-fit translate-y-10 flex-col rounded bg-white p-1 drop-shadow-lg">
