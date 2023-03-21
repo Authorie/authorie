@@ -98,7 +98,7 @@ const CreateBook = () => {
             />
             <PhotoIcon className="absolute right-2 bottom-2 w-8 rounded-md bg-gray-100" />
           </label>
-          <div className="flex flex-1 flex-col justify-end gap-2 pt-6">
+          <div className="flex grow flex-col justify-end gap-2 pt-6">
             <label htmlFor="BookWallpaper" className="relative h-7 w-8">
               <input
                 type="file"

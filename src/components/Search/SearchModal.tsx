@@ -1,14 +1,16 @@
-import { env } from "@env/client.mjs";
 import { Dialog } from "@headlessui/react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { api } from "@utils/api";
-import { useEffect, useState } from "react";
+import useSearch from "@hooks/search";
+import { api, type RouterOutputs } from "@utils/api";
+import { useState } from "react";
 import SearchBookResult from "./SearchBookResult";
 import SearchUserResult from "./SearchUserResult";
 
 const allCategory = ["Users", "Books"] as const;
 
 type SearchCategory = (typeof allCategory)[number];
+
+type Books = RouterOutputs["search"]["searchBooks"]["items"];
 
 type props = {
   openDialog: boolean;
@@ -27,8 +29,7 @@ const categoryButtonClassName = (
 };
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
-  const [enableSearch, setEnableSearch] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
   const { data: users } = api.search.searchUsers.useQuery(
@@ -39,23 +40,19 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       enabled: openDialog && selectedCategory === "Users" && enableSearch,
     }
   );
-  const { data: books } = api.search.searchBooks.useQuery(
+  const { data: books } = api.search.searchBooks.useInfiniteQuery(
     {
-      search: searchTerm,
+      search: {
+        title: searchTerm,
+        description: searchTerm,
+      },
+      limit: 3,
     },
     {
       enabled: openDialog && selectedCategory === "Books" && enableSearch,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
-
-  useEffect(() => {
-    setEnableSearch(false);
-    const delayDebounceFn = setTimeout(() => {
-      setEnableSearch(true);
-    }, env.NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
 
   // TODO: handle loading, empty and error state
   const searchResults = (category: SearchCategory) => {
@@ -65,9 +62,9 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
           <SearchUserResult key={user.id} user={user} />
         ));
       case "Books":
-        return books?.items.map((book) => (
-          <SearchBookResult key={book.id} book={book} />
-        ));
+        return books?.pages
+          .reduce((acc, page) => [...acc, ...page.items], [] as Books)
+          .map((book) => <SearchBookResult key={book.id} book={book} />);
     }
   };
 
@@ -93,7 +90,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
               id="search"
               type="text"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={searchTermChangeHandler}
               placeholder="Enter pen name, book title, chapter title..."
             />
           </div>

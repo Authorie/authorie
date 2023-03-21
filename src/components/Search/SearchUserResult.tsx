@@ -19,7 +19,7 @@ const SearchUserResult = ({ user }: props) => {
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
         <UserIcon className="h-12 w-12 fill-white" />
       </div>
-      <div className="flex-1 py-3">
+      <div className="grow py-3">
         <p className="text-xs font-semibold text-authBlue-500">AUTHOR</p>
         <h1 className="text-2xl font-bold text-authBlue-500">{user.penname}</h1>
         <div className="flex gap-16 text-sm">

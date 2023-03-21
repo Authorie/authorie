@@ -32,7 +32,7 @@ const NavigationSidebar = ({ user }: props) => {
   );
 
   return (
-    <nav className="text-md fixed flex h-full w-60 flex-col justify-center border-gray-900/20 px-10 pt-10 sm:justify-start">
+    <nav className="text-md fixed z-50 flex h-full w-60 flex-col justify-center bg-white border-gray-900/20 px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"

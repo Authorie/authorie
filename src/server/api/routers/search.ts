@@ -1,3 +1,4 @@
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { makePagination } from "@server/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -45,33 +46,60 @@ export const searchRouter = createTRPCRouter({
   searchBooks: publicProcedure
     .input(
       z.object({
-        search: z.string(),
+        search: z.object({
+          userId: z.string().cuid().optional(),
+          penname: z.string().optional(),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          status: z.nativeEnum(BookStatus).array().optional(),
+        }),
         cursor: z.string().uuid().optional(),
-        limit: z.number().int().min(1).max(10).default(5),
+        limit: z.number().int().min(1).max(10).optional(),
       })
     )
     .query(async ({ ctx, input }) => {
       const { search, limit, cursor } = input;
       try {
         const books = await ctx.prisma.book.findMany({
-          take: limit + 1,
+          take: limit ? limit + 1 : undefined,
           cursor: cursor ? { id: cursor } : undefined,
           where: {
+            owners: {
+              some: {
+                user: search.userId
+                  ? {
+                      id: search.userId,
+                    }
+                  : {
+                      penname: {
+                        contains: search.penname,
+                      },
+                    },
+                status: {
+                  in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+                },
+              },
+            },
             OR: [
               {
                 title: {
-                  contains: search,
+                  contains: search.title,
                 },
               },
               {
                 description: {
-                  contains: search,
+                  contains: search.description,
+                },
+              },
+              {
+                status: {
+                  in: search.status,
                 },
               },
             ],
           },
         });
-        return makePagination(books, limit);
+        return makePagination(books, limit || books.length + 1);
       } catch (err) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

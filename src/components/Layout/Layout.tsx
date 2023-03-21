@@ -4,8 +4,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import AuthorBanner from "./AuthorBanner";
-import NavigationSidebar from "./NavigationSidebar";
 import CreateLayout from "./CreateLayout";
+import NavigationSidebar from "./NavigationSidebar";
 
 const NoLayoutPaths = ["/auth/new-user", "/auth/signin"];
 
@@ -46,23 +46,31 @@ const Layout = ({ children }: PropsWithChildren) => {
           content="Social media and publishing platform!"
         />
       </Head>
-      <div className="flex 2xl:container 2xl:mx-auto">
-        <div className="w-72">
-          <NavigationSidebar user={userFromSession} />
+      <div className="mx-auto w-screen max-w-screen-2xl">
+        <div className="flex w-full">
+          <div className="shrink-0 basis-60">
+            <NavigationSidebar user={userFromSession} />
+          </div>
+          <main
+            className={`h-screen grow border-l-2 border-gray-200 bg-gray-100 ${
+              router.pathname.includes("create")
+                ? ""
+                : "flex flex-col items-center"
+            }`}
+          >
+            {router.pathname.includes("[penname]") && (
+              <AuthorBanner
+                user={userFromBanner}
+                penname={router.query.penname as string}
+              />
+            )}
+            {router.pathname.includes("create") ? (
+              <CreateLayout>{children}</CreateLayout>
+            ) : (
+              children
+            )}
+          </main>
         </div>
-        <main className="flex min-h-screen w-full flex-col items-center border-l-2 border-gray-200 bg-gray-100">
-          {router.pathname.includes("[penname]") && (
-            <AuthorBanner
-              user={userFromBanner}
-              penname={router.query.penname as string}
-            />
-          )}
-          {router.pathname.includes("create") ? (
-            <CreateLayout>{children}</CreateLayout>
-          ) : (
-            children
-          )}
-        </main>
       </div>
     </>
   );

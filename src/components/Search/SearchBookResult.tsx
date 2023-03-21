@@ -19,7 +19,7 @@ const SearchBookResult = ({ book }: props) => {
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authGreen-500">
         <BookOpenIcon className="h-12 w-12 fill-white" />
       </div>
-      <div className="flex-1 py-3">
+      <div className="grow py-3">
         <p className="text-xs font-semibold text-authGreen-500">BOOK</p>
         <h1 className="text-2xl font-bold text-authGreen-500">{book.title}</h1>
         <div className="flex gap-24 text-xs text-dark-400">

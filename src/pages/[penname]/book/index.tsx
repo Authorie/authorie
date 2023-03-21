@@ -26,7 +26,9 @@ export const getServerSideProps = async (
     transformer: superjson,
   });
   const penname = context.query.penname as string;
-  await ssg.book.getAll.prefetch({ penname });
+  const promises = [ssg.book.getAll.prefetch({ penname })];
+  if (session) promises.push(ssg.user.getData.prefetch(undefined));
+  await Promise.allSettled(promises);
 
   return {
     props: {

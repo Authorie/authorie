@@ -1,4 +1,4 @@
-import { HeartIcon, EyeIcon, PencilIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, HeartIcon, PencilIcon } from "@heroicons/react/24/solid";
 import type { RouterOutputs } from "@utils/api";
 
 type props = {
@@ -11,7 +11,9 @@ const ChapterCard = ({ chapter }: props) => {
       <h1 className="text-3xl font-bold text-authGreen-600"># 1</h1>
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{chapter.title}</h2>
-        <p className="text-xs font-extralight">{`Last update : ${chapter.publishedAt.toLocaleDateString()}`}</p>
+        {chapter.publishedAt && (
+          <p className="text-xs font-extralight">{`Last update : ${chapter.publishedAt.toLocaleDateString()}`}</p>
+        )}
       </div>
       <div className="flex flex-col items-end gap-1">
         <PencilIcon className="h-8 w-8 rounded-xl border p-2" />

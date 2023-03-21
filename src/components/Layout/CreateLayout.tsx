@@ -1,6 +1,6 @@
-import { useState } from "react";
-import type { PropsWithChildren } from "react";
 import { useRouter } from "next/router";
+import type { PropsWithChildren } from "react";
+import { useState } from "react";
 
 type tab = "book" | "chapter";
 
@@ -21,8 +21,8 @@ const CreateLayout = ({ children }: PropsWithChildren) => {
   };
 
   return (
-    <div className="w-full gap-3 rounded-2xl p-4">
-      <div className="flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
+    <div className="flex h-full w-full flex-col rounded-2xl px-4 py-4">
+      <div className="grow-0 flex rounded-tr-2xl rounded-tl-3xl bg-authGreen-600">
         <button
           onClick={() => onClickTabHandler("book")}
           className={buttonClassName("book")}
@@ -36,7 +36,7 @@ const CreateLayout = ({ children }: PropsWithChildren) => {
           Create chapter
         </button>
       </div>
-      {children}
+      <div className="grow">{children}</div>
     </div>
   );
 };

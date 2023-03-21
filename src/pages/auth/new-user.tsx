@@ -11,7 +11,7 @@ const validationSchema = z.object({
   penname: z
     .string()
     .max(50, { message: "Your penname is too long" })
-    .min(1, { message: "Your oenname is required" }),
+    .min(1, { message: "Your penname is required" }),
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
