@@ -583,4 +583,51 @@ export const bookRouter = createTRPCRouter({
         });
       }
     }),
+  delete: protectedProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+      let book;
+      try {
+        book = await ctx.prisma.book.findUniqueOrThrow({
+          where: { id: input.id },
+          include: {
+            owners: true,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "book not found",
+          cause: err,
+        });
+      }
+
+      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "you are not owner of this book",
+        });
+      }
+
+      const validBookStatus = [BookStatus.INITIAL, BookStatus.DRAFT];
+      if (!validBookStatus.includes(book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "book cannot be deleted",
+        });
+      }
+
+      try {
+        await ctx.prisma.book.delete({
+          where: { id },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "failed to delete book",
+          cause: err,
+        });
+      }
+    }),
 });
