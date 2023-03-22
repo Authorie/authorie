@@ -52,7 +52,7 @@ const Layout = ({ children }: PropsWithChildren) => {
             <NavigationSidebar user={userFromSession} />
           </div>
           <main
-            className={`h-screen grow border-l-2 border-gray-200 bg-gray-100 ${
+            className={`max-h-full min-h-screen grow border-l-2 border-gray-200 bg-gray-100 ${
               router.pathname.includes("create")
                 ? ""
                 : "flex flex-col items-center"
