@@ -3,12 +3,15 @@ import { Popover } from "@headlessui/react";
 import {
   ChevronLeftIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon, StarIcon
+  PencilSquareIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import {
   Bars3CenterLeftIcon,
   EyeIcon,
-  HeartIcon, PhotoIcon, StarIcon as StarIconSolid
+  HeartIcon,
+  PhotoIcon,
+  StarIcon as StarIconSolid,
 } from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useImageUpload from "@hooks/imageUpload";
@@ -20,14 +23,14 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
-  InferGetServerSidePropsType
+  InferGetServerSidePropsType,
 } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import superjson from "superjson";
 import * as z from "zod";
@@ -143,7 +146,7 @@ const BookContent = ({ bookId }: props) => {
     } else {
       setAddedCategories([...addedCategories, category]);
     }
-  }
+  };
   const toggleFavoriteHandler = () => {
     if (isFavorite) {
       unfavoriteBook.mutate({ id: bookId });
@@ -153,22 +156,31 @@ const BookContent = ({ bookId }: props) => {
   };
   const updateBook = api.book.update.useMutation({
     async onMutate(newBook) {
-      await utils.book.getData.cancel()
+      await utils.book.getData.cancel();
       const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return
+      if (!prevData) return;
       const book = {
         ...prevData,
         title: newBook.title !== undefined ? newBook.title : prevData.title,
-        description: newBook.description !== undefined ? newBook.description : prevData.description,
+        description:
+          newBook.description !== undefined
+            ? newBook.description
+            : prevData.description,
         categories: addedCategories.map((data) => ({ category: data })),
-        coverImage: newBook.coverImageUrl !== undefined ? newBook.coverImageUrl : prevData.coverImage,
-        wallpaperImage: newBook.wallpaperImageUrl !== undefined ? newBook.wallpaperImageUrl : prevData.wallpaperImage,
-      }
+        coverImage:
+          newBook.coverImageUrl !== undefined
+            ? newBook.coverImageUrl
+            : prevData.coverImage,
+        wallpaperImage:
+          newBook.wallpaperImageUrl !== undefined
+            ? newBook.wallpaperImageUrl
+            : prevData.wallpaperImage,
+      };
       utils.book.getData.setData({ id: newBook.id }, book);
-      return { prevData }
+      return { prevData };
     },
     onError(_, newPost, ctx) {
-      if (!ctx?.prevData) return
+      if (!ctx?.prevData) return;
       utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
     },
     onSuccess() {
@@ -194,15 +206,15 @@ const BookContent = ({ bookId }: props) => {
       const promises = [
         bookCover
           ? uploadImageUrl.mutateAsync({
-            title: `${data.title}'s book cover image`,
-            image: bookCover,
-          })
+              title: `${data.title}'s book cover image`,
+              image: bookCover,
+            })
           : undefined,
         bookWallpaper
           ? uploadImageUrl.mutateAsync({
-            title: `${data.title}'s book wallpaper`,
-            image: bookWallpaper,
-          })
+              title: `${data.title}'s book wallpaper`,
+              image: bookWallpaper,
+            })
           : undefined,
       ] as const;
       const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -228,7 +240,7 @@ const BookContent = ({ bookId }: props) => {
     <>
       <form
         onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
-        className="relative mx-14 my-8 flex flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
+        className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
       >
         <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
           {book && (book?.wallpaperImage || bookWallpaper) ? (
@@ -244,12 +256,11 @@ const BookContent = ({ bookId }: props) => {
           )}
           <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
         </div>
-        <div
+        <ChevronLeftIcon
+          type="button"
           onClick={() => router.back()}
-          className="absolute inset-0 top-2 left-2 z-10"
-        >
-          <ChevronLeftIcon className="h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400" />
-        </div>
+          className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+        />
         {book && (
           <div className="z-10 flex gap-7 pt-10 pb-5">
             <div className="ml-7 flex flex-col">
@@ -329,7 +340,9 @@ const BookContent = ({ bookId }: props) => {
                                   <button
                                     type="button"
                                     key={category.id}
-                                    onClick={() => toggleCategoryHandler(category)}
+                                    onClick={() =>
+                                      toggleCategoryHandler(category)
+                                    }
                                     className="flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
                                   >
                                     {category.title}
@@ -339,10 +352,10 @@ const BookContent = ({ bookId }: props) => {
                                 (category: Category) =>
                                   !addedCategories.includes(category)
                               ).length === 0 && (
-                                  <p className="text-sm font-semibold">
-                                    No more categories left...
-                                  </p>
-                                )}
+                                <p className="text-sm font-semibold">
+                                  No more categories left...
+                                </p>
+                              )}
                             </div>
                           </Popover.Panel>
                           <Popover.Button
@@ -395,11 +408,12 @@ const BookContent = ({ bookId }: props) => {
                 )}
               </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex grow flex-col">
               <div
                 className={`
-                ${isEdit ? "justify-end gap-2" : "justify-center"
-                  } ${"flex h-52 w-3/5 flex-col gap-2"}`}
+                ${
+                  isEdit ? "justify-end gap-2" : "justify-center"
+                } ${"flex h-52 w-3/5 flex-col gap-2"}`}
               >
                 <div className="flex gap-4">
                   {isEdit ? (
@@ -426,10 +440,11 @@ const BookContent = ({ bookId }: props) => {
                         />
                         <p
                           className={`${"text-xs"} 
-                          ${watch("title") && watch("title").length > 50
+                          ${
+                            watch("title") && watch("title").length > 50
                               ? "text-red-500"
                               : "text-black"
-                            }`}
+                          }`}
                         >
                           {watch("title") ? watch("title").length : 0}/50
                         </p>
@@ -450,10 +465,11 @@ const BookContent = ({ bookId }: props) => {
                   >
                     {!isEdit && (
                       <PencilSquareIcon
-                        className={`w-7 ${book.isOwner
-                          ? " rounded-lg p-1 text-gray-800 hover:bg-gray-400"
-                          : "hidden"
-                          }`}
+                        className={`w-7 ${
+                          book.isOwner
+                            ? " rounded-lg p-1 text-gray-800 hover:bg-gray-400"
+                            : "hidden"
+                        }`}
                       />
                     )}
                   </button>
@@ -487,10 +503,11 @@ const BookContent = ({ bookId }: props) => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${watch("description") &&
+                          ${
+                            watch("description") &&
                             watch("description").length > 300
-                            ? "text-red-500"
-                            : "text-black"
+                              ? "text-red-500"
+                              : "text-black"
                           }`}
                       >
                         {watch("description") ? watch("description").length : 0}
@@ -511,9 +528,9 @@ const BookContent = ({ bookId }: props) => {
                 <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-gray-200" />
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
-              <div className="mt-3 flex max-h-fit min-h-[452px] w-[800px] grow justify-center rounded-sm bg-authGreen-300 shadow-lg">
+              <div className="mt-3 grow rounded-sm bg-authGreen-300 shadow-lg">
                 {book.chapters.length !== 0 && (
-                  <div className="grid w-fit grid-cols-2 gap-x-4 gap-y-1 p-4">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
                     {book.chapters.map((chapter) => (
                       <ChapterCard key={chapter.id} chapter={chapter} />
                     ))}
