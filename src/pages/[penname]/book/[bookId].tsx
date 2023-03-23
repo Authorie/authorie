@@ -4,6 +4,7 @@ import {
   ChevronLeftIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
+  PlusCircleIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -16,6 +17,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
@@ -26,7 +28,6 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -125,6 +126,12 @@ const BookContent = ({ bookId }: props) => {
       description: book?.description || "",
     },
   });
+  const isChapterCreatable = useMemo(() => {
+    if (!book) return false;
+    if (!book.isOwner) return false;
+    const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
+    return validBookStatus.includes(book.status);
+  }, [book]);
   const totalViews = useMemo(() => {
     if (book) {
       return book.chapters.reduce((acc, curr) => acc + curr.views, 0);
@@ -529,28 +536,26 @@ const BookContent = ({ bookId }: props) => {
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
               <div className="mt-3 grow rounded-sm bg-authGreen-300 shadow-lg">
-                {book.chapters.length !== 0 && (
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
-                    {book.chapters.map((chapter) => (
-                      <ChapterCard key={chapter.id} chapter={chapter} />
-                    ))}
-                  </div>
-                )}
-                {book.chapters.length === 0 && (
-                  <div className="flex flex-col items-center justify-center gap-5">
-                    <p className="text-lg font-semibold text-black">
-                      This book does not have any chapters yet.
-                    </p>
-                    {book.isOwner && (
-                      <Link
-                        href="/create/chapter"
-                        className="rounded-lg bg-green-600 px-3 py-2 text-white hover:bg-green-700"
-                      >
-                        Create Chapter
-                      </Link>
-                    )}
-                  </div>
-                )}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
+                  {isChapterCreatable && (
+                    <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
+                      <PlusCircleIcon className="w-8" />
+                      <span className="text-lg font-semibold">
+                        Create new chapter
+                      </span>
+                    </div>
+                  )}
+                  {book.chapters.length === 0 && !isChapterCreatable && (
+                    <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
+                      <span className="text-lg font-semibold">
+                        This book has no chapters yet
+                      </span>
+                    </div>
+                  )}
+                  {book.chapters.map((chapter) => (
+                    <ChapterCard key={chapter.id} chapter={chapter} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
