@@ -1,42 +1,40 @@
-import { useState } from "react";
-import { StarIcon } from "@heroicons/react/24/outline";
-import {
-  StarIcon as StarIconSolid,
-  PhotoIcon,
-} from "@heroicons/react/24/solid";
 import ChapterCard from "@components/Chapter/ChapterCard";
+import { Popover } from "@headlessui/react";
 import {
   ChevronLeftIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
+  PlusCircleIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import {
   Bars3CenterLeftIcon,
   EyeIcon,
   HeartIcon,
+  PhotoIcon,
+  StarIcon as StarIconSolid,
 } from "@heroicons/react/24/solid";
-import Image from "next/image";
-import { useRouter } from "next/router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
+import type { Category } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { getServerAuthSession } from "@server/auth";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { appRouter } from "@server/api/root";
-import superjson from "superjson";
-import { useMemo } from "react";
-import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
-import { Popover } from "@headlessui/react";
-import type { Category } from "@prisma/client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+import superjson from "superjson";
+import * as z from "zod";
 
 const validationSchema = z.object({
   title: z
@@ -73,15 +71,15 @@ type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const BookContent = ({ bookId }: props) => {
   const router = useRouter();
+  const utils = api.useContext();
+  const [isEdit, setIsEdit] = useState(false);
   const { data: categories } = api.category.getAll.useQuery();
   const { data: book } = api.book.getData.useQuery({
     id: bookId,
   });
-  const [addedCategories, setAddedCategories] = useState<Category[]>(
+  const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
-  ); // tanstack-query as react state manager
-  const [isEdit, setIsEdit] = useState(false);
-  const utils = api.useContext();
+  );
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
   const {
     imageData: bookCover,
@@ -97,7 +95,7 @@ const BookContent = ({ bookId }: props) => {
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
       const previousFavorite = utils.book.isFavorite.getData();
-      utils.book.isFavorite.setData({ id: bookId }, (old) => !old);
+      utils.book.isFavorite.setData({ id: bookId }, false);
       return { previousFavorite };
     },
     onSettled: () => {
@@ -108,7 +106,7 @@ const BookContent = ({ bookId }: props) => {
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
       const previousFavorite = utils.book.isFavorite.getData();
-      utils.book.isFavorite.setData({ id: bookId }, (old) => !old);
+      utils.book.isFavorite.setData({ id: bookId }, true);
       return { previousFavorite };
     },
     onSettled: () => {
@@ -128,6 +126,12 @@ const BookContent = ({ bookId }: props) => {
       description: "",
     },
   });
+  const isChapterCreatable = useMemo(() => {
+    if (!book) return false;
+    if (!book.isOwner) return false;
+    const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
+    return validBookStatus.includes(book.status);
+  }, [book]);
   const totalViews = useMemo(() => {
     if (book) {
       return book.chapters.reduce((acc, curr) => acc + curr.views, 0);
@@ -143,6 +147,13 @@ const BookContent = ({ bookId }: props) => {
     }
   }, [book]);
 
+  const toggleCategoryHandler = (category: Category) => {
+    if (addedCategories.includes(category)) {
+      setAddedCategories(addedCategories.filter((data) => data !== category));
+    } else {
+      setAddedCategories([...addedCategories, category]);
+    }
+  };
   const toggleFavoriteHandler = () => {
     if (isFavorite) {
       unfavoriteBook.mutate({ id: bookId });
@@ -151,8 +162,35 @@ const BookContent = ({ bookId }: props) => {
     }
   };
   const updateBook = api.book.update.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        title: newBook.title !== undefined ? newBook.title : prevData.title,
+        description:
+          newBook.description !== undefined
+            ? newBook.description
+            : prevData.description,
+        categories: addedCategories.map((data) => ({ category: data })),
+        coverImage:
+          newBook.coverImageUrl !== undefined
+            ? newBook.coverImageUrl
+            : prevData.coverImage,
+        wallpaperImage:
+          newBook.wallpaperImageUrl !== undefined
+            ? newBook.wallpaperImageUrl
+            : prevData.wallpaperImage,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
+    },
+    onError(_, newPost, ctx) {
+      if (!ctx?.prevData) return;
+      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
+    },
     onSuccess() {
-      void utils.book.invalidate();
       resetHandler();
     },
     onSettled: () => {
@@ -209,7 +247,7 @@ const BookContent = ({ bookId }: props) => {
     <>
       <form
         onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
-        className="relative mx-14 my-8 flex flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
+        className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
       >
         <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
           {book && (book?.wallpaperImage || bookWallpaper) ? (
@@ -225,12 +263,11 @@ const BookContent = ({ bookId }: props) => {
           )}
           <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
         </div>
-        <div
+        <ChevronLeftIcon
+          type="button"
           onClick={() => router.back()}
-          className="absolute inset-0 top-2 left-2 z-10"
-        >
-          <ChevronLeftIcon className="h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400" />
-        </div>
+          className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+        />
         {book && (
           <div className="z-10 flex gap-7 pt-10 pb-5">
             <div className="ml-7 flex flex-col">
@@ -289,13 +326,9 @@ const BookContent = ({ bookId }: props) => {
                         )}
                         {addedCategories.map((category) => (
                           <span
-                            onClick={() =>
-                              setAddedCategories((prev) =>
-                                prev.filter((c) => c.id !== category.id)
-                              )
-                            }
                             key={category.id}
-                            className="cursor-pointer select-none whitespace-nowrap rounded-full bg-authGreen-500 px-2 py-0.5 text-xs text-white hover:bg-red-600"
+                            onClick={() => toggleCategoryHandler(category)}
+                            className="cursor-pointer select-none whitespace-nowrap rounded-full bg-authYellow-500 px-2 py-0.5 text-xs text-white hover:bg-red-600"
                           >
                             {category.title}
                           </span>
@@ -312,13 +345,10 @@ const BookContent = ({ bookId }: props) => {
                                 )
                                 .map((category) => (
                                   <button
-                                    key={category.id}
                                     type="button"
+                                    key={category.id}
                                     onClick={() =>
-                                      setAddedCategories((prev) => [
-                                        ...prev,
-                                        category,
-                                      ])
+                                      toggleCategoryHandler(category)
                                     }
                                     className="flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
                                   >
@@ -385,7 +415,7 @@ const BookContent = ({ bookId }: props) => {
                 )}
               </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex grow flex-col">
               <div
                 className={`
                 ${
@@ -507,29 +537,27 @@ const BookContent = ({ bookId }: props) => {
                 <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-gray-200" />
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
-              <div className="mt-3 flex max-h-fit min-h-[452px] w-[800px] grow justify-center rounded-sm bg-authGreen-300 shadow-lg">
-                {book.chapters.length !== 0 && (
-                  <div className="grid w-fit grid-cols-2 gap-x-4 gap-y-1 p-4">
-                    {book.chapters.map((chapter) => (
-                      <ChapterCard key={chapter.id} chapter={chapter} />
-                    ))}
-                  </div>
-                )}
-                {book.chapters.length === 0 && (
-                  <div className="flex flex-col items-center justify-center gap-5">
-                    <p className="text-lg font-semibold text-black">
-                      This book does not have any chapters yet.
-                    </p>
-                    {book.isOwner && (
-                      <Link
-                        href="/create/chapter"
-                        className="rounded-lg bg-green-600 px-3 py-2 text-white hover:bg-green-700"
-                      >
-                        Create Chapter
-                      </Link>
-                    )}
-                  </div>
-                )}
+              <div className="mt-3 grow rounded-sm bg-authGreen-300 shadow-lg">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
+                  {isChapterCreatable && (
+                    <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
+                      <PlusCircleIcon className="w-8" />
+                      <span className="text-lg font-semibold">
+                        Create new chapter
+                      </span>
+                    </div>
+                  )}
+                  {book.chapters.length === 0 && !isChapterCreatable && (
+                    <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
+                      <span className="text-lg font-semibold">
+                        This book has no chapters yet
+                      </span>
+                    </div>
+                  )}
+                  {book.chapters.map((chapter) => (
+                    <ChapterCard key={chapter.id} chapter={chapter} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
