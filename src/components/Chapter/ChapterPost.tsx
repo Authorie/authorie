@@ -1,42 +1,45 @@
-import Comment from "@components/Comment/Comment";
-import CommentInput from "@components/Comment/CommentInput";
-import { CommentButton, LikeButton } from "@components/action";
-import ArrowTopRightOnSquareIcon from "@heroicons/react/24/outline/ArrowTopRightOnSquareIcon";
-import type { Content } from "@tiptap/react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { api, type RouterOutputs } from "@utils/api";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { EditorContent } from "@tiptap/react";
+import { LikeButton } from "@components/action";
+import { CommentButton } from "@components/action";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { api } from "@utils/api";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import type { Content } from "@tiptap/react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
+import CommentInput from "@components/Comment/CommentInput";
+import Comment from "@components/Comment/Comment";
 
 type props = {
-  chapter: RouterOutputs["chapter"]["getAll"]["items"][number];
+  chapterId: string;
 };
 
-const ChapterPost = ({ chapter }: props) => {
+const ChapterPost = ({ chapterId }: props) => {
+  const [openComments, setOpenComments] = useState(false);
   const { status } = useSession();
   const utils = api.useContext();
-  const [openComments, setOpenComments] = useState(false);
-  const editor = useEditor({
-    editable: false,
-    content: chapter.content as Content,
-    extensions: [StarterKit],
-  });
+  const { data: chapter } = api.chapter.getData.useQuery({ id: chapterId });
+  const { data: isLike } = api.comment.isLike.useQuery({ id: chapterId });
   const {
     data: comments,
     isSuccess,
     isLoading,
   } = api.comment.getAll.useQuery(
-    { chapterId: chapter.id },
+    { chapterId: chapterId },
     { enabled: openComments }
   );
-  const { data: isLike } = api.comment.isLike.useQuery({ id: chapter.id });
+  const editor = useEditor({
+    editable: false,
+    content: chapter?.content as Content,
+    extensions: [StarterKit],
+  });
   const likeMutation = api.chapter.like.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
       const previousLike = utils.chapter.isLike.getData();
-      utils.chapter.isLike.setData({ id: chapter.id }, (old) => !old);
+      utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
       return { previousLike };
     },
     onSettled: () => {
@@ -47,7 +50,7 @@ const ChapterPost = ({ chapter }: props) => {
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
       const previousLike = utils.chapter.isLike.getData();
-      utils.chapter.isLike.setData({ id: chapter.id }, (old) => !old);
+      utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
       return { previousLike };
     },
     onSettled: () => {
@@ -58,9 +61,9 @@ const ChapterPost = ({ chapter }: props) => {
   const onLikeHandler = () => {
     if (likeMutation.isLoading && unlikeMutation.isLoading) return;
     if (isLike) {
-      unlikeMutation.mutate({ id: chapter.id });
+      unlikeMutation.mutate({ id: chapterId });
     } else {
-      likeMutation.mutate({ id: chapter.id });
+      likeMutation.mutate({ id: chapterId });
     }
   };
 
@@ -72,20 +75,20 @@ const ChapterPost = ({ chapter }: props) => {
           <Image src="/mockWallpaper.jpeg" alt="wallpaper" fill />
         </div>
         <div className="z-10">
-          <h2 className="my-1 text-2xl font-bold">{chapter.title}</h2>
-          {chapter.book && (
+          <h2 className="my-1 text-2xl font-bold">{chapter?.title}</h2>
+          {chapter?.book && (
             <h3 className="text-dark-400">{chapter.book.title}</h3>
           )}
           <p className="text-sm text-dark-600">
             Author:
-            <span className="font-semibold">{chapter.owner.penname}</span>
+            <span className="font-semibold">{chapter?.owner.penname}</span>
           </p>
         </div>
       </div>
       <div className="my-3 px-8">
-        {chapter.publishedAt && (
+        {chapter?.publishedAt && (
           <p className="mb-2 text-xs text-dark-400">
-            publish: {chapter.publishedAt.toDateString()}
+            publish: {chapter?.publishedAt.toDateString()}
           </p>
         )}
         <EditorContent editor={editor} />
@@ -94,11 +97,11 @@ const ChapterPost = ({ chapter }: props) => {
         <LikeButton
           isAuthenticated={status === "authenticated"}
           isLike={Boolean(isLike)}
-          numberOfLike={chapter._count.likes}
+          numberOfLike={chapter?._count.likes || 0}
           onClickHandler={onLikeHandler}
         />
         <CommentButton
-          numberOfComments={chapter._count.comments}
+          numberOfComments={chapter?._count.comments || 0}
           onClickHandler={() => setOpenComments((prev) => !prev)}
         />
         <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
@@ -107,9 +110,7 @@ const ChapterPost = ({ chapter }: props) => {
       </div>
       {openComments && (
         <div className="bg-gray-300 px-4 pb-4 pt-2">
-          {status === "authenticated" && (
-            <CommentInput chapterId={chapter.id} />
-          )}
+          {status === "authenticated" && <CommentInput chapterId={chapterId} />}
           {isSuccess &&
             comments.map((comment) => (
               <Comment key={comment.id} comment={comment} />

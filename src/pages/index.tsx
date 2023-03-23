@@ -8,7 +8,7 @@ import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
 import { useSession } from "next-auth/react";
 import { api } from "@utils/api";
 import { Fragment } from "react";
-import ChapterPost from "@components/Chapter/ChapterPost";
+import ChapterFeed from "@components/Chapter/ChapterFeed";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -58,7 +58,7 @@ const Home = () => {
           data?.pages.map((page, index) => (
             <Fragment key={index}>
               {page.items.map((chapter) => (
-                <ChapterPost key={chapter.id} chapter={chapter} />
+                <ChapterFeed key={chapter.id} chapter={chapter} />
               ))}
             </Fragment>
           ))}

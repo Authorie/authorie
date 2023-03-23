@@ -49,14 +49,17 @@ const CommentInput = ({ chapterId, parentId }: props) => {
           height={50}
         />
       </div>
-      <div className="relaltive w-full">
+      <div className="flex w-full gap-2">
         <input
-          className="grow rounded-full bg-gray-200 px-4 py-1 text-sm outline-none focus:outline-none"
+          className="w-full rounded-full bg-gray-200 px-4 py-1 text-sm outline-none focus:outline-none"
           placeholder="write comment here"
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <label htmlFor="upload-image">
+        <label
+          htmlFor="upload-image"
+          className="flex w-10 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-200"
+        >
           <input
             id="upload-image"
             hidden
@@ -64,7 +67,7 @@ const CommentInput = ({ chapterId, parentId }: props) => {
             accept="image/jepg, image/png"
             onChange={uploadHandler}
           />
-          <PhotoIcon className="absolute right-0 h-5 w-5 cursor-pointer" />
+          <PhotoIcon className="h-5 w-5" />
         </label>
       </div>
       <input type="submit" hidden />

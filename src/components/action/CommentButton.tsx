@@ -21,7 +21,7 @@ export const CommentButton = ({
     >
       <ChatBubbleBottomCenterTextIcon className={`h-${size} w-${size}`} />
       <span className={`text-${textSize}`}>
-        {numberOfComments} {small && "comments"}
+        {numberOfComments > 0 ? numberOfComments : ""} {small && "comments"}
       </span>
     </div>
   );
