@@ -124,8 +124,8 @@ const BookContent = ({ bookId }: props) => {
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      title: book?.title,
-      description: book?.description || "",
+      title: "",
+      description: "",
     },
   });
   const totalViews = useMemo(() => {
@@ -153,9 +153,7 @@ const BookContent = ({ bookId }: props) => {
   const updateBook = api.book.update.useMutation({
     onSuccess() {
       void utils.book.invalidate();
-      setIsEdit(false);
-      resetBookCover();
-      resetBookWallpaper();
+      resetHandler();
     },
     onSettled: () => {
       void utils.book.invalidate();
@@ -297,7 +295,7 @@ const BookContent = ({ bookId }: props) => {
                               )
                             }
                             key={category.id}
-                            className="cursor-pointer select-none whitespace-nowrap rounded-full bg-authYellow-500 px-2 py-0.5 text-xs text-white hover:bg-red-600"
+                            className="cursor-pointer select-none whitespace-nowrap rounded-full bg-authGreen-500 px-2 py-0.5 text-xs text-white hover:bg-red-600"
                           >
                             {category.title}
                           </span>
@@ -338,7 +336,7 @@ const BookContent = ({ bookId }: props) => {
                             </div>
                           </Popover.Panel>
                           <Popover.Button
-                            className="rounded-lg bg-orange-400 py-2 px-3 text-sm font-semibold text-white hover:bg-orange-500"
+                            className="rounded-lg border border-authGreen-400 py-2 px-3 text-sm font-semibold text-authGreen-500 hover:border-authGreen-600 hover:bg-authGreen-600 hover:text-white"
                             type="button"
                           >
                             Add categories
@@ -477,7 +475,9 @@ const BookContent = ({ bookId }: props) => {
                         rows={2}
                         id="description"
                         className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm placeholder:text-gray-500 focus:outline-none"
-                        placeholder="write the description down..."
+                        placeholder={
+                          book.description || "write the description down..."
+                        }
                         {...register("description")}
                       />
                       <p
