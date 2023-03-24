@@ -312,19 +312,30 @@ const CreateChapter = () => {
               )}
             </div>
             <div className="z-20 flex flex-col gap-2">
-              <div>
+              <div className="flex items-end gap-2">
                 <input
                   placeholder="Untitled"
-                  className="w-fit bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
+                  className="w-full bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
-                {errors.title && (
-                  <p className="text-xs text-red-400" role="alert">
-                    {errors.title}
-                  </p>
-                )}
+                <p
+                  className={`${"text-xs"} 
+                          ${
+                            title && title.length > 80
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
+                >
+                  {title ? title.length : 0}
+                  /80
+                </p>
               </div>
+              {errors.title && (
+                <p className="text-xs text-red-400" role="alert">
+                  {errors.title}
+                </p>
+              )}
               <div className="flex w-fit items-center gap-4">
                 <span className="text-xs text-gray-600">Author </span>
                 {user && <span className="text-xs">{user.penname}</span>}
