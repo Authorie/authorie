@@ -384,15 +384,10 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      const validStatus = [
-        BookStatus.DRAFT,
-        BookStatus.PUBLISHED,
-        BookStatus.COMPLETED,
-      ];
-      if (!validStatus.includes(book.status)) {
+      if (book.status === BookStatus.ARCHIVED) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "you cannot update this book",
+          code: "BAD_REQUEST",
+          message: "you cannot update archived book",
         });
       }
 
@@ -504,9 +499,14 @@ export const bookRouter = createTRPCRouter({
       let book;
       try {
         book = await ctx.prisma.book.findUniqueOrThrow({
-          where: { id: input.id },
+          where: { id },
           include: {
-            owners: true,
+            owners: {
+              where: {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+            },
           },
         });
       } catch (err) {
@@ -517,7 +517,7 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+      if (book.owners.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "you are not owner of this book",
@@ -592,7 +592,12 @@ export const bookRouter = createTRPCRouter({
         book = await ctx.prisma.book.findUniqueOrThrow({
           where: { id: input.id },
           include: {
-            owners: true,
+            owners: {
+              where: {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+            },
           },
         });
       } catch (err) {
@@ -603,7 +608,7 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+      if (book.owners.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "you are not owner of this book",
