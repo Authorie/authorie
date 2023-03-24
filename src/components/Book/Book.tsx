@@ -13,6 +13,7 @@ type props = {
   like: number;
   isOwner: boolean;
   coverImage: string | null;
+  status: string;
 };
 
 const Book = ({
@@ -23,10 +24,19 @@ const Book = ({
   id,
   isOwner,
   coverImage,
+  status,
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
+  const publishBook = api.book.moveState.useMutation({
+    onSuccess: () => {
+      void utils.book.invalidate();
+    },
+    onError: () => {
+      console.log("error");
+    },
+  });
   const unfavoriteBook = api.book.unfavorite.useMutation({
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
@@ -64,13 +74,26 @@ const Book = ({
     }
   };
 
+  const publishBookHandler = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    publishBook.mutate({ id: id, status: "PUBLISHED" });
+  };
+
   return (
     <div
       onClick={onClickHandler}
       className="flex cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
-      <div className="flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
+      <div className="relative flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
+        {status === "DRAFT" && (
+          <button
+            onClick={publishBookHandler}
+            className="absolute top-2 right-2 z-10 rounded-full border border-white bg-green-600 px-4 py-1 text-xs text-white hover:bg-green-700"
+          >
+            Publish now!
+          </button>
+        )}
         <div className="relative h-28 w-full overflow-hidden rounded-tl-lg">
           {coverImage ? (
             <Image src={coverImage} alt="book picture" fill />

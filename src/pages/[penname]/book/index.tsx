@@ -82,6 +82,7 @@ const BookPage = ({ penname }: props) => {
                 coverImage={book.coverImage}
                 description={book.description}
                 isOwner={book.isOwner}
+                status={book.status}
                 like={book.chapters.reduce(
                   (acc, curr) => acc + curr._count.likes,
                   0
