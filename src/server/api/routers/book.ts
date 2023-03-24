@@ -501,12 +501,7 @@ export const bookRouter = createTRPCRouter({
         book = await ctx.prisma.book.findUniqueOrThrow({
           where: { id },
           include: {
-            owners: {
-              where: {
-                userId: ctx.session.user.id,
-                status: BookOwnerStatus.OWNER,
-              },
-            },
+            owners: true,
           },
         });
       } catch (err) {
@@ -517,7 +512,13 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      if (book.owners.length === 0) {
+      if (
+        book.owners.some(
+          (owner) =>
+            owner.userId === ctx.session.user.id &&
+            owner.status === BookOwnerStatus.OWNER
+        )
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "you are not owner of this book",
@@ -530,6 +531,17 @@ export const bookRouter = createTRPCRouter({
             throw new TRPCError({
               code: "BAD_REQUEST",
               message: "initial status can only be changed to draft status",
+            });
+          }
+          if (
+            book.owners.some(
+              (owner) => owner.status === BookOwnerStatus.INVITEE
+            )
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `there are still invite(s) to collaborate in this book. 
+                please wait for their response or remove them first`,
             });
           }
         case BookStatus.DRAFT:
