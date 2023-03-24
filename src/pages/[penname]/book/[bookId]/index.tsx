@@ -120,7 +120,7 @@ const BookContent = ({ bookId }: props) => {
             <div className="flex">
               <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
               <div className="w-40 rounded-l-lg bg-white shadow-lg">
-                <div className="relative h-full w-full overflow-hidden rounded-tl-lg">
+                <div className="relative h-full w-full overflow-hidden rounded-l-lg">
                   {book?.coverImage ? (
                     <Image
                       src={book.coverImage}
