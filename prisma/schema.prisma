@@ -141,6 +141,7 @@ enum BookOwnerStatus {
     OWNER
     INVITEE
     COLLABORATOR
+    REJECTED
 }
 
 model BookOwner {
