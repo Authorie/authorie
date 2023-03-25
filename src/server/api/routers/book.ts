@@ -278,10 +278,62 @@ export const bookRouter = createTRPCRouter({
         invitees,
         initialStatus,
       } = input;
-      if (initialStatus !== BookStatus.INITIAL && invitees.length > 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Cannot invite users to a non-initial book",
+      if (invitees.length > 0) {
+        if (initialStatus !== BookStatus.INITIAL) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot invite users to a non-initial book",
+          });
+        }
+        let users;
+        try {
+          users = await ctx.prisma.user.findMany({
+            where: {
+              id: {
+                in: invitees,
+              },
+            },
+            include: {
+              followers: {
+                where: {
+                  followerId: ctx.session.user.id,
+                },
+              },
+              following: {
+                where: {
+                  followingId: ctx.session.user.id,
+                },
+              },
+            },
+          });
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Something went wrong",
+            cause: err,
+          });
+        }
+
+        if (users.length !== invitees.length) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid user id(s)",
+          });
+        }
+
+        users.forEach((user) => {
+          if (user.followers.length === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `User ${user.penname || user.id} is not following you`,
+            });
+          }
+          if (user.following.length === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `You are not following user ${user.penname || user.id}}`,
+            });
+          }
         });
       }
       try {
