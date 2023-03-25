@@ -264,11 +264,26 @@ export const bookRouter = createTRPCRouter({
         wallpaperImageUrl: z.string().url().optional(),
         invitees: z.array(z.string()).default([]),
         categoryIds: z.array(z.string()).default([]),
+        initialStatus: z
+          .enum([BookStatus.INITIAL, BookStatus.DRAFT, BookStatus.PUBLISHED])
+          .default(BookStatus.INITIAL),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, description, coverImageUrl, wallpaperImageUrl, invitees } =
-        input;
+      const {
+        title,
+        description,
+        coverImageUrl,
+        wallpaperImageUrl,
+        invitees,
+        initialStatus,
+      } = input;
+      if (initialStatus !== BookStatus.INITIAL && invitees.length > 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot invite users to a non-initial book",
+        });
+      }
       try {
         return await ctx.prisma.book.create({
           data: {
@@ -276,6 +291,7 @@ export const bookRouter = createTRPCRouter({
             description,
             coverImage: coverImageUrl,
             wallpaperImage: wallpaperImageUrl,
+            status: initialStatus,
             owners: {
               createMany: {
                 data: [
@@ -298,35 +314,13 @@ export const bookRouter = createTRPCRouter({
           },
         });
       } catch (e) {
+        console.error(e);
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (e.code === "P2003") {
-            if (
-              e.meta &&
-              "target" in e.meta &&
-              typeof e.meta.target === "string"
-            ) {
-              if (e.meta.target.includes("categories")) {
-                throw new TRPCError({
-                  code: "BAD_REQUEST",
-                  message:
-                    "category not found: " + input.categoryIds.join(", "),
-                  cause: e,
-                });
-              } else if (e.meta.target.includes("owners")) {
-                throw new TRPCError({
-                  code: "BAD_REQUEST",
-                  message: "user not found: " + invitees.join(", "),
-                  cause: e,
-                });
-              }
-            } else {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "failed to create book",
-                cause: e,
-              });
-            }
-          }
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Failed to create book",
+            cause: e,
+          });
         } else {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
