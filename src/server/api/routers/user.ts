@@ -349,7 +349,24 @@ export const userRouter = createTRPCRouter({
             id: bookId,
           },
           include: {
-            owners: true,
+            owners: {
+              include: {
+                user: {
+                  include: {
+                    followers: {
+                      where: {
+                        followerId: ctx.session.user.id,
+                      },
+                    },
+                    following: {
+                      where: {
+                        followingId: ctx.session.user.id,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         });
       } catch (err) {
@@ -382,11 +399,20 @@ export const userRouter = createTRPCRouter({
         });
       }
 
-      // // check if the user has already been invited
-      // const isInvited = book.owners.some(
-      //   (owner) =>
-      //     owner.userId === userId && owner.status === BookOwnerStatus.INVITEE
-      // );
+      book.owners.forEach(({ user }) => {
+        if (user.followers.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `User ${user.penname || user.id} is not following you`,
+          });
+        }
+        if (user.following.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `You are not following user ${user.penname || user.id}}`,
+          });
+        }
+      });
 
       // check if the user exists
       try {
