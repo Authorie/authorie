@@ -6,6 +6,11 @@ import { createHash } from "crypto";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
+type ImageType = "png" | "jpeg";
+
+type Base64<imageType extends ImageType> =
+  `data:image/${imageType};base64,${string}`;
+
 const getImageData = (imageFile: string) => {
   const imageData = Buffer.from(
     imageFile.replace(/^data:image\/\w+;base64,/, ""),
@@ -17,8 +22,17 @@ const getImageData = (imageFile: string) => {
 };
 
 const extractImageType = (imageFile: string) => {
-  const fileType = imageFile.split(";")[0]?.split("/")[1];
-  return fileType;
+  // regex match the image type and data
+  const regex = /^data:image\/(\w+);base64,(.+)/;
+  const matches = imageFile.match(regex);
+  if (matches === null || matches.length !== 3) {
+    return undefined;
+  }
+  const imageType = matches[1];
+  if (imageType !== "png" && imageType !== "jpeg") {
+    return undefined;
+  }
+  return imageFile as Base64<typeof imageType>; // matches[1] is the image type
 };
 
 export const uploadRouter = createTRPCRouter({
