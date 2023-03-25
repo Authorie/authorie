@@ -478,18 +478,20 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
           </div>
         )}
       </div>
-      <div className="sticky top-0 z-40 min-w-full">
-        <div className="ml-40 flex max-w-xl items-center justify-between bg-black/70 px-7 py-3 shadow-lg backdrop-blur-lg">
+      <div className="sticky top-0 z-40 ml-40 w-fit self-start">
+        <div className="flex max-w-xl items-center justify-between bg-black/70 px-1 shadow-lg backdrop-blur-lg">
           {AuthorTab.map((data) => (
             <button
               key={data.title}
               onClick={() => void router.push(`/${penname}/${data.url}`)}
-              className={
-                router.pathname.includes(data.title.toLocaleLowerCase()) ||
-                (data.title === "HOME" && router.pathname.split("/")[2] == null)
-                  ? "select-none text-sm text-green-500 underline decoration-green-500 underline-offset-2"
-                  : "cursor-pointer select-none text-sm text-white"
-              }
+              className={`
+                ${
+                  router.pathname.includes(data.title.toLocaleLowerCase()) ||
+                  (data.title === "HOME" &&
+                    router.pathname.split("/")[2] == null)
+                    ? "pointer-events-none text-green-500 underline decoration-green-500 underline-offset-2"
+                    : "cursor-pointer text-white"
+                } ${"select-none px-11 py-3 text-sm hover:bg-black/30"}`}
             >
               {data.title}
             </button>
