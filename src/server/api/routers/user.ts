@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { BookOwnerStatus, Prisma } from "@prisma/client";
 import { makePagination } from "@server/utils";
 import { z } from "zod";
 
@@ -286,6 +286,294 @@ export const userRouter = createTRPCRouter({
           code: "INTERNAL_SERVER_ERROR",
           message: "something went wrong",
           cause: e,
+        });
+      }
+    }),
+  getBookCollaborators: protectedProcedure
+    .input(z.object({ bookId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      const { bookId } = input;
+      // check whether the book is yours
+      try {
+        const book = await ctx.prisma.book.findFirstOrThrow({
+          where: {
+            id: bookId,
+            owners: {
+              some: {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+            },
+          },
+          include: {
+            owners: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        return book.owners;
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "book does not exist",
+            cause: err,
+          });
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
+            cause: err,
+          });
+        }
+      }
+    }),
+  inviteCollaborator: protectedProcedure
+    .input(z.object({ bookId: z.string().cuid(), userId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { bookId, userId } = input;
+      // check if the book exists
+      let book;
+      try {
+        book = await ctx.prisma.book.findUniqueOrThrow({
+          where: {
+            id: bookId,
+          },
+          include: {
+            owners: {
+              include: {
+                user: {
+                  include: {
+                    followers: {
+                      where: {
+                        followerId: ctx.session.user.id,
+                      },
+                    },
+                    following: {
+                      where: {
+                        followingId: ctx.session.user.id,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "book does not exist",
+          cause: err,
+        });
+      }
+
+      // check if the caller is the owner of the book
+      const isOwner = book.owners.some(
+        (owner) => owner.userId === ctx.session.user.id
+      );
+      if (!isOwner) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you are not the owner of the book",
+        });
+      }
+
+      // check if the user is already a collaborator
+      const isCollaborator = book.owners.some(
+        (owner) => owner.userId === userId
+      );
+      if (isCollaborator) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "user is already a collaborator",
+        });
+      }
+
+      book.owners.forEach(({ user }) => {
+        if (user.followers.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `User ${user.penname || user.id} is not following you`,
+          });
+        }
+        if (user.following.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `You are not following user ${user.penname || user.id}}`,
+          });
+        }
+      });
+
+      // check if the user exists
+      try {
+        await ctx.prisma.user.findUniqueOrThrow({
+          where: {
+            id: userId,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "user does not exist",
+          cause: err,
+        });
+      }
+
+      // create the invite
+      try {
+        return await ctx.prisma.bookOwner.create({
+          data: {
+            bookId,
+            userId,
+            status: BookOwnerStatus.INVITEE,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: err,
+        });
+      }
+    }),
+  responseCollaborationInvite: protectedProcedure
+    .input(z.object({ bookId: z.string().cuid(), accept: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const { bookId, accept } = input;
+      // check if the book exists
+      try {
+        await ctx.prisma.book.findUniqueOrThrow({
+          where: {
+            id: bookId,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "book does not exist",
+          cause: err,
+        });
+      }
+
+      // check if the user is already a collaborator
+      try {
+        await ctx.prisma.bookOwner.findFirstOrThrow({
+          where: {
+            bookId,
+            userId: ctx.session.user.id,
+            status: BookOwnerStatus.INVITEE,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you are not invited to this book",
+          cause: err,
+        });
+      }
+
+      // update the book owner status
+      try {
+        await ctx.prisma.bookOwner.update({
+          where: {
+            bookId_userId: {
+              bookId,
+              userId: ctx.session.user.id,
+            },
+          },
+          data: {
+            status: accept
+              ? BookOwnerStatus.COLLABORATOR
+              : BookOwnerStatus.REJECTED,
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: err,
+        });
+      }
+    }),
+  removeCollaborationInvite: protectedProcedure
+    .input(z.object({ bookId: z.string().cuid(), userId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const { bookId, userId } = input;
+
+      // check if the book exists
+      let book;
+      try {
+        book = await ctx.prisma.book.findUniqueOrThrow({
+          where: {
+            id: bookId,
+          },
+          include: {
+            owners: true,
+          },
+        });
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "book does not exist",
+          cause: err,
+        });
+      }
+
+      if (userId === ctx.session.user.id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you cannot remove yourself",
+        });
+      }
+
+      // check if the user is the owner of the book
+      if (
+        !book.owners.some(
+          (owner) =>
+            owner.userId === ctx.session.user.id &&
+            owner.status === BookOwnerStatus.OWNER
+        )
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you are not the owner of this book",
+        });
+      }
+
+      if (book.owners.find((owner) => owner.userId === userId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "user is not a collaborator / invitee",
+        });
+      }
+
+      // delete the book owner
+      try {
+        await ctx.prisma.bookOwner.delete({
+          where: {
+            bookId_userId: {
+              bookId,
+              userId,
+            },
+          },
+        });
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "something went wrong",
+          cause: err,
         });
       }
     }),
