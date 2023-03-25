@@ -530,27 +530,31 @@ export const userRouter = createTRPCRouter({
         });
       }
 
+      if (userId === ctx.session.user.id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "you cannot remove yourself",
+        });
+      }
+
       // check if the user is the owner of the book
-      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+      if (
+        !book.owners.some(
+          (owner) =>
+            owner.userId === ctx.session.user.id &&
+            owner.status === BookOwnerStatus.OWNER
+        )
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "you are not the owner of this book",
         });
       }
 
-      const userBookOwner = book.owners.find(
-        (owner) => owner.userId === userId
-      );
-      if (!userBookOwner) {
+      if (book.owners.find((owner) => owner.userId === userId)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "user is not a collaborator / invitee",
-        });
-      }
-      if (userBookOwner.status !== BookOwnerStatus.INVITEE) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "user is not an invitee",
         });
       }
 
