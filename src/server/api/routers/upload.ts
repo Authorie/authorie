@@ -1,36 +1,51 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "@env/server.mjs";
+import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
 import { createHash } from "crypto";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+
+type ImageType = "png" | "jpeg";
+
+type Base64<imageType extends ImageType> =
+  `data:image/${imageType};base64,${string}`;
 
 const getImageData = (imageFile: string) => {
   const imageData = Buffer.from(
     imageFile.replace(/^data:image\/\w+;base64,/, ""),
     "base64"
   );
-  const hash = createHash("sha256").update(imageData).digest("hex");
+  const cuid = createId();
   const md5hash = createHash("md5").update(imageData).digest("base64");
-  return { imageData, hash, md5hash };
+  return { imageData, cuid, md5hash };
 };
 
 const extractImageType = (imageFile: string) => {
-  const fileType = imageFile.split(";")[0]?.split("/")[1];
-  return fileType;
+  // regex match the image type and data
+  const regex = /^data:image\/(\w+);base64,(.+)/;
+  const matches = imageFile.match(regex);
+  if (matches === null || matches.length !== 3) {
+    return undefined;
+  }
+  const imageType = matches[1];
+  if (imageType !== "png" && imageType !== "jpeg") {
+    return undefined;
+  }
+  return imageFile as Base64<typeof imageType>; // matches[1] is the image type
 };
 
 export const uploadRouter = createTRPCRouter({
   uploadImage: protectedProcedure
     .input(
       z.object({
-        title: z.string(),
+        title: z.string().optional(), // deprecated
         image: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, image } = input;
-      const { imageData, hash, md5hash } = getImageData(image);
+      const { image } = input;
+      const { imageData, cuid, md5hash } = getImageData(image);
       const imageType = extractImageType(image);
       if (imageType === undefined) {
         throw new TRPCError({
@@ -38,10 +53,7 @@ export const uploadRouter = createTRPCRouter({
           message: "invalid image type",
         });
       }
-      const key = `${ctx.session.user.id}/${title}-${hash.substring(
-        0,
-        10
-      )}.${imageType}`;
+      const key = `${ctx.session.user.id}/${cuid}.${imageType}`;
       try {
         const res = await ctx.s3.send(
           new PutObjectCommand({

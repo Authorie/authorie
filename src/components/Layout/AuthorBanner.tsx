@@ -122,6 +122,7 @@ const AuthorBanner = ({
     register,
     reset,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
@@ -143,12 +144,24 @@ const AuthorBanner = ({
     },
   });
   const followUserMutation = api.user.followUser.useMutation({
-    onSuccess: () => {
+    onMutate: async () => {
+      await context.user.isFollowUser.cancel();
+      const previousFollow = context.user.isFollowUser.getData();
+      context.user.isFollowUser.setData(user.id, (old) => !old);
+      return { previousFollow };
+    },
+    onSettled: () => {
       void context.user.invalidate();
     },
   });
   const unfollowUserMutation = api.user.unfollowUser.useMutation({
-    onSuccess: () => {
+    onMutate: async () => {
+      await context.user.isFollowUser.cancel();
+      const previousFollow = context.user.isFollowUser.getData();
+      context.user.isFollowUser.setData(user.id, (old) => !old);
+      return { previousFollow };
+    },
+    onSettled: () => {
       void context.user.invalidate();
     },
   });
@@ -354,11 +367,27 @@ const AuthorBanner = ({
           <div className="h-fit">
             {form.isEdit ? (
               <div className="w-full">
-                <input
-                  placeholder={user.penname as string}
-                  className="w-full rounded-lg border border-gray-400 bg-transparent px-2 text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
-                  {...register("updatedPenname")}
-                />
+                <div className="flex items-end gap-2">
+                  <input
+                    placeholder={user.penname as string}
+                    className="w-full rounded-lg border border-gray-400 bg-transparent px-2 text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
+                    {...register("updatedPenname")}
+                  />
+                  <p
+                    className={`${"text-xs"} 
+                          ${
+                            watch("updatedPenname") &&
+                            watch("updatedPenname").length > 50
+                              ? "text-red-500"
+                              : "text-white"
+                          }`}
+                  >
+                    {watch("updatedPenname")
+                      ? watch("updatedPenname").length
+                      : 0}
+                    /50
+                  </p>
+                </div>
                 {errors.updatedPenname && (
                   <p className="text-xs text-red-400" role="alert">
                     {errors.updatedPenname.message}
@@ -397,12 +426,25 @@ const AuthorBanner = ({
         <div className="h-fit w-4/5 pb-2 text-sm text-white">
           {form.isEdit ? (
             <div className="h-16S">
-              <textarea
-                rows={2}
-                placeholder={user.bio === "" ? "Put bio here" : user.bio}
-                {...register("updatedBio")}
-                className="w-full resize-none rounded-lg border border-gray-400 bg-transparent px-1.5 placeholder-gray-400 outline-none"
-              />
+              <div className="flex items-end gap-2">
+                <textarea
+                  rows={2}
+                  placeholder={user.bio === "" ? "Put bio here" : user.bio}
+                  {...register("updatedBio")}
+                  className="w-full resize-none rounded-lg border border-gray-400 bg-transparent px-1.5 placeholder-gray-400 outline-none"
+                />
+                <p
+                  className={`${"text-xs"} 
+                          ${
+                            watch("updatedBio") &&
+                            watch("updatedBio").length > 150
+                              ? "text-red-500"
+                              : "text-white"
+                          }`}
+                >
+                  {watch("updatedBio") ? watch("updatedBio").length : 0}/150
+                </p>
+              </div>
               {errors.updatedBio && (
                 <p className="text-xs text-red-400" role="alert">
                   {errors.updatedBio.message}
