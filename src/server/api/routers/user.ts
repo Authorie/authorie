@@ -289,10 +289,58 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
-  acceptCollaborationInvite: protectedProcedure
+  getBookCollaborators: protectedProcedure
     .input(z.object({ bookId: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const { bookId } = input;
+      // check whether the book is yours
+      try {
+        const book = await ctx.prisma.book.findFirstOrThrow({
+          where: {
+            id: bookId,
+            owners: {
+              some: {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+            },
+          },
+          include: {
+            owners: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        return book.owners;
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "book does not exist",
+            cause: err,
+          });
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "something went wrong",
+            cause: err,
+          });
+        }
+      }
+    }),
+  responseCollaborationInvite: protectedProcedure
+    .input(z.object({ bookId: z.string().cuid(), accept: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const { bookId, accept } = input;
       // check if the book exists
       try {
         await ctx.prisma.book.findUniqueOrThrow({
@@ -335,7 +383,9 @@ export const userRouter = createTRPCRouter({
             },
           },
           data: {
-            status: BookOwnerStatus.COLLABORATOR,
+            status: accept
+              ? BookOwnerStatus.COLLABORATOR
+              : BookOwnerStatus.REJECTED,
           },
         });
       } catch (err) {
@@ -347,7 +397,7 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
-  deleteCollaborationInvite: protectedProcedure
+  removeCollaborationInvite: protectedProcedure
     .input(z.object({ bookId: z.string().cuid(), userId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
       const { bookId, userId } = input;
