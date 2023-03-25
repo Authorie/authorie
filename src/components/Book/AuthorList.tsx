@@ -4,15 +4,23 @@ import {
   MinusCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/solid";
+import { BookStatus } from "@prisma/client";
 
 type props = {
   number: number;
   penname: string;
   status: string;
   authorPicture: string;
+  bookStatus: string;
 };
 
-const AuthorList = ({ number, penname, status, authorPicture }: props) => {
+const AuthorList = ({
+  number,
+  penname,
+  status,
+  authorPicture,
+  bookStatus,
+}: props) => {
   return (
     <div className="flex h-12 items-center">
       <p className="w-4">{number}.</p>
@@ -38,16 +46,18 @@ const AuthorList = ({ number, penname, status, authorPicture }: props) => {
         )}
         <p className="w-40">{status}</p>
       </div>
-      <div className="flex w-52 justify-end gap-2">
-        {status !== "accept" && (
-          <button className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white">
-            invite
+      {bookStatus === BookStatus.INITIAL && (
+        <div className="flex w-52 justify-end gap-2">
+          {status !== "accept" && (
+            <button className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white">
+              invite
+            </button>
+          )}
+          <button className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white">
+            remove
           </button>
-        )}
-        <button className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white">
-          remove
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

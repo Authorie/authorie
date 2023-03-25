@@ -15,8 +15,8 @@ const validationSchema = z.object({
   title: z
     .string()
     .min(1, { message: "Title is required" })
-    .max(50, { message: "Title is too long" }),
-  description: z.string().max(300, { message: "Description is too long" }),
+    .max(100, { message: "Title is too long" }),
+  description: z.string().max(500, { message: "Description is too long" }),
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
@@ -136,12 +136,12 @@ const CreateBook = () => {
               <p
                 className={`${"text-xs"} 
                           ${
-                            watch("title") && watch("title").length > 50
+                            watch("title") && watch("title").length > 100
                               ? "text-red-500"
                               : "text-black"
                           }`}
               >
-                {watch("title") ? watch("title").length : 0}/50
+                {watch("title") ? watch("title").length : 0}/100
               </p>
             </div>
             {errors.title && (
@@ -245,13 +245,13 @@ const CreateBook = () => {
                 className={`${"text-xs"} 
                           ${
                             watch("description") &&
-                            watch("description").length > 300
+                            watch("description").length > 500
                               ? "text-red-500"
                               : "text-black"
                           }`}
               >
                 {watch("description") ? watch("description").length : 0}
-                /300
+                /500
               </p>
             </div>
             {errors.description && (

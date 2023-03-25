@@ -14,6 +14,12 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { appRouter } from "@server/api/root";
 import superjson from "superjson";
+import * as z from "zod";
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
+import { ToastContainer, toast } from "react-toastify";
+import { useForm } from "react-hook-form";
 
 const ListOfAuthors = [
   { penname: "Supakit Kuewsupakorn", status: "accept", pic: "/favicon.ico" },
@@ -22,6 +28,17 @@ const ListOfAuthors = [
   { penname: "ant", status: "not response", pic: "/favicon.ico" },
   { penname: "ken", status: "not response", pic: "/favicon.ico" },
 ];
+
+const validationSchema = z.object({
+  title: z
+    .string()
+    .min(1, { message: "Title is required" })
+    .max(100, { message: "Title is too long" }),
+  description: z.string().max(500, { message: "Description is too long" }),
+  author: z.string(),
+});
+
+type ValidationSchema = z.infer<typeof validationSchema>;
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -49,12 +66,26 @@ type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 const StatusPage = ({ bookId }: props) => {
   const router = useRouter();
   const { data: book } = api.book.getData.useQuery({ id: bookId });
+  const [isEdit, setIsEdit] = useState(false);
+  const {
+    register,
+    reset,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ValidationSchema>({
+    resolver: zodResolver(validationSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+  });
   return (
     <div className="h-full w-full">
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
         <div
           onClick={() => router.back()}
-          className="absolute inset-0 top-2 left-2 z-10"
+          className="absolute inset-0 top-2 left-2 z-10 w-fit"
         >
           <ChevronLeftIcon className="h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400" />
         </div>
@@ -101,8 +132,8 @@ const StatusPage = ({ bookId }: props) => {
                       </button>
                     )}
                     {book.status === BookStatus.PUBLISHED && (
-                      <button className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600">
-                        Archive
+                      <button className="rounded-full bg-gradient-to-b from-gray-400 to-gray-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600">
+                        Completed
                       </button>
                     )}
                     {book.status === BookStatus.ARCHIVED && (
@@ -116,6 +147,12 @@ const StatusPage = ({ bookId }: props) => {
                           Delete
                         </button>
                       ))}
+                    {book.status === BookStatus.PUBLISHED ||
+                      (book.status === BookStatus.COMPLETED && (
+                        <button className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600">
+                          Archive
+                        </button>
+                      ))}
                   </div>
                 </div>
                 <div className="mt-6 flex w-fit flex-col self-center rounded-lg p-4">
@@ -123,8 +160,12 @@ const StatusPage = ({ bookId }: props) => {
                     <h1 className="text-xl font-bold">Author List</h1>
                   </div>
                   <div className="my-4 flex items-center justify-center gap-4">
-                    <input className="w-96 rounded-full border border-gray-300 px-2 py-1" />
-                    <button className="rounded-lg bg-blue-500 px-4 py-1 text-white">
+                    <input
+                      className="w-96 rounded-full border border-gray-300 px-5 py-1 outline-none focus:outline-none"
+                      placeholder="Enter author's penname..."
+                      {...register("author")}
+                    />
+                    <button className="rounded-lg bg-blue-500 px-4 py-1 text-white hover:bg-blue-600">
                       Invite
                     </button>
                   </div>
@@ -140,6 +181,7 @@ const StatusPage = ({ bookId }: props) => {
                         penname={author.penname}
                         status={author.status}
                         authorPicture={author.pic}
+                        bookStatus={book.status}
                       />
                     ))}
                   </ol>
