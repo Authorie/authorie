@@ -6,8 +6,21 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import type { Content } from "@tiptap/react";
+import CharacterCount from "@tiptap/extension-character-count";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import Table from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import TextStyle from "@tiptap/extension-text-style";
+import Underline from "@tiptap/extension-underline";
+import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
+import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
+import { useEffect } from "react";
 
 const ChapterPage = () => {
   const router = useRouter();
@@ -21,10 +34,80 @@ const ChapterPage = () => {
     id: chapterId as string,
   });
   const editor = useEditor({
+    content: "",
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        paragraph: {
+          HTMLAttributes: {
+            class: "text-base",
+          },
+        },
+        bulletList: {
+          HTMLAttributes: {
+            class: "list-disc px-4",
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: "list-decimal px-4",
+          },
+        },
+      }),
+      Underline,
+      Heading,
+      Highlight,
+      TextStyle,
+      Color,
+      Link.configure({
+        HTMLAttributes: {
+          class:
+            "rounded shadow-md bg-white p-1 hover:underline hover:bg-slate-100 text-blue-500",
+        },
+      }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class:
+            "border-collapse m-0 select-all overflow-hidden w-full table-auto",
+        },
+      }),
+      TableRow.configure({
+        HTMLAttributes: {
+          class: "select-all",
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class:
+            "border-slate-500 border-2 border-solid bg-slate-200 relative text-left select-all",
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class:
+            "border-slate-500 border-2 border-solid w-20 text-left select-all",
+        },
+      }),
+      Image,
+      CharacterCount,
+    ],
+    editorProps: {
+      attributes: {
+        class: "px-4",
+      },
+    },
     editable: false,
-    content: chapter?.content as Content,
-    extensions: [StarterKit],
   });
+
+  useEffect(() => {
+    if (!editor) return;
+    if (chapter !== undefined) {
+      editor.commands.setContent(chapter.content as JSONContent);
+      return;
+    }
+  }, [chapter, editor]);
+
   const likeMutation = api.chapter.like.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
