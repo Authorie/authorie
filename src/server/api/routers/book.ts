@@ -538,10 +538,11 @@ export const bookRouter = createTRPCRouter({
           BookStatus.COMPLETED,
           BookStatus.ARCHIVED,
         ]),
+        force: z.boolean().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, status } = input;
+      const { id, status, force } = input;
       let book;
       try {
         book = await ctx.prisma.book.findUniqueOrThrow({
@@ -580,6 +581,7 @@ export const bookRouter = createTRPCRouter({
             });
           }
           if (
+            force &&
             book.owners.some(
               (owner) => owner.status === BookOwnerStatus.INVITEE
             )
@@ -637,7 +639,12 @@ export const bookRouter = createTRPCRouter({
               book.status === BookStatus.INITIAL
                 ? {
                     deleteMany: {
-                      status: BookOwnerStatus.REJECTED,
+                      status: {
+                        notIn: [
+                          BookOwnerStatus.OWNER,
+                          BookOwnerStatus.COLLABORATOR,
+                        ],
+                      },
                     },
                   }
                 : undefined,
