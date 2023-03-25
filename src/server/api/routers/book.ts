@@ -631,7 +631,17 @@ export const bookRouter = createTRPCRouter({
       try {
         await ctx.prisma.book.update({
           where: { id },
-          data: { status },
+          data: {
+            status,
+            owners:
+              book.status === BookStatus.INITIAL
+                ? {
+                    deleteMany: {
+                      status: BookOwnerStatus.REJECTED,
+                    },
+                  }
+                : undefined,
+          },
         });
       } catch (err) {
         throw new TRPCError({
