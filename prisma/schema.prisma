@@ -69,9 +69,9 @@ model User {
 }
 
 model FollowingFollower {
-    following   User     @relation("followers", fields: [followingId], references: [id])
+    following   User     @relation("followers", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     followingId String
-    follower    User     @relation("following", fields: [followerId], references: [id])
+    follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     followerId  String
     createdAt   DateTime @default(now())
 
@@ -100,9 +100,9 @@ model Category {
 }
 
 model CategoriesOnUsers {
-    category   Category @relation(fields: [categoryId], references: [id])
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     categoryId String
-    user       User     @relation(fields: [userId], references: [id])
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId     String
     createdAt  DateTime @default(now())
 
@@ -145,9 +145,9 @@ enum BookOwnerStatus {
 }
 
 model BookOwner {
-    book      Book            @relation(fields: [bookId], references: [id])
+    book      Book            @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     bookId    String
-    user      User            @relation(fields: [userId], references: [id])
+    user      User            @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId    String
     status    BookOwnerStatus
     createdAt DateTime        @default(now())
@@ -159,9 +159,9 @@ model BookOwner {
 }
 
 model BookCategory {
-    book       Book     @relation(fields: [bookId], references: [id])
+    book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     bookId     String
-    category   Category @relation(fields: [categoryId], references: [id])
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     categoryId String
 
     @@id([bookId, categoryId])
@@ -171,9 +171,9 @@ model BookCategory {
 }
 
 model FavoriteBook {
-    book      Book     @relation(fields: [bookId], references: [id])
+    book      Book     @relation(fields: [bookId], references: [id], onDelete: Restrict, onUpdate: Cascade)
     bookId    String
-    user      User     @relation(fields: [userId], references: [id])
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId    String
     createdAt DateTime @default(now())
 
@@ -191,9 +191,9 @@ model Chapter {
     publishedAt DateTime?
     createdAt   DateTime         @default(now())
     updatedAt   DateTime         @updatedAt
-    book        Book?            @relation(fields: [bookId], references: [id])
+    book        Book?            @relation(fields: [bookId], references: [id], onDelete: Restrict, onUpdate: Cascade)
     bookId      String?
-    owner       User             @relation(fields: [ownerId], references: [id])
+    owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     ownerId     String
     likes       ChapterLike[]
     comments    ChapterComment[]
@@ -204,9 +204,9 @@ model Chapter {
 }
 
 model ChapterLike {
-    chapter   Chapter  @relation(fields: [chapterId], references: [id])
+    chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     chapterId String
-    user      User     @relation(fields: [userId], references: [id])
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId    String
     createdAt DateTime @default(now())
 
@@ -222,9 +222,9 @@ model ChapterComment {
     content         String
     createdAt       DateTime             @default(now())
     updatedAt       DateTime             @updatedAt
-    chapter         Chapter              @relation(fields: [chapterId], references: [id])
+    chapter         Chapter              @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     chapterId       String
-    user            User                 @relation(fields: [userId], references: [id])
+    user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId          String
     replies         ChapterComment[]     @relation("replies")
     parent          ChapterComment?      @relation("replies", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -238,9 +238,9 @@ model ChapterComment {
 }
 
 model ChapterCommentLike {
-    comment   ChapterComment @relation(fields: [commentId], references: [id])
+    comment   ChapterComment @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     commentId String
-    user      User           @relation(fields: [userId], references: [id])
+    user      User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId    String
     createdAt DateTime       @default(now())
 
