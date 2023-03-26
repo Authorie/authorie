@@ -71,6 +71,7 @@ type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const BookContent = ({ bookId }: props) => {
   const router = useRouter();
+  const penname = router.query.penname;
   const utils = api.useContext();
   const [isEdit, setIsEdit] = useState(false);
   const { data: categories } = api.category.getAll.useQuery();
@@ -91,6 +92,27 @@ const BookContent = ({ bookId }: props) => {
     uploadHandler: setBookWallpaper,
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
+  const moveState = api.book.moveState.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        status: newBook.status,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
+  });
+  const deleteBook = api.book.delete.useMutation({
+    onSuccess: () => {
+      void utils.book.invalidate();
+    },
+  });
   const unfavoriteBook = api.book.unfavorite.useMutation({
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
@@ -146,6 +168,85 @@ const BookContent = ({ bookId }: props) => {
       return 0;
     }
   }, [book]);
+
+  const draftBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.DRAFT,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Move to draft state...",
+        success: "Your book is in draft state now!",
+      });
+    } catch (err) {
+      toast("Error occured during move state");
+    }
+  };
+
+  const publishBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.PUBLISHED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Publishing book...",
+        success: "Your book is now published!",
+      });
+    } catch (err) {
+      toast("Error occured during publish");
+    }
+  };
+
+  const completeBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.COMPLETED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Completing book...",
+        success: "Your book is now completed!",
+      });
+    } catch (err) {
+      toast("Error occured during completed");
+    }
+  };
+
+  const archiveBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.ARCHIVED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Archive book...",
+        success: "Your book is now archived!",
+      });
+      void router.push(`/${penname as string}/book`);
+    } catch (err) {
+      toast("Error occured during archive");
+    }
+  };
+
+  const deleteBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
+      await toast.promise(promiseDeleteBook, {
+        pending: "Deleting book...",
+        success: "Your book is now deleted!",
+      });
+      void router.push(`/${penname as string}/book`);
+    } catch (err) {
+      toast("Error occured during deleting");
+    }
+  };
 
   const toggleCategoryHandler = (category: Category) => {
     if (addedCategories.includes(category)) {
@@ -249,32 +350,35 @@ const BookContent = ({ bookId }: props) => {
   };
 
   return (
-    <>
-      <form
-        id="submit-changes"
-        onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
-        className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
-      >
-        <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
-          {book && (book?.wallpaperImage || bookWallpaper) ? (
-            <Image
-              src={
-                bookWallpaper ? bookWallpaper : (book.wallpaperImage as string)
-              }
-              alt="book's wallpaper image"
-              fill
-            />
-          ) : (
-            <div className="h-full w-full bg-authGreen-400" />
-          )}
-          <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
-        </div>
-        <ChevronLeftIcon
-          type="button"
-          onClick={() => router.back()}
-          className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
-        />
-        {book && (
+    <div className="flex w-full items-center justify-center">
+      {book ? (
+        <form
+          id="submit-changes"
+          onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
+          className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
+        >
+          <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
+            {book?.wallpaperImage || bookWallpaper ? (
+              <Image
+                src={
+                  bookWallpaper
+                    ? bookWallpaper
+                    : (book.wallpaperImage as string)
+                }
+                alt="book's wallpaper image"
+                fill
+              />
+            ) : (
+              <div className="h-full w-full bg-authGreen-400" />
+            )}
+            <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
+          </div>
+          <ChevronLeftIcon
+            type="button"
+            onClick={() => router.back()}
+            className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+          />
+
           <div className="z-10 flex gap-7 pt-10 pb-5">
             <div className="ml-7 flex flex-col">
               <div className="flex">
@@ -390,12 +494,52 @@ const BookContent = ({ bookId }: props) => {
                 {!isEdit && (
                   <div>
                     <div className="flex flex-col gap-4">
-                      <button className="h-10 w-36 rounded-lg bg-gray-800 font-semibold text-white">
-                        Auction book
-                      </button>
-                      <button className="h-10 w-36 rounded-lg bg-gray-800 font-semibold text-white">
-                        Complete book
-                      </button>
+                      {book.status === BookStatus.INITIAL && (
+                        <button
+                          type="button"
+                          onClick={() => void draftBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-blue-400 to-blue-500 font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
+                        >
+                          Start Writing
+                        </button>
+                      )}
+                      {book.status === BookStatus.DRAFT && (
+                        <button
+                          type="button"
+                          onClick={() => void publishBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-green-400 to-green-500 font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
+                        >
+                          Publish
+                        </button>
+                      )}
+                      {book.status === BookStatus.PUBLISHED && (
+                        <button
+                          type="button"
+                          onClick={() => void completeBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
+                        >
+                          Complete
+                        </button>
+                      )}
+                      {(book.status === BookStatus.INITIAL ||
+                        book.status === BookStatus.DRAFT) && (
+                        <button
+                          type="button"
+                          onClick={() => void deleteBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Delete
+                        </button>
+                      )}
+                      {(book.status === BookStatus.PUBLISHED ||
+                        book.status === BookStatus.COMPLETED) && (
+                        <button
+                          onClick={() => void archiveBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Archive
+                        </button>
+                      )}
                     </div>
                     <div className="my-10 flex flex-col gap-1">
                       <span className="text-6xl font-bold">12</span>
@@ -541,10 +685,14 @@ const BookContent = ({ bookId }: props) => {
               </div>
             </div>
           </div>
-        )}
-      </form>
+        </form>
+      ) : (
+        <div className="flex h-96 w-full items-center justify-center">
+          <p className="text-3xl font-bold">This book does not exist...</p>
+        </div>
+      )}
       <ToastContainer />
-    </>
+    </div>
   );
 };
 

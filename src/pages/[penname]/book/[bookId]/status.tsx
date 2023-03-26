@@ -73,6 +73,7 @@ const StatusPage = ({ bookId }: props) => {
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
   const router = useRouter();
+  const penname = router.query.penname;
   const utils = api.useContext();
   const { data: book } = api.book.getData.useQuery({ id: bookId });
   const { data: categories } = api.category.getAll.useQuery();
@@ -254,6 +255,7 @@ const StatusPage = ({ bookId }: props) => {
         pending: "Archive book...",
         success: "Your book is now archived!",
       });
+      void router.push(`/${penname as string}/book`);
     } catch (err) {
       toast("Error occured during archive");
     }
@@ -267,6 +269,7 @@ const StatusPage = ({ bookId }: props) => {
         pending: "Deleting book...",
         success: "Your book is now deleted!",
       });
+      void router.push(`/${penname as string}/book`);
     } catch (err) {
       toast("Error occured during deleting");
     }
@@ -569,14 +572,6 @@ const StatusPage = ({ bookId }: props) => {
                             Complete
                           </button>
                         )}
-                        {/* {book.status === BookStatus.ARCHIVED && (
-                          <button
-                            onClick={() => void publishBookHandler}
-                            className="rounded-full bg-gradient-to-b from-green-400 to-green-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
-                          >
-                            Unarchive
-                          </button>
-                        )} */}
                         {(book.status === BookStatus.INITIAL ||
                           book.status === BookStatus.DRAFT) && (
                           <button
