@@ -264,11 +264,78 @@ export const bookRouter = createTRPCRouter({
         wallpaperImageUrl: z.string().url().optional(),
         invitees: z.array(z.string()).default([]),
         categoryIds: z.array(z.string()).default([]),
+        initialStatus: z
+          .enum([BookStatus.INITIAL, BookStatus.DRAFT, BookStatus.PUBLISHED])
+          .default(BookStatus.INITIAL),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, description, coverImageUrl, wallpaperImageUrl, invitees } =
-        input;
+      const {
+        title,
+        description,
+        coverImageUrl,
+        wallpaperImageUrl,
+        invitees,
+        initialStatus,
+      } = input;
+      if (invitees.length > 0) {
+        if (initialStatus !== BookStatus.INITIAL) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot invite users to a non-initial book",
+          });
+        }
+        let users;
+        try {
+          users = await ctx.prisma.user.findMany({
+            where: {
+              id: {
+                in: invitees,
+              },
+            },
+            include: {
+              followers: {
+                where: {
+                  followerId: ctx.session.user.id,
+                },
+              },
+              following: {
+                where: {
+                  followingId: ctx.session.user.id,
+                },
+              },
+            },
+          });
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Something went wrong",
+            cause: err,
+          });
+        }
+
+        if (users.length !== invitees.length) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid user id(s)",
+          });
+        }
+
+        users.forEach((user) => {
+          if (user.followers.length === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `User ${user.penname || user.id} is not following you`,
+            });
+          }
+          if (user.following.length === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `You are not following user ${user.penname || user.id}}`,
+            });
+          }
+        });
+      }
       try {
         return await ctx.prisma.book.create({
           data: {
@@ -276,6 +343,7 @@ export const bookRouter = createTRPCRouter({
             description,
             coverImage: coverImageUrl,
             wallpaperImage: wallpaperImageUrl,
+            status: initialStatus,
             owners: {
               createMany: {
                 data: [
@@ -298,35 +366,13 @@ export const bookRouter = createTRPCRouter({
           },
         });
       } catch (e) {
+        console.error(e);
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          if (e.code === "P2003") {
-            if (
-              e.meta &&
-              "target" in e.meta &&
-              typeof e.meta.target === "string"
-            ) {
-              if (e.meta.target.includes("categories")) {
-                throw new TRPCError({
-                  code: "BAD_REQUEST",
-                  message:
-                    "category not found: " + input.categoryIds.join(", "),
-                  cause: e,
-                });
-              } else if (e.meta.target.includes("owners")) {
-                throw new TRPCError({
-                  code: "BAD_REQUEST",
-                  message: "user not found: " + invitees.join(", "),
-                  cause: e,
-                });
-              }
-            } else {
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message: "failed to create book",
-                cause: e,
-              });
-            }
-          }
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Failed to create book",
+            cause: e,
+          });
         } else {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -384,15 +430,10 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      const validStatus = [
-        BookStatus.DRAFT,
-        BookStatus.PUBLISHED,
-        BookStatus.COMPLETED,
-      ];
-      if (!validStatus.includes(book.status)) {
+      if (book.status === BookStatus.ARCHIVED) {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "you cannot update this book",
+          code: "BAD_REQUEST",
+          message: "you cannot update archived book",
         });
       }
 
@@ -497,14 +538,15 @@ export const bookRouter = createTRPCRouter({
           BookStatus.COMPLETED,
           BookStatus.ARCHIVED,
         ]),
+        force: z.boolean().default(false),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, status } = input;
+      const { id, status, force } = input;
       let book;
       try {
         book = await ctx.prisma.book.findUniqueOrThrow({
-          where: { id: input.id },
+          where: { id },
           include: {
             owners: true,
           },
@@ -517,7 +559,13 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+      if (
+        !book.owners.some(
+          (owner) =>
+            owner.userId === ctx.session.user.id &&
+            owner.status === BookOwnerStatus.OWNER
+        )
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "you are not owner of this book",
@@ -532,6 +580,19 @@ export const bookRouter = createTRPCRouter({
               message: "initial status can only be changed to draft status",
             });
           }
+          if (
+            force &&
+            book.owners.some(
+              (owner) => owner.status === BookOwnerStatus.INVITEE
+            )
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `there are still invite(s) to collaborate in this book. 
+                please wait for their response or remove them first`,
+            });
+          }
+          break;
         case BookStatus.DRAFT:
           if (
             status !== BookStatus.PUBLISHED &&
@@ -543,6 +604,7 @@ export const bookRouter = createTRPCRouter({
                 "draft status can only be changed to published or completed status",
             });
           }
+          break;
         case BookStatus.PUBLISHED:
           if (
             status !== BookStatus.COMPLETED &&
@@ -554,6 +616,7 @@ export const bookRouter = createTRPCRouter({
                 "published status can only be changed to completed or archived status",
             });
           }
+          break;
         case BookStatus.COMPLETED:
           if (status !== BookStatus.ARCHIVED) {
             throw new TRPCError({
@@ -562,18 +625,35 @@ export const bookRouter = createTRPCRouter({
                 "completed status can only be changed to archived status",
             });
           }
+          break;
         case BookStatus.ARCHIVED:
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "archived status cannot be changed",
           });
         default:
+          break;
       }
 
       try {
         await ctx.prisma.book.update({
           where: { id },
-          data: { status },
+          data: {
+            status,
+            owners:
+              book.status === BookStatus.INITIAL
+                ? {
+                    deleteMany: {
+                      status: {
+                        notIn: [
+                          BookOwnerStatus.OWNER,
+                          BookOwnerStatus.COLLABORATOR,
+                        ],
+                      },
+                    },
+                  }
+                : undefined,
+          },
         });
       } catch (err) {
         throw new TRPCError({
@@ -592,7 +672,12 @@ export const bookRouter = createTRPCRouter({
         book = await ctx.prisma.book.findUniqueOrThrow({
           where: { id: input.id },
           include: {
-            owners: true,
+            owners: {
+              where: {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+            },
           },
         });
       } catch (err) {
@@ -603,7 +688,7 @@ export const bookRouter = createTRPCRouter({
         });
       }
 
-      if (book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+      if (book.owners.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "you are not owner of this book",

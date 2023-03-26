@@ -15,8 +15,8 @@ const validationSchema = z.object({
   title: z
     .string()
     .min(1, { message: "Title is required" })
-    .max(100, { message: "Title is too long" }),
-  description: z.string().max(1000, { message: "Description is too long" }),
+    .max(50, { message: "Title is too long" }),
+  description: z.string().max(300, { message: "Description is too long" }),
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
@@ -24,7 +24,7 @@ type ValidationSchema = z.infer<typeof validationSchema>;
 const CreateBook = () => {
   const { imageData: bookCover, uploadHandler: setBookCover } =
     useImageUpload();
-  const { imageData: bookBackground, uploadHandler: setBookBackground } =
+  const { imageData: bookWallpaper, uploadHandler: setBookWallpaper } =
     useImageUpload();
   const router = useRouter();
   const { data: session } = useSession({
@@ -37,6 +37,7 @@ const CreateBook = () => {
     register,
     reset,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
@@ -48,12 +49,29 @@ const CreateBook = () => {
       await utils.book.invalidate();
     },
   });
+  const uploadImageUrl = api.upload.uploadImage.useMutation();
   const [addedCategories, setAddedCategories] = useState<Category[]>([]);
   const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
+    let bookCoverUrl;
+    let wallpaperImageUrl;
+    if (bookCover) {
+      bookCoverUrl = await uploadImageUrl.mutateAsync({
+        title: `${data.title}'s book cover image`,
+        image: bookCover,
+      });
+    }
+    if (bookWallpaper) {
+      wallpaperImageUrl = await uploadImageUrl.mutateAsync({
+        title: `${data.title}'s book cover image`,
+        image: bookWallpaper,
+      });
+    }
     await bookCreateMutation.mutateAsync({
       title: data.title,
       description: data.description,
       categoryIds: addedCategories.map((category) => category.id),
+      coverImageUrl: bookCoverUrl ? bookCoverUrl : "",
+      wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : "",
     });
     reset();
   };
@@ -66,12 +84,8 @@ const CreateBook = () => {
       <div className="flex flex-col gap-10">
         <div className="relative flex h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pt-24 pb-11 drop-shadow-lg">
           <div className="absolute top-0 left-0 right-0 -z-10 h-72 overflow-hidden rounded-t-lg">
-            {bookBackground ? (
-              <Image
-                src={bookBackground}
-                layout="fill"
-                alt="book's wallpaper"
-              />
+            {bookWallpaper ? (
+              <Image src={bookWallpaper} layout="fill" alt="book's wallpaper" />
             ) : (
               <div className="h-full w-full bg-authGreen-500"></div>
             )}
@@ -106,18 +120,30 @@ const CreateBook = () => {
                 name="BookWallpaper"
                 id="BookWallpaper"
                 className="hidden cursor-pointer"
-                onChange={setBookBackground}
+                onChange={setBookWallpaper}
               />
               <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
             </label>
-            <input
-              aria-invalid={errors.title ? "true" : "false"}
-              id="title"
-              type="text"
-              className="focus:shadow-outline bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
-              placeholder="Untitled"
-              {...register("title")}
-            />
+            <div className="flex items-end gap-2">
+              <input
+                aria-invalid={errors.title ? "true" : "false"}
+                id="title"
+                type="text"
+                className="focus:shadow-outline bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
+                placeholder="Untitled"
+                {...register("title")}
+              />
+              <p
+                className={`${"text-xs"} 
+                          ${
+                            watch("title") && watch("title").length > 50
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
+              >
+                {watch("title") ? watch("title").length : 0}/50
+              </p>
+            </div>
             {errors.title && (
               <p className="text-xs text-red-400" role="alert">
                 {errors.title.message}
@@ -207,13 +233,27 @@ const CreateBook = () => {
                 </div>
               </div>
             </div>
-            <textarea
-              rows={2}
-              id="description"
-              className="focus:shadow-outline h-32 resize-none rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
-              placeholder="write the description down..."
-              {...register("description")}
-            />
+            <div className="flex w-full items-end gap-2">
+              <textarea
+                rows={2}
+                id="description"
+                className="focus:shadow-outline h-32 w-full resize-none rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
+                placeholder="write the description down..."
+                {...register("description")}
+              />
+              <p
+                className={`${"text-xs"} 
+                          ${
+                            watch("description") &&
+                            watch("description").length > 300
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
+              >
+                {watch("description") ? watch("description").length : 0}
+                /300
+              </p>
+            </div>
             {errors.description && (
               <p className="text-xs text-red-400" role="alert">
                 {errors.description.message}
