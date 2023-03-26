@@ -5,6 +5,8 @@ import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
 import type { MouseEvent } from "react";
 import { api } from "@utils/api";
 import { BookStatus } from "@prisma/client";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 type props = {
   id: string;
@@ -31,12 +33,20 @@ const Book = ({
   const utils = api.useContext();
   const penname = router.query.penname as string;
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
-  const publishBook = api.book.moveState.useMutation({
-    onSuccess: () => {
-      void utils.book.invalidate();
+  const moveState = api.book.moveState.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        status: newBook.status,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
     },
-    onError: () => {
-      console.log("error");
+    onSettled: () => {
+      void utils.book.invalidate();
     },
   });
   const unfavoriteBook = api.book.unfavorite.useMutation({
@@ -79,9 +89,20 @@ const Book = ({
     }
   };
 
-  const publishBookHandler = (e: MouseEvent<HTMLButtonElement>) => {
+  const publishBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    publishBook.mutate({ id: id, status: "PUBLISHED" });
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: id,
+        status: BookStatus.PUBLISHED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Publishing book...",
+        success: "Your book is now published!",
+      });
+    } catch (err) {
+      toast("Error occured during publish");
+    }
   };
 
   return (
@@ -96,19 +117,19 @@ const Book = ({
         {isOwner && (
           <>
             <div
-              className={`${
-                status === BookStatus.INITIAL ? "bg-gray-400" : ""
-              } ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} ${
-                status === BookStatus.PUBLISHED ? "bg-green-400" : ""
-              } ${
-                status === BookStatus.COMPLETED ? "bg-blue-400" : ""
-              }${"absolute top-0 left-0 z-10 px-2 text-xs text-white"}`}
+              className={`
+              ${status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
+              ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
+              ${status === BookStatus.PUBLISHED ? "bg-green-400" : ""} 
+              ${status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
+              ${"absolute top-0 left-0 z-10 px-2 text-xs text-white"}
+              `}
             >
               {status}
             </div>
             {status === "DRAFT" && (
               <button
-                onClick={publishBookHandler}
+                onClick={(e) => void publishBookHandler(e)}
                 className="absolute top-2 right-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
               >
                 Publish now
@@ -165,6 +186,7 @@ const Book = ({
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

@@ -248,6 +248,9 @@ const CreateChapter = () => {
     if (!editor) return;
     if (!chapter) chapter = draftChapters?.find((chapter) => chapter.id === id);
     if (chapter !== undefined) {
+      setErrors({
+        title: undefined,
+      });
       setChapterId(chapter.id);
       setTitle(chapter.title);
       editor.commands.setContent(chapter.content as JSONContent);

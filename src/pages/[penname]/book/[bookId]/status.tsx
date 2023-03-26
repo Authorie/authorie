@@ -544,7 +544,8 @@ const StatusPage = ({ bookId }: props) => {
                       <div className="mt-12 flex flex-col gap-3">
                         {book.status === BookStatus.INITIAL && (
                           <button
-                            onClick={() => void draftBookHandler}
+                            type="button"
+                            onClick={() => void draftBookHandler()}
                             className="rounded-full bg-gradient-to-b from-blue-400 to-blue-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
                           >
                             Start Writing
@@ -552,7 +553,8 @@ const StatusPage = ({ bookId }: props) => {
                         )}
                         {book.status === BookStatus.DRAFT && (
                           <button
-                            onClick={() => void publishBookHandler}
+                            type="button"
+                            onClick={() => void publishBookHandler()}
                             className="rounded-full bg-gradient-to-b from-green-400 to-green-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
                           >
                             Publish
@@ -560,10 +562,11 @@ const StatusPage = ({ bookId }: props) => {
                         )}
                         {book.status === BookStatus.PUBLISHED && (
                           <button
-                            onClick={() => void completeBookHandler}
+                            type="button"
+                            onClick={() => void completeBookHandler()}
                             className="rounded-full bg-gradient-to-b from-gray-400 to-gray-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
                           >
-                            Completed
+                            Complete
                           </button>
                         )}
                         {/* {book.status === BookStatus.ARCHIVED && (
@@ -574,24 +577,25 @@ const StatusPage = ({ bookId }: props) => {
                             Unarchive
                           </button>
                         )} */}
-                        {book.status === BookStatus.INITIAL ||
-                          (book.status === BookStatus.DRAFT && (
-                            <button
-                              onClick={() => void deleteBookHandler}
-                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                            >
-                              Delete
-                            </button>
-                          ))}
-                        {book.status === BookStatus.PUBLISHED ||
-                          (book.status === BookStatus.COMPLETED && (
-                            <button
-                              onClick={() => void archiveBookHandler}
-                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                            >
-                              Archive
-                            </button>
-                          ))}
+                        {(book.status === BookStatus.INITIAL ||
+                          book.status === BookStatus.DRAFT) && (
+                          <button
+                            type="button"
+                            onClick={() => void deleteBookHandler()}
+                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Delete
+                          </button>
+                        )}
+                        {(book.status === BookStatus.PUBLISHED ||
+                          book.status === BookStatus.COMPLETED) && (
+                          <button
+                            onClick={() => void archiveBookHandler()}
+                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Archive
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -626,7 +630,7 @@ const StatusPage = ({ bookId }: props) => {
                           </button>
                         </div>
                       )}
-                      <div className="ml-20 flex gap-48 text-lg font-semibold">
+                      <div className="flex justify-center gap-48 text-lg font-semibold">
                         <p>Author</p>
                         <p>Status</p>
                       </div>
@@ -660,8 +664,10 @@ const StatusPage = ({ bookId }: props) => {
               <ToastContainer />
             </form>
           ) : (
-            <div>
-              <h1>This book does not exist</h1>
+            <div className="flex h-96 w-full items-center justify-center">
+              <h1 className="text-3xl font-bold">
+                This book does not exist...
+              </h1>
             </div>
           )}
         </div>
