@@ -11,16 +11,6 @@ type ImageType = "png" | "jpeg";
 type Base64<imageType extends ImageType> =
   `data:image/${imageType};base64,${string}`;
 
-const getImageData = (imageFile: string) => {
-  const imageData = Buffer.from(
-    imageFile.replace(/^data:image\/\w+;base64,/, ""),
-    "base64"
-  );
-  const cuid = createId();
-  const md5hash = createHash("md5").update(imageData).digest("base64");
-  return { imageData, cuid, md5hash };
-};
-
 const extractImageType = (imageFile: string) => {
   // regex match the image type and data
   const regex = /^data:image\/(\w+);base64,(.+)/;
@@ -32,7 +22,18 @@ const extractImageType = (imageFile: string) => {
   if (imageType !== "png" && imageType !== "jpeg") {
     return undefined;
   }
-  return imageFile as Base64<typeof imageType>; // matches[1] is the image type
+  return [
+    imageType as ImageType,
+    imageFile as Base64<typeof imageType>,
+  ] as const; // matches[1] is the image type
+};
+
+const getImageData = (imageFile: string) => {
+  const image = extractImageType(imageFile);
+  if (!image) return;
+  const cuid = createId();
+  const md5hash = createHash("md5").update(image[1]).digest("base64");
+  return { image, cuid, md5hash };
 };
 
 export const uploadRouter = createTRPCRouter({
@@ -44,28 +45,25 @@ export const uploadRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { image } = input;
-      const { imageData, cuid, md5hash } = getImageData(image);
-      const imageType = extractImageType(image);
-      if (imageType === undefined) {
+      const imageData = getImageData(input.image);
+      if (imageData?.image === undefined) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "invalid image type",
         });
       }
-      const key = `${ctx.session.user.id}/${cuid}.${imageType}`;
+      const key = `${ctx.session.user.id}/${imageData.cuid}.${imageData.image[0]}`;
       try {
-        const res = await ctx.s3.send(
-          new PutObjectCommand({
-            Bucket: env.R2_BUCKET_NAME,
-            Key: key,
-            Body: imageData,
-            ACL: "public-read",
-            ContentEncoding: "base64",
-            ContentType: `image/${imageType}`,
-            ContentMD5: md5hash,
-          })
-        );
+        const putCommand = new PutObjectCommand({
+          Bucket: env.R2_BUCKET_NAME,
+          Key: key,
+          Body: imageData.image[1],
+          ACL: "public-read",
+          ContentEncoding: "base64",
+          ContentType: `image/${imageData.image[0]}`,
+          ContentMD5: imageData.md5hash,
+        });
+        const res = await ctx.s3.send(putCommand);
         if (res.$metadata.httpStatusCode !== 200) {
           console.error(res);
           throw new TRPCError({
