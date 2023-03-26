@@ -718,13 +718,7 @@ export const chapterRouter = createTRPCRouter({
               status: BookOwnerStatus.OWNER,
             },
           },
-          chapters: {
-            where: {
-              id: {
-                in: input.chapterIds,
-              },
-            },
-          },
+          chapters: true,
         },
       });
 
@@ -742,7 +736,13 @@ export const chapterRouter = createTRPCRouter({
         });
       }
 
-      if (book.chapters.length !== input.chapterIds.length) {
+      const includeChapters = book.chapters.filter((c) =>
+        input.chapterIds.includes(c.id)
+      );
+      const nonincludeChapters = book.chapters.filter(
+        (c) => !input.chapterIds.includes(c.id)
+      );
+      if (includeChapters.length !== input.chapterIds.length) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid chapter ids",
@@ -750,18 +750,28 @@ export const chapterRouter = createTRPCRouter({
       }
 
       try {
-        await ctx.prisma.$transaction(
-          input.chapterIds.map((chapterId, index) =>
+        await ctx.prisma.$transaction([
+          ...includeChapters.map((chapter, index) =>
             ctx.prisma.chapter.update({
               where: {
-                id: chapterId,
+                id: chapter.id,
               },
               data: {
-                chapterNo: index + 1,
+                chapterNo: index,
               },
             })
-          )
-        );
+          ),
+          ...nonincludeChapters.map((chapter) =>
+            ctx.prisma.chapter.update({
+              where: {
+                id: chapter.id,
+              },
+              data: {
+                chapterNo: null,
+              },
+            })
+          ),
+        ]);
       } catch (err) {
         console.error(err);
         throw new TRPCError({
