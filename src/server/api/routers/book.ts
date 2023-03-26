@@ -560,7 +560,7 @@ export const bookRouter = createTRPCRouter({
       }
 
       if (
-        book.owners.some(
+        !book.owners.some(
           (owner) =>
             owner.userId === ctx.session.user.id &&
             owner.status === BookOwnerStatus.OWNER
