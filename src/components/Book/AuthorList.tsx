@@ -12,6 +12,8 @@ type props = {
   status: string;
   authorPicture: string;
   bookStatus: string;
+  onInvite: (penname: string) => void;
+  onRemove: (penname: string) => void;
 };
 
 const AuthorList = ({
@@ -20,6 +22,8 @@ const AuthorList = ({
   status,
   authorPicture,
   bookStatus,
+  onInvite,
+  onRemove,
 }: props) => {
   return (
     <div className="flex h-12 items-center">
@@ -49,11 +53,17 @@ const AuthorList = ({
       {bookStatus === BookStatus.INITIAL && (
         <div className="flex w-52 justify-end gap-2">
           {status !== "accept" && (
-            <button className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white">
+            <button
+              onClick={void onInvite(penname)}
+              className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
+            >
               invite
             </button>
           )}
-          <button className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white">
+          <button
+            onClick={void onRemove(penname)}
+            className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
+          >
             remove
           </button>
         </div>

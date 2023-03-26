@@ -3,7 +3,6 @@ import { Popover } from "@headlessui/react";
 import {
   ChevronLeftIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon,
   PlusCircleIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
@@ -35,6 +34,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import superjson from "superjson";
 import * as z from "zod";
+import { EditButton } from "@components/action/EditButton";
 
 const validationSchema = z.object({
   title: z
@@ -122,8 +122,8 @@ const BookContent = ({ bookId }: props) => {
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      title: book?.title,
+      description: book?.description || "",
     },
   });
   const isChapterCreatable = useMemo(() => {
@@ -200,10 +200,15 @@ const BookContent = ({ bookId }: props) => {
   const uploadImageUrl = api.upload.uploadImage.useMutation();
 
   const resetHandler = () => {
-    reset();
+    reset((formValues) => ({
+      ...formValues,
+      title: book?.title as string,
+      description: book?.description || "",
+    }));
     setIsEdit(false);
     resetBookCover();
     resetBookWallpaper();
+    setAddedCategories(book?.categories.map((data) => data.category) || []);
   };
 
   const onSaveHandler = async (data: ValidationSchema) => {
@@ -246,6 +251,7 @@ const BookContent = ({ bookId }: props) => {
   return (
     <>
       <form
+        id="submit-changes"
         onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
         className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
       >
@@ -420,7 +426,7 @@ const BookContent = ({ bookId }: props) => {
                 className={`
                 ${
                   isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 w-3/5 flex-col gap-2"}`}
+                } ${"flex h-52 flex-col gap-2"}`}
               >
                 <div className="flex gap-4">
                   {isEdit ? (
@@ -441,7 +447,7 @@ const BookContent = ({ bookId }: props) => {
                           aria-invalid={errors.title ? "true" : "false"}
                           id="title"
                           type="text"
-                          className="focus:shadow-outline w-96 rounded-lg border bg-gray-300 px-3 text-3xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
+                          className="focus:shadow-outline w-96 rounded-lg border bg-gray-300 px-3 text-3xl font-bold text-black placeholder:text-gray-400 focus:outline-none"
                           placeholder={book.title}
                           {...register("title")}
                         />
@@ -465,38 +471,12 @@ const BookContent = ({ bookId }: props) => {
                   ) : (
                     <h1 className="text-3xl font-bold">{book.title}</h1>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setIsEdit(true)}
-                    className="cursor-pointer"
-                  >
-                    {!isEdit && (
-                      <PencilSquareIcon
-                        className={`w-7 ${
-                          book.isOwner
-                            ? " rounded-lg p-1 text-gray-800 hover:bg-gray-400"
-                            : "hidden"
-                        }`}
-                      />
-                    )}
-                  </button>
-                  {isEdit && (
-                    <div className="flex items-end gap-3">
-                      <button
-                        type="button"
-                        onClick={resetHandler}
-                        className="rounded-xl border-2 bg-red-500 px-5 py-1 text-white hover:bg-red-600 hover:text-white"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="rounded-xl border-2 bg-green-500 px-5 py-1 text-white hover:bg-green-600 hover:text-white"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
+                  <EditButton
+                    isEdit={isEdit}
+                    onEdit={() => setIsEdit(true)}
+                    isOwner={book.isOwner}
+                    reset={resetHandler}
+                  />
                 </div>
                 {isEdit ? (
                   <div>
@@ -504,7 +484,7 @@ const BookContent = ({ bookId }: props) => {
                       <textarea
                         rows={2}
                         id="description"
-                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm placeholder:text-gray-500 focus:outline-none"
+                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                         placeholder={
                           book.description || "write the description down..."
                         }
@@ -530,14 +510,14 @@ const BookContent = ({ bookId }: props) => {
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm font-light">{book.description}</p>
+                  <p className="w-96 text-sm font-light">{book.description}</p>
                 )}
               </div>
               <div className="flex gap-2 self-end">
                 <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-gray-200" />
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
-              <div className="mt-3 grow rounded-sm bg-authGreen-300 shadow-lg">
+              <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
                   {isChapterCreatable && (
                     <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">

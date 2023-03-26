@@ -489,7 +489,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
                   router.pathname.includes(data.title.toLocaleLowerCase()) ||
                   (data.title === "HOME" &&
                     router.pathname.split("/")[2] == null)
-                    ? "pointer-events-none text-green-500 underline decoration-green-500 underline-offset-2"
+                    ? "text-green-500 underline decoration-green-500 underline-offset-2"
                     : "cursor-pointer text-white"
                 } ${"select-none px-11 py-3 text-sm hover:bg-black/30"}`}
             >
