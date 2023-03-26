@@ -185,6 +185,7 @@ model FavoriteBook {
 
 model Chapter {
     id          String           @id @default(cuid())
+    chapterNo   Int?
     title       String
     content     Json
     views       Int              @default(0)
