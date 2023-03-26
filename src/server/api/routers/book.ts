@@ -592,6 +592,7 @@ export const bookRouter = createTRPCRouter({
                 please wait for their response or remove them first`,
             });
           }
+          break;
         case BookStatus.DRAFT:
           if (
             status !== BookStatus.PUBLISHED &&
@@ -603,6 +604,7 @@ export const bookRouter = createTRPCRouter({
                 "draft status can only be changed to published or completed status",
             });
           }
+          break;
         case BookStatus.PUBLISHED:
           if (
             status !== BookStatus.COMPLETED &&
@@ -614,6 +616,7 @@ export const bookRouter = createTRPCRouter({
                 "published status can only be changed to completed or archived status",
             });
           }
+          break;
         case BookStatus.COMPLETED:
           if (status !== BookStatus.ARCHIVED) {
             throw new TRPCError({
@@ -622,12 +625,14 @@ export const bookRouter = createTRPCRouter({
                 "completed status can only be changed to archived status",
             });
           }
+          break;
         case BookStatus.ARCHIVED:
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "archived status cannot be changed",
           });
         default:
+          break;
       }
 
       try {
