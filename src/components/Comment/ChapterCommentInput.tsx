@@ -26,11 +26,11 @@ const ChapterCommentInput = ({ chapterId, parentId }: props) => {
         },
         {
           onSuccess() {
-            setContent("");
             void utils.comment.getAll.invalidate({ chapterId });
           },
         }
       );
+      setContent("");
     }
   };
 
