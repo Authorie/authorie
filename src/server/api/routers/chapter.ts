@@ -10,14 +10,21 @@ export const chapterRouter = createTRPCRouter({
     .input(
       z.object({
         categoryIds: z.string().cuid().array().optional(),
+        publishedAt: z.date().optional(),
         cursor: z.string().cuid().optional(),
         limit: z.number().int().default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { categoryIds, cursor, limit } = input;
+      const { categoryIds, publishedAt, cursor, limit } = input;
       const chapterFindManyArgs = {
-        where: {},
+        where: publishedAt
+          ? ({
+              publishedAt: {
+                lte: publishedAt,
+              },
+            } as Prisma.ChapterWhereInput)
+          : {},
         include: {
           book: {
             select: {
