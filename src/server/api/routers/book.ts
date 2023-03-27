@@ -128,12 +128,27 @@ export const bookRouter = createTRPCRouter({
     .input(
       z.object({
         penname: z.string(),
+        status: z
+          .enum([
+            BookStatus.INITIAL,
+            BookStatus.DRAFT,
+            BookStatus.PUBLISHED,
+            BookStatus.COMPLETED,
+            BookStatus.ARCHIVED,
+          ])
+          .array()
+          .default([
+            BookStatus.INITIAL,
+            BookStatus.DRAFT,
+            BookStatus.PUBLISHED,
+            BookStatus.COMPLETED,
+          ]),
         cursor: z.string().cuid().optional(),
         limit: z.number().int().default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { penname, cursor, limit } = input;
+      const { penname, status, cursor, limit } = input;
       const bookFindManyArgs = {
         where: {},
         include: {
@@ -175,7 +190,9 @@ export const bookRouter = createTRPCRouter({
       if (!ctx.session?.user.id) {
         bookFindManyArgs.where = {
           status: {
-            in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+            in: [BookStatus.PUBLISHED, BookStatus.COMPLETED].filter((s) =>
+              status.includes(s)
+            ),
           },
           owners: {
             some: {
@@ -190,7 +207,9 @@ export const bookRouter = createTRPCRouter({
           OR: [
             {
               status: {
-                in: [BookStatus.INITIAL, BookStatus.DRAFT],
+                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED].filter((s) =>
+                  status.includes(s)
+                ),
               },
               owners: {
                 some: {
@@ -209,7 +228,9 @@ export const bookRouter = createTRPCRouter({
             },
             {
               status: {
-                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED].filter((s) =>
+                  status.includes(s)
+                ),
               },
               owners: {
                 some: {
@@ -220,7 +241,9 @@ export const bookRouter = createTRPCRouter({
               },
             },
             {
-              status: BookStatus.ARCHIVED,
+              status: {
+                in: [BookStatus.ARCHIVED].filter((s) => status.includes(s)),
+              },
               owners: {
                 some: {
                   user: {
