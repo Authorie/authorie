@@ -10,13 +10,15 @@ import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 import useImageUpload from "@hooks/imageUpload";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 const validationSchema = z.object({
   title: z
     .string()
     .min(1, { message: "Title is required" })
-    .max(50, { message: "Title is too long" }),
-  description: z.string().max(300, { message: "Description is too long" }),
+    .max(100, { message: "Title is too long" }),
+  description: z.string().max(500, { message: "Description is too long" }),
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
@@ -52,28 +54,36 @@ const CreateBook = () => {
   const uploadImageUrl = api.upload.uploadImage.useMutation();
   const [addedCategories, setAddedCategories] = useState<Category[]>([]);
   const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
-    let bookCoverUrl;
-    let wallpaperImageUrl;
-    if (bookCover) {
-      bookCoverUrl = await uploadImageUrl.mutateAsync({
-        title: `${data.title}'s book cover image`,
-        image: bookCover,
+    try {
+      let bookCoverUrl;
+      let wallpaperImageUrl;
+      if (bookCover) {
+        bookCoverUrl = await uploadImageUrl.mutateAsync({
+          title: `${data.title}'s book cover image`,
+          image: bookCover,
+        });
+      }
+      if (bookWallpaper) {
+        wallpaperImageUrl = await uploadImageUrl.mutateAsync({
+          title: `${data.title}'s book cover image`,
+          image: bookWallpaper,
+        });
+      }
+      const promiseCreateBook = bookCreateMutation.mutateAsync({
+        title: data.title,
+        description: data.description,
+        categoryIds: addedCategories.map((category) => category.id),
+        coverImageUrl: bookCoverUrl ? bookCoverUrl : undefined,
+        wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : undefined,
       });
-    }
-    if (bookWallpaper) {
-      wallpaperImageUrl = await uploadImageUrl.mutateAsync({
-        title: `${data.title}'s book cover image`,
-        image: bookWallpaper,
+      await toast.promise(promiseCreateBook, {
+        pending: `Creating a book called ${data.title}`,
+        success: `Created ${data.title} successfully!`,
       });
+      reset();
+    } catch (err) {
+      toast("Error occured while creating book!");
     }
-    await bookCreateMutation.mutateAsync({
-      title: data.title,
-      description: data.description,
-      categoryIds: addedCategories.map((category) => category.id),
-      coverImageUrl: bookCoverUrl ? bookCoverUrl : "",
-      wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : "",
-    });
-    reset();
   };
 
   return (
@@ -136,12 +146,12 @@ const CreateBook = () => {
               <p
                 className={`${"text-xs"} 
                           ${
-                            watch("title") && watch("title").length > 50
+                            watch("title") && watch("title").length > 100
                               ? "text-red-500"
                               : "text-black"
                           }`}
               >
-                {watch("title") ? watch("title").length : 0}/50
+                {watch("title") ? watch("title").length : 0}/100
               </p>
             </div>
             {errors.title && (
@@ -245,13 +255,13 @@ const CreateBook = () => {
                 className={`${"text-xs"} 
                           ${
                             watch("description") &&
-                            watch("description").length > 300
+                            watch("description").length > 500
                               ? "text-red-500"
                               : "text-black"
                           }`}
               >
                 {watch("description") ? watch("description").length : 0}
-                /300
+                /500
               </p>
             </div>
             {errors.description && (
@@ -265,11 +275,12 @@ const CreateBook = () => {
           type="submit"
           disabled={bookCreateMutation.isLoading}
           aria-disabled={bookCreateMutation.isLoading}
-          className="self-end rounded-xl bg-authBlue-500 py-2 px-8 font-semibold text-white"
+          className="self-end rounded-xl bg-slate-500 py-2 px-8 font-semibold text-white hover:bg-slate-700"
         >
           Save
         </button>
       </div>
+      <ToastContainer />
     </form>
   );
 };
