@@ -1,3 +1,4 @@
+import { EditButton } from "@components/action/EditButton";
 import ChapterCard from "@components/Chapter/ChapterCard";
 import { Popover } from "@headlessui/react";
 import {
@@ -30,11 +31,9 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
+import toast from "react-hot-toast";
 import superjson from "superjson";
 import * as z from "zod";
-import { EditButton } from "@components/action/EditButton";
 
 const validationSchema = z.object({
   title: z
@@ -178,8 +177,9 @@ const BookContent = ({ bookId, penname }: props) => {
         status: BookStatus.DRAFT,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Move to draft state...",
+        loading: "Move to draft state...",
         success: "Your book is in draft state now!",
+        error: "Error occured during move state",
       });
     } catch (err) {
       toast("Error occured during move state");
@@ -194,8 +194,9 @@ const BookContent = ({ bookId, penname }: props) => {
         status: BookStatus.PUBLISHED,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Publishing book...",
+        loading: "Publishing book...",
         success: "Your book is now published!",
+        error: "Error occured during publish",
       });
     } catch (err) {
       toast("Error occured during publish");
@@ -210,8 +211,9 @@ const BookContent = ({ bookId, penname }: props) => {
         status: BookStatus.COMPLETED,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Completing book...",
+        loading: "Completing book...",
         success: "Your book is now completed!",
+        error: "Error occured during completed",
       });
     } catch (err) {
       toast("Error occured during completed");
@@ -226,8 +228,9 @@ const BookContent = ({ bookId, penname }: props) => {
         status: BookStatus.ARCHIVED,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Archive book...",
+        loading: "Archive book...",
         success: "Your book is now archived!",
+        error: "Error occured during archive",
       });
       void router.push(`/${penname}/book`);
     } catch (err) {
@@ -240,8 +243,9 @@ const BookContent = ({ bookId, penname }: props) => {
     try {
       const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
       await toast.promise(promiseDeleteBook, {
-        pending: "Deleting book...",
+        loading: "Deleting book...",
         success: "Your book is now deleted!",
+        error: "Error occured during deleting",
       });
       void router.push(`/${penname}/book`);
     } catch (err) {
@@ -341,8 +345,9 @@ const BookContent = ({ bookId, penname }: props) => {
         wallpaperImageUrl,
       });
       await toast.promise(promiseUpdateBook, {
-        pending: "Updating book...",
+        loading: "Updating book...",
         success: "Book updated!",
+        error: "Error occured during update",
       });
     } catch (err) {
       console.error(err);
@@ -692,7 +697,6 @@ const BookContent = ({ bookId, penname }: props) => {
           <p className="text-3xl font-bold">This book does not exist...</p>
         </div>
       )}
-      <ToastContainer />
     </div>
   );
 };

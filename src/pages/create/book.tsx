@@ -1,6 +1,7 @@
 import { Popover } from "@headlessui/react";
 import { PhotoIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
@@ -8,10 +9,8 @@ import Image from "next/legacy/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import toast from "react-hot-toast";
 import * as z from "zod";
-import useImageUpload from "@hooks/imageUpload";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 
 const validationSchema = z.object({
   title: z
@@ -77,8 +76,9 @@ const CreateBook = () => {
         wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : undefined,
       });
       await toast.promise(promiseCreateBook, {
-        pending: `Creating a book called ${data.title}`,
+        loading: `Creating a book called ${data.title}`,
         success: `Created ${data.title} successfully!`,
+        error: "Error occured while creating book!",
       });
       reset();
     } catch (err) {
@@ -280,7 +280,6 @@ const CreateBook = () => {
           Save
         </button>
       </div>
-      <ToastContainer />
     </form>
   );
 };

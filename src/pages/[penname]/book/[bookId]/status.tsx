@@ -1,30 +1,28 @@
-import type { Category } from "@prisma/client";
-import { BookStatus } from "@prisma/client";
-import { ChevronLeftIcon, PhotoIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
 import { CategoryPopover } from "@components/action/CategoryPopover";
+import { EditButton } from "@components/action/EditButton";
 import AuthorList from "@components/Book/AuthorList";
 import BookCoverEditable from "@components/Book/BookCoverEditable";
-import { useRouter } from "next/router";
-import { BookOwnerStatus } from "@prisma/client";
+import { ChevronLeftIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
+import type { Category } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { getServerAuthSession } from "@server/auth";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { appRouter } from "@server/api/root";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import superjson from "superjson";
 import * as z from "zod";
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
-import { useForm } from "react-hook-form";
-import { EditButton } from "@components/action/EditButton";
 
 const validationSchema = z.object({
   title: z
@@ -212,8 +210,9 @@ const StatusPage = ({ bookId, penname }: props) => {
         status: BookStatus.DRAFT,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Move to draft state...",
+        loading: "Move to draft state...",
         success: "Your book is in draft state now!",
+        error: "Error occured during move state",
       });
     } catch (err) {
       toast("Error occured during move state");
@@ -228,8 +227,9 @@ const StatusPage = ({ bookId, penname }: props) => {
         status: BookStatus.PUBLISHED,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Publishing book...",
+        loading: "Publishing book...",
         success: "Your book is now published!",
+        error: "Error occured during publish",
       });
     } catch (err) {
       toast("Error occured during publish");
@@ -244,8 +244,9 @@ const StatusPage = ({ bookId, penname }: props) => {
         status: BookStatus.COMPLETED,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Completing book...",
+        loading: "Completing book...",
         success: "Your book is now completed!",
+        error: "Error occured during completed",
       });
     } catch (err) {
       toast("Error occured during completed");
@@ -260,8 +261,9 @@ const StatusPage = ({ bookId, penname }: props) => {
         status: BookStatus.ARCHIVED,
       });
       await toast.promise(promiseMoveState, {
-        pending: "Archive book...",
+        loading: "Archive book...",
         success: "Your book is now archived!",
+        error: "Error occured during archive",
       });
       void router.push(`/${penname}/book`);
     } catch (err) {
@@ -274,8 +276,9 @@ const StatusPage = ({ bookId, penname }: props) => {
     try {
       const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
       await toast.promise(promiseDeleteBook, {
-        pending: "Deleting book...",
+        loading: "Deleting book...",
         success: "Your book is now deleted!",
+        error: "Error occured during deleting",
       });
       void router.push(`/${penname}/book`);
     } catch (err) {
@@ -300,8 +303,9 @@ const StatusPage = ({ bookId, penname }: props) => {
           bookId: bookId,
         });
         await toast.promise(promiseInvite, {
-          pending: `Inviting ${user?.penname as string}...`,
+          loading: `Inviting ${user?.penname as string}...`,
           success: "invited!",
+          error: `Error occured while inviting ${user?.penname as string}`,
         });
       }
     } catch (err) {
@@ -318,8 +322,9 @@ const StatusPage = ({ bookId, penname }: props) => {
           bookId: bookId,
         });
         await toast.promise(promiseRemove, {
-          pending: `Removing ${user?.penname as string}...`,
+          loading: `Removing ${user?.penname as string}...`,
           success: `Successful removed ${user?.penname as string}!`,
+          error: `Error occured while removing ${user?.penname as string}`,
         });
       }
     } catch (err) {
@@ -336,8 +341,9 @@ const StatusPage = ({ bookId, penname }: props) => {
           bookId: bookId,
         });
         await toast.promise(promiseInvite, {
-          pending: `Inviting ${user?.penname as string}...`,
+          loading: `Inviting ${user?.penname as string}...`,
           success: `Successful invited ${user?.penname as string}!`,
+          error: `Error occured while inviting ${user?.penname as string}`,
         });
       }
     } catch (err) {
@@ -385,8 +391,9 @@ const StatusPage = ({ bookId, penname }: props) => {
         wallpaperImageUrl,
       });
       await toast.promise(promiseUpdateBook, {
-        pending: "Updating book...",
+        loading: "Updating book...",
         success: "Book updated!",
+        error: "Error occured during update",
       });
     } catch (err) {
       toast("Error occured during update");
@@ -674,7 +681,6 @@ const StatusPage = ({ bookId, penname }: props) => {
           )}
         </div>
       </div>
-      <ToastContainer />
     </div>
   );
 };
