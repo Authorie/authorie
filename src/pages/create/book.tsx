@@ -10,6 +10,8 @@ import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import * as z from "zod";
 import useImageUpload from "@hooks/imageUpload";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 const validationSchema = z.object({
   title: z
@@ -52,28 +54,36 @@ const CreateBook = () => {
   const uploadImageUrl = api.upload.uploadImage.useMutation();
   const [addedCategories, setAddedCategories] = useState<Category[]>([]);
   const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
-    let bookCoverUrl;
-    let wallpaperImageUrl;
-    if (bookCover) {
-      bookCoverUrl = await uploadImageUrl.mutateAsync({
-        title: `${data.title}'s book cover image`,
-        image: bookCover,
+    try {
+      let bookCoverUrl;
+      let wallpaperImageUrl;
+      if (bookCover) {
+        bookCoverUrl = await uploadImageUrl.mutateAsync({
+          title: `${data.title}'s book cover image`,
+          image: bookCover,
+        });
+      }
+      if (bookWallpaper) {
+        wallpaperImageUrl = await uploadImageUrl.mutateAsync({
+          title: `${data.title}'s book cover image`,
+          image: bookWallpaper,
+        });
+      }
+      const promiseCreateBook = bookCreateMutation.mutateAsync({
+        title: data.title,
+        description: data.description,
+        categoryIds: addedCategories.map((category) => category.id),
+        coverImageUrl: bookCoverUrl ? bookCoverUrl : undefined,
+        wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : undefined,
       });
-    }
-    if (bookWallpaper) {
-      wallpaperImageUrl = await uploadImageUrl.mutateAsync({
-        title: `${data.title}'s book cover image`,
-        image: bookWallpaper,
+      await toast.promise(promiseCreateBook, {
+        pending: `Creating a book called ${data.title}`,
+        success: `Created ${data.title} successfully!`,
       });
+      reset();
+    } catch (err) {
+      toast("Error occured while creating book!");
     }
-    await bookCreateMutation.mutateAsync({
-      title: data.title,
-      description: data.description,
-      categoryIds: addedCategories.map((category) => category.id),
-      coverImageUrl: bookCoverUrl ? bookCoverUrl : "",
-      wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : "",
-    });
-    reset();
   };
 
   return (
@@ -265,11 +275,12 @@ const CreateBook = () => {
           type="submit"
           disabled={bookCreateMutation.isLoading}
           aria-disabled={bookCreateMutation.isLoading}
-          className="self-end rounded-xl bg-authBlue-500 py-2 px-8 font-semibold text-white"
+          className="self-end rounded-xl bg-slate-500 py-2 px-8 font-semibold text-white hover:bg-slate-700"
         >
           Save
         </button>
       </div>
+      <ToastContainer />
     </form>
   );
 };

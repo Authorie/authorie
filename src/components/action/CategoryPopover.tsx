@@ -36,8 +36,7 @@ export const CategoryPopover = ({
                 <div className="grid w-max grid-cols-2 gap-2 rounded-xl bg-gray-200 p-2">
                   {categories
                     .filter(
-                      (category: Category) =>
-                        !addedCategories.includes(category)
+                      ({ id }) => !addedCategories.some((e) => e.id === id)
                     )
                     .map((category) => (
                       <button

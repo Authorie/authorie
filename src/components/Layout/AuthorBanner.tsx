@@ -284,6 +284,7 @@ const AuthorBanner = ({
                 : (user.wallpaperImage as string)
             }
             alt="wallpaper"
+            priority
             fill
             className={form.isEdit ? "opacity-90" : ""}
           />

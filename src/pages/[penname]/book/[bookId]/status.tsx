@@ -46,31 +46,24 @@ export const getServerSideProps = async (
     ctx: createInnerTRPCContext({ session }),
     transformer: superjson,
   });
+  const penname = context.query.penname as string;
   const bookId = context.query.bookId as string;
   await ssg.book.getData.prefetch({ id: bookId });
-
-  const { data: categories } = api.category.getAll.useQuery();
   await ssg.category.getAll.prefetch();
-
-  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
-    bookId: bookId,
-  });
   await ssg.user.getBookCollaborators.prefetch({ bookId: bookId });
-
   return {
     props: {
       trpcState: ssg.dehydrate(),
       session,
       bookId,
-      categories,
-      collaborators,
+      penname,
     },
   };
 };
 
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-const StatusPage = ({ bookId, categories, collaborators }: props) => {
+const StatusPage = ({ bookId, penname }: props) => {
   const [isEdit, setIsEdit] = useState(false);
   const {
     imageData: bookCover,
@@ -83,11 +76,14 @@ const StatusPage = ({ bookId, categories, collaborators }: props) => {
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
   const router = useRouter();
-  const penname = router.query.penname;
   const utils = api.useContext();
+  const { data: categories } = api.category.getAll.useQuery();
+  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
+    bookId: bookId,
+  });
   const { data: book } = api.book.getData.useQuery({ id: bookId });
-  const [addedCategories, setAddedCategories] = useState(
-    book?.categories.map((data) => data.category) || []
+  const [addedCategories, setAddedCategories] = useState<Category[]>(
+    book?.categories ? book?.categories.map((data) => data.category) : []
   );
   const deleteBook = api.book.delete.useMutation({
     onSuccess: () => {
@@ -202,6 +198,12 @@ const StatusPage = ({ bookId, categories, collaborators }: props) => {
   });
   const uploadImageUrl = api.upload.uploadImage.useMutation();
 
+  // useEffect(() => {
+  //   if (book?.categories) {
+  //     setAddedCategories(book?.categories.map((data) => data.category));
+  //   }
+  // }, [book?.categories]);
+
   const draftBookHandler = async () => {
     if (book === undefined) return;
     try {
@@ -261,7 +263,7 @@ const StatusPage = ({ bookId, categories, collaborators }: props) => {
         pending: "Archive book...",
         success: "Your book is now archived!",
       });
-      void router.push(`/${penname as string}/book`);
+      void router.push(`/${penname}/book`);
     } catch (err) {
       toast("Error occured during archive");
     }
@@ -275,7 +277,7 @@ const StatusPage = ({ bookId, categories, collaborators }: props) => {
         pending: "Deleting book...",
         success: "Your book is now deleted!",
       });
-      void router.push(`/${penname as string}/book`);
+      void router.push(`/${penname}/book`);
     } catch (err) {
       toast("Error occured during deleting");
     }
@@ -662,7 +664,6 @@ const StatusPage = ({ bookId, categories, collaborators }: props) => {
                   )}
                 </div>
               </div>
-              <ToastContainer />
             </form>
           ) : (
             <div className="flex h-96 w-full items-center justify-center">
@@ -673,6 +674,7 @@ const StatusPage = ({ bookId, categories, collaborators }: props) => {
           )}
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
