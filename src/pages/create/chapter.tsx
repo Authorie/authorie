@@ -2,6 +2,7 @@ import BookComboBox from "@components/Create/Chapter/BookComboBox";
 import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { BookStatus, type Book, type Chapter } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
@@ -26,11 +27,9 @@ import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import NextImage from "next/image";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import superjson from "superjson";
 import * as z from "zod";
-import { ToastContainer, toast } from "react-toastify";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import "react-toastify/dist/ReactToastify.min.css";
 
 const validationSchema = z.object({
   title: z
@@ -174,7 +173,7 @@ const CreateChapter = () => {
         }
       );
       await toast.promise(promise, {
-        pending: "Deleting...",
+        loading: "Deleting...",
         success: "Deleted!",
         error: "Error deleting",
       });
@@ -205,7 +204,7 @@ const CreateChapter = () => {
         }
       );
       await toast.promise(promise, {
-        pending: "Saving...",
+        loading: "Saving...",
         success: "Saved!",
         error: "Error saving",
       });
@@ -235,7 +234,7 @@ const CreateChapter = () => {
         }
       );
       await toast.promise(promise, {
-        pending: "Publishing...",
+        loading: "Publishing...",
         success: "Published!",
         error: "Error publishing",
       });
@@ -277,128 +276,121 @@ const CreateChapter = () => {
   };
 
   return (
-    <>
-      <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
-        <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-xl font-bold">Draft Chapters</h1>
-            <p className="text-xs">
-              Select one of previous drafts, or you can create a new one.
-            </p>
-          </div>
-          <ul ref={animationParent} className="flex flex-col gap-3">
-            <ChapterDraftCard
-              title="Create a new chapter"
-              selected={chapterId === undefined}
-              onClickHandler={() => selectDraftHandler(undefined)}
-            />
-            {draftChapters &&
-              draftChapters.map((chapter) => (
-                <ChapterDraftCard
-                  key={chapter.id}
-                  title={chapter.title}
-                  selected={chapterId === chapter.id}
-                  onClickHandler={() => selectDraftHandler(chapter.id)}
-                />
-              ))}
-          </ul>
+    <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
+      <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-xl font-bold">Draft Chapters</h1>
+          <p className="text-xs">
+            Select one of previous drafts, or you can create a new one.
+          </p>
         </div>
-        <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow">
-          <div className="relative flex flex-col bg-gray-200 px-4 py-3">
-            <div className="absolute inset-0 cursor-pointer">
-              {book && book.wallpaperImage && (
-                <NextImage
-                  src={book.wallpaperImage}
-                  alt="chapter's cover"
-                  fill
-                />
-              )}
-            </div>
-            <div className="z-20 flex flex-col gap-2">
-              <div className="flex items-end gap-2">
-                <input
-                  placeholder="Untitled"
-                  className="w-full bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-                <p
-                  className={`${"text-xs"} 
+        <ul ref={animationParent} className="flex flex-col gap-3">
+          <ChapterDraftCard
+            title="Create a new chapter"
+            selected={chapterId === undefined}
+            onClickHandler={() => selectDraftHandler(undefined)}
+          />
+          {draftChapters &&
+            draftChapters.map((chapter) => (
+              <ChapterDraftCard
+                key={chapter.id}
+                title={chapter.title}
+                selected={chapterId === chapter.id}
+                onClickHandler={() => selectDraftHandler(chapter.id)}
+              />
+            ))}
+        </ul>
+      </div>
+      <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow">
+        <div className="relative flex flex-col bg-gray-200 px-4 py-3">
+          <div className="absolute inset-0 cursor-pointer">
+            {book && book.wallpaperImage && (
+              <NextImage src={book.wallpaperImage} alt="chapter's cover" fill />
+            )}
+          </div>
+          <div className="z-20 flex flex-col gap-2">
+            <div className="flex items-end gap-2">
+              <input
+                placeholder="Untitled"
+                className="w-full bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <p
+                className={`${"text-xs"} 
                           ${
                             title && title.length > 80
                               ? "text-red-500"
                               : "text-black"
                           }`}
-                >
-                  {title ? title.length : 0}
-                  /80
-                </p>
-              </div>
-              {errors.title && (
-                <p className="text-xs text-red-400" role="alert">
-                  {errors.title}
-                </p>
-              )}
-              <div className="flex w-fit items-center gap-4">
-                <span className="text-xs text-gray-600">Author </span>
-                {user && <span className="text-xs">{user.penname}</span>}
-              </div>
-              {user && (
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-gray-600">Book </span>
-                  <BookComboBox
-                    user={user}
-                    selectedBook={book}
-                    onToggleBook={toggleBookHandler}
-                  />
-                </div>
-              )}
+              >
+                {title ? title.length : 0}
+                /80
+              </p>
             </div>
-          </div>
-          {editor && (
-            <>
-              <div className="flex h-1 grow flex-col overflow-y-auto bg-white px-4">
-                <div className="sticky top-0 z-10 my-2 flex items-center justify-center">
-                  <TextEditorMenuBar editor={editor} />
-                </div>
-                <EditorContent
-                  editor={editor}
-                  className="my-3 w-[800px] grow cursor-text"
-                  onClick={editorFocusHandler}
+            {errors.title && (
+              <p className="text-xs text-red-400" role="alert">
+                {errors.title}
+              </p>
+            )}
+            <div className="flex w-fit items-center gap-4">
+              <span className="text-xs text-gray-600">Author </span>
+              {user && <span className="text-xs">{user.penname}</span>}
+            </div>
+            {user && (
+              <div className="flex items-center gap-4">
+                <span className="text-xs text-gray-600">Book </span>
+                <BookComboBox
+                  user={user}
+                  selectedBook={book}
+                  onToggleBook={toggleBookHandler}
                 />
               </div>
-              <div className="flex justify-between bg-white px-4 py-4">
+            )}
+          </div>
+        </div>
+        {editor && (
+          <>
+            <div className="flex h-1 grow flex-col overflow-y-auto bg-white px-4">
+              <div className="sticky top-0 z-10 my-2 flex items-center justify-center">
+                <TextEditorMenuBar editor={editor} />
+              </div>
+              <EditorContent
+                editor={editor}
+                className="my-3 w-[800px] grow cursor-text"
+                onClick={editorFocusHandler}
+              />
+            </div>
+            <div className="flex justify-between bg-white px-4 py-4">
+              <button
+                type="button"
+                className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
+                disabled={chapterId === undefined}
+                onClick={() => void deleteDraftChapterHandler()}
+              >
+                Delete
+              </button>
+              <div className="flex gap-3">
                 <button
                   type="button"
-                  className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
-                  disabled={chapterId === undefined}
-                  onClick={() => void deleteDraftChapterHandler()}
+                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
+                  onClick={() => void saveDraftChapterHandler()}
                 >
-                  Delete
+                  Save
                 </button>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
-                    onClick={() => void saveDraftChapterHandler()}
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void publishDraftChapterHandler()}
-                    className="h-8 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
-                  >
-                    Publish
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => void publishDraftChapterHandler()}
+                  className="h-8 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
+                >
+                  Publish
+                </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
-      <ToastContainer />
-    </>
+    </div>
   );
 };
 

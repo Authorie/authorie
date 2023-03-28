@@ -13,6 +13,7 @@ import type {
 import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import type { ReactElement, ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
 import superjson from "superjson";
 
 import "../styles/globals.css";
@@ -70,6 +71,7 @@ const MyApp = ({
     <SessionProvider session={session}>
       {getLayout(<Component {...pageProps} />)}
       <Analytics />
+      <Toaster />
     </SessionProvider>
   );
 };

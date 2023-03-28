@@ -1,12 +1,11 @@
 import { EyeIcon, HeartIcon, StarIcon } from "@heroicons/react/24/outline";
+import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
+import { BookStatus } from "@prisma/client";
+import { api } from "@utils/api";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
 import type { MouseEvent } from "react";
-import { api } from "@utils/api";
-import { BookStatus } from "@prisma/client";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
+import toast from "react-hot-toast";
 
 type props = {
   id: string;
@@ -91,18 +90,15 @@ const Book = ({
 
   const publishBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: id,
-        status: BookStatus.PUBLISHED,
-      });
-      await toast.promise(promiseMoveState, {
-        pending: "Publishing book...",
-        success: "Your book is now published!",
-      });
-    } catch (err) {
-      toast("Error occured during publish");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: id,
+      status: BookStatus.PUBLISHED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Publishing book...",
+      success: "Your book is now published!",
+      error: "Error occured during publish",
+    });
   };
 
   return (
@@ -186,7 +182,6 @@ const Book = ({
           </div>
         </div>
       </div>
-      <ToastContainer />
     </div>
   );
 };
