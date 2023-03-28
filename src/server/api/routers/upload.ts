@@ -8,9 +8,6 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 type ImageType = "png" | "jpeg";
 
-type Base64<imageType extends ImageType> =
-  `data:image/${imageType};base64,${string}`;
-
 const extractImageType = (imageFile: string) => {
   // regex match the image type and data
   const regex = /^data:image\/(\w+);base64,(.+)/;
@@ -22,9 +19,10 @@ const extractImageType = (imageFile: string) => {
   if (imageType !== "png" && imageType !== "jpeg") {
     return undefined;
   }
+
   return [
     imageType as ImageType,
-    imageFile as Base64<typeof imageType>,
+    Buffer.from(matches[2] as string, "base64"),
   ] as const; // matches[1] is the image type
 };
 
