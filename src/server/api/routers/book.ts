@@ -207,7 +207,7 @@ export const bookRouter = createTRPCRouter({
           OR: [
             {
               status: {
-                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED].filter((s) =>
+                in: [BookStatus.INITIAL, BookStatus.DRAFT].filter((s) =>
                   status.includes(s)
                 ),
               },
