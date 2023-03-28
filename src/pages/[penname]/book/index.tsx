@@ -3,6 +3,7 @@ import Book from "@components/Book/Book";
 //   Bars3CenterLeftIcon,
 //   MagnifyingGlassIcon,
 // } from "@heroicons/react/24/outline";
+import { BookStatus } from "@prisma/client";
 import { api } from "@utils/api";
 import Link from "next/link";
 import type {
@@ -74,21 +75,28 @@ const BookPage = ({ penname }: props) => {
           ))}
         {books && (
           <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-            {books.items.map((book) => (
-              <Book
-                key={book.id}
-                id={book.id}
-                title={book.title}
-                coverImage={book.coverImage}
-                description={book.description}
-                isOwner={book.isOwner}
-                like={book.chapters.reduce(
-                  (acc, curr) => acc + curr._count.likes,
-                  0
-                )}
-                read={book.chapters.reduce((acc, curr) => acc + curr.views, 0)}
-              />
-            ))}
+            {books.items.map(
+              (book) =>
+                book.status !== BookStatus.ARCHIVED && (
+                  <Book
+                    key={book.id}
+                    id={book.id}
+                    title={book.title}
+                    coverImage={book.coverImage}
+                    description={book.description}
+                    isOwner={book.isOwner}
+                    status={book.status}
+                    like={book.chapters.reduce(
+                      (acc, curr) => acc + curr._count.likes,
+                      0
+                    )}
+                    read={book.chapters.reduce(
+                      (acc, curr) => acc + curr.views,
+                      0
+                    )}
+                  />
+                )
+            )}
           </div>
         )}
       </div>

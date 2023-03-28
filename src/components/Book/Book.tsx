@@ -4,6 +4,9 @@ import { useRouter } from "next/router";
 import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
 import type { MouseEvent } from "react";
 import { api } from "@utils/api";
+import { BookStatus } from "@prisma/client";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 type props = {
   id: string;
@@ -13,6 +16,7 @@ type props = {
   like: number;
   isOwner: boolean;
   coverImage: string | null;
+  status: BookStatus;
 };
 
 const Book = ({
@@ -23,10 +27,28 @@ const Book = ({
   id,
   isOwner,
   coverImage,
+  status,
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
+  const penname = router.query.penname as string;
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
+  const moveState = api.book.moveState.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        status: newBook.status,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
+  });
   const unfavoriteBook = api.book.unfavorite.useMutation({
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
@@ -51,8 +73,11 @@ const Book = ({
   });
 
   const onClickHandler = () => {
-    const penname = router.query.penname as string;
-    void router.push(`/${penname}/book/${id}`);
+    if (!isOwner) {
+      void router.push(`/${penname}/book/${id}`);
+    } else {
+      return;
+    }
   };
 
   const toggleFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
@@ -64,13 +89,70 @@ const Book = ({
     }
   };
 
+  const publishBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: id,
+        status: BookStatus.PUBLISHED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Publishing book...",
+        success: "Your book is now published!",
+      });
+    } catch (err) {
+      toast("Error occured during publish");
+    }
+  };
+
   return (
     <div
       onClick={onClickHandler}
-      className="flex cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      className={`${"flex cursor-pointer transition duration-100 ease-in-out"} ${
+        isOwner ? "group/bookOwner" : "hover:-translate-y-1 hover:scale-[1.01]"
+      }`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
-      <div className="flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
+      <div className="relative flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
+        {isOwner && (
+          <>
+            <div
+              className={`
+              ${status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
+              ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
+              ${status === BookStatus.PUBLISHED ? "bg-green-400" : ""} 
+              ${status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
+              ${"absolute top-0 left-0 z-10 px-2 text-xs text-white"}
+              `}
+            >
+              {status}
+            </div>
+            {status === "DRAFT" && (
+              <button
+                onClick={(e) => void publishBookHandler(e)}
+                className="absolute top-2 right-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
+              >
+                Publish now
+              </button>
+            )}
+            <div className="invisible absolute z-10 flex h-full w-52 flex-col items-center justify-center gap-6 bg-black/60 group-hover/bookOwner:visible">
+              <button
+                onClick={() => void router.push(`/${penname}/book/${id}`)}
+                className="w-36 border-2 border-white bg-transparent py-2 text-white hover:bg-authGreen-600"
+              >
+                View Book
+              </button>
+              <button
+                onClick={() =>
+                  void router.push(`/${penname}/book/${id}/status`)
+                }
+                className="w-36 border-2 border-white bg-transparent py-2 text-white hover:bg-authGreen-600"
+              >
+                View Status
+              </button>
+            </div>
+          </>
+        )}
         <div className="relative h-28 w-full overflow-hidden rounded-tl-lg">
           {coverImage ? (
             <Image src={coverImage} alt="book picture" fill />
@@ -104,6 +186,7 @@ const Book = ({
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

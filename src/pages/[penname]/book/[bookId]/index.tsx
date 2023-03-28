@@ -3,7 +3,6 @@ import { Popover } from "@headlessui/react";
 import {
   ChevronLeftIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon,
   PlusCircleIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
@@ -35,13 +34,14 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import superjson from "superjson";
 import * as z from "zod";
+import { EditButton } from "@components/action/EditButton";
 
 const validationSchema = z.object({
   title: z
     .string()
     .min(1, { message: "Title is required" })
-    .max(50, { message: "Title is too long" }),
-  description: z.string().max(300, { message: "Description is too long" }),
+    .max(100, { message: "Title is too long" }),
+  description: z.string().max(500, { message: "Description is too long" }),
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
@@ -55,6 +55,7 @@ export const getServerSideProps = async (
     ctx: createInnerTRPCContext({ session }),
     transformer: superjson,
   });
+  const penname = context.query.penname as string;
   const bookId = context.query.bookId as string;
   await ssg.book.getData.prefetch({ id: bookId });
 
@@ -63,13 +64,14 @@ export const getServerSideProps = async (
       trpcState: ssg.dehydrate(),
       session,
       bookId,
+      penname,
     },
   };
 };
 
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-const BookContent = ({ bookId }: props) => {
+const BookContent = ({ bookId, penname }: props) => {
   const router = useRouter();
   const utils = api.useContext();
   const [isEdit, setIsEdit] = useState(false);
@@ -91,6 +93,27 @@ const BookContent = ({ bookId }: props) => {
     uploadHandler: setBookWallpaper,
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
+  const moveState = api.book.moveState.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        status: newBook.status,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
+  });
+  const deleteBook = api.book.delete.useMutation({
+    onSuccess: () => {
+      void utils.book.invalidate();
+    },
+  });
   const unfavoriteBook = api.book.unfavorite.useMutation({
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
@@ -122,8 +145,8 @@ const BookContent = ({ bookId }: props) => {
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      title: book?.title,
+      description: book?.description || "",
     },
   });
   const isChapterCreatable = useMemo(() => {
@@ -146,6 +169,85 @@ const BookContent = ({ bookId }: props) => {
       return 0;
     }
   }, [book]);
+
+  const draftBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.DRAFT,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Move to draft state...",
+        success: "Your book is in draft state now!",
+      });
+    } catch (err) {
+      toast("Error occured during move state");
+    }
+  };
+
+  const publishBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.PUBLISHED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Publishing book...",
+        success: "Your book is now published!",
+      });
+    } catch (err) {
+      toast("Error occured during publish");
+    }
+  };
+
+  const completeBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.COMPLETED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Completing book...",
+        success: "Your book is now completed!",
+      });
+    } catch (err) {
+      toast("Error occured during completed");
+    }
+  };
+
+  const archiveBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseMoveState = moveState.mutateAsync({
+        id: book?.id,
+        status: BookStatus.ARCHIVED,
+      });
+      await toast.promise(promiseMoveState, {
+        pending: "Archive book...",
+        success: "Your book is now archived!",
+      });
+      void router.push(`/${penname}/book`);
+    } catch (err) {
+      toast("Error occured during archive");
+    }
+  };
+
+  const deleteBookHandler = async () => {
+    if (book === undefined) return;
+    try {
+      const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
+      await toast.promise(promiseDeleteBook, {
+        pending: "Deleting book...",
+        success: "Your book is now deleted!",
+      });
+      void router.push(`/${penname}/book`);
+    } catch (err) {
+      toast("Error occured during deleting");
+    }
+  };
 
   const toggleCategoryHandler = (category: Category) => {
     if (addedCategories.includes(category)) {
@@ -200,10 +302,15 @@ const BookContent = ({ bookId }: props) => {
   const uploadImageUrl = api.upload.uploadImage.useMutation();
 
   const resetHandler = () => {
-    reset();
+    reset((formValues) => ({
+      ...formValues,
+      title: book?.title as string,
+      description: book?.description || "",
+    }));
     setIsEdit(false);
     resetBookCover();
     resetBookWallpaper();
+    setAddedCategories(book?.categories.map((data) => data.category) || []);
   };
 
   const onSaveHandler = async (data: ValidationSchema) => {
@@ -244,31 +351,35 @@ const BookContent = ({ bookId }: props) => {
   };
 
   return (
-    <>
-      <form
-        onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
-        className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
-      >
-        <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
-          {book && (book?.wallpaperImage || bookWallpaper) ? (
-            <Image
-              src={
-                bookWallpaper ? bookWallpaper : (book.wallpaperImage as string)
-              }
-              alt="book's wallpaper image"
-              fill
-            />
-          ) : (
-            <div className="h-full w-full bg-authGreen-400" />
-          )}
-          <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
-        </div>
-        <ChevronLeftIcon
-          type="button"
-          onClick={() => router.back()}
-          className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
-        />
-        {book && (
+    <div className="flex w-full items-center justify-center">
+      {book ? (
+        <form
+          id="submit-changes"
+          onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
+          className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
+        >
+          <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
+            {book?.wallpaperImage || bookWallpaper ? (
+              <Image
+                src={
+                  bookWallpaper
+                    ? bookWallpaper
+                    : (book.wallpaperImage as string)
+                }
+                alt="book's wallpaper image"
+                fill
+              />
+            ) : (
+              <div className="h-full w-full bg-authGreen-400" />
+            )}
+            <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
+          </div>
+          <ChevronLeftIcon
+            type="button"
+            onClick={() => router.back()}
+            className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+          />
+
           <div className="z-10 flex gap-7 pt-10 pb-5">
             <div className="ml-7 flex flex-col">
               <div className="flex">
@@ -384,12 +495,52 @@ const BookContent = ({ bookId }: props) => {
                 {!isEdit && (
                   <div>
                     <div className="flex flex-col gap-4">
-                      <button className="h-10 w-36 rounded-lg bg-gray-800 font-semibold text-white">
-                        Auction book
-                      </button>
-                      <button className="h-10 w-36 rounded-lg bg-gray-800 font-semibold text-white">
-                        Complete book
-                      </button>
+                      {book.status === BookStatus.INITIAL && (
+                        <button
+                          type="button"
+                          onClick={() => void draftBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-blue-400 to-blue-500 font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
+                        >
+                          Start Writing
+                        </button>
+                      )}
+                      {book.status === BookStatus.DRAFT && (
+                        <button
+                          type="button"
+                          onClick={() => void publishBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-green-400 to-green-500 font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
+                        >
+                          Publish
+                        </button>
+                      )}
+                      {book.status === BookStatus.PUBLISHED && (
+                        <button
+                          type="button"
+                          onClick={() => void completeBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
+                        >
+                          Complete
+                        </button>
+                      )}
+                      {(book.status === BookStatus.INITIAL ||
+                        book.status === BookStatus.DRAFT) && (
+                        <button
+                          type="button"
+                          onClick={() => void deleteBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Delete
+                        </button>
+                      )}
+                      {(book.status === BookStatus.PUBLISHED ||
+                        book.status === BookStatus.COMPLETED) && (
+                        <button
+                          onClick={() => void archiveBookHandler()}
+                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Archive
+                        </button>
+                      )}
                     </div>
                     <div className="my-10 flex flex-col gap-1">
                       <span className="text-6xl font-bold">12</span>
@@ -420,7 +571,7 @@ const BookContent = ({ bookId }: props) => {
                 className={`
                 ${
                   isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 w-3/5 flex-col gap-2"}`}
+                } ${"flex h-52 flex-col gap-2"}`}
               >
                 <div className="flex gap-4">
                   {isEdit ? (
@@ -441,19 +592,19 @@ const BookContent = ({ bookId }: props) => {
                           aria-invalid={errors.title ? "true" : "false"}
                           id="title"
                           type="text"
-                          className="focus:shadow-outline w-96 rounded-lg border bg-gray-300 px-3 text-3xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
+                          className="focus:shadow-outline w-96 rounded-lg border bg-gray-300 px-3 text-3xl font-bold text-black placeholder:text-gray-400 focus:outline-none"
                           placeholder={book.title}
                           {...register("title")}
                         />
                         <p
                           className={`${"text-xs"} 
                           ${
-                            watch("title") && watch("title").length > 50
+                            watch("title") && watch("title").length > 100
                               ? "text-red-500"
                               : "text-black"
                           }`}
                         >
-                          {watch("title") ? watch("title").length : 0}/50
+                          {watch("title") ? watch("title").length : 0}/100
                         </p>
                       </div>
                       {errors.title && (
@@ -465,38 +616,12 @@ const BookContent = ({ bookId }: props) => {
                   ) : (
                     <h1 className="text-3xl font-bold">{book.title}</h1>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setIsEdit(true)}
-                    className="cursor-pointer"
-                  >
-                    {!isEdit && (
-                      <PencilSquareIcon
-                        className={`w-7 ${
-                          book.isOwner
-                            ? " rounded-lg p-1 text-gray-800 hover:bg-gray-400"
-                            : "hidden"
-                        }`}
-                      />
-                    )}
-                  </button>
-                  {isEdit && (
-                    <div className="flex items-end gap-3">
-                      <button
-                        type="button"
-                        onClick={resetHandler}
-                        className="rounded-xl border-2 bg-red-500 px-5 py-1 text-white hover:bg-red-600 hover:text-white"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="rounded-xl border-2 bg-green-500 px-5 py-1 text-white hover:bg-green-600 hover:text-white"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
+                  <EditButton
+                    isEdit={isEdit}
+                    onEdit={() => setIsEdit(true)}
+                    isOwner={book.isOwner}
+                    reset={resetHandler}
+                  />
                 </div>
                 {isEdit ? (
                   <div>
@@ -504,7 +629,7 @@ const BookContent = ({ bookId }: props) => {
                       <textarea
                         rows={2}
                         id="description"
-                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm placeholder:text-gray-500 focus:outline-none"
+                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                         placeholder={
                           book.description || "write the description down..."
                         }
@@ -514,13 +639,13 @@ const BookContent = ({ bookId }: props) => {
                         className={`${"text-xs"} 
                           ${
                             watch("description") &&
-                            watch("description").length > 300
+                            watch("description").length > 500
                               ? "text-red-500"
                               : "text-black"
                           }`}
                       >
                         {watch("description") ? watch("description").length : 0}
-                        /300
+                        /500
                       </p>
                     </div>
                     {errors.description && (
@@ -530,14 +655,14 @@ const BookContent = ({ bookId }: props) => {
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm font-light">{book.description}</p>
+                  <p className="w-96 text-sm font-light">{book.description}</p>
                 )}
               </div>
               <div className="flex gap-2 self-end">
                 <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-gray-200" />
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
-              <div className="mt-3 grow rounded-sm bg-authGreen-300 shadow-lg">
+              <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
                   {isChapterCreatable && (
                     <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
@@ -561,10 +686,14 @@ const BookContent = ({ bookId }: props) => {
               </div>
             </div>
           </div>
-        )}
-      </form>
+        </form>
+      ) : (
+        <div className="flex h-96 w-full items-center justify-center">
+          <p className="text-3xl font-bold">This book does not exist...</p>
+        </div>
+      )}
       <ToastContainer />
-    </>
+    </div>
   );
 };
 
