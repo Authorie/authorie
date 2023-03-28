@@ -49,18 +49,28 @@ export const getServerSideProps = async (
   const bookId = context.query.bookId as string;
   await ssg.book.getData.prefetch({ id: bookId });
 
+  const { data: categories } = api.category.getAll.useQuery();
+  await ssg.category.getAll.prefetch();
+
+  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
+    bookId: bookId,
+  });
+  await ssg.user.getBookCollaborators.prefetch({ bookId: bookId });
+
   return {
     props: {
       trpcState: ssg.dehydrate(),
       session,
       bookId,
+      categories,
+      collaborators,
     },
   };
 };
 
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-const StatusPage = ({ bookId }: props) => {
+const StatusPage = ({ bookId, categories, collaborators }: props) => {
   const [isEdit, setIsEdit] = useState(false);
   const {
     imageData: bookCover,
@@ -76,7 +86,6 @@ const StatusPage = ({ bookId }: props) => {
   const penname = router.query.penname;
   const utils = api.useContext();
   const { data: book } = api.book.getData.useQuery({ id: bookId });
-  const { data: categories } = api.category.getAll.useQuery();
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
   );
@@ -84,9 +93,6 @@ const StatusPage = ({ bookId }: props) => {
     onSuccess: () => {
       void utils.book.invalidate();
     },
-  });
-  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
-    bookId: bookId,
   });
   const removeCollaborator = api.user.removeCollaborationInvite.useMutation({
     async onMutate(removedCollaborator) {

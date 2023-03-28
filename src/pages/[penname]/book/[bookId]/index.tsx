@@ -55,6 +55,7 @@ export const getServerSideProps = async (
     ctx: createInnerTRPCContext({ session }),
     transformer: superjson,
   });
+  const penname = context.query.penname as string;
   const bookId = context.query.bookId as string;
   await ssg.book.getData.prefetch({ id: bookId });
 
@@ -63,15 +64,15 @@ export const getServerSideProps = async (
       trpcState: ssg.dehydrate(),
       session,
       bookId,
+      penname,
     },
   };
 };
 
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-const BookContent = ({ bookId }: props) => {
+const BookContent = ({ bookId, penname }: props) => {
   const router = useRouter();
-  const penname = router.query.penname;
   const utils = api.useContext();
   const [isEdit, setIsEdit] = useState(false);
   const { data: categories } = api.category.getAll.useQuery();
@@ -228,7 +229,7 @@ const BookContent = ({ bookId }: props) => {
         pending: "Archive book...",
         success: "Your book is now archived!",
       });
-      void router.push(`/${penname as string}/book`);
+      void router.push(`/${penname}/book`);
     } catch (err) {
       toast("Error occured during archive");
     }
@@ -242,7 +243,7 @@ const BookContent = ({ bookId }: props) => {
         pending: "Deleting book...",
         success: "Your book is now deleted!",
       });
-      void router.push(`/${penname as string}/book`);
+      void router.push(`/${penname}/book`);
     } catch (err) {
       toast("Error occured during deleting");
     }

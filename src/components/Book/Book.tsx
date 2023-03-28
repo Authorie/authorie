@@ -16,7 +16,7 @@ type props = {
   like: number;
   isOwner: boolean;
   coverImage: string | null;
-  status: string;
+  status: BookStatus;
 };
 
 const Book = ({
