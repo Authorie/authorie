@@ -3,7 +3,7 @@ import HeartIconSolid from "@heroicons/react/24/solid/HeartIcon";
 
 type props = {
   isAuthenticated: boolean;
-  isLike: boolean;
+  isLiked: boolean;
   numberOfLike: number;
   onClickHandler: () => void;
   small?: boolean;
@@ -11,7 +11,7 @@ type props = {
 
 export const LikeButton = ({
   isAuthenticated,
-  isLike,
+  isLiked,
   numberOfLike,
   onClickHandler,
   small,
@@ -27,14 +27,14 @@ export const LikeButton = ({
       }`}
       onClick={onClickHandler}
     >
-      {isLike ? (
+      {isLiked ? (
         <HeartIconSolid className={`h-${size} w-${size} text-red-500`} />
       ) : (
         <HeartIconOutline className={`h-${size} w-${size}`} />
       )}
       <span
         className={
-          isLike ? `text-${textSize} text-red-500` : `text-${textSize}`
+          isLiked ? `text-${textSize} text-red-500` : `text-${textSize}`
         }
       >
         {numberOfLike > 0 ? numberOfLike : ""}

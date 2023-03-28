@@ -1,4 +1,5 @@
 import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
+import { BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { api } from "@utils/api";
@@ -22,18 +23,56 @@ import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { useEffect } from "react";
 import Comment from "@components/Comment/Comment";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { getServerAuthSession } from "@server/auth";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { appRouter } from "@server/api/root";
+import type {
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType,
+} from "next";
+import superjson from "superjson";
+import { useState } from "react";
 
-const ChapterPage = () => {
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const session = await getServerAuthSession(context);
+  const ssg = createProxySSGHelpers({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session }),
+    transformer: superjson,
+  });
+  const chapterId = context.query.chapterId as string;
+  await ssg.chapter.getData.prefetch({ id: chapterId });
+  await ssg.comment.getAll.prefetch({ chapterId: chapterId });
+  await ssg.chapter.isLike.prefetch({ id: chapterId });
+  await ssg.chapter.getChapterLikes.prefetch({ id: chapterId });
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+      session,
+      chapterId,
+    },
+  };
+};
+
+type props = InferGetServerSidePropsType<typeof getServerSideProps>;
+
+const ChapterPage = ({ session, chapterId }: props) => {
   const router = useRouter();
   const { status } = useSession();
   const utils = api.useContext();
-  const { chapterId } = router.query;
   const { data: chapter } = api.chapter.getData.useQuery({
-    id: chapterId as string,
+    id: chapterId,
+  });
+  const { data: book } = api.book.getData.useQuery({
+    id: chapter?.bookId as string,
   });
   const { data: isLike } = api.comment.isLike.useQuery({
-    id: chapterId as string,
+    id: chapterId,
   });
+  const [isLiked, setIsLiked] = useState(isLike);
   const readChapter = api.chapter.read.useMutation({
     onSuccess() {
       void utils.chapter.invalidate();
@@ -47,7 +86,7 @@ const ChapterPage = () => {
     isSuccess,
     isLoading,
   } = api.comment.getAll.useQuery({
-    chapterId: chapterId as string,
+    chapterId: chapterId,
   });
   const editor = useEditor({
     content: "",
@@ -118,18 +157,23 @@ const ChapterPage = () => {
 
   useEffect(() => {
     if (!editor) return;
-    if (chapter !== undefined) {
-      editor.commands.setContent(chapter.content as JSONContent);
-      readChapter.mutate({ id: chapter.id });
-      return;
-    }
-  }, [chapter, editor, readChapter]);
+    if (!chapter) return;
+    editor.commands.setContent(chapter.content as JSONContent);
+  }, [chapter, editor]);
+
+  useEffect(() => {
+    readChapter.mutate({ id: chapterId });
+  }, []);
+
+  useEffect(() => {
+    setIsLiked(isLike);
+  }, [isLike]);
 
   const likeMutation = api.chapter.like.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
       const previousLike = utils.chapter.isLike.getData();
-      utils.chapter.isLike.setData({ id: chapterId as string }, (old) => !old);
+      utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
       return { previousLike };
     },
     onSettled: () => {
@@ -141,7 +185,7 @@ const ChapterPage = () => {
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
       const previousLike = utils.chapter.isLike.getData();
-      utils.chapter.isLike.setData({ id: chapterId as string }, (old) => !old);
+      utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
       return { previousLike };
     },
     onSettled: () => {
@@ -151,16 +195,23 @@ const ChapterPage = () => {
 
   const onLikeHandler = () => {
     if (likeMutation.isLoading && unlikeMutation.isLoading) return;
-    if (isLike) {
-      unlikeMutation.mutate({ id: chapterId as string });
+    if (isLiked) {
+      setIsLiked(false);
+      unlikeMutation.mutate({ id: chapterId });
+      return;
     } else {
-      likeMutation.mutate({ id: chapterId as string });
+      setIsLiked(true);
+      likeMutation.mutate({ id: chapterId });
+      return;
     }
   };
 
   return (
-    <div className="relative flex h-full w-full flex-col">
-      {chapter ? (
+    <div className="relative flex h-screen w-full flex-col">
+      {chapter &&
+      book &&
+      (book.status === BookStatus.PUBLISHED ||
+        book.status === BookStatus.COMPLETED) ? (
         <div className="overflow-y-scroll">
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
@@ -185,8 +236,8 @@ const ChapterPage = () => {
             <div className="w-[800px]">
               <EditorContent editor={editor} />
             </div>
-            <div className="sticky top-10 right-5 h-96 w-80 rounded-lg bg-zinc-600">
-              {comments ? (
+            <div className="sticky h-96 w-80 overflow-y-auto rounded-lg bg-gray-400 px-2">
+              {comments && comments.length !== 0 ? (
                 <div>
                   {isSuccess &&
                     comments.map((comment) => (
@@ -203,7 +254,7 @@ const ChapterPage = () => {
                   )}
                 </div>
               ) : (
-                <div className="flex h-full justify-center self-center text-xl font-semibold text-white">
+                <div className="flex h-full items-center justify-center text-xl font-semibold text-white">
                   <p>No comments</p>
                 </div>
               )}
@@ -217,11 +268,11 @@ const ChapterPage = () => {
               <div className="flex w-1/2 items-center justify-center">
                 <ChapterLikeButton
                   isAuthenticated={status === "authenticated"}
-                  isLike={Boolean(isLike)}
+                  isLiked={Boolean(isLiked)}
                   numberOfLike={chapter?._count.likes || 0}
                   onClickHandler={onLikeHandler}
                 />
-                <ChapterCommentInput chapterId={chapterId as string} />
+                <ChapterCommentInput chapterId={chapterId} />
               </div>
             )}
             <div className="mx-10">

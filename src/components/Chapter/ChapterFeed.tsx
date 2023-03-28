@@ -1,5 +1,5 @@
 import Comment from "@components/Comment/Comment";
-import CommentInput from "@components/Comment/CommentInput";
+import ReplyCommentInput from "@components/Comment/ReplyCommentInput";
 import { CommentButton, LikeButton } from "@components/action";
 import ArrowTopRightOnSquareIcon from "@heroicons/react/24/outline/ArrowTopRightOnSquareIcon";
 import type { Content } from "@tiptap/react";
@@ -93,7 +93,7 @@ const ChapterFeed = ({ chapter }: props) => {
       <div className="flex items-center justify-between px-8 py-2">
         <LikeButton
           isAuthenticated={status === "authenticated"}
-          isLike={Boolean(isLike)}
+          isLiked={Boolean(isLike)}
           numberOfLike={chapter._count.likes}
           onClickHandler={onLikeHandler}
         />
@@ -108,7 +108,7 @@ const ChapterFeed = ({ chapter }: props) => {
       {openComments && (
         <div className="bg-gray-300 px-4 pb-4 pt-2">
           {status === "authenticated" && (
-            <CommentInput chapterId={chapter.id} />
+            <ReplyCommentInput chapterId={chapter.id} />
           )}
           {isSuccess &&
             comments.map((comment) => (

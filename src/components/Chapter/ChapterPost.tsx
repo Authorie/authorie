@@ -9,7 +9,7 @@ import StarterKit from "@tiptap/starter-kit";
 import type { Content } from "@tiptap/react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import CommentInput from "@components/Comment/CommentInput";
+import CommentInput from "@components/Comment/ReplyCommentInput";
 import Comment from "@components/Comment/Comment";
 
 type props = {

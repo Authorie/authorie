@@ -9,7 +9,7 @@ type props = {
   parentId?: string;
 };
 
-const CommentInput = ({ chapterId, parentId }: props) => {
+const ReplyCommentInput = ({ chapterId, parentId }: props) => {
   const utils = api.useContext();
   const [content, setContent] = useState("");
   const { imageData, uploadHandler } = useImageUpload();
@@ -41,7 +41,7 @@ const CommentInput = ({ chapterId, parentId }: props) => {
       onSubmit={submitCommentHandler}
       className="mt-1 flex items-center gap-3 rounded-xl bg-white py-1 pl-3 pr-1"
     >
-      <div className="h-8 w-8 overflow-hidden rounded-full">
+      <div className="h-6 w-7 overflow-hidden rounded-full">
         <Image
           src={user?.image || "/placeholder_profile.png"}
           alt="user's profile image"
@@ -51,7 +51,7 @@ const CommentInput = ({ chapterId, parentId }: props) => {
       </div>
       <div className="flex w-full gap-2">
         <input
-          className="w-full rounded-full bg-gray-200 px-4 py-1 text-sm outline-none focus:outline-none"
+          className="w-full rounded-full bg-gray-200 px-4 py-1 text-xs outline-none focus:outline-none"
           placeholder="write comment here"
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -75,4 +75,4 @@ const CommentInput = ({ chapterId, parentId }: props) => {
   );
 };
 
-export default CommentInput;
+export default ReplyCommentInput;

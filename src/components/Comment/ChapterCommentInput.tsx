@@ -5,10 +5,9 @@ import { PhotoIcon } from "@heroicons/react/24/outline";
 
 type props = {
   chapterId: string;
-  parentId?: string;
 };
 
-const ChapterCommentInput = ({ chapterId, parentId }: props) => {
+const ChapterCommentInput = ({ chapterId }: props) => {
   const utils = api.useContext();
   const [content, setContent] = useState("");
   const { imageData, uploadHandler } = useImageUpload();
@@ -20,7 +19,7 @@ const ChapterCommentInput = ({ chapterId, parentId }: props) => {
       commentMutation.mutate(
         {
           id: chapterId,
-          parent: parentId,
+          parent: undefined,
           content,
           image: imageData !== "" ? imageData : undefined,
         },

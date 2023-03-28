@@ -2,10 +2,10 @@ import Image from "next/image";
 import EllipsisHorizontalIcon from "@heroicons/react/24/solid/EllipsisHorizontalIcon";
 
 import type { RouterOutputs } from "@utils/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { api } from "@utils/api";
-import CommentInput from "./CommentInput";
+import ReplyCommentInput from "./ReplyCommentInput";
 import { LikeButton, CommentButton } from "@components/action";
 
 type props = {
@@ -19,7 +19,8 @@ const Comment = ({ comment }: props) => {
   const utils = api.useContext();
   const [openReplies, setOpenReplies] = useState(false);
   const { data: isLike } = api.comment.isLike.useQuery({ id: comment.id });
-  const likeMutation = api.chapter.like.useMutation({
+  const [isLiked, setIsLiked] = useState(isLike);
+  const likeMutation = api.comment.like.useMutation({
     onMutate: async () => {
       await utils.comment.isLike.cancel();
       const previousLike = utils.comment.isLike.getData();
@@ -27,10 +28,11 @@ const Comment = ({ comment }: props) => {
       return { previousLike };
     },
     onSettled: () => {
+      void utils.comment.invalidate();
       void utils.book.invalidate();
     },
   });
-  const unlikeMutation = api.chapter.unlike.useMutation({
+  const unlikeMutation = api.comment.unlike.useMutation({
     onMutate: async () => {
       await utils.comment.isLike.cancel();
       const previousLike = utils.comment.isLike.getData();
@@ -44,17 +46,25 @@ const Comment = ({ comment }: props) => {
 
   const onLikeHandler = () => {
     if (likeMutation.isLoading && unlikeMutation.isLoading) return;
-    if (isLike) {
+    if (isLiked) {
       unlikeMutation.mutate({ id: comment.id });
+      setIsLiked(false);
+      return;
     } else {
       likeMutation.mutate({ id: comment.id });
+      setIsLiked(true);
+      return;
     }
   };
 
+  useEffect(() => {
+    setIsLiked(isLike);
+  }, [isLike]);
+
   return (
-    <div className="mt-3 rounded-xl bg-white py-1 pl-3 pr-1">
-      <div className="flex gap-3 ">
-        <div className="mt-4 h-8 w-8 overflow-hidden rounded-full">
+    <div className="my-2 rounded-xl bg-white px-1">
+      <div className="flex gap-1 ">
+        <div className="mt-5 h-6 w-6 overflow-hidden rounded-full">
           <Image
             src={comment.user.image || "/placeholder_profile.png"}
             alt={`${comment.user.penname || "user"} profile image`}
@@ -63,10 +73,10 @@ const Comment = ({ comment }: props) => {
           />
         </div>
         <div className="flex grow flex-col">
-          <span className="font-semibold text-authGreen-600">
+          <span className="text-sm font-semibold text-authGreen-600">
             {comment.user.penname || ""}
           </span>
-          <div className="flex rounded-lg bg-gray-200 px-4 py-1">
+          <div className="flex rounded-lg bg-gray-200 px-2">
             {comment.image !== null && (
               <Image
                 src={comment.image}
@@ -78,10 +88,10 @@ const Comment = ({ comment }: props) => {
               <EllipsisHorizontalIcon className="h-7 w-7" />
             </div>
           </div>
-          <div className="mt-1 flex items-center gap-7">
+          <div className="my-1 flex items-center gap-7">
             <LikeButton
               isAuthenticated={status === "authenticated"}
-              isLike={Boolean(isLike)}
+              isLiked={Boolean(isLiked)}
               numberOfLike={comment._count.likes}
               onClickHandler={onLikeHandler}
               small
@@ -93,7 +103,9 @@ const Comment = ({ comment }: props) => {
                 small
               />
             )}
-            <p className="text-xs text-dark-400">date time</p>
+            <p className="text-xs text-dark-400">
+              {comment.createdAt.toDateString().split(" ").slice(1).join(" ")}
+            </p>
           </div>
         </div>
       </div>
@@ -106,7 +118,10 @@ const Comment = ({ comment }: props) => {
         ))}
       {openReplies && (
         <div className="ml-10">
-          <CommentInput chapterId={comment.chapterId} />
+          <ReplyCommentInput
+            chapterId={comment.chapterId}
+            parentId={comment.id || undefined}
+          />
         </div>
       )}
     </div>

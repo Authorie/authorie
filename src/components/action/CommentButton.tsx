@@ -17,7 +17,7 @@ export const CommentButton = ({
   return (
     <div
       onClick={onClickHandler}
-      className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100"
+      className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-1 hover:bg-slate-100"
     >
       <ChatBubbleBottomCenterTextIcon className={`h-${size} w-${size}`} />
       <span className={`text-${textSize}`}>
