@@ -96,6 +96,7 @@ export const bookRouter = createTRPCRouter({
                   id: true,
                   title: true,
                   views: true,
+                  chapterNo: true,
                   publishedAt: true,
                   _count: {
                     select: {
