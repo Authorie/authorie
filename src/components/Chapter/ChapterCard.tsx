@@ -1,14 +1,72 @@
 import { EyeIcon, HeartIcon, PencilIcon } from "@heroicons/react/24/solid";
 import type { RouterOutputs } from "@utils/api";
+import { useDrag, useDrop } from "react-dnd";
+import React, { useEffect } from "react";
 
 type props = {
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
+  moveChapter: (id: string, atIndex: number) => void;
+  findChapter: (id: string) => {
+    card: RouterOutputs["book"]["getData"]["chapters"][number];
+    index: number;
+  };
+  chapterNo: number;
 };
 
-const ChapterCard = ({ chapter }: props) => {
+const ChapterCard = ({
+  chapter,
+  moveChapter,
+  findChapter,
+  chapterNo,
+}: props) => {
+  const originalIndex = findChapter(chapter.id).index;
+
+  const id = chapter.id;
+
+  const [{ isDragging }, drag, preview] = useDrag(
+    () => ({
+      type: "chapter",
+      item: { id, originalIndex },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+      end: (item, monitor) => {
+        const { id: droppedId, originalIndex } = item;
+        const didDrop = monitor.didDrop();
+        if (!didDrop) {
+          moveChapter(droppedId, originalIndex);
+        }
+      },
+    }),
+    [id, originalIndex, moveChapter]
+  );
+
+  const [, drop] = useDrop(
+    () => ({
+      accept: "chapter",
+      hover({ id: draggedId }: { id: string; originalIndex: number }) {
+        if (draggedId !== id) {
+          const { index: overIndex } = findChapter(id);
+          moveChapter(draggedId, overIndex);
+        }
+      },
+    }),
+    [findChapter, moveChapter]
+  );
+
+  // useEffect(() => {
+  //   preview(getEmptyImage(), { captureDraggingState: true });
+  // }, [preview]);
+
   return (
-    <div className="flex h-16 w-full cursor-pointer items-center justify-between rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
-      <h1 className="text-3xl font-bold text-authGreen-600"># 1</h1>
+    <div
+      key={id}
+      ref={(node) => drag(drop(node))}
+      className={`flex h-16 w-full cursor-pointer items-center justify-between rounded-lg bg-white p-3 
+      shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]
+      ${isDragging ? "opacity-0" : "opacity-100"}`}
+    >
+      <h1 className="text-3xl font-bold text-authGreen-600"># {chapterNo}</h1>
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{chapter.title}</h2>
         {chapter.publishedAt && (

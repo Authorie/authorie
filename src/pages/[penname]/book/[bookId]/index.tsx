@@ -23,14 +23,17 @@ import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
+import type { RouterOutputs } from "@utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useCallback } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import update from "immutability-helper";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -83,10 +86,13 @@ const BookContent = ({ bookId, penname }: props) => {
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
   );
-  const [arrangedChapter, setArrangedChapter] = useState(
+  const [arrangedChapters, setArrangedChapters] = useState(
     book?.chapters.sort((x, y) => {
-      if (!x.publishedAt || !y.publishedAt) return 0;
-      return x.publishedAt?.getTime() - y.publishedAt?.getTime();
+      if (!x.chapterNo || !y.chapterNo) {
+        if (!x.publishedAt || !y.publishedAt) return 0;
+        return x.publishedAt?.getTime() - y.publishedAt?.getTime();
+      }
+      return x.chapterNo - y.chapterNo;
     }) || []
   );
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
@@ -362,6 +368,34 @@ const BookContent = ({ bookId, penname }: props) => {
       toast("Error occured during update");
     }
   };
+
+  const findChapter = useCallback(
+    (id: string) => {
+      const card = arrangedChapters.filter(
+        (c) => `${c.id}` === id
+      )[0] as RouterOutputs["book"]["getData"]["chapters"][number];
+      return {
+        card,
+        index: arrangedChapters.indexOf(card),
+      };
+    },
+    [arrangedChapters]
+  );
+
+  const moveChapter = useCallback(
+    (id: string, atIndex: number) => {
+      const { card, index } = findChapter(id);
+      setArrangedChapters(
+        update(arrangedChapters, {
+          $splice: [
+            [index, 1],
+            [atIndex, 0, card],
+          ],
+        })
+      );
+    },
+    [findChapter, arrangedChapters, setArrangedChapters]
+  );
 
   return (
     <div className="flex w-full items-center justify-center">
@@ -676,28 +710,35 @@ const BookContent = ({ bookId, penname }: props) => {
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
-                  {isChapterCreatable && (
-                    <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
-                      <PlusCircleIcon className="w-8" />
-                      <span className="text-lg font-semibold">
-                        Create new chapter
-                      </span>
-                    </div>
-                  )}
-                  {book.chapters.length === 0 && !isChapterCreatable && (
-                    <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
-                      <span className="text-lg font-semibold">
-                        This book has no chapters yet
-                      </span>
-                    </div>
-                  )}
-                  <DndProvider backend={HTML5Backend}>
-                    {book.chapters.map((chapter) => (
-                      <ChapterCard key={chapter.id} chapter={chapter} />
+                <DndProvider backend={HTML5Backend}>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
+                    {isChapterCreatable && (
+                      <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
+                        <PlusCircleIcon className="w-8" />
+                        <span className="text-lg font-semibold">
+                          Create new chapter
+                        </span>
+                      </div>
+                    )}
+                    {book.chapters.length === 0 && !isChapterCreatable && (
+                      <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
+                        <span className="text-lg font-semibold">
+                          This book has no chapters yet
+                        </span>
+                      </div>
+                    )}
+
+                    {arrangedChapters.map((chapter, index) => (
+                      <ChapterCard
+                        key={chapter.id}
+                        chapterNo={index + 1}
+                        chapter={chapter}
+                        moveChapter={moveChapter}
+                        findChapter={findChapter}
+                      />
                     ))}
-                  </DndProvider>
-                </div>
+                  </div>{" "}
+                </DndProvider>
               </div>
             </div>
           </div>
