@@ -16,8 +16,8 @@ export const ChapterLikeButton = ({
 }: props) => {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-white">
-      {numberOfLike > 0 ? numberOfLike : ""}
+      <span className="text-xs text-white">
+        {numberOfLike > 0 ? numberOfLike : ""}
       </span>
       <div
         className={`${
@@ -29,9 +29,9 @@ export const ChapterLikeButton = ({
         onClick={onClickHandler}
       >
         {isLiked ? (
-          <HeartIconSolid className={`h-6 w-6 text-red-600`} />
+          <HeartIconSolid className={`h-4 w-4 text-red-600`} />
         ) : (
-          <HeartIconOutline className={`h-6 w-6`} />
+          <HeartIconOutline className={`h-4 w-4`} />
         )}
       </div>
     </div>

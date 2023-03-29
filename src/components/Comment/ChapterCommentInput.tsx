@@ -36,9 +36,9 @@ const ChapterCommentInput = ({ chapterId }: props) => {
   return (
     <form
       onSubmit={submitCommentHandler}
-      className="mt-1 flex w-full items-center gap-3 rounded-xl py-1 pl-3 pr-1"
+      className="flex w-full items-center gap-3 rounded-xl py-1 pl-3 pr-1"
     >
-      <div className="flex w-full gap-2">
+      <div className="flex w-full gap-1">
         <input
           className="w-full rounded-full bg-gray-200 px-4 py-1 text-sm outline-none focus:outline-none"
           placeholder="write comment here"
@@ -47,7 +47,7 @@ const ChapterCommentInput = ({ chapterId }: props) => {
         />
         <label
           htmlFor="upload-image"
-          className="flex w-10 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-500"
+          className="flex w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-500"
         >
           <input
             id="upload-image"

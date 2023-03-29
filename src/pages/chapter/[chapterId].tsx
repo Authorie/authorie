@@ -229,40 +229,9 @@ const ChapterPage = ({ session, chapterId }: props) => {
               </h4>
             </div>
           </div>
-          <div className="sticky top-0 z-10 w-full overflow-hidden rounded-b-xl bg-authGreen-500">
-            <div className="h-7 bg-authGreen-600"></div>
-          </div>
-          <div className="relative mt-0 mb-16 flex grow justify-between p-4">
-            <div className="w-[800px]">
-              <EditorContent editor={editor} />
-            </div>
-            <div className="sticky h-96 w-80 overflow-y-auto rounded-lg bg-gray-400 px-2">
-              {comments && comments.length !== 0 ? (
-                <div>
-                  {isSuccess &&
-                    comments.map((comment) => (
-                      <Comment key={comment.id} comment={comment} />
-                    ))}
-                  {isLoading && (
-                    <div className="flex items-center justify-center rounded-full bg-indigo-500 text-white">
-                      <svg
-                        className="... h-5 w-5 animate-spin"
-                        viewBox="0 0 24 24"
-                      ></svg>
-                      Processing...
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center text-xl font-semibold text-white">
-                  <p>No comments</p>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="absolute bottom-0 flex h-16 w-full items-center justify-between bg-authGreen-500 p-2">
+          <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between overflow-hidden rounded-b-xl bg-authGreen-600 p-2">
             <div className="mx-10">
-              <ChevronLeftIcon className="h-9 w-9 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
+              <ChevronLeftIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>
             {status === "authenticated" && (
               <div className="flex w-1/2 items-center justify-center">
@@ -276,7 +245,35 @@ const ChapterPage = ({ session, chapterId }: props) => {
               </div>
             )}
             <div className="mx-10">
-              <ChevronRightIcon className="h-9 w-9 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
+              <ChevronRightIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
+            </div>
+          </div>
+          <div className="relative mb-16 mt-0 flex grow justify-between p-4">
+            <div className="w-[800px]">
+              <EditorContent editor={editor} />
+            </div>
+            <div className="sticky max-h-96 min-h-fit w-80 overflow-y-auto rounded-lg bg-gray-400 px-2">
+              {comments && comments.length !== 0 ? (
+                <div>
+                  {isSuccess &&
+                    comments.map((comment) => (
+                      <Comment key={comment.id} comment={comment} />
+                    ))}
+                  {isLoading && (
+                    <div className="flex items-center justify-center rounded-full text-white">
+                      <svg
+                        className="... h-5 w-5 animate-spin"
+                        viewBox="0 0 24 24"
+                      ></svg>
+                      Processing...
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center text-xl font-semibold text-white">
+                  <p>No comments</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
