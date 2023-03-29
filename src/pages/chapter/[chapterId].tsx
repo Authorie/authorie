@@ -3,7 +3,11 @@ import { BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { api } from "@utils/api";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ArrowTopRightOnSquareIcon,
+} from "@heroicons/react/24/outline";
 import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -244,6 +248,9 @@ const ChapterPage = ({ session, chapterId }: props) => {
                 <ChapterCommentInput chapterId={chapterId} />
               </div>
             )}
+            <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
+              <ArrowTopRightOnSquareIcon className="h-6 w-6" />
+            </div>
             <div className="mx-10">
               <ChevronRightIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>

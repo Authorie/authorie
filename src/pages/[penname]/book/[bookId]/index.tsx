@@ -382,9 +382,9 @@ const BookContent = ({ bookId, penname }: props) => {
           <ChevronLeftIcon
             type="button"
             onClick={() => router.back()}
-            className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+            className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
-          <div className="z-10 mt-20 flex gap-7 pt-10 pb-5">
+          <div className="z-10 mt-20 flex gap-7 pb-5 pt-10">
             <div className="ml-7 flex flex-col">
               <div className="flex">
                 <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
@@ -400,7 +400,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookCover}
                         />
-                        <PhotoIcon className="absolute right-2 bottom-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <PhotoIcon className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                     )}
                     {book?.coverImage || bookCover ? (
@@ -594,7 +594,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       <textarea
                         rows={2}
                         id="description"
-                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm text-black placeholder:text-gray-400 focus:outline-none"
+                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                         placeholder={
                           book.description || "write the description down..."
                         }
@@ -643,8 +643,7 @@ const BookContent = ({ bookId, penname }: props) => {
                   {book.chapters.length === 0 && !isChapterCreatable && (
                     <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
                       <span className="text-lg font-semibold">
-                        The chapter still cannot be created. Please, move the
-                        book state.
+                        Move book stage to create chapter
                       </span>
                     </div>
                   )}

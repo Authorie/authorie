@@ -5,7 +5,7 @@ type props = {
   isAuthenticated: boolean;
   isLiked: boolean;
   numberOfLike: number;
-  onClickHandler: () => void;
+  onClickHandler?: () => void;
   small?: boolean;
 };
 

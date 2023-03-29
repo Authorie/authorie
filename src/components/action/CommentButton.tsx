@@ -2,7 +2,7 @@ import ChatBubbleBottomCenterTextIcon from "@heroicons/react/24/outline/ChatBubb
 
 type props = {
   numberOfComments: number;
-  onClickHandler: () => void;
+  onClickHandler?: () => void;
   small?: boolean;
 };
 
