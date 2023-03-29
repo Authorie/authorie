@@ -1,14 +1,16 @@
-import type { GetServerSidePropsContext } from "next";
+import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
+import ChapterPost from "@components/Chapter/ChapterPost";
+import { useFollowedCategories } from "@hooks/followedCategories";
+import { useSelectedCategory } from "@hooks/selectedCategory";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { appRouter } from "@server/api/root";
-import superjson from "superjson";
-import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import { useSession } from "next-auth/react";
 import { api } from "@utils/api";
+import type { GetServerSidePropsContext } from "next";
+import { useSession } from "next-auth/react";
 import { Fragment } from "react";
-import ChapterPost from "@components/Chapter/ChapterPost";
+import superjson from "superjson";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -41,9 +43,19 @@ export const getServerSideProps = async (
 // TODO: Guard categories with auth
 const Home = () => {
   const { data: session } = useSession();
+  const { data: categories } = api.category.getAll.useQuery();
+  const selectedCategories = useSelectedCategory();
+  const followedCategories = useFollowedCategories();
+  const categoryIds =
+    selectedCategories === "all"
+      ? categories?.map((c) => c.id)
+      : selectedCategories === "following"
+      ? followedCategories.map((c) => c.id)
+      : [selectedCategories.id];
   const { data, isSuccess } = api.chapter.getAll.useInfiniteQuery(
     {
       limit: 10,
+      categoryIds: categoryIds,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,

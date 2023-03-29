@@ -31,7 +31,10 @@ const ChapterPost = ({ chapter }: props) => {
     { chapterId: chapter.id },
     { enabled: openComments }
   );
-  const { data: isLike } = api.comment.isLike.useQuery({ id: chapter.id });
+  const { data: isLike } = api.comment.isLike.useQuery(
+    { id: chapter.id },
+    { enabled: status === "authenticated" }
+  );
   const likeMutation = api.chapter.like.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
