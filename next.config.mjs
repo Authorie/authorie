@@ -4,6 +4,7 @@
  * This is especially useful for Docker builds.
  */
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env/server.mjs"));
+import { withAxiom } from "next-axiom";
 
 const securityHeaders = [
   {
@@ -70,4 +71,4 @@ const config = {
     ];
   },
 };
-export default config;
+export default withAxiom(config);
