@@ -140,15 +140,27 @@ const StatusPage = ({ bookId, penname }: props) => {
       const prevCollaborators = utils.user.getBookCollaborators.getData({
         bookId: bookId,
       });
-      if (!prevCollaborators) return;
-      const collaborator = {
-        ...prevCollaborators,
-        user: {
-          id: newCollaborator.userId,
-          penname: newUserInvite?.penname,
-          image: newUserInvite?.image,
-        },
+      const invitedCollaborator: {
+        id: string;
+        penname: string | null;
+        image: string | null;
+      } = {
+        id: newCollaborator.userId,
+        penname: newUserInvite?.penname as string,
+        image: newUserInvite?.image || null,
       };
+      let collaborator;
+      if (
+        !prevCollaborators ||
+        prevCollaborators.map((data) => data.userId === invitedCollaborator.id)
+      ) {
+        return;
+      } else {
+        collaborator = {
+          ...prevCollaborators,
+          user: invitedCollaborator,
+        };
+      }
       utils.user.getBookCollaborators.setData({ bookId: bookId }, collaborator);
       return { prevCollaborators };
     },
@@ -329,10 +341,10 @@ const StatusPage = ({ bookId, penname }: props) => {
         toast("Error occured while inviting");
       }
     };
-    if (!isLoadingNewUser) {
+    if (!isLoadingNewUser && newCollaborator !== "") {
       void mutateInviteCollaborator();
     }
-  }, [isLoadingNewUser]);
+  }, [isLoadingNewUser, newCollaborator]);
 
   const inviteCollaboratorHandler = async () => {
     await refetch();
