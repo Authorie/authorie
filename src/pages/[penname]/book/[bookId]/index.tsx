@@ -1,10 +1,9 @@
 import { EditButton } from "@components/action/EditButton";
-import ChapterCard from "@components/Chapter/ChapterCard";
 import { Popover } from "@headlessui/react";
+import ChapterCardList from "@components/Chapter/ChapterCardList";
 import {
   ChevronLeftIcon,
   MagnifyingGlassIcon,
-  PlusCircleIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -23,22 +22,19 @@ import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
-import type { RouterOutputs } from "@utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useCallback } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import update from "immutability-helper";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import superjson from "superjson";
 import * as z from "zod";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 const validationSchema = z.object({
   title: z
@@ -88,11 +84,13 @@ const BookContent = ({ bookId, penname }: props) => {
   );
   const [arrangedChapters, setArrangedChapters] = useState(
     book?.chapters.sort((x, y) => {
-      if (!x.chapterNo || !y.chapterNo) {
-        if (!x.publishedAt || !y.publishedAt) return 0;
-        return x.publishedAt?.getTime() - y.publishedAt?.getTime();
-      }
-      return x.chapterNo - y.chapterNo;
+      if (x.chapterNo || y.chapterNo)
+        return (x.chapterNo ?? 0) - (y.chapterNo ?? 0);
+      if (x.publishedAt || y.publishedAt)
+        return (
+          (x.publishedAt?.getTime() ?? 0) - (y.publishedAt?.getTime() ?? 0)
+        );
+      return 0;
     }) || []
   );
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
@@ -366,45 +364,19 @@ const BookContent = ({ bookId, penname }: props) => {
         category: addedCategories.map((category) => category.id),
         coverImageUrl,
         wallpaperImageUrl,
+        chaptersArrangement: arrangedChapters.map((chapter) => chapter.id),
       });
       await toast.promise(promiseUpdateBook, {
         loading: "Updating book...",
         success: "Book updated!",
         error: "Error occured during update",
       });
+      console.log(arrangedChapters.map((chapter) => chapter.id));
     } catch (err) {
       console.error(err);
       toast("Error occured during update");
     }
   };
-
-  const findChapter = useCallback(
-    (id: string) => {
-      const card = arrangedChapters.filter(
-        (c) => `${c.id}` === id
-      )[0] as RouterOutputs["book"]["getData"]["chapters"][number];
-      return {
-        card,
-        index: arrangedChapters.indexOf(card),
-      };
-    },
-    [arrangedChapters]
-  );
-
-  const moveChapter = useCallback(
-    (id: string, atIndex: number) => {
-      const { card, index } = findChapter(id);
-      setArrangedChapters(
-        update(arrangedChapters, {
-          $splice: [
-            [index, 1],
-            [atIndex, 0, card],
-          ],
-        })
-      );
-    },
-    [findChapter, arrangedChapters, setArrangedChapters]
-  );
 
   return (
     <div className="flex w-full items-center justify-center">
@@ -433,10 +405,10 @@ const BookContent = ({ bookId, penname }: props) => {
           <ChevronLeftIcon
             type="button"
             onClick={() => router.back()}
-            className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+            className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
 
-          <div className="z-10 flex gap-7 pt-10 pb-5">
+          <div className="z-10 flex gap-7 pb-5 pt-10">
             <div className="ml-7 flex flex-col">
               <div className="flex">
                 <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
@@ -452,7 +424,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookCover}
                         />
-                        <PhotoIcon className="absolute right-2 bottom-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <PhotoIcon className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                     )}
                     {book?.coverImage || bookCover ? (
@@ -533,7 +505,7 @@ const BookContent = ({ bookId, penname }: props) => {
                             </div>
                           </Popover.Panel>
                           <Popover.Button
-                            className="rounded-lg border border-authGreen-400 py-2 px-3 text-sm font-semibold text-authGreen-500 hover:border-authGreen-600 hover:bg-authGreen-600 hover:text-white"
+                            className="rounded-lg border border-authGreen-400 px-3 py-2 text-sm font-semibold text-authGreen-500 hover:border-authGreen-600 hover:bg-authGreen-600 hover:text-white"
                             type="button"
                           >
                             Add categories
@@ -685,7 +657,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       <textarea
                         rows={2}
                         id="description"
-                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm text-black placeholder:text-gray-400 focus:outline-none"
+                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                         placeholder={
                           book.description || "write the description down..."
                         }
@@ -719,36 +691,15 @@ const BookContent = ({ bookId, penname }: props) => {
                 <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
-                <DndProvider backend={HTML5Backend}>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
-                    {isChapterCreatable && (
-                      <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
-                        <PlusCircleIcon className="w-8" />
-                        <span className="text-lg font-semibold">
-                          Create new chapter
-                        </span>
-                      </div>
-                    )}
-                    {book.chapters.length === 0 && !isChapterCreatable && (
-                      <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
-                        <span className="text-lg font-semibold">
-                          This book has no chapters yet
-                        </span>
-                      </div>
-                    )}
-
-                    {arrangedChapters.map((chapter, index) => (
-                      <ChapterCard
-                        key={chapter.id}
-                        chapterNo={index + 1}
-                        isEdit={isEdit}
-                        chapter={chapter}
-                        moveChapter={moveChapter}
-                        findChapter={findChapter}
-                      />
-                    ))}
-                  </div>{" "}
-                </DndProvider>
+                {book.chapters && (
+                  <DndProvider backend={HTML5Backend}>
+                    <ChapterCardList
+                      isEdit={isEdit}
+                      isChapterCreatable={isChapterCreatable}
+                      chapters={book.chapters}
+                    />
+                  </DndProvider>
+                )}
               </div>
             </div>
           </div>
