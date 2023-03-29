@@ -29,6 +29,8 @@ import type {
 } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -80,6 +82,12 @@ const BookContent = ({ bookId, penname }: props) => {
   });
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
+  );
+  const [arrangedChapter, setArrangedChapter] = useState(
+    book?.chapters.sort((x, y) => {
+      if (!x.publishedAt || !y.publishedAt) return 0;
+      return x.publishedAt?.getTime() - y.publishedAt?.getTime();
+    }) || []
   );
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
   const {
@@ -684,9 +692,11 @@ const BookContent = ({ bookId, penname }: props) => {
                       </span>
                     </div>
                   )}
-                  {book.chapters.map((chapter) => (
-                    <ChapterCard key={chapter.id} chapter={chapter} />
-                  ))}
+                  <DndProvider backend={HTML5Backend}>
+                    {book.chapters.map((chapter) => (
+                      <ChapterCard key={chapter.id} chapter={chapter} />
+                    ))}
+                  </DndProvider>
                 </div>
               </div>
             </div>
