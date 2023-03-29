@@ -1,14 +1,14 @@
-import type { GetServerSidePropsContext } from "next";
+import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
+import ChapterPost from "@components/Chapter/ChapterPost";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { appRouter } from "@server/api/root";
-import superjson from "superjson";
-import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import { useSession } from "next-auth/react";
 import { api } from "@utils/api";
+import type { GetServerSidePropsContext } from "next";
+import { useSession } from "next-auth/react";
 import { Fragment } from "react";
-import ChapterPost from "@components/Chapter/ChapterPost";
+import superjson from "superjson";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext

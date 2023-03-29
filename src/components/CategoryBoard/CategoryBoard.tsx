@@ -1,11 +1,11 @@
-import { useCallback, useState } from "react";
-import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
-import CategoryBar from "./CategoryBar/CategoryBar";
 import {
   useFollowedCategories,
   useSetFollowedCategories,
 } from "@hooks/followedCategories";
 import { api } from "@utils/api";
+import { useCallback, useState } from "react";
+import CategoryBar from "./CategoryBar/CategoryBar";
+import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 
 type props = {
   isLogin: boolean;
@@ -15,11 +15,11 @@ const CategoryBoard = ({ isLogin }: props) => {
   const followedCategories = useFollowedCategories();
   const setFollowedCategories = useSetFollowedCategories();
   const [showCategories, setShowCategories] = useState(false);
-  const { data: categories } = api.category.getAll.useQuery();
-  api.category.getFollowed.useQuery(undefined, {
-    enabled: isLogin,
+  const { data: categories } = api.category.getAll.useQuery(undefined, {
     onSuccess(data) {
-      setFollowedCategories(data);
+      if (isLogin) {
+        setFollowedCategories(data.filter((category) => category.isSubscribed));
+      }
     },
   });
   const onOpenCategoriesHandler = useCallback(() => {
