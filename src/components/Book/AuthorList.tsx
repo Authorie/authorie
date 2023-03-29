@@ -7,16 +7,18 @@ import {
 import { BookStatus } from "@prisma/client";
 
 type props = {
+  userId: string;
   number: number;
   penname: string;
   status: string;
   authorPicture: string;
   bookStatus: string;
-  onInvite: (penname: string) => void;
-  onRemove: (penname: string) => void;
+  onInvite: (id: string, penname: string) => void;
+  onRemove: (id: string, penname: string) => void;
 };
 
 const AuthorList = ({
+  userId,
   number,
   penname,
   status,
@@ -54,14 +56,16 @@ const AuthorList = ({
         <div className="flex w-52 justify-end gap-2">
           {status !== "accept" && (
             <button
-              onClick={void onInvite(penname)}
+              type="button"
+              onClick={() => onInvite(userId, penname)}
               className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
             >
               invite
             </button>
           )}
           <button
-            onClick={void onRemove(penname)}
+            type="button"
+            onClick={() => onRemove(userId, penname)}
             className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
           >
             remove

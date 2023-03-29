@@ -48,12 +48,6 @@ const CreateBook = () => {
   });
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
-  const { data: followingUser } = api.user.getFollowing.useQuery({
-    penname: session?.user.penname as string,
-  });
-  const { data: followerUser } = api.user.getFollowers.useQuery({
-    penname: session?.user.penname as string,
-  });
   const [addedCollaborators, setAddedCollaborators] = useState<User[]>([]);
 
   const bookCreateMutation = api.book.create.useMutation({
@@ -71,6 +65,7 @@ const CreateBook = () => {
     } else {
       setAddedCollaborators([...addedCollaborators, collaborator]);
     }
+    console.log(addedCollaborators);
   };
 
   const [addedCategories, setAddedCategories] = useState<Category[]>([]);
@@ -196,32 +191,39 @@ const CreateBook = () => {
                         <span className="select-none rounded-full bg-authGreen-600 px-2 py-0.5 text-xs text-white">
                           {session?.user.penname}
                         </span>
-                      </div>
-                      {followerUser && followingUser && (
-                        <Popover className="relative">
-                          <Popover.Panel className="absolute bottom-0 left-7 z-10">
-                            <AddAuthorModal
-                              collaborators={followerUser.items
-                                .filter(({ id }) =>
-                                  followingUser.items.some((e) => e.id === id)
-                                )
-                                .map((invitableUser) => invitableUser)}
-                              onClickHandler={toggleCollaboratorsHandler}
-                            />
-                          </Popover.Panel>
-                          <Popover.Button
-                            className="rounded-full bg-white"
-                            type="button"
+                        {addedCollaborators.map((collaborator) => (
+                          <span
+                            onClick={() =>
+                              toggleCollaboratorsHandler(collaborator)
+                            }
+                            key={collaborator.id}
+                            className="cursor-pointer select-none rounded-full bg-authGreen-600 px-2 py-0.5 text-xs text-white hover:bg-red-600"
                           >
-                            <div className="flex items-center justify-center rounded-xl bg-authGreen-300 p-1">
-                              <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
-                                <PlusIcon className="h-3 w-3 stroke-[3]" />
-                              </div>
+                            {collaborator.penname}
+                          </span>
+                        ))}
+                      </div>
+                      <Popover className="relative">
+                        <Popover.Panel className="absolute bottom-0 left-7 z-10">
+                          <AddAuthorModal
+                            toogleCollaboratorsHandler={
+                              toggleCollaboratorsHandler
+                            }
+                            addedCollaborators={addedCollaborators}
+                          />
+                        </Popover.Panel>
+                        <Popover.Button
+                          className="rounded-full bg-white"
+                          type="button"
+                        >
+                          <div className="flex items-center justify-center rounded-xl bg-authGreen-300 p-1 hover:bg-authGreen-500">
+                            <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
+                              <PlusIcon className="h-3 w-3 stroke-[3]" />
                             </div>
-                            <p className="sr-only">open user list</p>
-                          </Popover.Button>
-                        </Popover>
-                      )}
+                          </div>
+                          <p className="sr-only">open user list</p>
+                        </Popover.Button>
+                      </Popover>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -275,7 +277,7 @@ const CreateBook = () => {
                             className="rounded-full bg-white"
                             type="button"
                           >
-                            <div className="flex items-center justify-center rounded-xl bg-authYellow-300 p-1">
+                            <div className="flex items-center justify-center rounded-xl bg-authYellow-300 p-1 hover:bg-authYellow-500">
                               <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
                                 <PlusIcon className="h-3 w-3 stroke-[3]" />
                               </div>
@@ -315,14 +317,20 @@ const CreateBook = () => {
                 )}
               </div>
             </div>
-            <button
-              type="submit"
-              disabled={bookCreateMutation.isLoading}
-              aria-disabled={bookCreateMutation.isLoading}
-              className="self-end rounded-xl bg-slate-500 py-2 px-8 font-semibold text-white hover:bg-slate-700"
-            >
-              Save
-            </button>
+            <div className="flex justify-between">
+              <p className="text-sm text-gray-500">
+                Noted: You can only invite the author who follow you and you
+                follow back
+              </p>
+              <button
+                type="submit"
+                disabled={bookCreateMutation.isLoading}
+                aria-disabled={bookCreateMutation.isLoading}
+                className="rounded-xl bg-slate-500 py-2 px-8 font-semibold text-white hover:bg-slate-700"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </form>
       ) : (
