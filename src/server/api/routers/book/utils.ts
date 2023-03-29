@@ -1,5 +1,8 @@
+import { BookOwnerStatus } from "@prisma/client";
+
 interface owners {
   owners: {
+    status: BookOwnerStatus;
     user: {
       id: string;
     };
@@ -17,7 +20,10 @@ export function computeIsOwner<User extends owners>(
   return {
     ...user,
     isOwner: userId
-      ? user.owners.some((owner) => owner.user.id === userId)
+      ? user.owners.some(
+          (owner) =>
+            owner.status === BookOwnerStatus.OWNER && owner.user.id === userId
+        )
       : false,
   };
 }
