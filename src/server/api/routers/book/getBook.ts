@@ -49,6 +49,7 @@ const getBook = publicProcedure
             },
             owners: {
               select: {
+                status: true,
                 user: {
                   select: {
                     id: true,
