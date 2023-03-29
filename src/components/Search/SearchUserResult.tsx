@@ -1,14 +1,16 @@
 import { UserIcon } from "@heroicons/react/24/solid";
 import type { RouterOutputs } from "@utils/api";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 type props = {
   user: RouterOutputs["search"]["searchUsers"]["items"][number];
 };
 
 const SearchUserResult = ({ user }: props) => {
+  const router = useRouter();
   const onClickCard = () => {
-    console.log("redirect!");
+    void router.push(`/${user.penname as string}`);
   };
 
   return (

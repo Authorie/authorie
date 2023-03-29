@@ -196,12 +196,6 @@ const StatusPage = ({ bookId, penname }: props) => {
   });
   const uploadImageUrl = api.upload.uploadImage.useMutation();
 
-  // useEffect(() => {
-  //   if (book?.categories) {
-  //     setAddedCategories(book?.categories.map((data) => data.category));
-  //   }
-  // }, [book?.categories]);
-
   const draftBookHandler = async () => {
     if (book === undefined) return;
     try {
