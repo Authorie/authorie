@@ -1,7 +1,7 @@
 export const getServerSideProps = () => {
   return {
     redirect: {
-      destination: "/",
+      destination: "/404",
     },
   };
 };
