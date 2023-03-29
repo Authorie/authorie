@@ -11,6 +11,7 @@ type props = {
     index: number;
   };
   chapterNo: number;
+  isEdit: boolean;
 };
 
 const ChapterCard = ({
@@ -18,6 +19,7 @@ const ChapterCard = ({
   moveChapter,
   findChapter,
   chapterNo,
+  isEdit,
 }: props) => {
   const originalIndex = findChapter(chapter.id).index;
 
@@ -37,8 +39,9 @@ const ChapterCard = ({
           moveChapter(droppedId, originalIndex);
         }
       },
+      canDrag: isEdit,
     }),
-    [id, originalIndex, moveChapter]
+    [id, originalIndex, moveChapter, isEdit]
   );
 
   const [, drop] = useDrop(

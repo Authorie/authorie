@@ -329,6 +329,15 @@ const BookContent = ({ bookId, penname }: props) => {
     resetBookCover();
     resetBookWallpaper();
     setAddedCategories(book?.categories.map((data) => data.category) || []);
+    setArrangedChapters(
+      book?.chapters.sort((x, y) => {
+        if (!x.chapterNo || !y.chapterNo) {
+          if (!x.publishedAt || !y.publishedAt) return 0;
+          return x.publishedAt?.getTime() - y.publishedAt?.getTime();
+        }
+        return x.chapterNo - y.chapterNo;
+      }) || []
+    );
   };
 
   const onSaveHandler = async (data: ValidationSchema) => {
@@ -508,7 +517,7 @@ const BookContent = ({ bookId, penname }: props) => {
                                     onClick={() =>
                                       toggleCategoryHandler(category)
                                     }
-                                    className="flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
+                                    className="justify-ceisEditnter flex w-36 items-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
                                   >
                                     {category.title}
                                   </button>
@@ -732,6 +741,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       <ChapterCard
                         key={chapter.id}
                         chapterNo={index + 1}
+                        isEdit={isEdit}
                         chapter={chapter}
                         moveChapter={moveChapter}
                         findChapter={findChapter}
