@@ -7,55 +7,57 @@ const inviteCollaborator = protectedProcedure
   .input(z.object({ bookId: z.string().cuid(), userId: z.string().uuid() }))
   .mutation(async ({ ctx, input }) => {
     const { bookId, userId } = input;
-    // check if the book exists
-    let book;
-    try {
-      book = await ctx.prisma.book.findUniqueOrThrow({
-        where: {
-          id: bookId,
+    const book = await ctx.prisma.book.findFirst({
+      where: {
+        id: bookId,
+        owners: {
+          some: {
+            userId: ctx.session.user.id,
+            status: BookOwnerStatus.OWNER,
+          },
         },
-        include: {
-          owners: {
-            include: {
-              user: {
-                include: {
-                  followers: {
-                    where: {
-                      followerId: ctx.session.user.id,
-                    },
+      },
+      include: {
+        owners: {
+          include: {
+            user: {
+              include: {
+                followers: {
+                  where: {
+                    followerId: userId,
                   },
-                  following: {
-                    where: {
-                      followingId: ctx.session.user.id,
-                    },
+                },
+                following: {
+                  where: {
+                    followingId: userId,
                   },
                 },
               },
             },
           },
         },
-      });
-    } catch (err) {
+      },
+    });
+
+    if (!book) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "book does not exist",
-        cause: err,
       });
     }
 
-    // check if the caller is the owner of the book
-    const isOwner = book.owners.some(
-      (owner) => owner.userId === ctx.session.user.id
-    );
-    if (!isOwner) {
+    // check if the user is the caller
+    if (userId === ctx.session.user.id) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "you are not the owner of the book",
+        message: "you cannot invite yourself",
       });
     }
 
-    // check if the user is already a collaborator
-    const isCollaborator = book.owners.some((owner) => owner.userId === userId);
+    const isCollaborator = book.owners.find(
+      (owner) =>
+        owner.status === BookOwnerStatus.COLLABORATOR && owner.userId === userId
+    );
     if (isCollaborator) {
       throw new TRPCError({
         code: "BAD_REQUEST",
@@ -63,42 +65,61 @@ const inviteCollaborator = protectedProcedure
       });
     }
 
-    book.owners.forEach(({ user }) => {
-      if (user.followers.length === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `User ${user.penname || user.id} is not following you`,
-        });
-      }
-      if (user.following.length === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `You are not following user ${user.penname || user.id}}`,
-        });
-      }
-    });
-
-    // check if the user exists
-    try {
-      await ctx.prisma.user.findUniqueOrThrow({
-        where: {
-          id: userId,
-        },
-      });
-    } catch (err) {
+    const owner = book.owners.find(
+      (owner) => owner.userId === ctx.session.user.id
+    );
+    if (!owner) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "user does not exist",
-        cause: err,
+        message: "you are not the owner of this book",
+      });
+    }
+    if (owner.user.followers.length === 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `User ${userId} is not following you`,
+      });
+    }
+    if (owner.user.following.length === 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: `You are not following user ${userId}}`,
       });
     }
 
     // create the invite
     try {
-      return await ctx.prisma.bookOwner.create({
-        data: {
-          bookId,
-          userId,
+      return await ctx.prisma.bookOwner.upsert({
+        where: {
+          bookId_userId: {
+            bookId,
+            userId,
+          },
+        },
+        create: {
+          book: {
+            connect: {
+              id: bookId,
+            },
+          },
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
+          status: BookOwnerStatus.INVITEE,
+        },
+        update: {
+          book: {
+            connect: {
+              id: bookId,
+            },
+          },
+          user: {
+            connect: {
+              id: userId,
+            },
+          },
           status: BookOwnerStatus.INVITEE,
         },
       });
