@@ -13,7 +13,7 @@ type props = {
   status: string;
   authorPicture: string;
   bookStatus: string;
-  onInvite: (id: string, penname: string) => void;
+  onInvite: (penname: string) => void;
   onRemove: (id: string, penname: string) => void;
 };
 
@@ -57,7 +57,7 @@ const AuthorList = ({
           {status !== "accept" && (
             <button
               type="button"
-              onClick={() => onInvite(userId, penname)}
+              onClick={() => onInvite(penname)}
               className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
             >
               invite

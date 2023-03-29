@@ -18,7 +18,7 @@ import type {
 } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import superjson from "superjson";
@@ -88,7 +88,6 @@ const StatusPage = ({ bookId, penname }: props) => {
     reset,
     handleSubmit,
     watch,
-    getValues,
     formState: { errors },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
@@ -97,12 +96,17 @@ const StatusPage = ({ bookId, penname }: props) => {
       description: book?.description || "",
     },
   });
-  let newCollaborator;
-  const [inviteNewCollaborator, setInviteNewCollaborator] = useState(false);
-
-  const { data: newUserInvite } = api.user.getData.useQuery(newCollaborator, {
-    enabled: inviteNewCollaborator,
+  const [newCollaborator, setNewCollaborator] = useState(watch("author"));
+  const {
+    data: newUserInvite,
+    refetch,
+    isLoading: isLoadingNewUser,
+  } = api.user.getData.useQuery(newCollaborator, {
+    enabled: false,
   });
+  useEffect(() => {
+    setNewCollaborator(watch("author"));
+  }, [watch("author")]);
 
   const deleteBook = api.book.delete.useMutation({
     onSuccess: () => {
@@ -305,29 +309,33 @@ const StatusPage = ({ bookId, penname }: props) => {
     }
   };
 
-  const inviteCollaboratorHandler = async () => {
-    newCollaborator = getValues("author");
-    setInviteNewCollaborator(true);
-    try {
-      console.log("check newUserInvited", newUserInvite?.penname);
-      if (newUserInvite) {
-        const promiseInvite = inviteCollaborator.mutateAsync({
-          userId: newUserInvite.id,
-          bookId: bookId,
-        });
-        await toast.promise(promiseInvite, {
-          loading: `Inviting ${newUserInvite?.penname as string}...`,
-          success: "invited!",
-          error: `Error occured while inviting ${
-            newUserInvite?.penname as string
-          }`,
-        });
+  useEffect(() => {
+    const mutateInviteCollaborator = async () => {
+      try {
+        if (newUserInvite) {
+          const promiseInvite = inviteCollaborator.mutateAsync({
+            userId: newUserInvite.id,
+            bookId: bookId,
+          });
+          await toast.promise(promiseInvite, {
+            loading: `Inviting ${newUserInvite?.penname as string}...`,
+            success: "Invited!",
+            error: `Error occured while inviting ${
+              newUserInvite?.penname as string
+            }`,
+          });
+        }
+      } catch (err) {
+        toast("Error occured while inviting");
       }
-      setInviteNewCollaborator(false);
-    } catch (err) {
-      toast("Error occured while inviting");
-      setInviteNewCollaborator(false);
+    };
+    if (!isLoadingNewUser) {
+      void mutateInviteCollaborator();
     }
+  }, [isLoadingNewUser]);
+
+  const inviteCollaboratorHandler = async () => {
+    await refetch();
   };
 
   const removeCollaboratorHandler = async (
@@ -349,24 +357,9 @@ const StatusPage = ({ bookId, penname }: props) => {
     }
   };
 
-  const inviteAgainHandler = async (userId: string, userPenname: string) => {
-    newCollaborator = userPenname;
-    setInviteNewCollaborator(true);
-    try {
-      const promiseInvite = inviteCollaborator.mutateAsync({
-        userId: userId,
-        bookId: bookId,
-      });
-      await toast.promise(promiseInvite, {
-        loading: `Inviting ${userPenname}...`,
-        success: `Successful invited ${userPenname}!`,
-        error: `Error occured while inviting ${userPenname}`,
-      });
-      setInviteNewCollaborator(false);
-    } catch (err) {
-      toast("Error occured while inviting");
-      setInviteNewCollaborator(false);
-    }
+  const inviteAgainHandler = async (userPenname: string) => {
+    setNewCollaborator(userPenname);
+    await refetch();
   };
 
   const resetHandler = () => {
@@ -675,8 +668,8 @@ const StatusPage = ({ bookId, penname }: props) => {
                                   status={author.status}
                                   authorPicture={author.user.image || ""}
                                   bookStatus={book.status}
-                                  onInvite={(id, penname) =>
-                                    void inviteAgainHandler(id, penname)
+                                  onInvite={(penname) =>
+                                    void inviteAgainHandler(penname)
                                   }
                                   onRemove={(id, penname) =>
                                     void removeCollaboratorHandler(id, penname)
