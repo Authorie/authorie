@@ -382,10 +382,9 @@ const BookContent = ({ bookId, penname }: props) => {
           <ChevronLeftIcon
             type="button"
             onClick={() => router.back()}
-            className="absolute top-2 left-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
+            className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
-
-          <div className="z-10 flex gap-7 pt-10 pb-5">
+          <div className="z-10 flex gap-7 pb-5 pt-10">
             <div className="ml-7 flex flex-col">
               <div className="flex">
                 <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
@@ -401,7 +400,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookCover}
                         />
-                        <PhotoIcon className="absolute right-2 bottom-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <PhotoIcon className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                     )}
                     {book?.coverImage || bookCover ? (
@@ -416,7 +415,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       <div className="h-full w-full bg-authGreen-400" />
                     )}
                     {!book.isOwner && (
-                      <button onClick={toggleFavoriteHandler}>
+                      <button type="button" onClick={toggleFavoriteHandler}>
                         {isFavorite ? (
                           <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                         ) : (
@@ -424,16 +423,36 @@ const BookContent = ({ bookId, penname }: props) => {
                         )}
                       </button>
                     )}
+                    {book.isOwner && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void router.push(`/${penname}/book/${bookId}/status`)
+                        }
+                        className="absolute bottom-1 right-1 rounded-full bg-gray-400 px-2 py-1 text-xs text-white hover:bg-gray-500"
+                      >
+                        View status
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="mt-8 gap-1">
                 <div className="mb-3 flex flex-col gap-3">
-                  {book.owners.map((author) => (
-                    <h2 key={author.user.id} className="text-xl font-semibold">
-                      {author.user.penname}
-                    </h2>
-                  ))}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-black">Author:</p>
+                    {book.owners.map((author) => (
+                      <div
+                        key={author.user.id}
+                        onClick={() =>
+                          void router.push(`/${author.user.penname as string}`)
+                        }
+                        className="cursor-pointer rounded-full bg-authGreen-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-authGreen-600"
+                      >
+                        {author.user.penname}
+                      </div>
+                    ))}
+                  </div>
                   {isEdit && (
                     <div className="flex flex-col-reverse gap-2">
                       <div className="flex flex-col items-start gap-2 overflow-x-auto rounded-xl">
@@ -482,7 +501,7 @@ const BookContent = ({ bookId, penname }: props) => {
                             </div>
                           </Popover.Panel>
                           <Popover.Button
-                            className="rounded-lg border border-authGreen-400 py-2 px-3 text-sm font-semibold text-authGreen-500 hover:border-authGreen-600 hover:bg-authGreen-600 hover:text-white"
+                            className="rounded-lg border border-authGreen-400 px-3 py-2 text-sm font-semibold text-authGreen-500 hover:border-authGreen-600 hover:bg-authGreen-600 hover:text-white"
                             type="button"
                           >
                             Add categories
@@ -504,7 +523,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void draftBookHandler()}
-                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-blue-400 to-blue-500 font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
+                          className="h-8 w-32 rounded-md bg-gradient-to-b from-authGreen-400 to-authBlue-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
                         >
                           Start Writing
                         </button>
@@ -540,6 +559,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       {(book.status === BookStatus.PUBLISHED ||
                         book.status === BookStatus.COMPLETED) && (
                         <button
+                          type="button"
                           onClick={() => void archiveBookHandler()}
                           className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
                         >
@@ -634,7 +654,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       <textarea
                         rows={2}
                         id="description"
-                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm text-black placeholder:text-gray-400 focus:outline-none"
+                        className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                         placeholder={
                           book.description || "write the description down..."
                         }
