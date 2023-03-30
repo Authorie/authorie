@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const inviteCollaborator = protectedProcedure
-  .input(z.object({ bookId: z.string().cuid(), userId: z.string().uuid() }))
+  .input(z.object({ bookId: z.string().cuid(), userId: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
     const { bookId, userId } = input;
     const book = await ctx.prisma.book.findFirst({
