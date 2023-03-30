@@ -20,7 +20,7 @@ const DialogLayout = ({
 }: props) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={closeModal}>
+      <Dialog as="div" className="relative z-30" onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -44,11 +44,11 @@ const DialogLayout = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="max-w-full transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
                 {title && (
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
+                    className=" bg-authGreen-600 px-6 py-4 text-lg font-semibold leading-6 text-white"
                   >
                     {title}
                   </Dialog.Title>
@@ -59,7 +59,9 @@ const DialogLayout = ({
                   </div>
                 )}
 
-                <div className="mt-4">{children}</div>
+                <div className="mt-4 w-fit overflow-y-auto px-6 pb-6">
+                  {children}
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

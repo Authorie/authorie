@@ -6,7 +6,7 @@ type props = {
   image?: string;
   followersNumber: number;
   followingNumber: number;
-  id: string;
+  userId: string;
   followUser: (userId: string) => void;
   unfollowUser: (userId: string) => void;
 };
@@ -16,13 +16,15 @@ const UserCard = ({
   image,
   followersNumber,
   followingNumber,
-  id,
+  userId,
   followUser,
   unfollowUser,
 }: props) => {
-  const isFollowing = api.user.isFollowUser.useQuery(penname);
+  const { data: isFollowed } = api.user.isFollowUser.useQuery(penname, {
+    enabled: penname !== null,
+  });
   return (
-    <div className="w-96">
+    <div className="max-h-[500px] w-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {image ? (
@@ -40,22 +42,30 @@ const UserCard = ({
           <div className="flex flex-col gap-1">
             <p className="text-lg font-semibold">{penname}</p>
             <div className="flex">
-              <p className="w-20">{followersNumber} followers</p>
-              <p className="w-20">{followingNumber} following</p>
+              <p className="w-52">
+                <span className="font-semibold">{followersNumber}</span>{" "}
+                followers
+              </p>
+              <p className="w-52">
+                <span className="font-semibold">{followingNumber}</span>{" "}
+                following
+              </p>
             </div>
           </div>
         </div>
-        {isFollowing ? (
+        {isFollowed ? (
           <button
-            onClick={() => unfollowUser(id)}
-            className="h-12 w-20 rounded-md bg-green-600 text-white hover:bg-green-700"
+            type="button"
+            onClick={() => unfollowUser(userId)}
+            className="h-8 w-20 rounded-md bg-green-600 text-sm font-semibold text-white outline-none hover:bg-green-700"
           >
             Followed
           </button>
         ) : (
           <button
-            onClick={() => followUser(id)}
-            className="h-12 w-20 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+            type="button"
+            onClick={() => followUser(userId)}
+            className="h-8 w-20 rounded-md bg-blue-600 text-sm text-white outline-none hover:bg-blue-700"
           >
             Follow
           </button>
