@@ -8,19 +8,19 @@ import {
   ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
 import { BookStatus } from "@prisma/client";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { getServerAuthSession } from "@server/auth";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
-import Link from "next/link";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { appRouter } from "@server/api/root";
-import superjson from "superjson";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import Link from "next/link";
+import superjson from "superjson";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -84,7 +84,7 @@ const BookPage = ({ penname }: props) => {
           )}
         </div>
         {books &&
-          books.items.length === 0 &&
+          books.length === 0 &&
           (user && user.penname === penname ? (
             <div className="flex flex-col items-center gap-4">
               <p>You still don&apos;t have any book yet. Wanna create one?</p>
