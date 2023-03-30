@@ -18,7 +18,7 @@ import type {
 } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import superjson from "superjson";
@@ -62,6 +62,7 @@ export const getServerSideProps = async (
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const StatusPage = ({ bookId, penname }: props) => {
+  const [openWarningDialog, setOpenWarningDialog] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const {
     imageData: bookCover,
@@ -83,6 +84,32 @@ const StatusPage = ({ bookId, penname }: props) => {
   const [addedCategories, setAddedCategories] = useState<Category[]>(
     book?.categories ? book?.categories.map((data) => data.category) : []
   );
+  const {
+    register,
+    reset,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ValidationSchema>({
+    resolver: zodResolver(validationSchema),
+    defaultValues: {
+      title: book?.title,
+      description: book?.description || "",
+    },
+  });
+  const [newCollaborator, setNewCollaborator] = useState<string>(
+    watch("author")
+  );
+  const [inviteSent, setInviteSent] = useState(false);
+  const { data: newUserInvite, isLoading: isLoadingNewUser } =
+    api.user.getData.useQuery(newCollaborator, {
+      enabled: inviteSent,
+    });
+  useEffect(() => {
+    setNewCollaborator(watch("author"));
+    console.log(newCollaborator);
+  }, [watch("author")]);
+
   const deleteBook = api.book.delete.useMutation({
     onSuccess: () => {
       void utils.book.invalidate();
@@ -95,35 +122,23 @@ const StatusPage = ({ bookId, penname }: props) => {
         bookId: bookId,
       });
       if (!prevCollaborators) return;
-      const { data: user } = api.user.getData.useQuery(
-        removedCollaborator.userId
-      );
       const collabIndex = prevCollaborators.findIndex(
-        (prev) => prev.userId === user?.id
+        (prev) => prev.userId === removedCollaborator.userId
       );
       const collaborator = prevCollaborators.splice(collabIndex, 1);
       utils.user.getBookCollaborators.setData({ bookId: bookId }, collaborator);
       return { prevCollaborators };
     },
+    onSuccess() {
+      void utils.book.invalidate();
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
   });
   const inviteCollaborator = api.user.inviteCollaborator.useMutation({
-    async onMutate(newCollaborator) {
-      await utils.user.getBookCollaborators.cancel();
-      const prevCollaborators = utils.user.getBookCollaborators.getData({
-        bookId: bookId,
-      });
-      if (!prevCollaborators) return;
-      const { data: user } = api.user.getData.useQuery(newCollaborator.userId);
-      const collaborator = {
-        ...prevCollaborators,
-        user: {
-          id: newCollaborator.userId,
-          penname: user?.penname,
-          image: user?.image,
-        },
-      };
-      utils.user.getBookCollaborators.setData({ bookId: bookId }, collaborator);
-      return { prevCollaborators };
+    onSuccess() {
+      void utils.book.invalidate();
     },
     onSettled: () => {
       void utils.book.invalidate();
@@ -181,29 +196,18 @@ const StatusPage = ({ bookId, penname }: props) => {
       void utils.book.invalidate();
     },
   });
-  const {
-    register,
-    reset,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<ValidationSchema>({
-    resolver: zodResolver(validationSchema),
-    defaultValues: {
-      title: book?.title,
-      description: book?.description || "",
-    },
-  });
-  const uploadImageUrl = api.upload.uploadImage.useMutation();
 
-  // useEffect(() => {
-  //   if (book?.categories) {
-  //     setAddedCategories(book?.categories.map((data) => data.category));
-  //   }
-  // }, [book?.categories]);
+  const uploadImageUrl = api.upload.uploadImage.useMutation();
 
   const draftBookHandler = async () => {
     if (book === undefined) return;
+    if (
+      collaborators?.map(
+        (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
+      ).length !== 0
+    ) {
+      setOpenWarningDialog(true);
+    }
     try {
       const promiseMoveState = moveState.mutateAsync({
         id: book?.id,
@@ -294,60 +298,64 @@ const StatusPage = ({ bookId, penname }: props) => {
     }
   };
 
-  const inviteCollaboratorHandler = async (data: ValidationSchema) => {
-    try {
-      const { data: user } = api.user.getData.useQuery(data.author);
-      if (user) {
-        const promiseInvite = inviteCollaborator.mutateAsync({
-          userId: user.id,
-          bookId: bookId,
-        });
-        await toast.promise(promiseInvite, {
-          loading: `Inviting ${user?.penname as string}...`,
-          success: "invited!",
-          error: `Error occured while inviting ${user?.penname as string}`,
-        });
+  useEffect(() => {
+    const mutateInviteCollaborator = async () => {
+      try {
+        if (newUserInvite) {
+          const promiseInvite = inviteCollaborator.mutateAsync({
+            userId: newUserInvite.id,
+            bookId: bookId,
+          });
+          await toast.promise(promiseInvite, {
+            loading: `Inviting ${newUserInvite?.penname as string}...`,
+            success: "Invited!",
+            error: `Error occured while inviting ${
+              newUserInvite?.penname as string
+            }`,
+          });
+        }
+        setInviteSent(false);
+      } catch (err) {
+        toast("Error occured while inviting");
+        setInviteSent(false);
       }
-    } catch (err) {
-      toast("Error occured while inviting");
+    };
+    console.log(
+      "newCollaborator: ",
+      newCollaborator,
+      "newUserInvite: ",
+      newUserInvite
+    );
+    if (!isLoadingNewUser && newCollaborator !== undefined && inviteSent) {
+      void mutateInviteCollaborator();
     }
+  }, [isLoadingNewUser, newCollaborator, inviteSent]);
+
+  const inviteCollaboratorHandler = () => {
+    setInviteSent(true);
   };
 
-  const removeCollaboratorHandler = async (author: string) => {
+  const inviteAgainHandler = (userPenname: string) => {
+    setNewCollaborator(userPenname);
+    setInviteSent(true);
+  };
+
+  const removeCollaboratorHandler = async (
+    userId: string,
+    userPenname: string
+  ) => {
     try {
-      const { data: user } = api.user.getData.useQuery(author);
-      if (user) {
-        const promiseRemove = removeCollaborator.mutateAsync({
-          userId: user.id,
-          bookId: bookId,
-        });
-        await toast.promise(promiseRemove, {
-          loading: `Removing ${user?.penname as string}...`,
-          success: `Successful removed ${user?.penname as string}!`,
-          error: `Error occured while removing ${user?.penname as string}`,
-        });
-      }
+      const promiseRemove = removeCollaborator.mutateAsync({
+        userId: userId,
+        bookId: bookId,
+      });
+      await toast.promise(promiseRemove, {
+        loading: `Removing ${userPenname}...`,
+        success: `Successful removed ${userPenname}!`,
+        error: `Error occured while removing ${userPenname}`,
+      });
     } catch (err) {
       toast("Error occured while removing");
-    }
-  };
-
-  const inviteAgainHandler = async (author: string) => {
-    try {
-      const { data: user } = api.user.getData.useQuery(author);
-      if (user) {
-        const promiseInvite = inviteCollaborator.mutateAsync({
-          userId: user.id,
-          bookId: bookId,
-        });
-        await toast.promise(promiseInvite, {
-          loading: `Inviting ${user?.penname as string}...`,
-          success: `Successful invited ${user?.penname as string}!`,
-          error: `Error occured while inviting ${user?.penname as string}`,
-        });
-      }
-    } catch (err) {
-      toast("Error occured while inviting");
     }
   };
 
@@ -405,7 +413,7 @@ const StatusPage = ({ bookId, penname }: props) => {
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
         <div
           onClick={() => router.back()}
-          className="absolute inset-0 top-2 left-2 z-10 w-fit"
+          className="absolute inset-0 left-2 top-2 z-10 w-fit"
         >
           <ChevronLeftIcon className="h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400" />
         </div>
@@ -431,11 +439,11 @@ const StatusPage = ({ bookId, penname }: props) => {
                 )}
                 <div className="absolute inset-0 h-52 w-full bg-gradient-to-t from-white" />
               </div>
-              <div className="flex min-h-[850px] flex-col py-5 px-20">
+              <div className="flex min-h-[850px] flex-col px-20 py-5">
                 <div className="z-10 mt-32 flex flex-col">
                   <div className="relative flex gap-5">
                     {!isEdit && (
-                      <div className="absolute top-0 left-0 flex gap-1">
+                      <div className="absolute left-0 top-0 flex gap-1">
                         {book.categories.map((c) => (
                           <div
                             key={c.category.id}
@@ -528,7 +536,7 @@ const StatusPage = ({ bookId, penname }: props) => {
                             <textarea
                               rows={2}
                               id="description"
-                              className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 py-2 px-3 text-sm text-black placeholder:text-gray-400 focus:outline-none"
+                              className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                               placeholder={
                                 book.description ||
                                 "write the description down..."
@@ -620,7 +628,7 @@ const StatusPage = ({ bookId, penname }: props) => {
                     </div>
                   )}
                   {!isEdit && (
-                    <div className="mt-6 flex w-fit flex-col self-center rounded-lg p-4">
+                    <div className="mt-6 flex w-fit flex-col items-center self-center rounded-lg bg-gray-50 p-4 shadow-lg">
                       <div className="flex items-center justify-center">
                         <h1 className="text-xl font-bold">Author List</h1>
                       </div>
@@ -633,40 +641,46 @@ const StatusPage = ({ bookId, penname }: props) => {
                           />
                           <button
                             type="button"
-                            onClick={() => inviteCollaboratorHandler}
+                            onClick={() => void inviteCollaboratorHandler()}
                             className="rounded-lg bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
                           >
                             Invite
                           </button>
                         </div>
                       )}
-                      <div className="flex justify-center gap-48 text-lg font-semibold">
-                        <p>Author</p>
-                        <p>Status</p>
-                      </div>
-                      <ol className="divide-y-2 self-center">
-                        {collaborators && collaborators.length > 1 ? (
-                          collaborators.map(
-                            (author, index) =>
-                              author.status !== BookOwnerStatus.OWNER && (
-                                <AuthorList
-                                  key={index}
-                                  number={index + 1}
-                                  penname={author.user.penname as string}
-                                  status={author.status}
-                                  authorPicture={author.user.image || ""}
-                                  bookStatus={book.status}
-                                  onInvite={() => inviteAgainHandler}
-                                  onRemove={() => removeCollaboratorHandler}
-                                />
-                              )
-                          )
-                        ) : (
-                          <div className="mt-10 flex items-center justify-center">
-                            <p>No collaborators</p>
+                      <div className="flex flex-col">
+                        {book.status === BookStatus.INITIAL && (
+                          <div className="ml-9 flex text-lg font-semibold">
+                            <p className="w-72">Author</p>
+                            <p>Status</p>
                           </div>
                         )}
-                      </ol>
+                        <ol className="divide-y-2 self-center">
+                          {collaborators ? (
+                            collaborators.map((author, index) => (
+                              <AuthorList
+                                key={index}
+                                number={index + 1}
+                                penname={author.user.penname as string}
+                                userId={author.userId}
+                                status={author.status}
+                                authorPicture={author.user.image || ""}
+                                bookStatus={book.status}
+                                onInvite={(penname) =>
+                                  void inviteAgainHandler(penname)
+                                }
+                                onRemove={(id: string, penname: string) =>
+                                  void removeCollaboratorHandler(id, penname)
+                                }
+                              />
+                            ))
+                          ) : (
+                            <div className="mt-10 flex items-center justify-center">
+                              <p>No collaborators</p>
+                            </div>
+                          )}
+                        </ol>
+                      </div>
                     </div>
                   )}
                 </div>

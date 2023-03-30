@@ -356,12 +356,12 @@ const BookContent = ({ bookId, penname }: props) => {
   };
 
   return (
-    <div className="flex w-full items-center justify-center">
+    <div className="flex w-full items-center justify-center px-6">
       {book ? (
         <form
           id="submit-changes"
           onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
-          className="relative my-8 flex w-5/6 flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
+          className="relative my-8 flex w-full  flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
         >
           <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
             {book?.wallpaperImage || bookWallpaper ? (
@@ -384,6 +384,7 @@ const BookContent = ({ bookId, penname }: props) => {
             onClick={() => router.back()}
             className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
+
           <div className="z-10 flex gap-7 pb-5 pt-10">
             <div className="ml-7 flex flex-col">
               <div className="flex">
@@ -700,7 +701,7 @@ const BookContent = ({ bookId, penname }: props) => {
                   {book.chapters.length === 0 && !isChapterCreatable && (
                     <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
                       <span className="text-lg font-semibold">
-                        This book has no chapters yet
+                        Move book state to create chapter
                       </span>
                     </div>
                   )}
