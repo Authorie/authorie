@@ -1,19 +1,6 @@
-import { EditButton } from "@components/action/EditButton";
 import ChapterCard from "@components/Chapter/ChapterCard";
+import { EditButton } from "@components/action/EditButton";
 import { Popover } from "@headlessui/react";
-import {
-  ChevronLeftIcon,
-  MagnifyingGlassIcon,
-  PlusCircleIcon,
-  StarIcon,
-} from "@heroicons/react/24/outline";
-import {
-  Bars3CenterLeftIcon,
-  EyeIcon,
-  HeartIcon,
-  PhotoIcon,
-  StarIcon as StarIconSolid,
-} from "@heroicons/react/24/solid";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
@@ -32,6 +19,17 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import {
+  HiBars3CenterLeft,
+  HiEye,
+  HiHeart,
+  HiOutlineChevronLeft,
+  HiOutlineMagnifyingGlass,
+  HiOutlinePlusCircle,
+  HiOutlineStar,
+  HiPhoto,
+  HiStar,
+} from "react-icons/hi2";
 import superjson from "superjson";
 import * as z from "zod";
 
@@ -379,7 +377,7 @@ const BookContent = ({ bookId, penname }: props) => {
             )}
             <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
           </div>
-          <ChevronLeftIcon
+          <HiOutlineChevronLeft
             type="button"
             onClick={() => router.back()}
             className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
@@ -401,7 +399,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookCover}
                         />
-                        <PhotoIcon className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <HiPhoto className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                     )}
                     {book?.coverImage || bookCover ? (
@@ -418,9 +416,9 @@ const BookContent = ({ bookId, penname }: props) => {
                     {!book.isOwner && (
                       <button type="button" onClick={toggleFavoriteHandler}>
                         {isFavorite ? (
-                          <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                          <HiOutlineStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                         ) : (
-                          <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                          <HiStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                         )}
                       </button>
                     )}
@@ -579,13 +577,13 @@ const BookContent = ({ bookId, penname }: props) => {
                         <p className="text-xl font-bold text-authGreen-600">
                           {totalViews}
                         </p>
-                        <EyeIcon className="h-5 w-5 text-authGreen-600" />
+                        <HiEye className="h-5 w-5 text-authGreen-600" />
                       </div>
                       <div className="flex  flex-col items-center gap-2">
                         <p className="text-xl font-bold text-authGreen-600">
                           {totalLikes}
                         </p>
-                        <HeartIcon className="h-5 w-5 text-authGreen-600" />
+                        <HiHeart className="h-5 w-5 text-authGreen-600" />
                       </div>
                     </div>
                   </div>
@@ -611,7 +609,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookWallpaper}
                         />
-                        <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <HiPhoto className="w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                       <div className="flex items-end gap-2">
                         <input
@@ -685,14 +683,14 @@ const BookContent = ({ bookId, penname }: props) => {
                 )}
               </div>
               <div className="flex gap-2 self-end">
-                <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-gray-200" />
-                <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
+                <HiBars3CenterLeft className="h-7 w-7 rounded-lg bg-gray-200" />
+                <HiOutlineMagnifyingGlass className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
                   {isChapterCreatable && (
                     <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
-                      <PlusCircleIcon className="w-8" />
+                      <HiOutlinePlusCircle className="w-8" />
                       <span className="text-lg font-semibold">
                         Create new chapter
                       </span>

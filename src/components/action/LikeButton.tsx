@@ -1,5 +1,4 @@
-import HeartIconOutline from "@heroicons/react/24/outline/HeartIcon";
-import HeartIconSolid from "@heroicons/react/24/solid/HeartIcon";
+import { HiHeart, HiOutlineHeart } from "react-icons/hi2";
 
 type props = {
   isAuthenticated: boolean;
@@ -26,9 +25,9 @@ export const LikeButton = ({
       onClick={onClickHandler}
     >
       {isLike ? (
-        <HeartIconSolid className={`h-${size} w-${size} text-red-500`} />
+        <HiHeart className={`h-${size} w-${size} text-red-500`} />
       ) : (
-        <HeartIconOutline className={`h-${size} w-${size}`} />
+        <HiOutlineHeart className={`h-${size} w-${size}`} />
       )}
       <span
         className={

@@ -1,8 +1,8 @@
 import { Dialog } from "@headlessui/react";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import useSearch from "@hooks/search";
 import { api, type RouterOutputs } from "@utils/api";
 import { useState } from "react";
+import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
 import SearchBookResult from "./SearchBookResult";
 import SearchUserResult from "./SearchUserResult";
 
@@ -78,12 +78,12 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
               Search
             </Dialog.Title>
             <button type="button" onClick={onCloseDialog}>
-              <XMarkIcon className="h-6 w-6 stroke-[3]" />
+              <HiOutlineXMark className="h-6 w-6 stroke-[3]" />
             </button>
           </div>
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="h-6 w-6 stroke-dark-400" />
+              <HiOutlineMagnifyingGlass className="h-6 w-6 stroke-dark-400" />
             </span>
             <input
               className="block w-96 rounded border p-2 pl-10 text-sm text-gray-900  focus:outline-none"

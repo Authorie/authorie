@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { PhotoIcon } from "@heroicons/react/24/outline";
 import type { ChangeEvent } from "react";
+import { HiOutlinePhoto } from "react-icons/hi2";
 
 type props = {
   coverImage?: string;
@@ -29,7 +29,7 @@ const BookCoverEditable = ({
             className="hidden"
             onChange={setBookCover}
           />
-          <PhotoIcon className="absolute right-2 bottom-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
+          <HiOutlinePhoto className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
         </label>
       )}
       <div className="h-52 w-3 rounded-r-lg bg-gray-500 shadow-lg" />
