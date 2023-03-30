@@ -32,7 +32,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
-  const { data: users } = api.search.searchUsers.useQuery(
+  const { data: users } = api.search.searchUsers.useInfiniteQuery(
     {
       search: searchTerm,
     },
@@ -58,12 +58,12 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const searchResults = (category: SearchCategory) => {
     switch (category) {
       case "Users":
-        return users?.items.map((user) => (
-          <SearchUserResult key={user.id} user={user} />
-        ));
+        return users?.pages
+          .flatMap((page) => page.items)
+          .map((user) => <SearchUserResult key={user.id} user={user} />);
       case "Books":
         return books?.pages
-          .reduce((acc, page) => [...acc, ...page.items], [] as Books)
+          .flatMap((page) => page.items)
           .map((book) => <SearchBookResult key={book.id} book={book} />);
     }
   };
