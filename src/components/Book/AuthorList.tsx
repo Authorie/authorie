@@ -38,20 +38,32 @@ const AuthorList = ({
             fill
           />
         </div>
-        <p className="w-52">{penname}</p>
+        <p
+          className={`${
+            status === BookOwnerStatus.OWNER ? "font-semibold" : ""
+          } ${bookStatus === BookStatus.INITIAL ? "w-52" : ""}`}
+        >
+          {penname}
+        </p>
       </div>
-      <div className="flex items-center gap-1">
-        {status === "accept" && (
-          <CheckCircleIcon className="h-4 w-4 text-green-500" />
-        )}
-        {status === "not response" && (
-          <MinusCircleIcon className="h-4 w-4 text-gray-500" />
-        )}
-        {status === "reject" && (
-          <XCircleIcon className="h-4 w-4 text-red-500" />
-        )}
-        <p className="w-40">{status}</p>
-      </div>
+      {bookStatus === BookStatus.INITIAL && (
+        <div className="flex items-center gap-1">
+          {status === BookOwnerStatus.COLLABORATOR && (
+            <CheckCircleIcon className="h-4 w-4 text-green-500" />
+          )}
+          {status === BookOwnerStatus.INVITEE && (
+            <MinusCircleIcon className="h-4 w-4 text-gray-500" />
+          )}
+          {status === BookOwnerStatus.REJECTED && (
+            <XCircleIcon className="h-4 w-4 text-red-500" />
+          )}
+          <p className="w-40">
+            {status === BookOwnerStatus.INVITEE && "no response"}
+            {status === BookOwnerStatus.REJECTED && "rejected"}
+            {status === BookOwnerStatus.COLLABORATOR && "accepted"}
+          </p>
+        </div>
+      )}
       {bookStatus === BookStatus.INITIAL &&
         status !== BookOwnerStatus.OWNER && (
           <div className="flex w-52 justify-end gap-2">

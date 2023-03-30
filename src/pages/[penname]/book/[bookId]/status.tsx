@@ -62,6 +62,7 @@ export const getServerSideProps = async (
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const StatusPage = ({ bookId, penname }: props) => {
+  const [openWarningDialog, setOpenWarningDialog] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const {
     imageData: bookCover,
@@ -96,7 +97,9 @@ const StatusPage = ({ bookId, penname }: props) => {
       description: book?.description || "",
     },
   });
-  const [newCollaborator, setNewCollaborator] = useState(watch("author"));
+  const [newCollaborator, setNewCollaborator] = useState<string>(
+    watch("author")
+  );
   const [inviteSent, setInviteSent] = useState(false);
   const { data: newUserInvite, isLoading: isLoadingNewUser } =
     api.user.getData.useQuery(newCollaborator, {
@@ -198,6 +201,13 @@ const StatusPage = ({ bookId, penname }: props) => {
 
   const draftBookHandler = async () => {
     if (book === undefined) return;
+    if (
+      collaborators?.map(
+        (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
+      ).length !== 0
+    ) {
+      setOpenWarningDialog(true);
+    }
     try {
       const promiseMoveState = moveState.mutateAsync({
         id: book?.id,
@@ -618,7 +628,7 @@ const StatusPage = ({ bookId, penname }: props) => {
                     </div>
                   )}
                   {!isEdit && (
-                    <div className="mt-6 flex w-fit flex-col self-center rounded-lg p-4">
+                    <div className="mt-6 flex w-fit flex-col items-center self-center rounded-lg bg-gray-50 p-4 shadow-lg">
                       <div className="flex items-center justify-center">
                         <h1 className="text-xl font-bold">Author List</h1>
                       </div>
@@ -638,35 +648,39 @@ const StatusPage = ({ bookId, penname }: props) => {
                           </button>
                         </div>
                       )}
-                      <div className="flex justify-center gap-48 text-lg font-semibold">
-                        <p>Author</p>
-                        <p>Status</p>
-                      </div>
-                      <ol className="divide-y-2 self-center">
-                        {collaborators && collaborators.length > 1 ? (
-                          collaborators.map((author, index) => (
-                            <AuthorList
-                              key={index}
-                              number={index + 1}
-                              penname={author.user.penname as string}
-                              userId={author.userId}
-                              status={author.status}
-                              authorPicture={author.user.image || ""}
-                              bookStatus={book.status}
-                              onInvite={(penname) =>
-                                void inviteAgainHandler(penname)
-                              }
-                              onRemove={(id, penname) =>
-                                void removeCollaboratorHandler(id, penname)
-                              }
-                            />
-                          ))
-                        ) : (
-                          <div className="mt-10 flex items-center justify-center">
-                            <p>No collaborators</p>
+                      <div className="flex flex-col">
+                        {book.status === BookStatus.INITIAL && (
+                          <div className="ml-9 flex text-lg font-semibold">
+                            <p className="w-72">Author</p>
+                            <p>Status</p>
                           </div>
                         )}
-                      </ol>
+                        <ol className="divide-y-2 self-center">
+                          {collaborators ? (
+                            collaborators.map((author, index) => (
+                              <AuthorList
+                                key={index}
+                                number={index + 1}
+                                penname={author.user.penname as string}
+                                userId={author.userId}
+                                status={author.status}
+                                authorPicture={author.user.image || ""}
+                                bookStatus={book.status}
+                                onInvite={(penname) =>
+                                  void inviteAgainHandler(penname)
+                                }
+                                onRemove={(id: string, penname: string) =>
+                                  void removeCollaboratorHandler(id, penname)
+                                }
+                              />
+                            ))
+                          ) : (
+                            <div className="mt-10 flex items-center justify-center">
+                              <p>No collaborators</p>
+                            </div>
+                          )}
+                        </ol>
+                      </div>
                     </div>
                   )}
                 </div>
