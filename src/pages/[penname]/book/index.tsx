@@ -58,7 +58,7 @@ const BookPage = ({ penname }: props) => {
     (book) => book.status === BookStatus.ARCHIVED
   ).length;
   return (
-    <div className="mb-8 mt-6 min-w-[1024px]">
+    <div className="mb-8 mt-6 w-[1024px]">
       <div className="max-h-full rounded-lg bg-white p-4 px-6 shadow-lg">
         {/* <div className="mb-5 flex justify-between">
           <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
@@ -125,7 +125,11 @@ const BookPage = ({ penname }: props) => {
                     />
                   )
               )
-            ) : book.status === BookStatus.ARCHIVED && BookArchiveList > 0 ? (
+            ) : BookArchiveList === 0 ? (
+              <div className="flex items-center justify-center text-xl font-bold">
+                <p>No book being archived</p>
+              </div>
+            ) : (
               books.items.map((book) => (
                 <Book
                   key={book.id}
@@ -145,10 +149,6 @@ const BookPage = ({ penname }: props) => {
                   )}
                 />
               ))
-            ) : (
-              <div className="flex items-center justify-center text-xl font-bold">
-                <p>No book being archived</p>
-              </div>
             )}
           </div>
         )}
