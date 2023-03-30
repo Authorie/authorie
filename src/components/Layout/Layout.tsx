@@ -1,11 +1,12 @@
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
-import AuthorBanner from "./AuthorBanner";
-import CreateLayout from "./CreateLayout";
-import NavigationSidebar from "./NavigationSidebar";
+const AuthorBanner = dynamic(() => import("./AuthorBanner"));
+const CreateLayout = dynamic(() => import("./CreateLayout"));
+const NavigationSidebar = dynamic(() => import("./NavigationSidebar"));
 
 const NoLayoutPaths = ["/auth/new-user", "/auth/signin"];
 

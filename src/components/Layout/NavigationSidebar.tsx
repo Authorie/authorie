@@ -1,8 +1,8 @@
-import SearchModal from "@components/Search/SearchModal";
 import { Button, Link } from "@components/ui/NavigationItems";
 import { useSelectCategory } from "@hooks/selectedCategory";
 import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useCallback, useState } from "react";
@@ -15,6 +15,7 @@ import {
   HiOutlineMagnifyingGlass,
   HiPencil,
 } from "react-icons/hi2";
+const SearchModal = dynamic(() => import("@components/Search/SearchModal"));
 
 type props = {
   user: RouterOutputs["user"]["getData"] | undefined;
