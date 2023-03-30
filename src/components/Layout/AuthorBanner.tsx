@@ -7,10 +7,12 @@ import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useReducer } from "react";
+import { Fragment, useCallback, useMemo, useReducer, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
 import * as z from "zod";
+import DialogLayout from "@components/Dialog/DialogLayout";
+import UserCard from "@components/Card/UserCard";
 
 const AuthorTab = [
   { title: "HOME", url: "" },
@@ -97,6 +99,8 @@ const AuthorBanner = ({
   tab: (typeof AuthorTab)[number];
   user: RouterOutputs["user"]["getData"];
 }) => {
+  const [openFollowers, setOpenFollowers] = useState(false);
+  const [openFollowing, setOpenFollowing] = useState(false);
   const router = useRouter();
   const context = api.useContext();
   const { status, data: session } = useSession();
@@ -107,6 +111,26 @@ const AuthorBanner = ({
     api.user.isFollowUser.useQuery(user.penname as string, {
       enabled: !isOwner && user.penname != null,
     });
+  const { data: userFollowers, isLoading: loadingFollowers } =
+    api.user.getFollowers.useInfiniteQuery(
+      {
+        limit: 7,
+        penname: user.penname as string,
+      },
+      {
+        getNextPageParam: (lastpage) => lastpage.nextCursor,
+      }
+    );
+  const { data: userFollowing, isLoading: loadingFollowing } =
+    api.user.getFollowing.useInfiniteQuery(
+      {
+        limit: 7,
+        penname: user.penname as string,
+      },
+      {
+        getNextPageParam: (lastpage) => lastpage.nextCursor,
+      }
+    );
   const {
     imageData: profileImage,
     uploadHandler: uploadProfileImageHandler,
@@ -174,6 +198,21 @@ const AuthorBanner = ({
       followUserMutation.mutate(user.id);
     }
   }, [followUserMutation, isFollowed, isOwner, unfollowUserMutation, user]);
+
+  const onFollowHandler = (userId: string) => {
+    if (!user) return;
+    if (session?.user.id === userId) return;
+    followUserMutation.mutate(userId);
+  };
+
+  const onUnfollowHandler = (userId: string) => {
+    if (!user) return;
+    if (session?.user.id === userId) {
+      return;
+    }
+    unfollowUserMutation.mutate(userId);
+  };
+
   const toggleIsEditHandler = useCallback(() => {
     formDispatch({ type: "toggle_edit" });
   }, []);
@@ -414,14 +453,90 @@ const AuthorBanner = ({
           )}
         </div>
         <div className="mb-3 flex gap-20 text-white">
-          <p>
+          <div
+            className="cursor-pointer"
+            onClick={() => setOpenFollowers(true)}
+          >
             <span className="font-semibold">{user._count.followers}</span>{" "}
             followers
-          </p>
-          <p>
+          </div>
+          <DialogLayout
+            isOpen={openFollowers}
+            closeModal={() => setOpenFollowers(false)}
+            title={"Followers"}
+          >
+            {
+              <div>
+                {userFollowers && !loadingFollowers ? (
+                  userFollowers?.pages
+                    .flatMap((page) => page.items)
+                    .map((user) => (
+                      <UserCard
+                        key={user.id}
+                        penname={user.penname as string}
+                        image={user.image || undefined}
+                        followersNumber={user._count.followers}
+                        followingNumber={user._count.following}
+                        userId={user.id}
+                        followUser={(userId) => onFollowHandler(userId)}
+                        unfollowUser={(userId) => onUnfollowHandler(userId)}
+                      />
+                    ))
+                ) : (
+                  <div>loading follower...</div>
+                )}
+                {userFollowers?.pages.flatMap((page) => page.items).length ===
+                  0 && (
+                  <div className="flex w-96 items-center justify-center">
+                    <p className="text-lg">No followers</p>
+                  </div>
+                )}
+              </div>
+            }
+          </DialogLayout>
+          <div
+            className="cursor-pointer"
+            onClick={() => setOpenFollowing(true)}
+          >
             <span className="font-semibold">{user._count.following}</span>{" "}
             following
-          </p>
+          </div>
+          <DialogLayout
+            isOpen={openFollowing}
+            closeModal={() => setOpenFollowing(false)}
+            title={"Following"}
+          >
+            <div className="w-fit">
+              {
+                <div>
+                  {userFollowing && !loadingFollowing ? (
+                    userFollowing?.pages
+                      .flatMap((page) => page.items)
+                      .map((user) => (
+                        <UserCard
+                          key={user.id}
+                          penname={user.penname as string}
+                          image={user.image || undefined}
+                          followersNumber={user._count.followers}
+                          followingNumber={user._count.following}
+                          userId={user.id}
+                          followUser={(userId) => onFollowHandler(userId)}
+                          unfollowUser={(userId) => onUnfollowHandler(userId)}
+                        />
+                      ))
+                  ) : (
+                    <div>loading following...</div>
+                  )}
+                  {userFollowing?.pages.flatMap((page) => page.items).length ===
+                    0 && (
+                    <div className="flex w-96 items-center justify-center">
+                      <p className="text-lg">No following</p>
+                    </div>
+                  )}
+                </div>
+              }
+            </div>
+          </DialogLayout>
         </div>
         <div className="h-fit w-4/5 pb-2 text-sm text-white">
           {form.isEdit ? (
@@ -478,7 +593,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
           </div>
         )}
       </div>
-      <div className="sticky top-0 z-40 ml-40 w-fit self-start">
+      <div className="sticky top-0 z-20 ml-40 w-fit self-start">
         <div className="flex max-w-xl items-center justify-between bg-black/70 px-1 shadow-lg backdrop-blur-lg">
           {AuthorTab.map((data) => (
             <button
