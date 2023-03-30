@@ -4,7 +4,7 @@ import {
   MinusCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/solid";
-import { BookStatus } from "@prisma/client";
+import { BookStatus, BookOwnerStatus } from "@prisma/client";
 
 type props = {
   userId: string;
@@ -52,26 +52,27 @@ const AuthorList = ({
         )}
         <p className="w-40">{status}</p>
       </div>
-      {bookStatus === BookStatus.INITIAL && (
-        <div className="flex w-52 justify-end gap-2">
-          {status !== "accept" && (
+      {bookStatus === BookStatus.INITIAL &&
+        status !== BookOwnerStatus.OWNER && (
+          <div className="flex w-52 justify-end gap-2">
+            {status !== "accept" && (
+              <button
+                type="button"
+                onClick={() => onInvite(penname)}
+                className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
+              >
+                invite
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => onInvite(penname)}
-              className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
+              onClick={() => onRemove(userId, penname)}
+              className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
             >
-              invite
+              remove
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => onRemove(userId, penname)}
-            className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
-          >
-            remove
-          </button>
-        </div>
-      )}
+          </div>
+        )}
     </div>
   );
 };

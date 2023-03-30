@@ -97,15 +97,14 @@ const StatusPage = ({ bookId, penname }: props) => {
     },
   });
   const [newCollaborator, setNewCollaborator] = useState(watch("author"));
-  const {
-    data: newUserInvite,
-    refetch,
-    isLoading: isLoadingNewUser,
-  } = api.user.getData.useQuery(newCollaborator, {
-    enabled: false,
-  });
+  const [inviteSent, setInviteSent] = useState(false);
+  const { data: newUserInvite, isLoading: isLoadingNewUser } =
+    api.user.getData.useQuery(newCollaborator, {
+      enabled: inviteSent,
+    });
   useEffect(() => {
     setNewCollaborator(watch("author"));
+    console.log(newCollaborator);
   }, [watch("author")]);
 
   const deleteBook = api.book.delete.useMutation({
@@ -135,39 +134,7 @@ const StatusPage = ({ bookId, penname }: props) => {
     },
   });
   const inviteCollaborator = api.user.inviteCollaborator.useMutation({
-    async onMutate(newCollaborator) {
-      await utils.user.getBookCollaborators.cancel();
-      const prevCollaborators = utils.user.getBookCollaborators.getData({
-        bookId: bookId,
-      });
-      const invitedCollaborator: {
-        id: string;
-        penname: string | null;
-        image: string | null;
-      } = {
-        id: newCollaborator.userId,
-        penname: newUserInvite?.penname as string,
-        image: newUserInvite?.image || null,
-      };
-      let collaborator;
-      if (
-        !prevCollaborators ||
-        prevCollaborators.map((data) => data.userId === invitedCollaborator.id)
-      ) {
-        return;
-      } else {
-        collaborator = {
-          ...prevCollaborators,
-          user: invitedCollaborator,
-        };
-      }
-      utils.user.getBookCollaborators.setData({ bookId: bookId }, collaborator);
-      return { prevCollaborators };
-    },
-    onError: () => {
-      void utils.book.invalidate();
-    },
-    onSuccess: () => {
+    onSuccess() {
       void utils.book.invalidate();
     },
     onSettled: () => {
@@ -337,17 +304,30 @@ const StatusPage = ({ bookId, penname }: props) => {
             }`,
           });
         }
+        setInviteSent(false);
       } catch (err) {
         toast("Error occured while inviting");
+        setInviteSent(false);
       }
     };
-    if (!isLoadingNewUser && newCollaborator !== "") {
+    console.log(
+      "newCollaborator: ",
+      newCollaborator,
+      "newUserInvite: ",
+      newUserInvite
+    );
+    if (!isLoadingNewUser && newCollaborator !== undefined && inviteSent) {
       void mutateInviteCollaborator();
     }
-  }, [isLoadingNewUser, newCollaborator]);
+  }, [isLoadingNewUser, newCollaborator, inviteSent]);
 
-  const inviteCollaboratorHandler = async () => {
-    await refetch();
+  const inviteCollaboratorHandler = () => {
+    setInviteSent(true);
+  };
+
+  const inviteAgainHandler = (userPenname: string) => {
+    setNewCollaborator(userPenname);
+    setInviteSent(true);
   };
 
   const removeCollaboratorHandler = async (
@@ -367,11 +347,6 @@ const StatusPage = ({ bookId, penname }: props) => {
     } catch (err) {
       toast("Error occured while removing");
     }
-  };
-
-  const inviteAgainHandler = async (userPenname: string) => {
-    setNewCollaborator(userPenname);
-    await refetch();
   };
 
   const resetHandler = () => {
@@ -669,26 +644,23 @@ const StatusPage = ({ bookId, penname }: props) => {
                       </div>
                       <ol className="divide-y-2 self-center">
                         {collaborators && collaborators.length > 1 ? (
-                          collaborators.map(
-                            (author, index) =>
-                              author.status !== BookOwnerStatus.OWNER && (
-                                <AuthorList
-                                  key={index}
-                                  number={index + 1}
-                                  penname={author.user.penname as string}
-                                  userId={author.userId}
-                                  status={author.status}
-                                  authorPicture={author.user.image || ""}
-                                  bookStatus={book.status}
-                                  onInvite={(penname) =>
-                                    void inviteAgainHandler(penname)
-                                  }
-                                  onRemove={(id, penname) =>
-                                    void removeCollaboratorHandler(id, penname)
-                                  }
-                                />
-                              )
-                          )
+                          collaborators.map((author, index) => (
+                            <AuthorList
+                              key={index}
+                              number={index + 1}
+                              penname={author.user.penname as string}
+                              userId={author.userId}
+                              status={author.status}
+                              authorPicture={author.user.image || ""}
+                              bookStatus={book.status}
+                              onInvite={(penname) =>
+                                void inviteAgainHandler(penname)
+                              }
+                              onRemove={(id, penname) =>
+                                void removeCollaboratorHandler(id, penname)
+                              }
+                            />
+                          ))
                         ) : (
                           <div className="mt-10 flex items-center justify-center">
                             <p>No collaborators</p>
