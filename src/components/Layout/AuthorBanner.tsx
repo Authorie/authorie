@@ -11,7 +11,6 @@ import { Fragment, useCallback, useMemo, useReducer, useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
 import * as z from "zod";
-import { PhotoIcon } from "@heroicons/react/24/outline";
 import DialogLayout from "@components/Dialog/DialogLayout";
 import UserCard from "@components/Card/UserCard";
 
