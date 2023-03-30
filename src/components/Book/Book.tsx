@@ -72,10 +72,8 @@ const Book = ({
   });
 
   const onClickHandler = () => {
-    if (!isOwner) {
+    if (status !== BookStatus.ARCHIVED) {
       void router.push(`/${penname}/book/${id}`);
-    } else {
-      return;
     }
   };
 
@@ -104,9 +102,11 @@ const Book = ({
   return (
     <div
       onClick={onClickHandler}
-      className={`${"flex cursor-pointer transition duration-100 ease-in-out"} ${
-        isOwner ? "group/bookOwner" : "hover:-translate-y-1 hover:scale-[1.01]"
-      }`}
+      className={`${
+        status === BookStatus.ARCHIVED
+          ? ""
+          : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      } flex`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="relative flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
@@ -118,35 +118,25 @@ const Book = ({
               ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
               ${status === BookStatus.PUBLISHED ? "bg-green-400" : ""} 
               ${status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
-              ${"absolute top-0 left-0 z-10 px-2 text-xs text-white"}
+              ${status === BookStatus.ARCHIVED ? "hidden" : ""}
+              ${"absolute left-0 top-0 z-10 px-2 text-xs text-white"}
               `}
             >
               {status}
             </div>
-            {status === "DRAFT" && (
+            {status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}
-                className="absolute top-2 right-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
+                className="absolute right-2 top-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
               >
                 Publish now
               </button>
             )}
-            <div className="invisible absolute z-10 flex h-full w-52 flex-col items-center justify-center gap-6 bg-black/60 group-hover/bookOwner:visible">
-              <button
-                onClick={() => void router.push(`/${penname}/book/${id}`)}
-                className="w-36 border-2 border-white bg-transparent py-2 text-white hover:bg-authGreen-600"
-              >
-                View Book
+            {status === BookStatus.ARCHIVED && (
+              <button className="absolute right-2 top-2 z-20 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700">
+                Unarchive
               </button>
-              <button
-                onClick={() =>
-                  void router.push(`/${penname}/book/${id}/status`)
-                }
-                className="w-36 border-2 border-white bg-transparent py-2 text-white hover:bg-authGreen-600"
-              >
-                View Status
-              </button>
-            </div>
+            )}
           </>
         )}
         <div className="relative h-28 w-full overflow-hidden rounded-tl-lg">
@@ -168,7 +158,7 @@ const Book = ({
         <div className="flex grow flex-col justify-between px-2 pt-2">
           <div className="flex w-full flex-col justify-center gap-2">
             <h1 className="font-bold">{title}</h1>
-            <p className="text-xs font-light line-clamp-6">{description}</p>
+            <p className="line-clamp-6 text-xs font-light">{description}</p>
           </div>
           <div className="flex justify-between">
             <div className="mt-2 flex items-center gap-1">
