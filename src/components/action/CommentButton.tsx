@@ -1,4 +1,4 @@
-import ChatBubbleBottomCenterTextIcon from "@heroicons/react/24/outline/ChatBubbleBottomCenterTextIcon";
+import { HiOutlineChatBubbleBottomCenterText } from "react-icons/hi2";
 
 type props = {
   numberOfComments: number;
@@ -19,7 +19,7 @@ export const CommentButton = ({
       onClick={onClickHandler}
       className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100"
     >
-      <ChatBubbleBottomCenterTextIcon className={`h-${size} w-${size}`} />
+      <HiOutlineChatBubbleBottomCenterText className={`h-${size} w-${size}`} />
       <span className={`text-${textSize}`}>
         {numberOfComments} {small && "comments"}
       </span>

@@ -1,12 +1,4 @@
 import Book from "@components/Book/Book";
-// import {
-//   Bars3CenterLeftIcon,
-//   MagnifyingGlassIcon,
-// } from "@heroicons/react/24/outline";
-import {
-  ArchiveBoxIcon,
-  ArrowUturnLeftIcon,
-} from "@heroicons/react/24/outline";
 import { BookStatus } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
@@ -18,8 +10,9 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
 import superjson from "superjson";
 
 export const getServerSideProps = async (
@@ -61,17 +54,13 @@ const BookPage = ({ penname }: props) => {
   return (
     <div className="mb-8 mt-6 w-[1024px]">
       <div className={"max-h-full rounded-lg p-4 px-6 shadow-lg"}>
-        {/* <div className="mb-5 flex justify-between">
-          <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
-          <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
-        </div> */}
         <div className="flex items-center justify-start">
           {!openArchive ? (
             <div
               onClick={() => setOpenArchive(true)}
               className="mb-3 flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gray-400 px-4 py-1 text-sm font-semibold text-white hover:bg-gray-500"
             >
-              <ArchiveBoxIcon className="h-5 w-5" />
+              <HiOutlineArchiveBox className="h-5 w-5" />
               <p>View Archived</p>
             </div>
           ) : (
@@ -79,7 +68,7 @@ const BookPage = ({ penname }: props) => {
               onClick={() => setOpenArchive(false)}
               className="mb-3 flex cursor-pointer items-center justify-center gap-2 rounded-full bg-authGreen-400 px-4 py-1 text-sm font-semibold text-white hover:bg-authGreen-500"
             >
-              <ArrowUturnLeftIcon className="h-5 w-5" />
+              <HiOutlineArrowUturnLeft className="h-5 w-5" />
               <p>View Book Shelf</p>
             </div>
           )}

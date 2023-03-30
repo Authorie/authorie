@@ -1,11 +1,15 @@
-import { EyeIcon, HeartIcon, StarIcon } from "@heroicons/react/24/outline";
-import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
 import { BookStatus } from "@prisma/client";
 import { api } from "@utils/api";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
 import toast from "react-hot-toast";
+import {
+  HiOutlineEye,
+  HiOutlineHeart,
+  HiOutlineStar,
+  HiStar,
+} from "react-icons/hi2";
 
 type props = {
   id: string;
@@ -148,9 +152,9 @@ const Book = ({
           {!isOwner && (
             <button onClick={toggleFavoriteHandler}>
               {isFavorite ? (
-                <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                <HiOutlineStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
               ) : (
-                <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                <HiStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
               )}
             </button>
           )}
@@ -162,11 +166,11 @@ const Book = ({
           </div>
           <div className="flex justify-between">
             <div className="mt-2 flex items-center gap-1">
-              <EyeIcon className="h-5 w-5 text-authGreen-600" />
+              <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
               <p className="text-xs font-medium text-authGreen-600">{read}</p>
             </div>
             <div className="mt-2 flex items-center gap-1">
-              <HeartIcon className="h-5 w-5 text-red-400" />
+              <HiOutlineHeart className="h-5 w-5 text-red-400" />
               <p className="text-xs font-medium text-red-400">{like}</p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { HiOutlinePencilSquare } from "react-icons/hi2";
 
 type props = {
   onEdit: () => void;
@@ -12,7 +12,7 @@ export const EditButton = ({ onEdit, isOwner, reset, isEdit }: props) => {
     <>
       <button type="button" onClick={onEdit} className="cursor-pointer">
         {!isEdit && (
-          <PencilSquareIcon
+          <HiOutlinePencilSquare
             className={`w-7 ${
               isOwner
                 ? " rounded-lg p-1 text-gray-800 hover:bg-gray-200"

@@ -2,19 +2,21 @@ import type { Editor } from "@tiptap/react";
 
 import type { CharacterCountStorage } from "@tiptap/extension-character-count";
 import { Fragment } from "react";
-import ArrowLeftLineIcon from "remixicon-react/ArrowLeftLineIcon";
-import ArrowRightLineIcon from "remixicon-react/ArrowRightLineIcon";
-import BoldIcon from "remixicon-react/BoldIcon";
-import FormatClearIcon from "remixicon-react/FormatClearIcon";
-import H1Icon from "remixicon-react/H1Icon";
-import H2Icon from "remixicon-react/H2Icon";
-import H3Icon from "remixicon-react/H3Icon";
-import ItalicIcon from "remixicon-react/ItalicIcon";
-import ListOrderedIcon from "remixicon-react/ListOrderedIcon";
-import ListUnorderedIcon from "remixicon-react/ListUnorderedIcon";
-import MarkPenLineIcon from "remixicon-react/MarkPenLineIcon";
-import StrikethroughIcon from "remixicon-react/StrikethroughIcon";
-import UnderlineIcon from "remixicon-react/UnderlineIcon";
+import {
+  RiArrowLeftLine,
+  RiArrowRightLine,
+  RiBold,
+  RiFormatClear,
+  RiH1,
+  RiH2,
+  RiH3,
+  RiItalic,
+  RiListOrdered,
+  RiListUnordered,
+  RiMarkPenLine,
+  RiStrikethrough,
+  RiUnderline,
+} from "react-icons/ri";
 import FontColorSelection from "./FontColorSelection";
 import ImageInputButton from "./ImageInputButton";
 import LinkInputButton from "./LinkInputButton";
@@ -31,12 +33,12 @@ function isCharacterCountStorage(
 const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
   const ToggleButtons = [
     {
-      icon: ArrowLeftLineIcon,
+      icon: RiArrowLeftLine,
       title: "Undo",
       action: () => editor.chain().focus().undo().run(),
     },
     {
-      icon: ArrowRightLineIcon,
+      icon: RiArrowRightLine,
       title: "Redo",
       action: () => editor.chain().focus().redo().run(),
     },
@@ -45,31 +47,31 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
       title: "divider",
     },
     {
-      icon: BoldIcon,
+      icon: RiBold,
       title: "Bold",
       action: () => editor.chain().focus().toggleBold().run(),
       isActive: () => editor.isActive("bold"),
     },
     {
-      icon: ItalicIcon,
+      icon: RiItalic,
       title: "Italic",
       action: () => editor.chain().focus().toggleItalic().run(),
       isActive: () => editor.isActive("italic"),
     },
     {
-      icon: UnderlineIcon,
+      icon: RiUnderline,
       title: "Underline",
       action: () => editor.chain().focus().toggleUnderline().run(),
       isActive: () => editor.isActive("underline"),
     },
     {
-      icon: StrikethroughIcon,
+      icon: RiStrikethrough,
       title: "Strike",
       action: () => editor.chain().focus().toggleStrike().run(),
       isActive: () => editor.isActive("strike"),
     },
     {
-      icon: MarkPenLineIcon,
+      icon: RiMarkPenLine,
       title: "Highlight",
       action: () => editor.chain().focus().toggleHighlight().run(),
       isActive: () => editor.isActive("highlight"),
@@ -79,31 +81,31 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
       title: "divider",
     },
     {
-      icon: H1Icon,
+      icon: RiH1,
       title: "Heading 1",
       action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
       isActive: () => editor.isActive("heading", { level: 1 }),
     },
     {
-      icon: H2Icon,
+      icon: RiH2,
       title: "Paragraph",
       action: () => editor.chain().focus().setParagraph().run(),
       isActive: () => editor.isActive("paragraph"),
     },
     {
-      icon: H3Icon,
+      icon: RiH3,
       title: "Heading 3",
       action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
       isActive: () => editor.isActive("heading", { level: 2 }),
     },
     {
-      icon: ListUnorderedIcon,
+      icon: RiListUnordered,
       title: "Bullet List",
       action: () => editor.chain().focus().toggleBulletList().run(),
       isActive: () => editor.isActive("bulletList"),
     },
     {
-      icon: ListOrderedIcon,
+      icon: RiListOrdered,
       title: "Ordered List",
       action: () => editor.chain().focus().toggleOrderedList().run(),
       isActive: () => editor.isActive("orderedList"),
@@ -113,7 +115,7 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
       title: "divider",
     },
     {
-      icon: FormatClearIcon,
+      icon: RiFormatClear,
       title: "Clear Format",
       action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
     },
@@ -129,11 +131,11 @@ const TextEditorMenuBar = ({ editor }: { editor: Editor }) => {
         <TextEditorMenuItem key={item.title + String(index)} {...item} />
       ))}
       <FontColorSelection editor={editor} />
-      <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
+      <TextEditorMenuItem icon={Fragment} title="divider" />
       <LinkInputButton editor={editor} />
       <TableMenu editor={editor} />
       <ImageInputButton editor={editor} />
-      <TextEditorMenuItem {...{ icon: Fragment, title: "divider" }} />
+      <TextEditorMenuItem icon={Fragment} title="divider" />
       <div className="w-16 self-center truncate text-xs text-slate-500">
         {"characterCount" in editor.storage &&
           isCharacterCountStorage(editor.storage.characterCount) &&

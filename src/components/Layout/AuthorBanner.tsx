@@ -1,6 +1,7 @@
 import ErrorDialog from "@components/alert/ErrorDialog";
 import LoadingSpinner from "@components/ui/LoadingSpinner";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
 import type { RouterOutputs } from "@utils/api";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
@@ -8,10 +9,8 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useReducer } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
+import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
 import * as z from "zod";
-import { PhotoIcon } from "@heroicons/react/24/outline";
 
 const AuthorTab = [
   { title: "HOME", url: "" },
@@ -273,7 +272,7 @@ const AuthorBanner = ({
               id="upload-wallpaper"
               onChange={uploadWallpaperImageHandler}
             />
-            <PhotoIcon className="absolute left-2 top-2 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
+            <HiOutlinePhoto className="absolute left-2 top-2 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
           </div>
         )}
         {user.wallpaperImage || wallpaperImage !== "" ? (
@@ -309,7 +308,7 @@ const AuthorBanner = ({
           >
             {form.isEdit && (
               <div>
-                <PhotoIcon className="absolute left-4 top-4 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
+                <HiOutlinePhoto className="absolute left-4 top-4 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
                 <input
                   hidden
                   type="file"
@@ -353,7 +352,7 @@ const AuthorBanner = ({
                     </button>
                   </div>
                 ) : (
-                  <PencilSquareIcon
+                  <HiOutlinePencilSquare
                     width={25}
                     height={25}
                     onClick={toggleIsEditHandler}

@@ -1,9 +1,9 @@
 import LoadingSpinner from "@components/ui/LoadingSpinner";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useUnfollowCategory } from "@hooks/followedCategories";
 import { useSelectCategory } from "@hooks/selectedCategory";
 import type { Category } from "@prisma/client";
 import { api } from "@utils/api";
+import { HiOutlineXMark } from "react-icons/hi2";
 
 type props = {
   isLogin: boolean;
@@ -52,7 +52,7 @@ const CategoryItem = ({ isLogin, selected, category }: props) => {
         title="Select Category for Posts"
         type="button"
         onClick={() => selectCategory(category)}
-        className="py-2 px-4"
+        className="px-4 py-2"
       >
         <span className="whitespace-nowrap">
           {category === "all"
@@ -68,12 +68,12 @@ const CategoryItem = ({ isLogin, selected, category }: props) => {
           type="button"
           disabled={unfollowCategoryMutation.isLoading}
           onClick={onDeleteHandler}
-          className="disable:bg-gray-500 absolute -top-1 -left-2 hidden items-center justify-center rounded-full bg-red-400 p-1 hover:bg-red-500 group-hover/categoryItem:flex"
+          className="disable:bg-gray-500 absolute -left-2 -top-1 hidden items-center justify-center rounded-full bg-red-400 p-1 hover:bg-red-500 group-hover/categoryItem:flex"
         >
           {unfollowCategoryMutation.isLoading ? (
             <LoadingSpinner />
           ) : (
-            <XMarkIcon className="h-3 w-3 stroke-[4px]" />
+            <HiOutlineXMark className="h-3 w-3 stroke-[4px]" />
           )}
         </button>
       )}

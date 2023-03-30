@@ -1,11 +1,10 @@
 import { Popover } from "@headlessui/react";
+import useImageUpload from "@hooks/imageUpload";
 import type { Editor } from "@tiptap/react";
+import { api } from "@utils/api";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
-import ImageLineIcon from "remixicon-react/ImageLineIcon";
-import CloseFillIcon from "remixicon-react/CloseFillIcon";
-import useImageUpload from "@hooks/imageUpload";
-import { api } from "@utils/api";
+import { RiCloseFill, RiImageLine } from "react-icons/ri";
 
 const ImageInputButton = ({ editor }: { editor: Editor }) => {
   const [InputUrl, setInputUrl] = useState({ value: "" });
@@ -35,11 +34,11 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
   return (
     <Popover className="relative flex content-center">
       <Popover.Button className="h-fit self-center rounded p-1 hover:bg-gray-300">
-        <ImageLineIcon className="h-4 w-4" />
+        <RiImageLine className="h-4 w-4" />
       </Popover.Button>
 
       <Popover.Panel
-        className="absolute top-0 right-0 z-10 flex translate-y-10 flex-col rounded bg-white p-1 px-2 drop-shadow-lg"
+        className="absolute right-0 top-0 z-10 flex translate-y-10 flex-col rounded bg-white p-1 px-2 drop-shadow-lg"
         as="form"
         onSubmit={(e) => void handleSubmit(e)}
       >
@@ -51,7 +50,7 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
             onChange={handleChange}
           />
           <button type="reset" value="x" className="bold m-1">
-            <CloseFillIcon className="h-4 w-4" />
+            <RiCloseFill className="h-4 w-4" />
           </button>
         </div>
         <div className="flex w-96 flex-col">

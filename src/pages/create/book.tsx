@@ -1,9 +1,9 @@
 import { AddAuthorModal } from "@components/action/AddAuthorModal";
 import { Popover } from "@headlessui/react";
-import { PhotoIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useImageUpload from "@hooks/imageUpload";
-import type { Category } from "@prisma/client";
+import Custom404 from "@pages/404";
+import type { Category, User } from "@prisma/client";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
@@ -11,9 +11,8 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
+import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
 import * as z from "zod";
-import type { User } from "@prisma/client";
-import Custom404 from "@pages/404";
 
 const validationSchema = z.object({
   title: z
@@ -109,11 +108,11 @@ const CreateBook = () => {
       {session ? (
         <form
           onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-          className="items-center rounded-b-2xl bg-white py-10 px-10"
+          className="items-center rounded-b-2xl bg-white px-10 py-10"
         >
           <div className="flex flex-col gap-10">
-            <div className="relative flex min-h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pt-24 pb-11 drop-shadow-lg">
-              <div className="absolute top-0 left-0 right-0 -z-10 h-72 overflow-hidden rounded-t-lg">
+            <div className="relative flex min-h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pb-11 pt-24 drop-shadow-lg">
+              <div className="absolute left-0 right-0 top-0 -z-10 h-72 overflow-hidden rounded-t-lg">
                 {bookWallpaper ? (
                   <Image
                     src={bookWallpaper}
@@ -144,7 +143,7 @@ const CreateBook = () => {
                   height={288}
                   className="rounded-md object-cover"
                 />
-                <PhotoIcon className="absolute right-2 bottom-2 w-8 rounded-md bg-gray-100" />
+                <HiOutlinePhoto className="absolute bottom-2 right-2 w-8 rounded-md bg-gray-100" />
               </label>
               <div className="flex grow flex-col justify-end gap-2 pt-6">
                 <label htmlFor="BookWallpaper" className="relative h-7 w-8">
@@ -156,7 +155,7 @@ const CreateBook = () => {
                     className="hidden cursor-pointer"
                     onChange={setBookWallpaper}
                   />
-                  <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
+                  <HiOutlinePhoto className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
                 </label>
                 <div className="flex items-end gap-2">
                   <input
@@ -218,7 +217,7 @@ const CreateBook = () => {
                         >
                           <div className="flex items-center justify-center rounded-xl bg-authGreen-300 p-1 hover:bg-authGreen-500">
                             <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
-                              <PlusIcon className="h-3 w-3 stroke-[3]" />
+                              <HiOutlinePlus className="h-3 w-3 stroke-[3]" />
                             </div>
                           </div>
                           <p className="sr-only">open user list</p>
@@ -279,7 +278,7 @@ const CreateBook = () => {
                           >
                             <div className="flex items-center justify-center rounded-xl bg-authYellow-300 p-1 hover:bg-authYellow-500">
                               <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
-                                <PlusIcon className="h-3 w-3 stroke-[3]" />
+                                <HiOutlinePlus className="h-3 w-3 stroke-[3]" />
                               </div>
                             </div>
                             <p className="sr-only">open category list</p>
@@ -326,7 +325,7 @@ const CreateBook = () => {
                 type="submit"
                 disabled={bookCreateMutation.isLoading}
                 aria-disabled={bookCreateMutation.isLoading}
-                className="rounded-xl bg-slate-500 py-2 px-8 font-semibold text-white hover:bg-slate-700"
+                className="rounded-xl bg-slate-500 px-8 py-2 font-semibold text-white hover:bg-slate-700"
               >
                 Save
               </button>

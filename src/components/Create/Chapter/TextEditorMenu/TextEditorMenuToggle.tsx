@@ -1,7 +1,5 @@
-import { type RemixiconReactIconComponentType } from "remixicon-react";
-
 type props = {
-  icon: RemixiconReactIconComponentType;
+  icon: React.ElementType;
   title: string;
   action?: () => boolean;
   isActive?: () => boolean;

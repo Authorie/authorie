@@ -1,7 +1,6 @@
 import Comment from "@components/Comment/Comment";
 import CommentInput from "@components/Comment/CommentInput";
 import { CommentButton, LikeButton } from "@components/action";
-import ArrowTopRightOnSquareIcon from "@heroicons/react/24/outline/ArrowTopRightOnSquareIcon";
 import type { Content } from "@tiptap/react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -9,6 +8,7 @@ import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
+import { HiOutlineArrowTopRightOnSquare } from "react-icons/hi2";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getAll"]["items"][number];
@@ -105,7 +105,7 @@ const ChapterPost = ({ chapter }: props) => {
           onClickHandler={() => setOpenComments((prev) => !prev)}
         />
         <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
-          <ArrowTopRightOnSquareIcon className="h-6 w-6" />
+          <HiOutlineArrowTopRightOnSquare className="h-6 w-6" />
         </div>
       </div>
       {openComments && (

@@ -1,10 +1,6 @@
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import Image from "next/image";
-import {
-  CheckCircleIcon,
-  MinusCircleIcon,
-  XCircleIcon,
-} from "@heroicons/react/24/solid";
-import { BookStatus, BookOwnerStatus } from "@prisma/client";
+import { HiCheckCircle, HiMinusCircle, HiXCircle } from "react-icons/hi2";
 
 type props = {
   userId: string;
@@ -49,13 +45,13 @@ const AuthorList = ({
       {bookStatus === BookStatus.INITIAL && (
         <div className="flex items-center gap-1">
           {status === BookOwnerStatus.COLLABORATOR && (
-            <CheckCircleIcon className="h-4 w-4 text-green-500" />
+            <HiCheckCircle className="h-4 w-4 text-green-500" />
           )}
           {status === BookOwnerStatus.INVITEE && (
-            <MinusCircleIcon className="h-4 w-4 text-gray-500" />
+            <HiMinusCircle className="h-4 w-4 text-gray-500" />
           )}
           {status === BookOwnerStatus.REJECTED && (
-            <XCircleIcon className="h-4 w-4 text-red-500" />
+            <HiXCircle className="h-4 w-4 text-red-500" />
           )}
           <p className="w-40">
             {status === BookOwnerStatus.INVITEE && "no response"}

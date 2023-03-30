@@ -1,9 +1,11 @@
 import { Menu } from "@headlessui/react";
-import AddCircleLineIcon from "remixicon-react/AddCircleLineIcon";
-import DeleteBinLineIcon from "remixicon-react/DeleteBinLineIcon";
-import MergeCellsHorizontalIcon from "remixicon-react/MergeCellsHorizontalIcon";
-import SplitCellsHorizontalIcon from "remixicon-react/SplitCellsHorizontalIcon";
-import TableLineIcon from "remixicon-react/TableLineIcon";
+import {
+  RiAddCircleLine,
+  RiDeleteBinLine,
+  RiMergeCellsHorizontal,
+  RiSplitCellsHorizontal,
+  RiTableLine,
+} from "react-icons/ri";
 
 import type { Editor } from "@tiptap/react";
 
@@ -13,7 +15,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
   const tableItems = [
     {
       name: "Insert table",
-      Icon: AddCircleLineIcon,
+      Icon: RiAddCircleLine,
       action: () =>
         editor
           .chain()
@@ -23,7 +25,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
     },
     {
       name: "Delete table",
-      Icon: DeleteBinLineIcon,
+      Icon: RiDeleteBinLine,
       action: () => editor.chain().focus().deleteTable().run(),
     },
     {
@@ -32,22 +34,22 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
     },
     {
       name: "Insert column before",
-      Icon: AddCircleLineIcon,
+      Icon: RiAddCircleLine,
       action: () => editor.chain().focus().addColumnBefore().run(),
     },
     {
       name: "Insert column after",
-      Icon: AddCircleLineIcon,
+      Icon: RiAddCircleLine,
       action: () => editor.chain().focus().addColumnAfter().run(),
     },
     {
       name: "Insert row before",
-      Icon: AddCircleLineIcon,
+      Icon: RiAddCircleLine,
       action: () => editor.chain().focus().addRowBefore().run(),
     },
     {
       name: "Insert row after",
-      Icon: AddCircleLineIcon,
+      Icon: RiAddCircleLine,
       action: () => editor.chain().focus().addRowAfter().run(),
     },
     {
@@ -56,12 +58,12 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
     },
     {
       name: "Delete column",
-      Icon: DeleteBinLineIcon,
+      Icon: RiDeleteBinLine,
       action: () => editor.chain().focus().deleteColumn().run(),
     },
     {
       name: "Delete row",
-      Icon: DeleteBinLineIcon,
+      Icon: RiDeleteBinLine,
       action: () => editor.chain().focus().deleteRow().run(),
     },
     {
@@ -70,12 +72,12 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
     },
     {
       name: "Merge cells",
-      Icon: MergeCellsHorizontalIcon,
+      Icon: RiMergeCellsHorizontal,
       action: () => editor.chain().focus().mergeCells().run(),
     },
     {
       name: "Split cell",
-      Icon: SplitCellsHorizontalIcon,
+      Icon: RiSplitCellsHorizontal,
       action: () => editor.chain().focus().splitCell().run(),
     },
   ];
@@ -84,7 +86,7 @@ const TableMenu = ({ editor }: { editor: Editor }) => {
     <div className="relative flex content-center">
       <Menu>
         <Menu.Button className=" h-fit self-center rounded p-1 hover:bg-gray-300">
-          <TableLineIcon className="h-4 w-4" />
+          <RiTableLine className="h-4 w-4" />
         </Menu.Button>
         <Menu.Items className="absolute z-10 flex w-fit translate-y-10 flex-col rounded bg-white p-1 drop-shadow-lg">
           {tableItems.map((item, index) => (

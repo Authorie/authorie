@@ -1,8 +1,7 @@
-import { CategoryPopover } from "@components/action/CategoryPopover";
-import { EditButton } from "@components/action/EditButton";
 import AuthorList from "@components/Book/AuthorList";
 import BookCoverEditable from "@components/Book/BookCoverEditable";
-import { ChevronLeftIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { CategoryPopover } from "@components/action/CategoryPopover";
+import { EditButton } from "@components/action/EditButton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
@@ -18,9 +17,10 @@ import type {
 } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
 import superjson from "superjson";
 import * as z from "zod";
 
@@ -415,7 +415,7 @@ const StatusPage = ({ bookId, penname }: props) => {
           onClick={() => router.back()}
           className="absolute inset-0 left-2 top-2 z-10 w-fit"
         >
-          <ChevronLeftIcon className="h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400" />
+          <HiOutlineChevronLeft className="h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400" />
         </div>
         <div className="relative overflow-hidden rounded-tl-large shadow-lg">
           {book ? (
@@ -471,7 +471,7 @@ const StatusPage = ({ bookId, penname }: props) => {
                             className="hidden"
                             onChange={setBookWallpaper}
                           />
-                          <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100" />
+                          <HiOutlinePhoto className="w-8 cursor-pointer rounded-md bg-gray-100" />
                         </label>
                       )}
                       <BookCoverEditable
