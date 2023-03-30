@@ -14,7 +14,7 @@ const searchBooks = publicProcedure
         description: z.string().optional(),
         status: z.nativeEnum(BookStatus).array().optional(),
       }),
-      cursor: z.string().uuid().optional(),
+      cursor: z.string().cuid().optional(),
       limit: z.number().int().min(1).max(10).optional(),
     })
   )

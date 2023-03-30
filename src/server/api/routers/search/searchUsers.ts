@@ -37,7 +37,7 @@ const searchUsers = publicProcedure
   .input(
     z.object({
       search: z.string(),
-      cursor: z.string().uuid().optional(),
+      cursor: z.string().cuid().optional(),
       limit: z.number().int().min(1).max(10).default(5),
     })
   )

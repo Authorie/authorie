@@ -6,7 +6,7 @@ const getFollowingUsers = publicProcedure
   .input(
     z.object({
       penname: z.string(),
-      cursor: z.string().uuid().optional(),
+      cursor: z.string().cuid().optional(),
       limit: z.number().int().default(20),
     })
   )
