@@ -1,7 +1,5 @@
-import { Transition } from "@headlessui/react";
-import { Fragment } from "react";
-import type { ReactNode } from "react";
-import { Dialog } from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment, type ReactNode } from "react";
 
 type props = {
   isOpen: boolean;
