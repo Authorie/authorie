@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
 import superjson from "superjson";
 import * as z from "zod";
+import DialogLayout from "@components/Dialog/DialogLayout";
 
 const validationSchema = z.object({
   title: z
@@ -62,7 +63,10 @@ export const getServerSideProps = async (
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const StatusPage = ({ bookId, penname }: props) => {
-  const [openWarningDialog, setOpenWarningDialog] = useState(false);
+  const [openDraftWarning, setOpenDraftWarning] = useState(false);
+  const [openDeleteWarning, setOpenDeleteWarning] = useState(false);
+  const [openArchiveWarning, setOpenArchinveWarning] = useState(false);
+  const [openCompleteWarning, setOpenCompleteWarning] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const {
     imageData: bookCover,
@@ -116,19 +120,19 @@ const StatusPage = ({ bookId, penname }: props) => {
     },
   });
   const removeCollaborator = api.user.removeCollaborationInvite.useMutation({
-    async onMutate(removedCollaborator) {
-      await utils.user.getBookCollaborators.cancel();
-      const prevCollaborators = utils.user.getBookCollaborators.getData({
-        bookId: bookId,
-      });
-      if (!prevCollaborators) return;
-      const collabIndex = prevCollaborators.findIndex(
-        (prev) => prev.userId === removedCollaborator.userId
-      );
-      const collaborator = prevCollaborators.splice(collabIndex, 1);
-      utils.user.getBookCollaborators.setData({ bookId: bookId }, collaborator);
-      return { prevCollaborators };
-    },
+    // async onMutate(removedCollaborator) {
+    //   await utils.user.getBookCollaborators.cancel();
+    //   const prevCollaborators = utils.user.getBookCollaborators.getData({
+    //     bookId: bookId,
+    //   });
+    //   if (!prevCollaborators) return;
+    //   const collabIndex = prevCollaborators.findIndex(
+    //     (prev) => prev.userId === removedCollaborator.userId
+    //   );
+    //   const collaborator = prevCollaborators.splice(collabIndex, 1);
+    //   utils.user.getBookCollaborators.setData({ bookId: bookId }, collaborator);
+    //   return { prevCollaborators };
+    // },
     onSuccess() {
       void utils.book.invalidate();
     },
@@ -199,15 +203,19 @@ const StatusPage = ({ bookId, penname }: props) => {
 
   const uploadImageUrl = api.upload.uploadImage.useMutation();
 
-  const draftBookHandler = async () => {
+  const draftBookHandler = () => {
     if (book === undefined) return;
     if (
       collaborators?.map(
         (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
       ).length !== 0
     ) {
-      setOpenWarningDialog(true);
+      setOpenDraftWarning(true);
     }
+  };
+
+  const confirmDraftBookHandler = async () => {
+    if (book === undefined) return;
     try {
       const promiseMoveState = moveState.mutateAsync({
         id: book?.id,
@@ -218,6 +226,7 @@ const StatusPage = ({ bookId, penname }: props) => {
         success: "Your book is in draft state now!",
         error: "Error occured during move state",
       });
+      router.reload();
     } catch (err) {
       toast("Error occured during move state");
     }
@@ -240,7 +249,12 @@ const StatusPage = ({ bookId, penname }: props) => {
     }
   };
 
-  const completeBookHandler = async () => {
+  const completeBookHandler = () => {
+    if (book === undefined) return;
+    setOpenCompleteWarning(true);
+  };
+
+  const confirmCompleteBookHandler = async () => {
     if (book === undefined) return;
     try {
       const promiseMoveState = moveState.mutateAsync({
@@ -257,7 +271,12 @@ const StatusPage = ({ bookId, penname }: props) => {
     }
   };
 
-  const archiveBookHandler = async () => {
+  const archiveBookHandler = () => {
+    if (book === undefined) return;
+    setOpenArchinveWarning(true);
+  };
+
+  const confirmArchiveBookHandler = async () => {
     if (book === undefined) return;
     try {
       const promiseMoveState = moveState.mutateAsync({
@@ -275,7 +294,12 @@ const StatusPage = ({ bookId, penname }: props) => {
     }
   };
 
-  const deleteBookHandler = async () => {
+  const deleteBookHandler = () => {
+    if (book === undefined) return;
+    setOpenDeleteWarning(true);
+  };
+
+  const confirmDeleteBookHandler = async () => {
     if (book === undefined) return;
     try {
       const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
@@ -315,6 +339,7 @@ const StatusPage = ({ bookId, penname }: props) => {
           });
         }
         setInviteSent(false);
+        setNewCollaborator("");
       } catch (err) {
         toast("Error occured while inviting");
         setInviteSent(false);
@@ -410,6 +435,42 @@ const StatusPage = ({ bookId, penname }: props) => {
 
   return (
     <div className="h-full w-full">
+      <DialogLayout
+        isOpen={openDraftWarning}
+        closeModal={() => setOpenDraftWarning(false)}
+        title={"Are you sure you want to start writing now?"}
+        description={"Not every authors has responsed to your invitation yet."}
+        onClick={() => void confirmDraftBookHandler()}
+        button
+      />
+      <DialogLayout
+        isOpen={openCompleteWarning}
+        closeModal={() => setOpenCompleteWarning(false)}
+        title={"Are you sure you want to complete the book now?"}
+        description={
+          "You cannot go back and continue writing anymore after complete the book"
+        }
+        onClick={() => void confirmCompleteBookHandler()}
+        button
+      />
+      <DialogLayout
+        isOpen={openDeleteWarning}
+        closeModal={() => setOpenDeleteWarning(false)}
+        title={"Are you sure you want to delete this book?"}
+        description={"You cannot restore the book after deleted"}
+        onClick={() => void confirmDeleteBookHandler()}
+        button
+      />
+      <DialogLayout
+        isOpen={openArchiveWarning}
+        closeModal={() => setOpenArchinveWarning(false)}
+        title={"Are you sure you want to archive the book?"}
+        description={
+          "Your reader will not be able to read this book anymore until you unarchive the book."
+        }
+        onClick={() => void confirmArchiveBookHandler()}
+        button
+      />
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
         <div
           onClick={() => router.back()}

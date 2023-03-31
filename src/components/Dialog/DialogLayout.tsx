@@ -6,7 +6,9 @@ type props = {
   closeModal: () => void;
   title?: string;
   description?: string;
-  children: ReactNode;
+  children?: ReactNode;
+  button?: boolean;
+  onClick?: () => void;
 };
 
 const DialogLayout = ({
@@ -15,7 +17,15 @@ const DialogLayout = ({
   title,
   description,
   children,
+  button,
+  onClick,
 }: props) => {
+  const onConfirmHandler = () => {
+    if (onClick) {
+      onClick();
+    }
+    closeModal();
+  };
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-30" onClose={closeModal}>
@@ -52,14 +62,31 @@ const DialogLayout = ({
                   </Dialog.Title>
                 )}
                 {description && (
-                  <div className="mt-2">
+                  <div className="my-5 px-6">
                     <p className="text-sm text-gray-500">{description}</p>
                   </div>
                 )}
-
-                <div className="mt-4 w-fit overflow-y-auto px-6 pb-6">
-                  {children}
-                </div>
+                {children && (
+                  <div className="mt-4 w-fit overflow-y-auto px-6 pb-6">
+                    {children}
+                  </div>
+                )}
+                {button && (
+                  <div className="my-3 flex justify-end gap-3 px-6">
+                    <button
+                      className="h-7 w-24 rounded-lg bg-red-400 text-sm text-white hover:bg-red-500"
+                      onClick={closeModal}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="h-7 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
+                      onClick={onConfirmHandler}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>
