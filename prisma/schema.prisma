@@ -253,7 +253,6 @@ model ChapterCommentLike {
 }
 
 enum NotificationEntityType {
-    USER
     BOOK
     CHAPTER
     COMMENT

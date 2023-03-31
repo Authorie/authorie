@@ -38,16 +38,12 @@ const getAllNotification = protectedProcedure
     });
 
     const bookIds = new Set<string>();
-    const userIds = new Set<string>();
     const commentIds = new Set<string>();
     const chapterIds = new Set<string>();
     for (const n of notifications) {
       switch (n.notificationObject.entityType) {
         case NotificationEntityType.BOOK:
           bookIds.add(n.notificationObject.entityId);
-          break;
-        case NotificationEntityType.USER:
-          userIds.add(n.notificationObject.entityId);
           break;
         case NotificationEntityType.COMMENT:
           commentIds.add(n.notificationObject.entityId);
@@ -60,12 +56,66 @@ const getAllNotification = protectedProcedure
       }
     }
 
+    const [books, comments, chapters] = await Promise.all([
+      ctx.prisma.book.findMany({
+        where: {
+          id: {
+            in: [...bookIds],
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          coverImage: true,
+        },
+      }),
+      ctx.prisma.chapterComment.findMany({
+        where: {
+          id: {
+            in: [...commentIds],
+          },
+        },
+        select: {
+          id: true,
+          parentCommentId: true,
+          chapter: {
+            select: {
+              id: true,
+              title: true,
+              book: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      ctx.prisma.chapter.findMany({
+        where: {
+          id: {
+            in: [...chapterIds],
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          book: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      }),
+    ]);
+
     return {
       ...makePagination(notifications, limit),
-      bookIds,
-      userIds,
-      commentIds,
-      chapterIds,
+      books,
+      comments,
+      chapters,
     };
   });
 
