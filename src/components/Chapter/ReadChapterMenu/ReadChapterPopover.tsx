@@ -22,14 +22,24 @@ const fonts = [
   { id: "Futura", name: "Futura" },
 ];
 
-// editor?.chain().selectAll().setFontFamily("Arial").run();
 const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
-  const [textSize, setTextSize] = useState(16);
+  const initialTextSize = localStorage.getItem("textSize");
+  const [textSize, setTextSize] = useState(
+    initialTextSize ? +initialTextSize : 16
+  );
+  const initialFontFamily = localStorage.getItem("fontFamily");
+  let foundFont = null;
+  if (initialFontFamily) {
+    foundFont = fonts.find((font) => font.id == initialFontFamily);
+  }
+
   const [fontFamily, setFontFamily] = useState(
-    fonts[0] as {
-      id: string;
-      name: string;
-    }
+    foundFont
+      ? foundFont
+      : (fonts[0] as {
+          id: string;
+          name: string;
+        })
   );
 
   useEffect(() => {
@@ -37,10 +47,12 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
       "--editor-h2",
       (textSize / 16).toString() + "rem"
     );
+    localStorage.setItem("textSize", textSize.toString());
   }, [textSize]);
 
   useEffect(() => {
     editor?.chain().selectAll().setFontFamily(fontFamily.id).run();
+    localStorage.setItem("fontFamily", fontFamily.id);
   }, [editor, fontFamily]);
 
   const onSizeChange = (e: ChangeEvent<HTMLInputElement>) => {

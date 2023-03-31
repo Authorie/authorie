@@ -162,15 +162,20 @@ const ChapterPage = ({ session, chapterId }: props) => {
     editable: false,
     autofocus: false,
     onUpdate: ({ editor }) => {
-      console.log("changed!");
+      localStorage.setItem(chapterId, JSON.stringify(editor.getJSON()));
     },
   });
 
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
-    editor.commands.setContent(chapter.content as JSONContent);
-  }, [chapter, editor]);
+    const localData = localStorage.getItem(chapterId);
+    if (localData) {
+      editor.commands.setContent(JSON.parse(localData) as JSONContent);
+    } else {
+      editor.commands.setContent(chapter.content as JSONContent);
+    }
+  }, [chapter, chapterId]);
 
   useEffect(() => {
     readChapter.mutate({ id: chapterId });
