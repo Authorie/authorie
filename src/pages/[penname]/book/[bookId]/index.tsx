@@ -41,8 +41,6 @@ const validationSchema = z.object({
   description: z.string().max(500, { message: "Description is too long" }),
 });
 
-type ValidationSchema = z.infer<typeof validationSchema>;
-
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
@@ -90,6 +88,43 @@ const BookContent = ({ bookId, penname }: props) => {
     uploadHandler: setBookWallpaper,
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
+  const uploadImageUrl = api.upload.uploadImage.useMutation();
+  const updateBook = api.book.update.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        title: newBook.title !== undefined ? newBook.title : prevData.title,
+        description:
+          newBook.description !== undefined
+            ? newBook.description
+            : prevData.description,
+        categories: addedCategories.map((data) => ({ category: data })),
+        coverImage:
+          newBook.coverImageUrl !== undefined
+            ? newBook.coverImageUrl
+            : prevData.coverImage,
+        wallpaperImage:
+          newBook.wallpaperImageUrl !== undefined
+            ? newBook.wallpaperImageUrl
+            : prevData.wallpaperImage,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
+    },
+    onError(_, newPost, ctx) {
+      if (!ctx?.prevData) return;
+      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
+    },
+    onSuccess() {
+      resetHandler();
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
+  });
   const moveState = api.book.moveState.useMutation({
     async onMutate(newBook) {
       await utils.book.getData.cancel();
@@ -135,15 +170,15 @@ const BookContent = ({ bookId, penname }: props) => {
   });
   const {
     register,
-    reset,
+    setValue,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<ValidationSchema>({
+  } = useForm({
     resolver: zodResolver(validationSchema),
     defaultValues: {
       title: book?.title,
-      description: book?.description || "",
+      description: book?.description,
     },
   });
   const isChapterCreatable = useMemo(() => {
@@ -168,87 +203,62 @@ const BookContent = ({ bookId, penname }: props) => {
   }, [book]);
 
   const draftBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.DRAFT,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Move to draft state...",
-        success: "Your book is in draft state now!",
-        error: "Error occured during move state",
-      });
-    } catch (err) {
-      toast("Error occured during move state");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.DRAFT,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Move to draft state...",
+      success: "Your book is in draft state now!",
+      error: "Error occured during move state",
+    });
   };
 
   const publishBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.PUBLISHED,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Publishing book...",
-        success: "Your book is now published!",
-        error: "Error occured during publish",
-      });
-    } catch (err) {
-      toast("Error occured during publish");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.PUBLISHED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Publishing book...",
+      success: "Your book is now published!",
+      error: "Error occured during publish",
+    });
   };
 
   const completeBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.COMPLETED,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Completing book...",
-        success: "Your book is now completed!",
-        error: "Error occured during completed",
-      });
-    } catch (err) {
-      toast("Error occured during completed");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.COMPLETED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Completing book...",
+      success: "Your book is now completed!",
+      error: "Error occured during completed",
+    });
   };
 
   const archiveBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.ARCHIVED,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Archive book...",
-        success: "Your book is now archived!",
-        error: "Error occured during archive",
-      });
-      void router.push(`/${penname}/book`);
-    } catch (err) {
-      toast("Error occured during archive");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.ARCHIVED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Archive book...",
+      success: "Your book is now archived!",
+      error: "Error occured during archive",
+    });
+    void router.push(`/${penname}/book`);
   };
 
   const deleteBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
-      await toast.promise(promiseDeleteBook, {
-        loading: "Deleting book...",
-        success: "Your book is now deleted!",
-        error: "Error occured during deleting",
-      });
-      void router.push(`/${penname}/book`);
-    } catch (err) {
-      toast("Error occured during deleting");
-    }
+    const promiseDeleteBook = deleteBook.mutateAsync({ id: bookId });
+    await toast.promise(promiseDeleteBook, {
+      loading: "Deleting book...",
+      success: "Your book is now deleted!",
+      error: "Error occured during deleting",
+    });
+    void router.push(`/${penname}/book`);
   };
 
   const toggleCategoryHandler = (category: Category) => {
@@ -258,6 +268,7 @@ const BookContent = ({ bookId, penname }: props) => {
       setAddedCategories([...addedCategories, category]);
     }
   };
+
   const toggleFavoriteHandler = () => {
     if (isFavorite) {
       unfavoriteBook.mutate({ id: bookId });
@@ -265,100 +276,53 @@ const BookContent = ({ bookId, penname }: props) => {
       favoriteBook.mutate({ id: bookId });
     }
   };
-  const updateBook = api.book.update.useMutation({
-    async onMutate(newBook) {
-      await utils.book.getData.cancel();
-      const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return;
-      const book = {
-        ...prevData,
-        title: newBook.title !== undefined ? newBook.title : prevData.title,
-        description:
-          newBook.description !== undefined
-            ? newBook.description
-            : prevData.description,
-        categories: addedCategories.map((data) => ({ category: data })),
-        coverImage:
-          newBook.coverImageUrl !== undefined
-            ? newBook.coverImageUrl
-            : prevData.coverImage,
-        wallpaperImage:
-          newBook.wallpaperImageUrl !== undefined
-            ? newBook.wallpaperImageUrl
-            : prevData.wallpaperImage,
-      };
-      utils.book.getData.setData({ id: newBook.id }, book);
-      return { prevData };
-    },
-    onError(_, newPost, ctx) {
-      if (!ctx?.prevData) return;
-      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
-    },
-    onSuccess() {
-      resetHandler();
-    },
-    onSettled: () => {
-      void utils.book.invalidate();
-    },
-  });
-  const uploadImageUrl = api.upload.uploadImage.useMutation();
 
   const resetHandler = () => {
-    reset((formValues) => ({
-      ...formValues,
-      title: book?.title as string,
-      description: book?.description || "",
-    }));
     setIsEdit(false);
+    setValue("title", book?.title || "");
+    setValue("description", book?.description || "");
     resetBookCover();
     resetBookWallpaper();
     setAddedCategories(book?.categories.map((data) => data.category) || []);
   };
 
-  const onSaveHandler = async (data: ValidationSchema) => {
+  const onSaveHandler = handleSubmit(async (data) => {
     if (book === undefined) return;
     const { title, description } = data;
-    try {
-      const promises = [
-        bookCover
-          ? uploadImageUrl.mutateAsync({
-              title: `${data.title}'s book cover image`,
-              image: bookCover,
-            })
-          : undefined,
-        bookWallpaper
-          ? uploadImageUrl.mutateAsync({
-              title: `${data.title}'s book wallpaper`,
-              image: bookWallpaper,
-            })
-          : undefined,
-      ] as const;
-      const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
-      const promiseUpdateBook = updateBook.mutateAsync({
-        id: book.id,
-        title,
-        description,
-        category: addedCategories.map((category) => category.id),
-        coverImageUrl,
-        wallpaperImageUrl,
-      });
-      await toast.promise(promiseUpdateBook, {
-        loading: "Updating book...",
-        success: "Book updated!",
-        error: "Error occured during update",
-      });
-    } catch (err) {
-      console.error(err);
-      toast("Error occured during update");
-    }
-  };
+    const promises = [
+      bookCover
+        ? uploadImageUrl.mutateAsync({
+            image: bookCover,
+          })
+        : undefined,
+      bookWallpaper
+        ? uploadImageUrl.mutateAsync({
+            image: bookWallpaper,
+          })
+        : undefined,
+    ] as const;
+    const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
+    const promiseUpdateBook = updateBook.mutateAsync({
+      id: book.id,
+      title,
+      description,
+      category: addedCategories.map((category) => category.id),
+      coverImageUrl,
+      wallpaperImageUrl,
+    });
+    await toast.promise(promiseUpdateBook, {
+      loading: "Updating book...",
+      success: "Book updated!",
+      error: "Error occured during update",
+    });
+  });
 
   return (
     <div className="flex w-full items-center justify-center px-6">
       {book ? (
         <form
           id="submit-changes"
-          onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
+          onSubmit={(e) => void onSaveHandler(e)}
           className="relative my-8 flex w-full  flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
         >
           <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
