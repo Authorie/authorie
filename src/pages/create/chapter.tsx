@@ -90,7 +90,7 @@ const CreateChapter = () => {
         heading: false,
         paragraph: {
           HTMLAttributes: {
-            class: "text-base",
+            class: "text-[length:var(--editor-h2)]",
           },
         },
         bulletList: {

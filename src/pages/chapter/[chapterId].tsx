@@ -21,6 +21,7 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TextStyle from "@tiptap/extension-text-style";
+import FontFamily from "@tiptap/extension-font-family";
 import Underline from "@tiptap/extension-underline";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import type { JSONContent } from "@tiptap/react";
@@ -37,6 +38,7 @@ import type {
 } from "next";
 import superjson from "superjson";
 import { useState } from "react";
+import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -99,7 +101,7 @@ const ChapterPage = ({ session, chapterId }: props) => {
         heading: false,
         paragraph: {
           HTMLAttributes: {
-            class: "text-base",
+            class: "text-[length:var(--editor-h2)]",
           },
         },
         bulletList: {
@@ -117,6 +119,7 @@ const ChapterPage = ({ session, chapterId }: props) => {
       Heading,
       Highlight,
       TextStyle,
+      FontFamily,
       Color,
       Link.configure({
         HTMLAttributes: {
@@ -157,6 +160,10 @@ const ChapterPage = ({ session, chapterId }: props) => {
       },
     },
     editable: false,
+    autofocus: false,
+    onUpdate: ({ editor }) => {
+      console.log("changed!");
+    },
   });
 
   useEffect(() => {
@@ -233,7 +240,7 @@ const ChapterPage = ({ session, chapterId }: props) => {
               </h4>
             </div>
           </div>
-          <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between overflow-hidden rounded-b-xl bg-authGreen-600 p-2">
+          <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between rounded-b-xl bg-authGreen-600 p-2">
             <div className="mx-10">
               <ChevronLeftIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>
@@ -255,6 +262,7 @@ const ChapterPage = ({ session, chapterId }: props) => {
               <ChevronRightIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>
           </div>
+
           <div className="relative mb-16 mt-0 flex grow justify-between p-4">
             <div className="w-[800px]">
               <EditorContent editor={editor} />
