@@ -433,7 +433,7 @@ const StatusPage = ({ bookId, penname }: props) => {
         closeModal={() => dispatchDialog({ type: "reset" })}
         title={dialogState.isOpen ? dialogState.title : ""}
         description={dialogState.isOpen ? dialogState.description : ""}
-        onClick={dialogState.isOpen ? dialogState.action : () => {}}
+        onClick={dialogState.isOpen ? dialogState.action : () => void {}}
         button
       />
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
