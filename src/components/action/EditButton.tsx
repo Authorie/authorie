@@ -13,7 +13,7 @@ export const EditButton = ({ onEdit, isOwner, reset, isEdit }: props) => {
       <button type="button" onClick={onEdit} className="cursor-pointer">
         {!isEdit && (
           <HiOutlinePencilSquare
-            className={`w-7 ${
+            className={`h-8 w-8 ${
               isOwner
                 ? " rounded-lg p-1 text-gray-800 hover:bg-gray-200"
                 : "hidden"

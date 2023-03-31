@@ -379,23 +379,21 @@ const AuthorBanner = ({
                   <div className="flex gap-3">
                     <button
                       onClick={onCancelHandler}
-                      className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
+                      className="rounded-xl border-2 border-red-400 px-5 py-1 text-red-400 hover:border-red-600 hover:text-red-600"
                     >
                       cancel
                     </button>
                     <button
                       type="submit"
-                      className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
+                      className="rounded-xl border-2 border-green-400 px-5 py-1 text-green-400 hover:border-green-600 hover:text-green-600"
                     >
                       save
                     </button>
                   </div>
                 ) : (
                   <HiOutlinePencilSquare
-                    width={25}
-                    height={25}
                     onClick={toggleIsEditHandler}
-                    className="cursor-pointer text-white hover:text-gray-500"
+                    className="h-6 w-6 cursor-pointer text-white hover:text-gray-500"
                   />
                 )}
               </div>
