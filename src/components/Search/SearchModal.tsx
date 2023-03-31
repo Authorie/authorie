@@ -1,6 +1,6 @@
 import { Dialog } from "@headlessui/react";
 import useSearch from "@hooks/search";
-import { api, type RouterOutputs } from "@utils/api";
+import { api } from "@utils/api";
 import { useState } from "react";
 import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
 import SearchBookResult from "./SearchBookResult";
@@ -9,8 +9,6 @@ import SearchUserResult from "./SearchUserResult";
 const allCategory = ["Users", "Books"] as const;
 
 type SearchCategory = (typeof allCategory)[number];
-
-type Books = RouterOutputs["search"]["searchBooks"]["items"];
 
 type props = {
   openDialog: boolean;

@@ -4,9 +4,21 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const inviteCollaborator = protectedProcedure
-  .input(z.object({ bookId: z.string().cuid(), userId: z.string().cuid() }))
+  .input(z.object({ bookId: z.string().cuid(), penname: z.string() }))
   .mutation(async ({ ctx, input }) => {
-    const { bookId, userId } = input;
+    const { bookId, penname } = input;
+    const user = await ctx.prisma.user.findFirst({
+      where: {
+        penname,
+      },
+    });
+    if (!user) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "user does not exist",
+      });
+    }
+
     const book = await ctx.prisma.book.findFirst({
       where: {
         id: bookId,
@@ -24,12 +36,12 @@ const inviteCollaborator = protectedProcedure
               include: {
                 followers: {
                   where: {
-                    followerId: userId,
+                    followerId: user.id,
                   },
                 },
                 following: {
                   where: {
-                    followingId: userId,
+                    followingId: user.id,
                   },
                 },
               },
@@ -47,7 +59,7 @@ const inviteCollaborator = protectedProcedure
     }
 
     // check if the user is the caller
-    if (userId === ctx.session.user.id) {
+    if (user.id === ctx.session.user.id) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "you cannot invite yourself",
@@ -56,7 +68,8 @@ const inviteCollaborator = protectedProcedure
 
     const isCollaborator = book.owners.find(
       (owner) =>
-        owner.status === BookOwnerStatus.COLLABORATOR && owner.userId === userId
+        owner.status === BookOwnerStatus.COLLABORATOR &&
+        owner.user.penname === penname
     );
     if (isCollaborator) {
       throw new TRPCError({
@@ -77,13 +90,13 @@ const inviteCollaborator = protectedProcedure
     if (owner.user.followers.length === 0) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: `User ${userId} is not following you`,
+        message: `User ${penname} is not following you`,
       });
     }
     if (owner.user.following.length === 0) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: `You are not following user ${userId}}`,
+        message: `You are not following user ${penname}}`,
       });
     }
 
@@ -93,7 +106,7 @@ const inviteCollaborator = protectedProcedure
         where: {
           bookId_userId: {
             bookId,
-            userId,
+            userId: user.id,
           },
         },
         create: {
@@ -104,7 +117,7 @@ const inviteCollaborator = protectedProcedure
           },
           user: {
             connect: {
-              id: userId,
+              id: user.id,
             },
           },
           status: BookOwnerStatus.INVITEE,
@@ -117,7 +130,7 @@ const inviteCollaborator = protectedProcedure
           },
           user: {
             connect: {
-              id: userId,
+              id: user.id,
             },
           },
           status: BookOwnerStatus.INVITEE,

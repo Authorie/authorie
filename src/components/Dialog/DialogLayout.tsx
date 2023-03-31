@@ -3,7 +3,7 @@ import { Fragment, type ReactNode } from "react";
 
 type props = {
   isOpen: boolean;
-  closeModal: () => void;
+  closeModal: () => void | undefined;
   title?: string;
   description?: string;
   children?: ReactNode;
