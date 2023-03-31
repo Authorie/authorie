@@ -35,6 +35,9 @@ const getAllNotification = protectedProcedure
       },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     const bookIds = new Set<string>();

@@ -289,6 +289,7 @@ model Notification {
     notificationObjectId String
     viewer               User               @relation(fields: [viewerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     viewerId             String
+    createdAt            DateTime           @default(now())
 
     @@index([notificationObjectId])
     @@index([viewerId])
