@@ -258,12 +258,28 @@ enum NotificationEntityType {
     COMMENT
 }
 
+enum NotificationActionType {
+    USER_FOLLOW
+    USER_COLLAB_INVITE
+    USER_COLLAB_REJECT
+    USER_COLLAB_ACCEPT
+    BOOK_FAVORITE
+    BOOK_COMPLETE
+    CHAPTER_NEW
+    CHAPTER_LIKE
+    CHAPTER_COMMENT
+    COMMENT_REPLY
+    COMMENT_LIKE
+}
+
 model NotificationObject {
-    id         String                 @id @default(cuid())
-    entityType NotificationEntityType
-    entityId   String
+    id         String                  @id @default(cuid())
+    entityType NotificationEntityType?
+    entityId   String?
+    action     NotificationActionType
     actors     NotificationChange[]
     viewers    Notification[]
+    updatedAt  DateTime                @updatedAt
 
     @@index([entityType])
     @@index([entityId])
@@ -274,7 +290,6 @@ model NotificationChange {
     id                   String             @id @default(cuid())
     notificationObject   NotificationObject @relation(fields: [notificationObjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     notificationObjectId String
-    actionOnEntity       String
     actor                User               @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     actorId              String
 
@@ -289,8 +304,8 @@ model Notification {
     notificationObjectId String
     viewer               User               @relation(fields: [viewerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     viewerId             String
-    createdAt            DateTime           @default(now())
 
+    @@unique([notificationObjectId, viewerId])
     @@index([notificationObjectId])
     @@index([viewerId])
     @@map("notifications")

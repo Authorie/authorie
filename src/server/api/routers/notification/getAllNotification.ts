@@ -36,7 +36,9 @@ const getAllNotification = protectedProcedure
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
-        createdAt: "desc",
+        notificationObject: {
+          updatedAt: "desc",
+        },
       },
     });
 
@@ -44,6 +46,8 @@ const getAllNotification = protectedProcedure
     const commentIds = new Set<string>();
     const chapterIds = new Set<string>();
     for (const n of notifications) {
+      if (!n.notificationObject.entityType || !n.notificationObject.entityId)
+        continue;
       switch (n.notificationObject.entityType) {
         case NotificationEntityType.BOOK:
           bookIds.add(n.notificationObject.entityId);
