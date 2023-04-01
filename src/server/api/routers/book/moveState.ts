@@ -1,4 +1,9 @@
-import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import {
+  BookOwnerStatus,
+  BookStatus,
+  NotificationActionType,
+  NotificationEntityType,
+} from "@prisma/client";
 import { protectedProcedure } from "@server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -18,21 +23,13 @@ const moveState = protectedProcedure
   )
   .mutation(async ({ ctx, input }) => {
     const { id, status, force } = input;
-    let book;
-    try {
-      book = await ctx.prisma.book.findUniqueOrThrow({
-        where: { id },
-        include: {
-          owners: true,
-        },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "book not found",
-        cause: err,
-      });
-    }
+    const book = await ctx.prisma.book.findUniqueOrThrow({
+      where: { id },
+      include: {
+        owners: true,
+        favoritees: true,
+      },
+    });
 
     if (
       !book.owners.some(
@@ -104,8 +101,8 @@ const moveState = protectedProcedure
         break;
     }
 
-    try {
-      await ctx.prisma.book.update({
+    ctx.prisma.$transaction(async (tx) => {
+      await tx.book.update({
         where: { id },
         data: {
           status,
@@ -124,13 +121,24 @@ const moveState = protectedProcedure
               : undefined,
         },
       });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "failed to move book state",
-        cause: err,
-      });
-    }
+      if (status === BookStatus.COMPLETED) {
+        await tx.notificationObject.create({
+          data: {
+            entityId: id,
+            entityType: NotificationEntityType.BOOK,
+            action: NotificationActionType.BOOK_COMPLETE,
+            actorId: ctx.session.user.id,
+            viewers: {
+              createMany: {
+                data: book.favoritees.map((favoritee) => ({
+                  viewerId: favoritee.userId,
+                })),
+              },
+            },
+          },
+        });
+      }
+    });
   });
 
 export default moveState;
