@@ -1,6 +1,9 @@
-import { BookStatus } from "@prisma/client";
+import {
+  BookStatus,
+  NotificationActionType,
+  NotificationEntityType,
+} from "@prisma/client";
 import { protectedProcedure } from "@server/api/trpc";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const createComment = protectedProcedure
@@ -13,51 +16,35 @@ const createComment = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-    try {
-      await ctx.prisma.chapter.findFirstOrThrow({
-        where: {
-          id: input.id,
-          book: {
-            status: {
-              in: [
-                BookStatus.PUBLISHED,
-                BookStatus.COMPLETED,
-                BookStatus.ARCHIVED,
-              ],
-            },
-          },
-          publishedAt: {
-            lte: new Date(),
+    const chapter = await ctx.prisma.chapter.findFirstOrThrow({
+      where: {
+        id: input.id,
+        book: {
+          status: {
+            in: [
+              BookStatus.PUBLISHED,
+              BookStatus.COMPLETED,
+              BookStatus.ARCHIVED,
+            ],
           },
         },
-        include: { book: true },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Chapter not found",
-        cause: err,
-      });
-    }
+        publishedAt: {
+          lte: new Date(),
+        },
+      },
+      include: { book: true },
+    });
 
-    if (input.parent) {
-      try {
-        await ctx.prisma.chapterComment.findUniqueOrThrow({
+    const parentComment = input.parent
+      ? await ctx.prisma.chapterComment.findUniqueOrThrow({
           where: {
             id: input.parent,
           },
-        });
-      } catch (err) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Parent comment not found",
-          cause: err,
-        });
-      }
-    }
+        })
+      : undefined;
 
-    try {
-      await ctx.prisma.chapterComment.create({
+    ctx.prisma.$transaction(async (tx) => {
+      await tx.chapterComment.create({
         data: {
           image: input.image,
           content: input.content,
@@ -80,13 +67,37 @@ const createComment = protectedProcedure
             : undefined,
         },
       });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "failed to comment",
-        cause: err,
+
+      await tx.notificationObject.create({
+        data: {
+          entityId: input.id,
+          entityType: NotificationEntityType.CHAPTER,
+          action: NotificationActionType.CHAPTER_COMMENT,
+          actorId: ctx.session.user.id,
+          viewers: {
+            create: {
+              viewerId: chapter.ownerId,
+            },
+          },
+        },
       });
-    }
+
+      if (parentComment) {
+        await tx.notificationObject.create({
+          data: {
+            entityId: parentComment.id,
+            entityType: NotificationEntityType.COMMENT,
+            action: NotificationActionType.COMMENT_REPLY,
+            actorId: ctx.session.user.id,
+            viewers: {
+              create: {
+                viewerId: parentComment.userId,
+              },
+            },
+          },
+        });
+      }
+    });
   });
 
 export default createComment;
