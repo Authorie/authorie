@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/legacy/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
 import * as z from "zod";
@@ -25,11 +25,15 @@ const validationSchema = z.object({
 type ValidationSchema = z.infer<typeof validationSchema>;
 
 const CreateBook = () => {
+  const router = useRouter();
+  const utils = api.useContext();
+  const { data: categories } = api.category.getAll.useQuery();
+  const [addedCategories, setAddedCategories] = useState<Category[]>([]);
+  const [addedCollaborators, setAddedCollaborators] = useState<User[]>([]);
   const { imageData: bookCover, uploadHandler: setBookCover } =
     useImageUpload();
   const { imageData: bookWallpaper, uploadHandler: setBookWallpaper } =
     useImageUpload();
-  const router = useRouter();
   const { data: session } = useSession({
     required: true,
     onUnauthenticated() {
@@ -45,9 +49,6 @@ const CreateBook = () => {
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
   });
-  const utils = api.useContext();
-  const { data: categories } = api.category.getAll.useQuery();
-  const [addedCollaborators, setAddedCollaborators] = useState<User[]>([]);
 
   const bookCreateMutation = api.book.create.useMutation({
     onSuccess: async () => {
@@ -64,50 +65,42 @@ const CreateBook = () => {
     } else {
       setAddedCollaborators([...addedCollaborators, collaborator]);
     }
-    console.log(addedCollaborators);
   };
 
-  const [addedCategories, setAddedCategories] = useState<Category[]>([]);
-  const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
-    try {
-      let bookCoverUrl;
-      let wallpaperImageUrl;
-      if (bookCover) {
-        bookCoverUrl = await uploadImageUrl.mutateAsync({
-          title: `${data.title}'s book cover image`,
-          image: bookCover,
-        });
-      }
-      if (bookWallpaper) {
-        wallpaperImageUrl = await uploadImageUrl.mutateAsync({
-          title: `${data.title}'s book cover image`,
-          image: bookWallpaper,
-        });
-      }
-      const promiseCreateBook = bookCreateMutation.mutateAsync({
-        title: data.title,
-        description: data.description,
-        categoryIds: addedCategories.map((category) => category.id),
-        coverImageUrl: bookCoverUrl ? bookCoverUrl : undefined,
-        wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : undefined,
-        invitees: addedCollaborators.map((data) => data.id),
-      });
-      await toast.promise(promiseCreateBook, {
-        loading: `Creating a book called ${data.title}`,
-        success: `Created ${data.title} successfully!`,
-        error: "Error occured while creating book!",
-      });
-      reset();
-    } catch (err) {
-      toast("Error occured while creating book!");
-    }
-  };
+  const submitHandler = handleSubmit(async ({ title, description }) => {
+    const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
+      bookCover
+        ? await uploadImageUrl.mutateAsync({
+            image: bookCover,
+          })
+        : undefined,
+      bookWallpaper
+        ? await uploadImageUrl.mutateAsync({
+            image: bookWallpaper,
+          })
+        : undefined,
+    ] as const);
+    const promiseCreateBook = bookCreateMutation.mutateAsync({
+      title,
+      description,
+      coverImageUrl,
+      wallpaperImageUrl,
+      invitees: addedCollaborators.map((data) => data.id),
+      categoryIds: addedCategories.map((category) => category.id),
+    });
+    await toast.promise(promiseCreateBook, {
+      loading: `Creating a book called ${title}`,
+      success: `Created ${title} successfully!`,
+      error: "Error occured while creating book!",
+    });
+    reset();
+  });
 
   return (
     <div>
       {session ? (
         <form
-          onSubmit={(e) => void handleSubmit(onSubmit)(e)}
+          onSubmit={(e) => void submitHandler(e)}
           className="items-center rounded-b-2xl bg-white px-10 py-10"
         >
           <div className="flex flex-col gap-10">
@@ -179,7 +172,7 @@ const CreateBook = () => {
                 </div>
                 {errors.title && (
                   <p className="text-xs text-red-400" role="alert">
-                    {errors.title.message}
+                    {errors.title.message?.toString()}
                   </p>
                 )}
                 <div className="flex flex-col gap-1 pl-1">
@@ -311,7 +304,7 @@ const CreateBook = () => {
                 </div>
                 {errors.description && (
                   <p className="text-xs text-red-400" role="alert">
-                    {errors.description.message}
+                    {errors.description.message?.toString()}
                   </p>
                 )}
               </div>
