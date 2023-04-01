@@ -177,8 +177,8 @@ const BookContent = ({ bookId, penname }: props) => {
   } = useForm({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      title: book?.title,
-      description: book?.description,
+      title: book?.title || "",
+      description: book?.description || "",
     },
   });
   const isChapterCreatable = useMemo(() => {
