@@ -43,28 +43,26 @@ model Session {
 }
 
 model User {
-    id                 String               @id @default(cuid())
-    penname            String?              @unique
-    name               String?
-    email              String?              @unique
-    emailVerified      DateTime?
-    image              String?
-    wallpaperImage     String?
-    coin               Int                  @default(0)
-    bio                String               @default("")
-    accounts           Account[]
-    sessions           Session[]
-    categories         CategoriesOnUsers[]
-    following          FollowingFollower[]  @relation("following")
-    followers          FollowingFollower[]  @relation("followers")
-    ownedBooks         BookOwner[]
-    favorites          FavoriteBook[]
-    ownedChapters      Chapter[]
-    likedChapters      ChapterLike[]
-    comments           ChapterComment[]
-    likedComments      ChapterCommentLike[]
-    notifications      Notification[]
-    ownedNotifications NotificationObject[]
+    id             String               @id @default(cuid())
+    penname        String?              @unique
+    name           String?
+    email          String?              @unique
+    emailVerified  DateTime?
+    image          String?
+    wallpaperImage String?
+    coin           Int                  @default(0)
+    bio            String               @default("")
+    accounts       Account[]
+    sessions       Session[]
+    categories     CategoriesOnUsers[]
+    following      FollowingFollower[]  @relation("following")
+    followers      FollowingFollower[]  @relation("followers")
+    ownedBooks     BookOwner[]
+    favorites      FavoriteBook[]
+    ownedChapters  Chapter[]
+    likedChapters  ChapterLike[]
+    comments       ChapterComment[]
+    likedComments  ChapterCommentLike[]
 
     @@map("users")
 }
@@ -250,53 +248,4 @@ model ChapterCommentLike {
     @@index([userId])
     @@index([commentId])
     @@map("chapterCommentLikes")
-}
-
-enum NotificationEntityType {
-    BOOK
-    CHAPTER
-    COMMENT
-}
-
-enum NotificationActionType {
-    USER_FOLLOW
-    USER_COLLAB_INVITE
-    USER_COLLAB_REJECT
-    USER_COLLAB_ACCEPT
-    BOOK_FAVORITE
-    BOOK_COMPLETE
-    CHAPTER_NEW
-    CHAPTER_LIKE
-    CHAPTER_COMMENT
-    COMMENT_REPLY
-    COMMENT_LIKE
-}
-
-model NotificationObject {
-    id         String                  @id @default(cuid())
-    entityType NotificationEntityType?
-    entityId   String?
-    action     NotificationActionType
-    actor      User                    @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    actorId    String
-    viewers    Notification[]
-    createdAt  DateTime                @default(now())
-
-    @@index([actorId])
-    @@index([entityType])
-    @@index([entityId])
-    @@map("notificationObjects")
-}
-
-model Notification {
-    id                   String             @id @default(cuid())
-    notificationObject   NotificationObject @relation(fields: [notificationObjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    notificationObjectId String
-    viewer               User               @relation(fields: [viewerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    viewerId             String
-
-    @@unique([notificationObjectId, viewerId])
-    @@index([notificationObjectId])
-    @@index([viewerId])
-    @@map("notifications")
 }

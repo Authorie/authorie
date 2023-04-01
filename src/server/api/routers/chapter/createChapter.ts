@@ -20,10 +20,10 @@ const createChapter = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-    await ctx.prisma.$transaction(async (tx) => {
-      let book;
-      const { chapterId, title, content, bookId, publishedAt } = input;
-      if (bookId) {
+    let book;
+    const { chapterId, title, content, bookId, publishedAt } = input;
+    if (bookId) {
+      try {
         book = await ctx.prisma.book.findUniqueOrThrow({
           where: {
             id: bookId,
@@ -36,65 +36,82 @@ const createChapter = protectedProcedure
             },
           },
         });
-
-        if (
-          !book.owners.some((owner) => owner.userId === ctx.session.user.id)
-        ) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the owner of this book",
-          });
-        }
-
-        const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
-        if (!validBookStatus.includes(book.status)) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "You can't add chapters to this book",
-          });
-        }
-      } else {
-        if (publishedAt) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "You can't publish a chapter without a book",
-          });
-        }
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Book not found",
+          cause: err,
+        });
       }
 
-      if (chapterId) {
-        const chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+      if (!book.owners.some((owner) => owner.userId === ctx.session.user.id)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not the owner of this book",
+        });
+      }
+
+      const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
+      if (!validBookStatus.includes(book.status)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't add chapters to this book",
+        });
+      }
+    } else {
+      if (publishedAt) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't publish a chapter without a book",
+        });
+      }
+    }
+
+    if (chapterId) {
+      let chapter;
+      try {
+        chapter = await ctx.prisma.chapter.findUniqueOrThrow({
           where: {
             id: chapterId,
           },
         });
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chapter not found",
+          cause: err,
+        });
+      }
 
-        if (chapter.ownerId !== ctx.session.user.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the owner of this chapter",
-          });
-        }
+      if (chapter.ownerId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not the owner of this chapter",
+        });
+      }
 
-        if (
-          publishedAt &&
-          chapter.publishedAt &&
-          chapter.publishedAt.getTime() < Date.now()
-        ) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "You can't update a published chapter",
-          });
-        }
+      if (
+        publishedAt &&
+        chapter.publishedAt &&
+        chapter.publishedAt.getTime() < Date.now()
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't update a published chapter",
+        });
+      }
 
-        if (bookId && chapter.bookId && chapter.bookId !== bookId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "You can't change the book of a chapter",
-          });
-        }
+      if (bookId && chapter.bookId && chapter.bookId !== bookId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't change the book of a chapter",
+        });
+      }
 
-        await ctx.prisma.chapter.update({
+      try {
+        return await ctx.prisma.chapter.update({
           where: { id: chapterId },
           data: {
             title: title,
@@ -118,32 +135,48 @@ const createChapter = protectedProcedure
             book: true,
           },
         });
-      } else {
-        await ctx.prisma.chapter.create({
-          data: {
-            title: title,
-            content: content,
-            publishedAt:
-              typeof publishedAt === "boolean" ? new Date() : publishedAt,
-            book: bookId
-              ? {
-                  connect: {
-                    id: bookId,
-                  },
-                }
-              : undefined,
-            owner: {
-              connect: {
-                id: ctx.session.user.id,
-              },
-            },
-          },
-          include: {
-            book: true,
-          },
+      } catch (err) {
+        console.error(err);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Something went wrong",
+          cause: err,
         });
       }
-    });
+    }
+
+    try {
+      return await ctx.prisma.chapter.create({
+        data: {
+          title: title,
+          content: content,
+          publishedAt:
+            typeof publishedAt === "boolean" ? new Date() : publishedAt,
+          book: bookId
+            ? {
+                connect: {
+                  id: bookId,
+                },
+              }
+            : undefined,
+          owner: {
+            connect: {
+              id: ctx.session.user.id,
+            },
+          },
+        },
+        include: {
+          book: true,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Something went wrong",
+        cause: err,
+      });
+    }
   });
 
 export default createChapter;

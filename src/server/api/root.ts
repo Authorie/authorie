@@ -2,7 +2,6 @@ import { bookRouter } from "./routers/book";
 import { categoryRouter } from "./routers/category";
 import { chapterRouter } from "./routers/chapter";
 import { commentRouter } from "./routers/comment";
-import { notificationRouter } from "./routers/notification";
 import { searchRouter } from "./routers/search";
 import { uploadRouter } from "./routers/upload";
 import { userRouter } from "./routers/user";
@@ -21,7 +20,6 @@ export const appRouter = createTRPCRouter({
   comment: commentRouter,
   chapter: chapterRouter,
   category: categoryRouter,
-  notification: notificationRouter,
 });
 
 // export type definition of API

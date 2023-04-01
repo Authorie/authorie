@@ -1,9 +1,4 @@
-import {
-  BookOwnerStatus,
-  BookStatus,
-  NotificationActionType,
-  NotificationEntityType,
-} from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { protectedProcedure } from "@server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -23,13 +18,21 @@ const moveState = protectedProcedure
   )
   .mutation(async ({ ctx, input }) => {
     const { id, status, force } = input;
-    const book = await ctx.prisma.book.findUniqueOrThrow({
-      where: { id },
-      include: {
-        owners: true,
-        favoritees: true,
-      },
-    });
+    let book;
+    try {
+      book = await ctx.prisma.book.findUniqueOrThrow({
+        where: { id },
+        include: {
+          owners: true,
+        },
+      });
+    } catch (err) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "book not found",
+        cause: err,
+      });
+    }
 
     if (
       !book.owners.some(
@@ -101,8 +104,8 @@ const moveState = protectedProcedure
         break;
     }
 
-    await ctx.prisma.$transaction(async (tx) => {
-      await tx.book.update({
+    try {
+      await ctx.prisma.book.update({
         where: { id },
         data: {
           status,
@@ -121,24 +124,13 @@ const moveState = protectedProcedure
               : undefined,
         },
       });
-      if (status === BookStatus.COMPLETED) {
-        await tx.notificationObject.create({
-          data: {
-            entityId: id,
-            entityType: NotificationEntityType.BOOK,
-            action: NotificationActionType.BOOK_COMPLETE,
-            actorId: ctx.session.user.id,
-            viewers: {
-              createMany: {
-                data: book.favoritees.map((favoritee) => ({
-                  viewerId: favoritee.userId,
-                })),
-              },
-            },
-          },
-        });
-      }
-    });
+    } catch (err) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "failed to move book state",
+        cause: err,
+      });
+    }
   });
 
 export default moveState;

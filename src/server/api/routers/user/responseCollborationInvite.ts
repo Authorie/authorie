@@ -1,9 +1,6 @@
-import {
-  BookOwnerStatus,
-  NotificationActionType,
-  NotificationEntityType,
-} from "@prisma/client";
+import { BookOwnerStatus } from "@prisma/client";
 import { protectedProcedure } from "@server/api/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const responseCollaborationInvite = protectedProcedure
@@ -11,33 +8,40 @@ const responseCollaborationInvite = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const { bookId, accept } = input;
     // check if the book exists
-    const book = await ctx.prisma.book.findUniqueOrThrow({
-      where: {
-        id: bookId,
-      },
-      include: {
-        owners: {
-          where: {
-            status: {
-              in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
-            },
-          },
+    try {
+      await ctx.prisma.book.findUniqueOrThrow({
+        where: {
+          id: bookId,
         },
-      },
-    });
+      });
+    } catch (err) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "book does not exist",
+        cause: err,
+      });
+    }
 
     // check if the user is already a collaborator
-    await ctx.prisma.bookOwner.findFirstOrThrow({
-      where: {
-        bookId,
-        userId: ctx.session.user.id,
-        status: BookOwnerStatus.INVITEE,
-      },
-    });
+    try {
+      await ctx.prisma.bookOwner.findFirstOrThrow({
+        where: {
+          bookId,
+          userId: ctx.session.user.id,
+          status: BookOwnerStatus.INVITEE,
+        },
+      });
+    } catch (err) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "you are not invited to this book",
+        cause: err,
+      });
+    }
 
     // update the book owner status
-    await ctx.prisma.$transaction([
-      ctx.prisma.bookOwner.update({
+    try {
+      await ctx.prisma.bookOwner.update({
         where: {
           bookId_userId: {
             bookId,
@@ -49,25 +53,15 @@ const responseCollaborationInvite = protectedProcedure
             ? BookOwnerStatus.COLLABORATOR
             : BookOwnerStatus.REJECTED,
         },
-      }),
-      ctx.prisma.notificationObject.create({
-        data: {
-          entityId: bookId,
-          entityType: NotificationEntityType.BOOK,
-          action: accept
-            ? NotificationActionType.USER_COLLAB_ACCEPT
-            : NotificationActionType.USER_COLLAB_REJECT,
-          actorId: ctx.session.user.id,
-          viewers: {
-            createMany: {
-              data: book.owners.map((owner) => ({
-                viewerId: owner.userId,
-              })),
-            },
-          },
-        },
-      }),
-    ]);
+      });
+    } catch (err) {
+      console.error(err);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "something went wrong",
+        cause: err,
+      });
+    }
   });
 
 export default responseCollaborationInvite;

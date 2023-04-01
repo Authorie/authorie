@@ -143,16 +143,16 @@ const AuthorBanner = ({
     if (!user) return;
     if (isOwner) return;
     if (Boolean(isFollowed)) {
-      unfollowUserMutation.mutate({ id: user.id });
+      unfollowUserMutation.mutate(user.id);
     } else {
-      followUserMutation.mutate({ id: user.id });
+      followUserMutation.mutate(user.id);
     }
   }, [followUserMutation, isFollowed, isOwner, unfollowUserMutation, user]);
 
   const onFollowHandler = (userId: string) => {
     if (!user) return;
     if (session?.user.id === userId) return;
-    followUserMutation.mutate({ id: userId });
+    followUserMutation.mutate(userId);
   };
 
   const onUnfollowHandler = (userId: string) => {
@@ -160,7 +160,7 @@ const AuthorBanner = ({
     if (session?.user.id === userId) {
       return;
     }
-    unfollowUserMutation.mutate({ id: userId });
+    unfollowUserMutation.mutate(userId);
   };
 
   const onCancelHandler = () => {
