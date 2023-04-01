@@ -63,8 +63,8 @@ model User {
     likedChapters      ChapterLike[]
     comments           ChapterComment[]
     likedComments      ChapterCommentLike[]
-    NotificationChange NotificationChange[]
-    Notification       Notification[]
+    notifications      Notification[]
+    ownedNotifications NotificationObject[]
 
     @@map("users")
 }
@@ -277,25 +277,15 @@ model NotificationObject {
     entityType NotificationEntityType?
     entityId   String?
     action     NotificationActionType
-    actors     NotificationChange[]
+    actor      User                    @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    actorId    String
     viewers    Notification[]
-    updatedAt  DateTime                @updatedAt
+    createdAt  DateTime                @default(now())
 
+    @@index([actorId])
     @@index([entityType])
     @@index([entityId])
     @@map("notificationObjects")
-}
-
-model NotificationChange {
-    id                   String             @id @default(cuid())
-    notificationObject   NotificationObject @relation(fields: [notificationObjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    notificationObjectId String
-    actor                User               @relation(fields: [actorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    actorId              String
-
-    @@index([notificationObjectId])
-    @@index([actorId])
-    @@map("notificationChanges")
 }
 
 model Notification {

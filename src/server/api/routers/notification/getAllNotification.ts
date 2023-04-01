@@ -19,15 +19,11 @@ const getAllNotification = protectedProcedure
       include: {
         notificationObject: {
           include: {
-            actors: {
-              include: {
-                actor: {
-                  select: {
-                    id: true,
-                    penname: true,
-                    image: true,
-                  },
-                },
+            actor: {
+              select: {
+                id: true,
+                penname: true,
+                image: true,
               },
             },
           },
@@ -37,7 +33,7 @@ const getAllNotification = protectedProcedure
       cursor: cursor ? { id: cursor } : undefined,
       orderBy: {
         notificationObject: {
-          updatedAt: "desc",
+          createdAt: "desc",
         },
       },
     });

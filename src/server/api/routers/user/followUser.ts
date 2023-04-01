@@ -21,15 +21,8 @@ const followUser = protectedProcedure
       }),
       ctx.prisma.notificationObject.create({
         data: {
-          actors: {
-            create: {
-              actor: {
-                connect: {
-                  id: ctx.session.user.id,
-                },
-              },
-            },
-          },
+          action: NotificationActionType.USER_FOLLOW,
+          actorId: ctx.session.user.id,
           viewers: {
             create: {
               viewer: {
@@ -37,7 +30,6 @@ const followUser = protectedProcedure
               },
             },
           },
-          action: NotificationActionType.USER_FOLLOW,
         },
       }),
     ]);
