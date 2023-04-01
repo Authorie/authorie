@@ -129,6 +129,20 @@ const CreateBook = () => {
               <div className="h-full w-full bg-authGreen-500"></div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-gray-100" />
+            <label
+              htmlFor="BookWallpaper"
+              className="absolute left-4 top-4 h-7 w-8"
+            >
+              <input
+                type="file"
+                accept="image/png, image/jpeg"
+                name="BookWallpaper"
+                id="BookWallpaper"
+                className="hidden cursor-pointer"
+                onChange={setBookWallpaper}
+              />
+              <HiOutlinePhoto className="h-8 w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
+            </label>
           </div>
           <label
             htmlFor="BookCover"
@@ -149,20 +163,9 @@ const CreateBook = () => {
               height={288}
               className="rounded-md object-cover"
             />
-            <HiOutlinePhoto className="absolute bottom-2 right-2 w-8 rounded-md bg-gray-100" />
+            <HiOutlinePhoto className="absolute bottom-2 right-2 h-8 w-8 rounded-md bg-gray-100" />
           </label>
           <div className="flex grow flex-col justify-end gap-2 pt-6">
-            <label htmlFor="BookWallpaper" className="relative h-7 w-8">
-              <input
-                type="file"
-                accept="image/png, image/jpeg"
-                name="BookWallpaper"
-                id="BookWallpaper"
-                className="hidden cursor-pointer"
-                onChange={setBookWallpaper}
-              />
-              <HiOutlinePhoto className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
-            </label>
             <div className="flex items-end gap-2">
               <input
                 aria-invalid={errors.title ? "true" : "false"}
