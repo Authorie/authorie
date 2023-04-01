@@ -43,7 +43,7 @@ const createComment = protectedProcedure
         })
       : undefined;
 
-    ctx.prisma.$transaction(async (tx) => {
+    await ctx.prisma.$transaction(async (tx) => {
       await tx.chapterComment.create({
         data: {
           image: input.image,

@@ -101,7 +101,7 @@ const moveState = protectedProcedure
         break;
     }
 
-    ctx.prisma.$transaction(async (tx) => {
+    await ctx.prisma.$transaction(async (tx) => {
       await tx.book.update({
         where: { id },
         data: {
