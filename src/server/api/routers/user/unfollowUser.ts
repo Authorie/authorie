@@ -4,13 +4,14 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const unfollowUser = protectedProcedure
-  .input(z.string())
+  .input(z.object({ id: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
+    const { id } = input;
     try {
       await ctx.prisma.followingFollower.delete({
         where: {
           followingId_followerId: {
-            followingId: input,
+            followingId: id,
             followerId: ctx.session.user.id,
           },
         },
@@ -20,13 +21,13 @@ const unfollowUser = protectedProcedure
         if (e.code === "P2002") {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: `user does not exist: ${input}`,
+            message: `user does not exist: ${id}`,
             cause: e,
           });
         }
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: `you are already following ${input}`,
+          message: `you are already following ${id}`,
           cause: e,
         });
       }
