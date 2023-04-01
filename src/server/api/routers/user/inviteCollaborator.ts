@@ -1,4 +1,8 @@
-import { BookOwnerStatus } from "@prisma/client";
+import {
+  BookOwnerStatus,
+  NotificationActionType,
+  NotificationEntityType,
+} from "@prisma/client";
 import { protectedProcedure } from "@server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -101,8 +105,8 @@ const inviteCollaborator = protectedProcedure
     }
 
     // create the invite
-    try {
-      return await ctx.prisma.bookOwner.upsert({
+    await ctx.prisma.$transaction([
+      ctx.prisma.bookOwner.upsert({
         where: {
           bookId_userId: {
             bookId,
@@ -135,14 +139,21 @@ const inviteCollaborator = protectedProcedure
           },
           status: BookOwnerStatus.INVITEE,
         },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: err,
-      });
-    }
+      }),
+      ctx.prisma.notificationObject.create({
+        data: {
+          entityId: bookId,
+          entityType: NotificationEntityType.BOOK,
+          action: NotificationActionType.USER_COLLAB_INVITE,
+          actorId: ctx.session.user.id,
+          viewers: {
+            create: {
+              viewerId: user.id,
+            },
+          },
+        },
+      }),
+    ]);
   });
 
 export default inviteCollaborator;

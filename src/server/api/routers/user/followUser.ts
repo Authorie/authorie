@@ -1,13 +1,13 @@
-import { Prisma } from "@prisma/client";
+import { NotificationActionType } from "@prisma/client";
 import { protectedProcedure } from "@server/api/trpc";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const followUser = protectedProcedure
-  .input(z.string())
+  .input(z.object({ id: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
-    try {
-      await ctx.prisma.followingFollower.create({
+    const { id } = input;
+    await ctx.prisma.$transaction([
+      ctx.prisma.followingFollower.create({
         data: {
           follower: {
             connect: {
@@ -15,33 +15,24 @@ const followUser = protectedProcedure
             },
           },
           following: {
-            connect: {
-              id: input,
+            connect: { id },
+          },
+        },
+      }),
+      ctx.prisma.notificationObject.create({
+        data: {
+          action: NotificationActionType.USER_FOLLOW,
+          actorId: ctx.session.user.id,
+          viewers: {
+            create: {
+              viewer: {
+                connect: { id },
+              },
             },
           },
         },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2002") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `user does not exist: ${input}`,
-            cause: e,
-          });
-        }
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `you are already following ${input}`,
-          cause: e,
-        });
-      }
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: e,
-      });
-    }
+      }),
+    ]);
   });
 
 export default followUser;
