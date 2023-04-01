@@ -189,7 +189,7 @@ const BookContent = ({ bookId, penname }: props) => {
   }, [book]);
   const totalViews = useMemo(() => {
     if (book) {
-      return book.chapters.reduce((acc, curr) => acc + curr.views, 0);
+      return book.chapters.reduce((acc, curr) => acc + curr._count.views, 0);
     } else {
       return 0;
     }

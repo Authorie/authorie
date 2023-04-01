@@ -63,6 +63,7 @@ model User {
     likedChapters  ChapterLike[]
     comments       ChapterComment[]
     likedComments  ChapterCommentLike[]
+    ChapterView    ChapterView[]
 
     @@map("users")
 }
@@ -187,7 +188,6 @@ model Chapter {
     chapterNo   Int?
     title       String
     content     Json
-    views       Int              @default(0)
     publishedAt DateTime?
     createdAt   DateTime         @default(now())
     updatedAt   DateTime         @updatedAt
@@ -195,12 +195,26 @@ model Chapter {
     bookId      String?
     owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     ownerId     String
+    views       ChapterView[]
     likes       ChapterLike[]
     comments    ChapterComment[]
 
     @@index([ownerId])
     @@index([bookId])
     @@map("chapters")
+}
+
+model ChapterView {
+    id        String   @id @default(cuid())
+    chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    chapterId String
+    user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId    String?
+    createdAt DateTime @default(now())
+
+    @@index([userId])
+    @@index([chapterId])
+    @@map("chapterViews")
 }
 
 model ChapterLike {
