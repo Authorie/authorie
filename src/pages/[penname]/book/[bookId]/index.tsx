@@ -1,19 +1,6 @@
-import { EditButton } from "@components/action/EditButton";
 import ChapterCard from "@components/Chapter/ChapterCard";
-import { CategoryPopover } from "@components/action/CategoryPopover";
-import {
-  ChevronLeftIcon,
-  MagnifyingGlassIcon,
-  PlusCircleIcon,
-  StarIcon,
-} from "@heroicons/react/24/outline";
-import {
-  Bars3CenterLeftIcon,
-  EyeIcon,
-  HeartIcon,
-  PhotoIcon,
-  StarIcon as StarIconSolid,
-} from "@heroicons/react/24/solid";
+import { EditButton } from "@components/action/EditButton";
+import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
@@ -32,6 +19,17 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import {
+  HiBars3CenterLeft,
+  HiEye,
+  HiHeart,
+  HiOutlineChevronLeft,
+  HiOutlineMagnifyingGlass,
+  HiOutlinePlusCircle,
+  HiOutlineStar,
+  HiPhoto,
+  HiStar,
+} from "react-icons/hi2";
 import superjson from "superjson";
 import * as z from "zod";
 
@@ -42,8 +40,6 @@ const validationSchema = z.object({
     .max(100, { message: "Title is too long" }),
   description: z.string().max(500, { message: "Description is too long" }),
 });
-
-type ValidationSchema = z.infer<typeof validationSchema>;
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -92,6 +88,43 @@ const BookContent = ({ bookId, penname }: props) => {
     uploadHandler: setBookWallpaper,
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
+  const uploadImageUrl = api.upload.uploadImage.useMutation();
+  const updateBook = api.book.update.useMutation({
+    async onMutate(newBook) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: newBook.id });
+      if (!prevData) return;
+      const book = {
+        ...prevData,
+        title: newBook.title !== undefined ? newBook.title : prevData.title,
+        description:
+          newBook.description !== undefined
+            ? newBook.description
+            : prevData.description,
+        categories: addedCategories.map((data) => ({ category: data })),
+        coverImage:
+          newBook.coverImageUrl !== undefined
+            ? newBook.coverImageUrl
+            : prevData.coverImage,
+        wallpaperImage:
+          newBook.wallpaperImageUrl !== undefined
+            ? newBook.wallpaperImageUrl
+            : prevData.wallpaperImage,
+      };
+      utils.book.getData.setData({ id: newBook.id }, book);
+      return { prevData };
+    },
+    onError(_, newPost, ctx) {
+      if (!ctx?.prevData) return;
+      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
+    },
+    onSuccess() {
+      resetHandler();
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
+  });
   const moveState = api.book.moveState.useMutation({
     async onMutate(newBook) {
       await utils.book.getData.cancel();
@@ -137,14 +170,14 @@ const BookContent = ({ bookId, penname }: props) => {
   });
   const {
     register,
-    reset,
+    setValue,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<ValidationSchema>({
+  } = useForm({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      title: book?.title,
+      title: book?.title || "",
       description: book?.description || "",
     },
   });
@@ -156,7 +189,7 @@ const BookContent = ({ bookId, penname }: props) => {
   }, [book]);
   const totalViews = useMemo(() => {
     if (book) {
-      return book.chapters.reduce((acc, curr) => acc + curr.views, 0);
+      return book.chapters.reduce((acc, curr) => acc + curr._count.views, 0);
     } else {
       return 0;
     }
@@ -170,87 +203,62 @@ const BookContent = ({ bookId, penname }: props) => {
   }, [book]);
 
   const draftBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.DRAFT,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Move to draft state...",
-        success: "Your book is in draft state now!",
-        error: "Error occured during move state",
-      });
-    } catch (err) {
-      toast("Error occured during move state");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.DRAFT,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Move to draft state...",
+      success: "Your book is in draft state now!",
+      error: "Error occured during move state",
+    });
   };
 
   const publishBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.PUBLISHED,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Publishing book...",
-        success: "Your book is now published!",
-        error: "Error occured during publish",
-      });
-    } catch (err) {
-      toast("Error occured during publish");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.PUBLISHED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Publishing book...",
+      success: "Your book is now published!",
+      error: "Error occured during publish",
+    });
   };
 
   const completeBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.COMPLETED,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Completing book...",
-        success: "Your book is now completed!",
-        error: "Error occured during completed",
-      });
-    } catch (err) {
-      toast("Error occured during completed");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.COMPLETED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Completing book...",
+      success: "Your book is now completed!",
+      error: "Error occured during completed",
+    });
   };
 
   const archiveBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseMoveState = moveState.mutateAsync({
-        id: book?.id,
-        status: BookStatus.ARCHIVED,
-      });
-      await toast.promise(promiseMoveState, {
-        loading: "Archive book...",
-        success: "Your book is now archived!",
-        error: "Error occured during archive",
-      });
-      void router.push(`/${penname}/book`);
-    } catch (err) {
-      toast("Error occured during archive");
-    }
+    const promiseMoveState = moveState.mutateAsync({
+      id: bookId,
+      status: BookStatus.ARCHIVED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "Archive book...",
+      success: "Your book is now archived!",
+      error: "Error occured during archive",
+    });
+    void router.push(`/${penname}/book`);
   };
 
   const deleteBookHandler = async () => {
-    if (book === undefined) return;
-    try {
-      const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
-      await toast.promise(promiseDeleteBook, {
-        loading: "Deleting book...",
-        success: "Your book is now deleted!",
-        error: "Error occured during deleting",
-      });
-      void router.push(`/${penname}/book`);
-    } catch (err) {
-      toast("Error occured during deleting");
-    }
+    const promiseDeleteBook = deleteBook.mutateAsync({ id: bookId });
+    await toast.promise(promiseDeleteBook, {
+      loading: "Deleting book...",
+      success: "Your book is now deleted!",
+      error: "Error occured during deleting",
+    });
+    void router.push(`/${penname}/book`);
   };
 
   const toggleCategoryHandler = (category: Category) => {
@@ -260,6 +268,7 @@ const BookContent = ({ bookId, penname }: props) => {
       setAddedCategories([...addedCategories, category]);
     }
   };
+
   const toggleFavoriteHandler = () => {
     if (isFavorite) {
       unfavoriteBook.mutate({ id: bookId });
@@ -267,101 +276,54 @@ const BookContent = ({ bookId, penname }: props) => {
       favoriteBook.mutate({ id: bookId });
     }
   };
-  const updateBook = api.book.update.useMutation({
-    async onMutate(newBook) {
-      await utils.book.getData.cancel();
-      const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return;
-      const book = {
-        ...prevData,
-        title: newBook.title !== undefined ? newBook.title : prevData.title,
-        description:
-          newBook.description !== undefined
-            ? newBook.description
-            : prevData.description,
-        categories: addedCategories.map((data) => ({ category: data })),
-        coverImage:
-          newBook.coverImageUrl !== undefined
-            ? newBook.coverImageUrl
-            : prevData.coverImage,
-        wallpaperImage:
-          newBook.wallpaperImageUrl !== undefined
-            ? newBook.wallpaperImageUrl
-            : prevData.wallpaperImage,
-      };
-      utils.book.getData.setData({ id: newBook.id }, book);
-      return { prevData };
-    },
-    onError(_, newPost, ctx) {
-      if (!ctx?.prevData) return;
-      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
-    },
-    onSuccess() {
-      resetHandler();
-    },
-    onSettled: () => {
-      void utils.book.invalidate();
-    },
-  });
-  const uploadImageUrl = api.upload.uploadImage.useMutation();
 
   const resetHandler = () => {
-    reset((formValues) => ({
-      ...formValues,
-      title: book?.title as string,
-      description: book?.description || "",
-    }));
     setIsEdit(false);
+    setValue("title", book?.title || "");
+    setValue("description", book?.description || "");
     resetBookCover();
     resetBookWallpaper();
     setAddedCategories(book?.categories.map((data) => data.category) || []);
   };
 
-  const onSaveHandler = async (data: ValidationSchema) => {
+  const onSaveHandler = handleSubmit(async (data) => {
     if (book === undefined) return;
     const { title, description } = data;
-    try {
-      const promises = [
-        bookCover
-          ? uploadImageUrl.mutateAsync({
-              title: `${data.title}'s book cover image`,
-              image: bookCover,
-            })
-          : undefined,
-        bookWallpaper
-          ? uploadImageUrl.mutateAsync({
-              title: `${data.title}'s book wallpaper`,
-              image: bookWallpaper,
-            })
-          : undefined,
-      ] as const;
-      const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
-      const promiseUpdateBook = updateBook.mutateAsync({
-        id: book.id,
-        title,
-        description,
-        category: addedCategories.map((category) => category.id),
-        coverImageUrl,
-        wallpaperImageUrl,
-      });
-      await toast.promise(promiseUpdateBook, {
-        loading: "Updating book...",
-        success: "Book updated!",
-        error: "Error occured during update",
-      });
-    } catch (err) {
-      console.error(err);
-      toast("Error occured during update");
-    }
-  };
+    const promises = [
+      bookCover
+        ? uploadImageUrl.mutateAsync({
+            image: bookCover,
+          })
+        : undefined,
+      bookWallpaper
+        ? uploadImageUrl.mutateAsync({
+            image: bookWallpaper,
+          })
+        : undefined,
+    ] as const;
+    const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
+    const promiseUpdateBook = updateBook.mutateAsync({
+      id: book.id,
+      title,
+      description,
+      category: addedCategories.map((category) => category.id),
+      coverImageUrl,
+      wallpaperImageUrl,
+    });
+    await toast.promise(promiseUpdateBook, {
+      loading: "Updating book...",
+      success: "Book updated!",
+      error: "Error occured during update",
+    });
+  });
 
   return (
-    <div className="flex w-full items-center justify-center px-3">
+    <div className="flex w-full items-center justify-center px-6">
       {book ? (
         <form
           id="submit-changes"
-          onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
-          className="relative my-8 flex w-full flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
+          onSubmit={(e) => void onSaveHandler(e)}
+          className="relative my-8 flex w-full  flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
         >
           <div className="absolute inset-0 h-72 w-full overflow-hidden rounded-lg rounded-tl-large">
             {book?.wallpaperImage || bookWallpaper ? (
@@ -379,12 +341,13 @@ const BookContent = ({ bookId, penname }: props) => {
             )}
             <div className="absolute inset-0 z-10 h-72 w-full bg-gradient-to-t from-white" />
           </div>
-          <ChevronLeftIcon
+          <HiOutlineChevronLeft
             type="button"
             onClick={() => router.back()}
             className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
-          <div className="z-10 mt-20 flex gap-7 pb-5 pt-10">
+
+          <div className="z-10 flex gap-7 pb-5 pt-10">
             <div className="ml-7 flex flex-col">
               <div className="flex">
                 <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
@@ -400,7 +363,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookCover}
                         />
-                        <PhotoIcon className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <HiPhoto className="absolute bottom-2 right-2 z-10 w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                     )}
                     {book?.coverImage || bookCover ? (
@@ -415,12 +378,23 @@ const BookContent = ({ bookId, penname }: props) => {
                       <div className="h-full w-full bg-authGreen-400" />
                     )}
                     {!book.isOwner && (
-                      <button onClick={toggleFavoriteHandler}>
+                      <button type="button" onClick={toggleFavoriteHandler}>
                         {isFavorite ? (
-                          <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                          <HiOutlineStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                         ) : (
-                          <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                          <HiStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                         )}
+                      </button>
+                    )}
+                    {book.isOwner && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void router.push(`/${penname}/book/${bookId}/status`)
+                        }
+                        className="absolute bottom-1 right-1 rounded-full bg-gray-400 px-2 py-1 text-xs text-white hover:bg-gray-500"
+                      >
+                        View status
                       </button>
                     )}
                   </div>
@@ -428,18 +402,81 @@ const BookContent = ({ bookId, penname }: props) => {
               </div>
               <div className="mt-8 gap-1">
                 <div className="mb-3 flex flex-col gap-3">
-                  {book.owners.map((author) => (
-                    <h2 key={author.user.id} className="text-xl font-semibold">
-                      {author.user.penname}
-                    </h2>
-                  ))}
-                  {categories && (
-                    <CategoryPopover
-                      isEdit={isEdit}
-                      addedCategories={addedCategories}
-                      categories={categories}
-                      toggleCategoryHandler={toggleCategoryHandler}
-                    />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-black">Author:</p>
+                    {book.owners.map((author) => (
+                      <div
+                        key={author.user.id}
+                        onClick={() =>
+                          void router.push(`/${author.user.penname as string}`)
+                        }
+                        className="cursor-pointer rounded-full bg-authGreen-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-authGreen-600"
+                      >
+                        {author.user.penname}
+                      </div>
+                    ))}
+                  </div>
+                  {isEdit && (
+                    <div className="flex flex-col-reverse gap-2">
+                      <div className="flex flex-col items-start gap-2 overflow-x-auto rounded-xl">
+                        {addedCategories.length === 0 && (
+                          <div className="h-5" />
+                        )}
+                        {addedCategories.map((category) => (
+                          <span
+                            key={category.id}
+                            onClick={() => toggleCategoryHandler(category)}
+                            className="cursor-pointer select-none whitespace-nowrap rounded-full bg-authYellow-500 px-2 py-0.5 text-xs text-white hover:bg-red-600"
+                          >
+                            {category.title}
+                          </span>
+                        ))}
+                      </div>
+                      {categories && (
+                        <Popover className="relative">
+                          <Popover.Panel className="absolute left-32 top-0 z-10">
+                            <div className="grid w-max grid-cols-2 gap-2 rounded-xl bg-gray-200 p-2">
+                              {categories
+                                .filter(
+                                  (category: Category) =>
+                                    !addedCategories.includes(category)
+                                )
+                                .map((category) => (
+                                  <button
+                                    type="button"
+                                    key={category.id}
+                                    onClick={() =>
+                                      toggleCategoryHandler(category)
+                                    }
+                                    className="flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
+                                  >
+                                    {category.title}
+                                  </button>
+                                ))}
+                              {categories.filter(
+                                (category: Category) =>
+                                  !addedCategories.includes(category)
+                              ).length === 0 && (
+                                <p className="text-sm font-semibold">
+                                  No more categories left...
+                                </p>
+                              )}
+                            </div>
+                          </Popover.Panel>
+                          <Popover.Button
+                            className="rounded-lg border border-authGreen-400 px-3 py-2 text-sm font-semibold text-authGreen-500 hover:border-authGreen-600 hover:bg-authGreen-600 hover:text-white"
+                            type="button"
+                          >
+                            Add categories
+                          </Popover.Button>
+                        </Popover>
+                      )}
+                    </div>
+                  )}
+                  {!isEdit && (
+                    <p className="text-sm font-light">
+                      {book.categories.map((c) => c.category.title).join(" ")}
+                    </p>
                   )}
                 </div>
                 {!isEdit && (
@@ -449,7 +486,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void draftBookHandler()}
-                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-blue-400 to-blue-500 font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
+                          className="h-8 w-32 rounded-md bg-gradient-to-b from-authGreen-400 to-authBlue-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
                         >
                           Start Writing
                         </button>
@@ -485,6 +522,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       {(book.status === BookStatus.PUBLISHED ||
                         book.status === BookStatus.COMPLETED) && (
                         <button
+                          type="button"
                           onClick={() => void archiveBookHandler()}
                           className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
                         >
@@ -503,13 +541,13 @@ const BookContent = ({ bookId, penname }: props) => {
                         <p className="text-xl font-bold text-authGreen-600">
                           {totalViews}
                         </p>
-                        <EyeIcon className="h-5 w-5 text-authGreen-600" />
+                        <HiEye className="h-5 w-5 text-authGreen-600" />
                       </div>
                       <div className="flex  flex-col items-center gap-2">
                         <p className="text-xl font-bold text-authGreen-600">
                           {totalLikes}
                         </p>
-                        <HeartIcon className="h-5 w-5 text-authGreen-600" />
+                        <HiHeart className="h-5 w-5 text-authGreen-600" />
                       </div>
                     </div>
                   </div>
@@ -550,7 +588,7 @@ const BookContent = ({ bookId, penname }: props) => {
                           className="hidden"
                           onChange={setBookWallpaper}
                         />
-                        <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100" />
+                        <HiPhoto className="w-8 cursor-pointer rounded-md bg-gray-100" />
                       </label>
                       <div className="flex items-end gap-2">
                         <input
@@ -624,8 +662,8 @@ const BookContent = ({ bookId, penname }: props) => {
                 )}
               </div>
               <div className="flex gap-2 self-end">
-                <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-gray-200" />
-                <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-gray-200" />
+                <HiBars3CenterLeft className="h-7 w-7 rounded-lg bg-gray-200" />
+                <HiOutlineMagnifyingGlass className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
@@ -634,7 +672,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       onClick={() => void router.push("/create/chapter")}
                       className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01] hover:bg-gray-300"
                     >
-                      <PlusCircleIcon className="w-8" />
+                      <HiOutlinePlusCircle className="w-8" />
                       <span className="text-lg font-semibold">
                         Create new chapter
                       </span>
@@ -643,7 +681,7 @@ const BookContent = ({ bookId, penname }: props) => {
                   {book.chapters.length === 0 && !isChapterCreatable && (
                     <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
                       <span className="text-lg font-semibold">
-                        Move book stage to create chapter
+                        Move book state to create chapter
                       </span>
                     </div>
                   )}

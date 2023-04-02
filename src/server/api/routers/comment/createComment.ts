@@ -13,41 +13,30 @@ const createComment = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-    let chapter;
     try {
-      chapter = await ctx.prisma.chapter.findUniqueOrThrow({
+      await ctx.prisma.chapter.findFirstOrThrow({
         where: {
           id: input.id,
-        },
-        include: {
           book: {
-            select: {
-              status: true,
+            status: {
+              in: [
+                BookStatus.PUBLISHED,
+                BookStatus.COMPLETED,
+                BookStatus.ARCHIVED,
+              ],
             },
           },
+          publishedAt: {
+            lte: new Date(),
+          },
         },
+        include: { book: true },
       });
     } catch (err) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Chapter not found",
         cause: err,
-      });
-    }
-
-    if (!chapter.publishedAt || chapter.publishedAt.getTime() > Date.now()) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Chapter not published yet",
-      });
-    }
-
-    // needs discussion about whether to comment archived books
-    const validBookStatus = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
-    if (!chapter.book || !validBookStatus.includes(chapter.book.status)) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "You can't comment chapters of this book",
       });
     }
 

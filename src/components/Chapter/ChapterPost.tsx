@@ -1,16 +1,14 @@
-import Image from "next/image";
-import { EditorContent } from "@tiptap/react";
-import { LikeButton } from "@components/action";
-import { CommentButton } from "@components/action";
-import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
-import { api } from "@utils/api";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import type { Content } from "@tiptap/react";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
-import CommentInput from "@components/Comment/ReplyCommentInput";
+import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
 import Comment from "@components/Comment/Comment";
+import { CommentButton, LikeButton } from "@components/action";
+import type { Content } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { api } from "@utils/api";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useState } from "react";
+import { HiOutlineArrowTopRightOnSquare } from "react-icons/hi2";
 
 type props = {
   chapterId: string;
@@ -96,7 +94,7 @@ const ChapterPost = ({ chapterId }: props) => {
       <div className="flex items-center justify-between px-8 py-2">
         <LikeButton
           isAuthenticated={status === "authenticated"}
-          isLike={Boolean(isLike)}
+          isLiked={Boolean(isLike)}
           numberOfLike={chapter?._count.likes || 0}
           onClickHandler={onLikeHandler}
         />
@@ -105,12 +103,14 @@ const ChapterPost = ({ chapterId }: props) => {
           onClickHandler={() => setOpenComments((prev) => !prev)}
         />
         <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
-          <ArrowTopRightOnSquareIcon className="h-6 w-6" />
+          <HiOutlineArrowTopRightOnSquare className="h-6 w-6" />
         </div>
       </div>
       {openComments && (
         <div className="bg-gray-300 px-4 pb-4 pt-2">
-          {status === "authenticated" && <CommentInput chapterId={chapterId} />}
+          {status === "authenticated" && (
+            <ChapterCommentInput chapterId={chapterId} />
+          )}
           {isSuccess &&
             comments.map((comment) => (
               <Comment key={comment.id} comment={comment} />

@@ -1,14 +1,16 @@
-import { UserIcon } from "@heroicons/react/24/solid";
 import type { RouterOutputs } from "@utils/api";
 import Image from "next/image";
+import { useRouter } from "next/router";
+import { HiUser } from "react-icons/hi2";
 
 type props = {
   user: RouterOutputs["search"]["searchUsers"]["items"][number];
 };
 
 const SearchUserResult = ({ user }: props) => {
+  const router = useRouter();
   const onClickCard = () => {
-    console.log("redirect!");
+    void router.push(`/${user.penname as string}`);
   };
 
   return (
@@ -17,7 +19,7 @@ const SearchUserResult = ({ user }: props) => {
       className="flex cursor-pointer gap-4 rounded shadow-md drop-shadow-xl transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
     >
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
-        <UserIcon className="h-12 w-12 fill-white" />
+        <HiUser className="h-12 w-12 fill-white" />
       </div>
       <div className="grow py-3">
         <p className="text-xs font-semibold text-authBlue-500">AUTHOR</p>

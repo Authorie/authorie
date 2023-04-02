@@ -1,6 +1,6 @@
-import { BookOpenIcon } from "@heroicons/react/24/solid";
 import type { RouterOutputs } from "@utils/api";
 import Image from "next/image";
+import { HiBookOpen } from "react-icons/hi2";
 
 type props = {
   book: RouterOutputs["search"]["searchBooks"]["items"][number];
@@ -17,7 +17,7 @@ const SearchBookResult = ({ book }: props) => {
       className="flex cursor-pointer gap-4 rounded shadow-md drop-shadow-xl transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
     >
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authGreen-500">
-        <BookOpenIcon className="h-12 w-12 fill-white" />
+        <HiBookOpen className="h-12 w-12 fill-white" />
       </div>
       <div className="grow py-3">
         <p className="text-xs font-semibold text-authGreen-500">BOOK</p>
@@ -26,7 +26,7 @@ const SearchBookResult = ({ book }: props) => {
           <p>{`publish : ${book.createdAt.toLocaleDateString()}`}</p>
           <p>{`author : MOCK`}</p>
         </div>
-        <p className="mt-4 text-xs text-dark-600 line-clamp-2">
+        <p className="mt-4 line-clamp-2 text-xs text-dark-600">
           {book.description || ""}
         </p>
       </div>

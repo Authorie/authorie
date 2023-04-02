@@ -1,18 +1,15 @@
+import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
 import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
-import { BookStatus } from "@prisma/client";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { api } from "@utils/api";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ArrowTopRightOnSquareIcon,
-} from "@heroicons/react/24/outline";
+import Comment from "@components/Comment/Comment";
+import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { BookStatus } from "@prisma/client";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
+import { getServerAuthSession } from "@server/auth";
 import CharacterCount from "@tiptap/extension-character-count";
 import Color from "@tiptap/extension-color";
+import FontFamily from "@tiptap/extension-font-family";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
@@ -21,24 +18,24 @@ import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import TextStyle from "@tiptap/extension-text-style";
-import FontFamily from "@tiptap/extension-font-family";
 import Underline from "@tiptap/extension-underline";
-import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import type { JSONContent } from "@tiptap/react";
-import { EditorContent } from "@tiptap/react";
-import { useEffect } from "react";
-import Comment from "@components/Comment/Comment";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { appRouter } from "@server/api/root";
+import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import {
+  HiOutlineArrowTopRightOnSquare,
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+} from "react-icons/hi2";
 import superjson from "superjson";
-import { useState } from "react";
-import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -53,7 +50,6 @@ export const getServerSideProps = async (
   await ssg.chapter.getData.prefetch({ id: chapterId });
   await ssg.comment.getAll.prefetch({ chapterId: chapterId });
   await ssg.chapter.isLike.prefetch({ id: chapterId });
-  await ssg.chapter.getChapterLikes.prefetch({ id: chapterId });
   return {
     props: {
       trpcState: ssg.dehydrate(),
@@ -65,8 +61,7 @@ export const getServerSideProps = async (
 
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-const ChapterPage = ({ session, chapterId }: props) => {
-  const router = useRouter();
+const ChapterPage = ({ chapterId }: props) => {
   const { status } = useSession();
   const utils = api.useContext();
   const { data: chapter } = api.chapter.getData.useQuery({
@@ -175,7 +170,7 @@ const ChapterPage = ({ session, chapterId }: props) => {
     } else {
       editor.commands.setContent(chapter.content as JSONContent);
     }
-  }, [chapter, chapterId]);
+  }, [editor, chapter, chapterId]);
 
   useEffect(() => {
     readChapter.mutate({ id: chapterId });
@@ -247,7 +242,7 @@ const ChapterPage = ({ session, chapterId }: props) => {
           </div>
           <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between rounded-b-xl bg-authGreen-600 p-2">
             <div className="mx-10">
-              <ChevronLeftIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
+              <HiOutlineChevronLeft className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>
             {status === "authenticated" && (
               <div className="flex w-1/2 items-center justify-center">
@@ -261,11 +256,11 @@ const ChapterPage = ({ session, chapterId }: props) => {
               </div>
             )}
             <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
-              <ArrowTopRightOnSquareIcon className="h-6 w-6" />
+              <HiOutlineArrowTopRightOnSquare className="h-6 w-6" />
             </div>
             <ReadChapterPopover editor={editor} />
             <div className="mx-10">
-              <ChevronRightIcon className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
+              <HiOutlineChevronRight className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>
           </div>
 

@@ -1,17 +1,18 @@
-import ErrorDialog from "@components/alert/ErrorDialog";
+import UserCard from "@components/Card/UserCard";
+import DialogLayout from "@components/Dialog/DialogLayout";
 import LoadingSpinner from "@components/ui/LoadingSpinner";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { zodResolver } from "@hookform/resolvers/zod";
+import useImageUpload from "@hooks/imageUpload";
 import type { RouterOutputs } from "@utils/api";
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useReducer } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
+import { useCallback, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
 import * as z from "zod";
-import { PhotoIcon } from "@heroicons/react/24/outline";
 
 const AuthorTab = [
   { title: "HOME", url: "" },
@@ -21,14 +22,12 @@ const AuthorTab = [
 ] as const;
 
 const validationSchema = z.object({
-  updatedPenname: z
+  penname: z
     .string()
     .max(50, { message: "Your penname is too long" })
-    .min(1, { message: "Your oenname is required" }),
-  updatedBio: z.string().max(150, { message: "Your bio is too long" }),
+    .min(1, { message: "Your penname is required" }),
+  bio: z.string().max(150, { message: "Your bio is too long" }),
 });
-
-type ValidationSchema = z.infer<typeof validationSchema>;
 
 const parseUserTab = (pathname: string | undefined) => {
   const tab = AuthorTab.find((t) => pathname?.includes(t.url));
@@ -48,49 +47,6 @@ type props = {
   penname: string;
 };
 
-type UpdateAction =
-  | {
-      type: "toggle_edit";
-    }
-  | {
-      type: "error_occured";
-      payload: string;
-    }
-  | {
-      type: "clear_error";
-      payload: {
-        penname: string;
-      };
-    };
-
-type UpdateState = {
-  isOwner: boolean;
-  isEdit: boolean;
-  error: string | false;
-};
-
-const updateReducer = (state: UpdateState, action: UpdateAction) => {
-  if (!state.isOwner) {
-    console.error("You are not owner of this profile");
-    return state;
-  }
-  switch (action.type) {
-    case "toggle_edit":
-      return { ...state, isEdit: !state.isEdit };
-    case "error_occured":
-      return { ...state, error: action.payload };
-    case "clear_error":
-      return {
-        ...state,
-        error: false as const,
-        penname: action.payload.penname,
-      };
-    default:
-      console.error("Invalid action type", action);
-      return state;
-  }
-};
-
 const AuthorBanner = ({
   tab,
   user,
@@ -98,6 +54,9 @@ const AuthorBanner = ({
   tab: (typeof AuthorTab)[number];
   user: RouterOutputs["user"]["getData"];
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [openFollowers, setOpenFollowers] = useState(false);
+  const [openFollowing, setOpenFollowing] = useState(false);
   const router = useRouter();
   const context = api.useContext();
   const { status, data: session } = useSession();
@@ -108,6 +67,26 @@ const AuthorBanner = ({
     api.user.isFollowUser.useQuery(user.penname as string, {
       enabled: !isOwner && user.penname != null,
     });
+  const { data: userFollowers, isLoading: loadingFollowers } =
+    api.user.getFollowers.useInfiniteQuery(
+      {
+        limit: 7,
+        penname: user.penname as string,
+      },
+      {
+        getNextPageParam: (lastpage) => lastpage.nextCursor,
+      }
+    );
+  const { data: userFollowing, isLoading: loadingFollowing } =
+    api.user.getFollowing.useInfiniteQuery(
+      {
+        limit: 7,
+        penname: user.penname as string,
+      },
+      {
+        getNextPageParam: (lastpage) => lastpage.nextCursor,
+      }
+    );
   const {
     imageData: profileImage,
     uploadHandler: uploadProfileImageHandler,
@@ -124,18 +103,12 @@ const AuthorBanner = ({
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<ValidationSchema>({
+  } = useForm({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      updatedPenname: user.penname as string,
-      updatedBio: user.bio,
+      penname: user.penname || "",
+      bio: user.bio,
     },
-  });
-
-  const [form, formDispatch] = useReducer(updateReducer, {
-    isOwner,
-    isEdit: false,
-    error: false,
   });
 
   const updateProfile = api.user.update.useMutation({
@@ -175,95 +148,75 @@ const AuthorBanner = ({
       followUserMutation.mutate(user.id);
     }
   }, [followUserMutation, isFollowed, isOwner, unfollowUserMutation, user]);
-  const toggleIsEditHandler = useCallback(() => {
-    formDispatch({ type: "toggle_edit" });
-  }, []);
+
+  const onFollowHandler = (userId: string) => {
+    if (!user) return;
+    if (session?.user.id === userId) return;
+    followUserMutation.mutate(userId);
+  };
+
+  const onUnfollowHandler = (userId: string) => {
+    if (!user) return;
+    if (session?.user.id === userId) {
+      return;
+    }
+    unfollowUserMutation.mutate(userId);
+  };
 
   const onCancelHandler = () => {
     reset();
     resetProfileImage();
     resetWallpaperImage();
-    toggleIsEditHandler();
+    setIsEditing(false);
   };
 
   const uploadImage = api.upload.uploadImage.useMutation();
 
-  const onSubmitHandler: SubmitHandler<ValidationSchema> = useCallback(
-    async (data) => {
-      let profileImageUrl;
-      let wallpaperImageUrl;
-      if (profileImage) {
-        profileImageUrl = await uploadImage.mutateAsync({
-          image: profileImage,
-          title: `${user.penname as string}'s profile image`,
-        });
-      } else {
-        profileImageUrl = user.image;
-      }
-      if (wallpaperImage) {
-        wallpaperImageUrl = await uploadImage.mutateAsync({
-          image: wallpaperImage,
-          title: `${user.penname as string}'s wallpaper image`,
-        });
-      } else {
-        wallpaperImageUrl = user.wallpaperImage;
-      }
+  const onSubmitHandler = handleSubmit(async ({ penname, bio }) => {
+    let profileImageUrl;
+    let wallpaperImageUrl;
+    const urlParser = z.string().url();
+    if (profileImage && !urlParser.safeParse(profileImage).success) {
+      profileImageUrl = await uploadImage.mutateAsync({
+        image: profileImage,
+      });
+    }
+    if (wallpaperImage && !urlParser.safeParse(wallpaperImage).success) {
+      wallpaperImageUrl = await uploadImage.mutateAsync({
+        image: wallpaperImage,
+      });
+    }
 
-      updateProfile.mutate(
-        {
-          penname: data.updatedPenname,
-          bio: data.updatedBio,
-          profileImageUrl: profileImageUrl as string,
-          wallpaperImageUrl: wallpaperImageUrl as string,
+    const promise = updateProfile.mutateAsync(
+      {
+        penname,
+        bio,
+        profileImageUrl,
+        wallpaperImageUrl,
+      },
+      {
+        onSuccess(data) {
+          if (data.penname) {
+            void router.replace(`/${data.penname}/${tab.url}`);
+          }
+          setIsEditing(false);
         },
-        {
-          onSuccess(data) {
-            if (data.penname) {
-              void router.replace(`/${data.penname}/${tab.url}`);
-            }
-            formDispatch({ type: "toggle_edit" });
-          },
-          onError(err) {
-            formDispatch({
-              type: "error_occured",
-              payload: err.message,
-            });
-          },
-        }
-      );
-    },
-    [
-      router,
-      tab.url,
-      updateProfile,
-      profileImage,
-      wallpaperImage,
-      user.penname,
-      uploadImage,
-      user.image,
-      user.wallpaperImage,
-    ]
-  );
+      }
+    );
+    await toast.promise(promise, {
+      loading: "Updating profile...",
+      success: "Profile updated!",
+      error: "Failed to update profile",
+    });
+  });
 
   return (
     <>
-      <ErrorDialog
-        isOpen={form.error !== false}
-        content={form.error !== false ? form.error : undefined}
-        isCloseHandler={() =>
-          formDispatch({
-            type: "clear_error",
-            payload: { penname: user.penname as string },
-          })
-        }
-      />
       <label
         htmlFor="upload-wallpaper"
-        className={`absolute inset-0 h-72 ${
-          form.isEdit ? "cursor-pointer" : ""
-        }`}
+        className={`absolute inset-0 h-72 ${isEditing ? "cursor-pointer" : ""}`}
       >
-        {form.isEdit && (
+        {isEditing && (
           <div>
             <input
               hidden
@@ -273,7 +226,7 @@ const AuthorBanner = ({
               id="upload-wallpaper"
               onChange={uploadWallpaperImageHandler}
             />
-            <PhotoIcon className="absolute left-2 top-2 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
+            <HiOutlinePhoto className="absolute left-2 top-2 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
           </div>
         )}
         {user.wallpaperImage || wallpaperImage !== "" ? (
@@ -286,30 +239,30 @@ const AuthorBanner = ({
             alt="wallpaper"
             priority
             fill
-            className={form.isEdit ? "opacity-90" : ""}
+            className={isEditing ? "opacity-90" : ""}
           />
         ) : (
           <div
             className={`${
-              form.isEdit ? "opacity-90" : ""
+              isEditing ? "opacity-90" : ""
             } h-full w-full bg-authGreen-400`}
           />
         )}
       </label>
       <form
-        onSubmit={(e) => void handleSubmit(onSubmitHandler)(e)}
-        className="ml-40 h-full max-w-xl bg-black/80 px-7 pt-7 backdrop-blur-lg"
+        onSubmit={(e) => void onSubmitHandler(e)}
+        className="ml-40 h-full max-w-xl bg-black/50 px-7 pt-7 backdrop-blur-lg"
       >
         <div className="flex justify-between">
           <label
             htmlFor="upload-profile"
             className={`${
-              form.isEdit ? "cursor-pointer" : ""
+              isEditing ? "cursor-pointer" : ""
             } relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
           >
-            {form.isEdit && (
+            {isEditing && (
               <div>
-                <PhotoIcon className="absolute left-4 top-4 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
+                <HiOutlinePhoto className="absolute left-4 top-4 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
                 <input
                   hidden
                   type="file"
@@ -329,35 +282,31 @@ const AuthorBanner = ({
               alt="profile picture"
               width="250"
               height="250"
-              className={
-                form.isEdit ? "absolute z-0 opacity-90" : "absolute z-0"
-              }
+              className={isEditing ? "absolute z-0 opacity-90" : "absolute z-0"}
             />
           </label>
           <div>
             {isOwner && (
               <div className="w-fit">
-                {form.isEdit ? (
+                {isEditing ? (
                   <div className="flex gap-3">
                     <button
                       onClick={onCancelHandler}
-                      className="rounded-xl border-2 border-red-500 px-5 py-1 text-red-500 hover:border-red-700 hover:text-red-700"
+                      className="rounded-xl border-2 border-red-400 px-5 py-1 text-red-400 hover:border-red-600 hover:text-red-600"
                     >
                       cancel
                     </button>
                     <button
                       type="submit"
-                      className="rounded-xl border-2 border-green-500 px-5 py-1 text-green-500 hover:border-green-700 hover:text-green-700"
+                      className="rounded-xl border-2 border-green-400 px-5 py-1 text-green-400 hover:border-green-600 hover:text-green-600"
                     >
                       save
                     </button>
                   </div>
                 ) : (
-                  <PencilSquareIcon
-                    width={25}
-                    height={25}
-                    onClick={toggleIsEditHandler}
-                    className="cursor-pointer text-white hover:text-gray-500"
+                  <HiOutlinePencilSquare
+                    onClick={() => setIsEditing(true)}
+                    className="h-6 w-6 cursor-pointer text-white hover:text-gray-500"
                   />
                 )}
               </div>
@@ -366,32 +315,29 @@ const AuthorBanner = ({
         </div>
         <div className="mb-2 flex items-center justify-between">
           <div className="h-fit">
-            {form.isEdit ? (
+            {isEditing ? (
               <div className="w-full">
                 <div className="flex items-end gap-2">
                   <input
                     placeholder={user.penname as string}
                     className="w-full rounded-lg border border-gray-400 bg-transparent px-2 text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
-                    {...register("updatedPenname")}
+                    {...register("penname")}
                   />
                   <p
                     className={`${"text-xs"} 
                           ${
-                            watch("updatedPenname") &&
-                            watch("updatedPenname").length > 50
+                            watch("penname") && watch("penname").length > 50
                               ? "text-red-500"
                               : "text-white"
                           }`}
                   >
-                    {watch("updatedPenname")
-                      ? watch("updatedPenname").length
-                      : 0}
+                    {watch("penname") ? watch("penname").length : 0}
                     /50
                   </p>
                 </div>
-                {errors.updatedPenname && (
+                {errors.penname && (
                   <p className="text-xs text-red-400" role="alert">
-                    {errors.updatedPenname.message}
+                    {errors.penname.message}
                   </p>
                 )}
               </div>
@@ -415,40 +361,115 @@ const AuthorBanner = ({
           )}
         </div>
         <div className="mb-3 flex gap-20 text-white">
-          <p>
+          <div
+            className="cursor-pointer"
+            onClick={() => setOpenFollowers(true)}
+          >
             <span className="font-semibold">{user._count.followers}</span>{" "}
             followers
-          </p>
-          <p>
+          </div>
+          <DialogLayout
+            isOpen={openFollowers}
+            closeModal={() => setOpenFollowers(false)}
+            title={"Followers"}
+          >
+            {
+              <div>
+                {userFollowers && !loadingFollowers ? (
+                  userFollowers?.pages
+                    .flatMap((page) => page.items)
+                    .map((user) => (
+                      <UserCard
+                        key={user.id}
+                        penname={user.penname as string}
+                        image={user.image || undefined}
+                        followersNumber={user._count.followers}
+                        followingNumber={user._count.following}
+                        userId={user.id}
+                        followUser={(userId) => onFollowHandler(userId)}
+                        unfollowUser={(userId) => onUnfollowHandler(userId)}
+                      />
+                    ))
+                ) : (
+                  <div>loading follower...</div>
+                )}
+                {userFollowers?.pages.flatMap((page) => page.items).length ===
+                  0 && (
+                  <div className="flex w-96 items-center justify-center">
+                    <p className="text-lg">No followers</p>
+                  </div>
+                )}
+              </div>
+            }
+          </DialogLayout>
+          <div
+            className="cursor-pointer"
+            onClick={() => setOpenFollowing(true)}
+          >
             <span className="font-semibold">{user._count.following}</span>{" "}
             following
-          </p>
+          </div>
+          <DialogLayout
+            isOpen={openFollowing}
+            closeModal={() => setOpenFollowing(false)}
+            title={"Following"}
+          >
+            <div className="w-fit">
+              {
+                <div>
+                  {userFollowing && !loadingFollowing ? (
+                    userFollowing?.pages
+                      .flatMap((page) => page.items)
+                      .map((user) => (
+                        <UserCard
+                          key={user.id}
+                          penname={user.penname as string}
+                          image={user.image || undefined}
+                          followersNumber={user._count.followers}
+                          followingNumber={user._count.following}
+                          userId={user.id}
+                          followUser={(userId) => onFollowHandler(userId)}
+                          unfollowUser={(userId) => onUnfollowHandler(userId)}
+                        />
+                      ))
+                  ) : (
+                    <div>loading following...</div>
+                  )}
+                  {userFollowing?.pages.flatMap((page) => page.items).length ===
+                    0 && (
+                    <div className="flex w-96 items-center justify-center">
+                      <p className="text-lg">No following</p>
+                    </div>
+                  )}
+                </div>
+              }
+            </div>
+          </DialogLayout>
         </div>
         <div className="h-fit w-4/5 pb-2 text-sm text-white">
-          {form.isEdit ? (
+          {isEditing ? (
             <div className="h-16S">
               <div className="flex items-end gap-2">
                 <textarea
                   rows={2}
                   placeholder={user.bio === "" ? "Put bio here" : user.bio}
-                  {...register("updatedBio")}
+                  {...register("bio")}
                   className="w-full resize-none rounded-lg border border-gray-400 bg-transparent px-1.5 placeholder-gray-400 outline-none"
                 />
                 <p
                   className={`${"text-xs"} 
                           ${
-                            watch("updatedBio") &&
-                            watch("updatedBio").length > 150
+                            watch("bio") && watch("bio").length > 150
                               ? "text-red-500"
                               : "text-white"
                           }`}
                 >
-                  {watch("updatedBio") ? watch("updatedBio").length : 0}/150
+                  {watch("bio") ? watch("bio").length : 0}/150
                 </p>
               </div>
-              {errors.updatedBio && (
+              {errors.bio && (
                 <p className="text-xs text-red-400" role="alert">
-                  {errors.updatedBio.message}
+                  {errors.bio.message}
                 </p>
               )}
             </div>
@@ -479,8 +500,8 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
           </div>
         )}
       </div>
-      <div className="sticky top-0 z-40 ml-40 w-fit self-start">
-        <div className="flex max-w-xl items-center justify-between bg-black/80 px-1 shadow-lg backdrop-blur-lg">
+      <div className="sticky top-0 z-20 ml-40 w-fit self-start">
+        <div className="flex max-w-xl items-center justify-between bg-black/60 px-1 shadow-lg backdrop-blur-lg">
           {AuthorTab.map((data) => (
             <button
               key={data.title}

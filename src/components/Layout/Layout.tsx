@@ -1,11 +1,13 @@
 import { api } from "@utils/api";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
-import AuthorBanner from "./AuthorBanner";
-import CreateLayout from "./CreateLayout";
-import NavigationSidebar from "./NavigationSidebar";
+import NavigationTopBar from "./NavigationTopBar";
+const AuthorBanner = dynamic(() => import("./AuthorBanner"));
+const CreateLayout = dynamic(() => import("./CreateLayout"));
+const NavigationSidebar = dynamic(() => import("./NavigationSidebar"));
 
 const NoLayoutPaths = ["/auth/new-user", "/auth/signin"];
 
@@ -33,6 +35,24 @@ const Layout = ({ children }: PropsWithChildren) => {
           />
         </Head>
         {children}
+      </>
+    );
+  }
+
+  if (router.pathname.includes("/home")) {
+    return (
+      <>
+        <Head>
+          <title>Authorie</title>
+          <meta
+            name="description"
+            content="Social media and publishing platform!"
+          />
+        </Head>
+        <div className="h-screen">
+          <NavigationTopBar />
+          {children}
+        </div>
       </>
     );
   }

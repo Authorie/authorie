@@ -1,10 +1,10 @@
 import { Combobox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import useSearch from "@hooks/search";
 import type { Book } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
 import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
+import { HiCheck, HiChevronUpDown } from "react-icons/hi2";
 
 type props = {
   user: RouterOutputs["user"]["getData"];
@@ -45,7 +45,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
             }
           />
           <Combobox.Button className="absolute right-0 flex">
-            <ChevronUpDownIcon
+            <HiChevronUpDown
               className="h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
@@ -59,7 +59,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
           {books && (
             <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
               {books.items.length === 0 ? (
-                <div className="relative cursor-default select-none bg-gray-200 py-2 px-4 text-gray-700">
+                <div className="relative cursor-default select-none bg-gray-200 px-4 py-2 text-gray-700">
                   No books found
                 </div>
               ) : (
@@ -93,7 +93,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
                                   active ? "text-white" : "text-teal-600"
                                 }`}
                               >
-                                <CheckIcon
+                                <HiCheck
                                   className="h-5 w-5"
                                   aria-hidden="true"
                                 />

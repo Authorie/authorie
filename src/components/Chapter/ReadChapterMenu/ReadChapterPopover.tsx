@@ -1,16 +1,13 @@
-import { Popover, Transition } from "@headlessui/react";
-import {
-  ChevronUpDownIcon,
-  MinusCircleIcon,
-  PlusCircleIcon,
-} from "@heroicons/react/24/outline";
+import { Listbox, Popover, Transition } from "@headlessui/react";
 import type { Editor } from "@tiptap/core";
 import type { ChangeEvent } from "react";
-import { useEffect } from "react";
-import { Fragment, useState } from "react";
-import MarkPenLineIcon from "remixicon-react/MarkPenLineIcon";
-import TextIcon from "remixicon-react/TextIcon";
-import { Listbox } from "@headlessui/react";
+import { Fragment, useEffect, useState } from "react";
+import {
+  HiOutlineChevronUpDown,
+  HiOutlineMinusCircle,
+  HiOutlinePlusCircle,
+} from "react-icons/hi2";
+import { RiMarkPenLine, RiText } from "react-icons/ri";
 
 const fonts = [
   { id: "Inter", name: "Inter" },
@@ -62,7 +59,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
     <Popover className="relative">
       <Popover.Button>
         <button className="flex cursor-pointer items-center rounded-full border border-white p-1 text-white">
-          <TextIcon className="h-4 w-4" />
+          <RiText className="h-4 w-4" />
         </button>
       </Popover.Button>
       <Transition
@@ -83,7 +80,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                 }}
                 className="m-1 flex h-7 w-7 cursor-pointer items-center text-white"
               >
-                <MinusCircleIcon />
+                <HiOutlineMinusCircle />
               </button>
               <input
                 onChange={onSizeChange}
@@ -101,7 +98,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                 }}
                 className="m-1 flex h-7 w-7 cursor-pointer items-center text-white"
               >
-                <PlusCircleIcon />
+                <HiOutlinePlusCircle />
               </button>
             </div>
 
@@ -112,7 +109,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                 }}
                 className="m-1 flex h-7 w-7 cursor-pointer items-center rounded text-white"
               >
-                <MarkPenLineIcon />
+                <RiMarkPenLine />
               </button>
 
               <Listbox value={fontFamily} onChange={setFontFamily}>
@@ -123,7 +120,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                   >
                     <span className="block truncate">{fontFamily.name}</span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronUpDownIcon
+                      <HiOutlineChevronUpDown
                         className="h-5 w-5 text-gray-400"
                         aria-hidden="true"
                       />

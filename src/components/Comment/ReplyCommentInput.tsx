@@ -1,8 +1,8 @@
-import Image from "next/image";
-import { api } from "@utils/api";
-import { useState, type FormEvent } from "react";
 import useImageUpload from "@hooks/imageUpload";
-import { PhotoIcon } from "@heroicons/react/24/outline";
+import { api } from "@utils/api";
+import Image from "next/image";
+import { useState, type FormEvent } from "react";
+import { HiOutlinePhoto } from "react-icons/hi2";
 
 type props = {
   chapterId: string;
@@ -67,7 +67,7 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
             accept="image/jepg, image/png"
             onChange={uploadHandler}
           />
-          <PhotoIcon className="h-5 w-5" />
+          <HiOutlinePhoto className="absolute right-0 h-5 w-5 cursor-pointer" />
         </label>
       </div>
       <input type="submit" hidden />

@@ -4,6 +4,7 @@
  * This is especially useful for Docker builds.
  */
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env/server.mjs"));
+import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withAxiom } from "next-axiom";
 
 const securityHeaders = [
@@ -71,4 +72,6 @@ const config = {
     ];
   },
 };
-export default withAxiom(config);
+export default withBundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(
+  withAxiom(config)
+);

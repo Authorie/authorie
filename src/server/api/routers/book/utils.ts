@@ -21,7 +21,6 @@ export function computeIsOwner<User extends owners>(
 ): WithIsOwner<User> {
   return {
     ...user,
-
     isOwner: userId
       ? user.owners.some(
           (owner) =>

@@ -33,56 +33,59 @@ const getAllComments = publicProcedure
       });
     }
 
-    try {
-      const comments = await ctx.prisma.chapterComment.findMany({
-        where: {
-          chapterId: input.chapterId,
+    return await ctx.prisma.chapterComment.findMany({
+      where: {
+        chapterId: input.chapterId,
+        parent: {
+          is: null,
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              penname: true,
-              image: true,
-            },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            penname: true,
+            image: true,
           },
-          _count: {
-            select: {
-              likes: true,
-              replies: true,
-            },
+        },
+        _count: {
+          select: {
+            likes: true,
+            replies: true,
           },
-          replies: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  penname: true,
-                  image: true,
-                },
-              },
-              _count: {
-                select: {
-                  likes: true,
-                  replies: true,
-                },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                penname: true,
+                image: true,
               },
             },
+            _count: {
+              select: {
+                likes: true,
+                replies: true,
+              },
+            },
+            likes: {
+              where: {
+                userId: ctx.session?.user.id,
+              },
+            },
           },
         },
-        orderBy: {
-          createdAt: "desc",
+        likes: {
+          where: {
+            userId: ctx.session?.user.id,
+          },
         },
-      });
-
-      return comments;
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to get chapter comments",
-        cause: err,
-      });
-    }
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   });
 
 export default getAllComments;

@@ -1,7 +1,7 @@
-import CategoryItem from "./CategoryItem";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useSelectedCategory } from "@hooks/selectedCategory";
 import type { Category } from "@prisma/client";
+import { HiOutlinePlus, HiOutlineXMark } from "react-icons/hi2";
+import CategoryItem from "./CategoryItem";
 
 type props = {
   isLogin: boolean;
@@ -19,7 +19,7 @@ const CategoryBar = ({
   const selectedCategory = useSelectedCategory();
 
   return (
-    <div className="sticky top-0 z-20 mb-6 flex max-w-5xl gap-3 overflow-auto rounded-b-xl bg-dark-600 py-3 px-4">
+    <div className="sticky top-0 z-20 mb-6 flex max-w-5xl gap-3 overflow-auto rounded-b-xl bg-dark-600 px-4 py-3">
       <button
         title="Open Categories"
         type="button"
@@ -31,9 +31,9 @@ const CategoryBar = ({
         }`}
       >
         {openCategories ? (
-          <XMarkIcon className="h-4 w-4" />
+          <HiOutlineXMark className="h-4 w-4" />
         ) : (
-          <PlusIcon className="h-4 w-4" />
+          <HiOutlinePlus className="h-4 w-4" />
         )}
       </button>
       <CategoryItem

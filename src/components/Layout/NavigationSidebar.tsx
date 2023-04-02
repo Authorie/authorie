@@ -1,20 +1,21 @@
-import SearchModal from "@components/Search/SearchModal";
 import { Button, Link } from "@components/ui/NavigationItems";
-import {
-  ArrowLeftOnRectangleIcon,
-  ArrowRightOnRectangleIcon,
-  BellIcon,
-  ChatBubbleOvalLeftEllipsisIcon,
-  HomeIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/24/outline";
-import { PencilIcon } from "@heroicons/react/24/solid";
 import { useSelectCategory } from "@hooks/selectedCategory";
 import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import NextLink from "next/link";
 import { useCallback, useState } from "react";
+import {
+  HiOutlineArrowLeftOnRectangle,
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineBell,
+  HiOutlineChatBubbleOvalLeftEllipsis,
+  HiOutlineHome,
+  HiOutlineMagnifyingGlass,
+  HiPencil,
+} from "react-icons/hi2";
+const SearchModal = dynamic(() => import("@components/Search/SearchModal"));
 
 type props = {
   user: RouterOutputs["user"]["getData"] | undefined;
@@ -32,7 +33,7 @@ const NavigationSidebar = ({ user }: props) => {
   );
 
   return (
-    <nav className="text-md fixed z-50 flex h-full w-60 flex-col justify-center bg-white border-gray-900/20 px-10 pt-10 sm:justify-start">
+    <nav className="text-md fixed z-50 flex h-full w-60 flex-col justify-center border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -67,23 +68,23 @@ const NavigationSidebar = ({ user }: props) => {
           </Link>
         )}
         <Link href="/">
-          <HomeIcon className="h-7 w-7" />
+          <HiOutlineHome className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
         {session && (
           <>
             <Link href="/notifications">
-              <BellIcon className="h-7 w-7" />
+              <HiOutlineBell className="h-7 w-7" />
               <span className="hidden sm:inline-block">Notification</span>
             </Link>
             <Link href="/messages">
-              <ChatBubbleOvalLeftEllipsisIcon className="h-7 w-7" />
+              <HiOutlineChatBubbleOvalLeftEllipsis className="h-7 w-7" />
               <span className="hidden sm:inline-block">Messages</span>
             </Link>
           </>
         )}
         <Button onClick={onOpenDialogHandler}>
-          <MagnifyingGlassIcon className="h-7 w-7" />
+          <HiOutlineMagnifyingGlass className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
         </Button>
         <SearchModal
@@ -111,7 +112,7 @@ const NavigationSidebar = ({ user }: props) => {
                 href="/create/book"
                 className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
               >
-                <PencilIcon width="24" height="24" />
+                <HiPencil className="h-6 w-6" />
                 <span className="hidden sm:block">Create</span>
               </Link>
               <Button
@@ -121,7 +122,7 @@ const NavigationSidebar = ({ user }: props) => {
                   selectCategory("all");
                 }}
               >
-                <ArrowLeftOnRectangleIcon width="24" height="24" />
+                <HiOutlineArrowLeftOnRectangle className="h-6 w-6" />
                 <span className="hidden sm:block">Signout</span>
               </Button>
             </>
@@ -133,10 +134,20 @@ const NavigationSidebar = ({ user }: props) => {
                 selectCategory("all");
               }}
             >
-              <ArrowRightOnRectangleIcon width="24" height="24" />
+              <HiOutlineArrowRightOnRectangle className="h-6 w-6" />
               <span className="hidden sm:block">Login</span>
             </Button>
           )}
+        </div>
+        <div className="flex items-center gap-2">
+          <NextLink
+            className="text-xs font-light text-gray-500 hover:underline"
+            href="/home"
+          >
+            About us
+          </NextLink>
+          <div className="mb-2 text-gray-500">.</div>
+          <p className="text-xs font-light text-gray-500">Authorie 2023</p>
         </div>
       </div>
     </nav>

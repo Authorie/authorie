@@ -1,12 +1,11 @@
-import Image from "next/image";
-import EllipsisHorizontalIcon from "@heroicons/react/24/solid/EllipsisHorizontalIcon";
-
+import { CommentButton, LikeButton } from "@components/action";
 import type { RouterOutputs } from "@utils/api";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { api } from "@utils/api";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { HiEllipsisHorizontal } from "react-icons/hi2";
 import ReplyCommentInput from "./ReplyCommentInput";
-import { LikeButton, CommentButton } from "@components/action";
 
 type props = {
   comment:
@@ -85,7 +84,7 @@ const Comment = ({ comment }: props) => {
             )}
             <div className="flex grow items-center justify-between">
               <p className="text-sm">{comment.content}</p>
-              <EllipsisHorizontalIcon className="h-7 w-7" />
+              <HiEllipsisHorizontal className="h-7 w-7" />
             </div>
           </div>
           <div className="my-1 flex items-center gap-7">

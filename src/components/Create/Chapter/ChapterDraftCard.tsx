@@ -1,4 +1,4 @@
-import { PencilSquareIcon } from "@heroicons/react/24/solid";
+import { HiPencilSquare } from "react-icons/hi2";
 
 type props = {
   title: string;
@@ -15,7 +15,7 @@ const ChapterDraftCard = ({ title, selected, onClickHandler }: props) => {
       }`}
     >
       <span className="font-bold">{title}</span>
-      <PencilSquareIcon className="text-bold h-5 w-5 text-authGreen-600" />
+      <HiPencilSquare className="text-bold h-5 w-5 text-authGreen-600" />
     </li>
   );
 };

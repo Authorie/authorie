@@ -1,4 +1,4 @@
-import { DocumentIcon } from "@heroicons/react/24/solid";
+import { HiDocument } from "react-icons/hi2";
 
 type props = {
   title: string;
@@ -19,7 +19,7 @@ const SearchChapterResult = ({ title, date, author, book, content }: props) => {
       className="mb-3 flex h-44 cursor-pointer gap-4 rounded shadow-lg transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
     >
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
-        <DocumentIcon className="h-12 w-12 fill-white" />
+        <HiDocument className="h-12 w-12 fill-white" />
       </div>
       <div className="mr-2 w-10/12 py-3 pr-10">
         <p className="text-xs font-semibold text-authBlue-500">CHAPTER</p>

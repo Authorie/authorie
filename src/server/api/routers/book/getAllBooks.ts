@@ -1,7 +1,5 @@
-import { BookStatus, Prisma } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import { publicProcedure } from "@server/api/trpc";
-import { makePagination } from "@server/utils";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { computeIsOwner } from "./utils";
 
@@ -24,17 +22,16 @@ const getAllBooks = publicProcedure
           BookStatus.PUBLISHED,
           BookStatus.COMPLETED,
         ]),
-      cursor: z.string().cuid().optional(),
-      limit: z.number().int().default(20),
     })
   )
   .query(async ({ ctx, input }) => {
-    const { penname, status, cursor, limit } = input;
+    const { penname, status } = input;
     const bookFindManyArgs = {
       where: {},
       include: {
         owners: {
           select: {
+            status: true,
             user: {
               select: {
                 id: true,
@@ -56,17 +53,15 @@ const getAllBooks = publicProcedure
         },
         chapters: {
           select: {
-            views: true,
             _count: {
               select: {
+                views: true,
                 likes: true,
               },
             },
           },
         },
       },
-      cursor: cursor ? { id: cursor } : undefined,
-      take: limit + 1,
     };
     if (!ctx.session?.user.id) {
       bookFindManyArgs.where = {
@@ -136,28 +131,9 @@ const getAllBooks = publicProcedure
         ],
       };
     }
-    try {
-      const books = (await ctx.prisma.book.findMany(bookFindManyArgs)).map(
-        (book) => {
-          return computeIsOwner(ctx.session?.user.id, book);
-        }
-      );
-      return makePagination(books, limit);
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found",
-          cause: err,
-        });
-      } else {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong",
-          cause: err,
-        });
-      }
-    }
+    return (await ctx.prisma.book.findMany(bookFindManyArgs)).map((book) =>
+      computeIsOwner(ctx.session?.user.id, book)
+    );
   });
 
 export default getAllBooks;
