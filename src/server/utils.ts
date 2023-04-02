@@ -1,5 +1,5 @@
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import superjson from "superjson";
 import { appRouter } from "./api/root";
 import { createInnerTRPCContext } from "./api/trpc";

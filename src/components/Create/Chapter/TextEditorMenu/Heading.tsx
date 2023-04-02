@@ -4,8 +4,8 @@ import BaseHeading from "@tiptap/extension-heading";
 type Levels = 1 | 2;
 
 const classes = {
-  1: "text-xs",
-  2: "text-xl",
+  1: "text-[length:var(--editor-h1)]",
+  2: "text-[length:var(--editor-h3)]",
 } as const;
 
 export const Heading = BaseHeading.configure({ levels: [1, 2] }).extend({

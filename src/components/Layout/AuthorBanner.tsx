@@ -495,7 +495,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
         {user ? (
           <AuthorBanner tab={tab} user={user} />
         ) : (
-          <div className="ml-40 grid h-full max-w-xl items-center justify-center bg-black/60 px-7 pt-7 backdrop-blur-lg">
+          <div className="ml-40 grid h-full max-w-xl items-center justify-center bg-black/80 px-7 pt-7 backdrop-blur-lg">
             <LoadingSpinner />
           </div>
         )}

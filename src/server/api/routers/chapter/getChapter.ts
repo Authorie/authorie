@@ -12,6 +12,7 @@ const getChapter = publicProcedure
             id: true,
             title: true,
             coverImage: true,
+            status: true,
           },
         },
         owner: {

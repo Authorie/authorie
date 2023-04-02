@@ -27,6 +27,7 @@ import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import NextImage from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import superjson from "superjson";
 import * as z from "zod";
@@ -73,6 +74,7 @@ export const getServerSideProps = async (
 
 const CreateChapter = () => {
   const { status } = useSession();
+  const router = useRouter();
   const context = api.useContext();
   const [title, setTitle] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
@@ -88,7 +90,7 @@ const CreateChapter = () => {
         heading: false,
         paragraph: {
           HTMLAttributes: {
-            class: "text-base",
+            class: "text-[length:var(--editor-h2)]",
           },
         },
         bulletList: {
@@ -213,6 +215,7 @@ const CreateChapter = () => {
   const publishDraftChapterHandler = async () => {
     if (!editor) return;
     const validationError = validateInput();
+    if (!book) return;
     if (validationError) {
       setErrors({
         title: validationError.formErrors.fieldErrors.title?.toString(),
@@ -233,6 +236,7 @@ const CreateChapter = () => {
           },
         }
       );
+      void router.push(`/${user?.penname as string}/book/${book.id}`);
       await toast.promise(promise, {
         loading: "Publishing...",
         success: "Published!",
@@ -308,11 +312,11 @@ const CreateChapter = () => {
               <NextImage src={book.wallpaperImage} alt="chapter's cover" fill />
             )}
           </div>
-          <div className="z-20 flex flex-col gap-2">
+          <div className="z-20 flex flex-col gap-2 rounded-lg bg-gray-200/50 p-2 backdrop-blur">
             <div className="flex items-end gap-2">
               <input
                 placeholder="Untitled"
-                className="w-full bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
+                className="w-full bg-transparent text-2xl font-semibold placeholder-gray-600 outline-none focus:outline-none"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -335,7 +339,9 @@ const CreateChapter = () => {
             )}
             <div className="flex w-fit items-center gap-4">
               <span className="text-xs text-gray-600">Author </span>
-              {user && <span className="text-xs">{user.penname}</span>}
+              {user && (
+                <span className="text-xs font-semibold">{user.penname}</span>
+              )}
             </div>
             {user && (
               <div className="flex items-center gap-4">

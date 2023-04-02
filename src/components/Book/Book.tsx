@@ -24,7 +24,6 @@ type props = {
 
 const Book = ({
   title,
-  description,
   read,
   like,
   id,
