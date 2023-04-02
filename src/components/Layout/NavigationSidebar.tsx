@@ -112,7 +112,7 @@ const NavigationSidebar = ({ user }: props) => {
                 href="/create/book"
                 className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
               >
-                <HiPencil width="24" height="24" />
+                <HiPencil className="h-6 w-6" />
                 <span className="hidden sm:block">Create</span>
               </Link>
               <Button
@@ -122,7 +122,7 @@ const NavigationSidebar = ({ user }: props) => {
                   selectCategory("all");
                 }}
               >
-                <HiOutlineArrowLeftOnRectangle width="24" height="24" />
+                <HiOutlineArrowLeftOnRectangle className="h-6 w-6" />
                 <span className="hidden sm:block">Signout</span>
               </Button>
             </>
@@ -134,10 +134,20 @@ const NavigationSidebar = ({ user }: props) => {
                 selectCategory("all");
               }}
             >
-              <HiOutlineArrowRightOnRectangle width="24" height="24" />
+              <HiOutlineArrowRightOnRectangle className="h-6 w-6" />
               <span className="hidden sm:block">Login</span>
             </Button>
           )}
+        </div>
+        <div className="flex items-center gap-2">
+          <NextLink
+            className="text-xs font-light text-gray-500 hover:underline"
+            href="/home"
+          >
+            About us
+          </NextLink>
+          <div className="mb-2 text-gray-500">.</div>
+          <p className="text-xs font-light text-gray-500">Authorie 2023</p>
         </div>
       </div>
     </nav>

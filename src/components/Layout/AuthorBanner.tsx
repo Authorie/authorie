@@ -501,7 +501,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
         )}
       </div>
       <div className="sticky top-0 z-20 ml-40 w-fit self-start">
-        <div className="flex max-w-xl items-center justify-between bg-black/70 px-1 shadow-lg backdrop-blur-lg">
+        <div className="flex max-w-xl items-center justify-between bg-black/60 px-1 shadow-lg backdrop-blur-lg">
           {AuthorTab.map((data) => (
             <button
               key={data.title}
