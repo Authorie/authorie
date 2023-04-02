@@ -37,7 +37,7 @@ const CategoryBoard = ({ isLogin }: props) => {
               followedCategories={followedCategories}
             />
           ) : (
-            <h1 className="text-8xl text-white">For Ads</h1>
+            <h1 className="text-6xl text-white">Welcome to Authorie</h1>
           )}
         </div>
       </div>

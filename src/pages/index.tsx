@@ -1,5 +1,5 @@
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import ChapterPost from "@components/Chapter/ChapterPost";
+import ChapterFeed from "@components/Chapter/ChapterFeed";
 import { useFollowedCategories } from "@hooks/followedCategories";
 import { useSelectedCategory } from "@hooks/selectedCategory";
 import { appRouter } from "@server/api/root";
@@ -69,7 +69,7 @@ const Home = () => {
           data.pages
             .flatMap((page) => page.items)
             .map((chapter) => (
-              <ChapterPost key={chapter.id} chapter={chapter} />
+              <ChapterFeed key={chapter.id} chapter={chapter} />
             ))}
       </div>
     </div>

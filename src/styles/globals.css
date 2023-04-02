@@ -9,3 +9,8 @@
     font-family: "Inter", sans-serif;
   }
 }
+:root {
+  --editor-h1: 0.75rem;
+  --editor-h2: 1rem;
+  --editor-h3: 1.25rem;
+}

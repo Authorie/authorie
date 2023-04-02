@@ -6,7 +6,7 @@ import type { Category, User } from "@prisma/client";
 import { getServerAuthSession } from "@server/auth";
 import { generateSSGHelper } from "@server/utils";
 import { api } from "@utils/api";
-import { GetServerSidePropsContext } from "next";
+import type { GetServerSidePropsContext } from "next";
 import Image from "next/legacy/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";

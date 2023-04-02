@@ -325,7 +325,7 @@ const BookContent = ({ bookId, penname }: props) => {
           onSubmit={(e) => void onSaveHandler(e)}
           className="relative my-8 flex w-full  flex-col gap-8 rounded-xl bg-white px-7 pt-8 shadow-lg"
         >
-          <div className="absolute inset-0 h-96 w-full overflow-hidden rounded-lg rounded-tl-large">
+          <div className="absolute inset-0 h-72 w-full overflow-hidden rounded-lg rounded-tl-large">
             {book?.wallpaperImage || bookWallpaper ? (
               <Image
                 src={
@@ -339,7 +339,7 @@ const BookContent = ({ bookId, penname }: props) => {
             ) : (
               <div className="h-full w-full bg-authGreen-400" />
             )}
-            <div className="absolute inset-0 z-10 h-96 w-full bg-gradient-to-t from-white" />
+            <div className="absolute inset-0 z-10 h-72 w-full bg-gradient-to-t from-white" />
           </div>
           <HiOutlineChevronLeft
             type="button"
@@ -561,6 +561,21 @@ const BookContent = ({ bookId, penname }: props) => {
                   isEdit ? "justify-end gap-2" : "justify-center"
                 } ${"flex h-52 flex-col gap-2"}`}
               >
+                {!isEdit && (
+                  <div className="flex items-start gap-2">
+                    {book.categories.map((c) => (
+                      <div
+                        key={c.category.id}
+                        onClick={() =>
+                          void router.push(`/category/${c.category.title}`)
+                        }
+                        className="cursor-pointer rounded-full bg-orange-400 px-3 text-xs font-light text-white hover:bg-orange-500"
+                      >
+                        {c.category.title}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-4">
                   {isEdit ? (
                     <div className="flex flex-col gap-4">
@@ -653,7 +668,10 @@ const BookContent = ({ bookId, penname }: props) => {
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
                   {isChapterCreatable && (
-                    <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
+                    <div
+                      onClick={() => void router.push("/create/chapter")}
+                      className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01] hover:bg-gray-300"
+                    >
                       <HiOutlinePlusCircle className="w-8" />
                       <span className="text-lg font-semibold">
                         Create new chapter
