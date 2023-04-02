@@ -53,9 +53,9 @@ const getAllBooks = publicProcedure
         },
         chapters: {
           select: {
-            views: true,
             _count: {
               select: {
+                views: true,
                 likes: true,
               },
             },

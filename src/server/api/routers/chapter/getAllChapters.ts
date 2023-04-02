@@ -47,6 +47,7 @@ const getAllChapters = publicProcedure
         },
         _count: {
           select: {
+            views: true,
             likes: true,
             comments: true,
           },

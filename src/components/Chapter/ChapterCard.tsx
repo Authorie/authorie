@@ -24,7 +24,7 @@ const ChapterCard = ({ chapter }: props) => {
           </div>
           <div className="flex items-center gap-1 text-authGreen-600">
             <HiEye className="h-3 w-3" />
-            <p className="text-xs font-semibold">{chapter.views}</p>
+            <p className="text-xs font-semibold">{chapter._count.views}</p>
           </div>
         </div>
       </div>
