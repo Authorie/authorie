@@ -49,7 +49,7 @@ const ChapterRankCard = ({
               <h1 className="line-clamp-2 text-lg font-semibold leading-5 text-white">
                 {chapterTitle}
               </h1>
-              <h1 className="h-fit text-3xl font-bold text-white shadow-black drop-shadow-xl">
+              <h1 className="h-fit text-3xl font-bold text-white drop-shadow-md">
                 #{rank}
               </h1>
             </div>
