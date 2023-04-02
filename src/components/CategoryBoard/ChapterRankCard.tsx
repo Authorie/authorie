@@ -44,16 +44,16 @@ const ChapterRankCard = ({
             rank === 3 ? "bg-rose-400/60" : ""
           }`}
         >
-          <div className="flex h-full gap-3">
-            <div className="flex flex-col justify-between">
+          <div className="flex h-full flex-col justify-between">
+            <div className="flex justify-between">
               <h1 className="line-clamp-2 text-lg font-semibold leading-5 text-white">
                 {chapterTitle}
               </h1>
-              <p className="text-xs text-white">By {authorPenname}</p>
+              <h1 className="h-fit text-3xl font-bold text-white shadow-black drop-shadow-xl">
+                #{rank}
+              </h1>
             </div>
-            <h1 className="h-fit text-3xl font-bold text-white shadow-black drop-shadow-xl">
-              #{rank}
-            </h1>
+            <p className="text-xs text-white">By {authorPenname}</p>
           </div>
         </div>
       </div>
