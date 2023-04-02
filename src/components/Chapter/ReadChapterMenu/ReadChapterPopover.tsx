@@ -20,14 +20,27 @@ const fonts = [
 ];
 
 const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
-  const initialTextSize = localStorage.getItem("textSize");
+  let initialTextSize;
+  let initialFontFamily: string | null;
+  if (typeof localStorage !== "undefined" && localStorage.getItem("textSize")) {
+    initialTextSize = localStorage.getItem("textSize");
+  } else {
+    initialTextSize = null;
+  }
+  if (
+    typeof localStorage !== "undefined" &&
+    localStorage.getItem("fontFamily")
+  ) {
+    initialFontFamily = localStorage.getItem("fontFamily");
+  } else {
+    initialFontFamily = null;
+  }
   const [textSize, setTextSize] = useState(
     initialTextSize ? +initialTextSize : 16
   );
-  const initialFontFamily = localStorage.getItem("fontFamily");
   let foundFont = null;
   if (initialFontFamily) {
-    foundFont = fonts.find((font) => font.id == initialFontFamily);
+    foundFont = fonts.find((font) => font.id === initialFontFamily);
   }
 
   const [fontFamily, setFontFamily] = useState(
@@ -58,8 +71,8 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
   return (
     <Popover className="relative">
       <Popover.Button>
-        <button className="flex cursor-pointer items-center rounded-full border border-white p-1 text-white">
-          <RiText className="h-4 w-4" />
+        <button className="flex cursor-pointer items-center rounded-full border border-white p-1 text-white hover:bg-gray-500">
+          <RiText className="h-3 w-3" />
         </button>
       </Popover.Button>
       <Transition
@@ -71,43 +84,41 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-1"
       >
-        <Popover.Panel className="absolute left-1/2 z-10 mt-3 max-w-sm -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
-          <div className="flex flex-col gap-1 rounded-lg bg-black bg-opacity-60 p-7 shadow-lg backdrop-blur">
-            <div className="flex items-center justify-between gap-1">
+        <Popover.Panel className="absolute left-1/2 z-10 mt-3 w-52 -translate-x-1/2 transform px-4 sm:px-0 lg:max-w-3xl">
+          <div className="flex flex-col gap-1 rounded-lg bg-black bg-opacity-60 p-3 shadow-lg backdrop-blur">
+            <div className="flex items-center justify-between">
               <button
                 onClick={() => {
                   setTextSize(textSize - 1);
                 }}
-                className="m-1 flex h-7 w-7 cursor-pointer items-center text-white"
+                className="m-1 flex h-7 w-7 cursor-pointer items-center justify-center text-white"
               >
                 <HiOutlineMinusCircle />
               </button>
               <input
                 onChange={onSizeChange}
-                className="w-10 rounded-sm bg-transparent text-center text-white
-                [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none 
+                className="w-10 rounded-sm bg-transparent text-center text-white outline-none [appearance:textfield]
+                focus:outline-none [&::-webkit-inner-spin-button]:appearance-none 
                 [&::-webkit-outer-spin-button]:appearance-none"
                 size={10}
                 value={textSize}
                 type="number"
               />
-
               <button
                 onClick={() => {
                   setTextSize(textSize + 1);
                 }}
-                className="m-1 flex h-7 w-7 cursor-pointer items-center text-white"
+                className="m-1 flex h-7 w-7 cursor-pointer items-center justify-center text-white"
               >
                 <HiOutlinePlusCircle />
               </button>
             </div>
-
-            <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center justify-between gap-3">
               <button
                 onClick={() => {
                   editor?.commands.toggleHighlight();
                 }}
-                className="m-1 flex h-7 w-7 cursor-pointer items-center rounded text-white"
+                className="m-1 flex h-7 w-7 cursor-pointer items-center rounded px-1 text-white hover:bg-gray-500"
               >
                 <RiMarkPenLine />
               </button>
@@ -118,7 +129,9 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                     className="relative w-full cursor-default rounded-lg bg-white 
                   py-2 pl-3 pr-10 text-left shadow-md focus:outline-none sm:text-sm"
                   >
-                    <span className="block truncate">{fontFamily.name}</span>
+                    <span className="block w-20 truncate">
+                      {fontFamily.name}
+                    </span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                       <HiOutlineChevronUpDown
                         className="h-5 w-5 text-gray-400"
@@ -133,14 +146,14 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                     leaveTo="opacity-0"
                   >
                     <Listbox.Options
-                      className="absolute right-0 mt-1 max-h-60 w-fit 
-                    rounded-md bg-white py-1 text-base shadow-lg focus:outline-none sm:text-sm"
+                      className="absolute right-0 mt-1 max-h-60
+                     overflow-hidden overflow-y-auto rounded-md bg-white py-1 text-base shadow-lg focus:outline-none sm:text-sm"
                     >
                       {fonts.map((font, index) => (
                         <Listbox.Option
                           key={index}
                           className={({ active }) =>
-                            `relative w-full cursor-default select-none whitespace-nowrap py-2 pl-10 pr-4 ${
+                            `relative w-full cursor-default select-none whitespace-nowrap py-2 pl-5 pr-4 ${
                               active
                                 ? "bg-authGreen-300 text-authGreen-600"
                                 : "text-gray-900"

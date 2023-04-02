@@ -7,6 +7,8 @@ import { useCallback, useState } from "react";
 import CategoryBar from "./CategoryBar/CategoryBar";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 import ChapterRankCard from "./ChapterRankCard";
+import { HiEye } from "react-icons/hi2";
+import { useRouter } from "next/router";
 
 type props = {
   isLogin: boolean;
@@ -35,6 +37,7 @@ const CategoryBoard = ({ isLogin }: props) => {
       ? leaderboard?.map((id) => t.chapter.getData({ id: id.chapterId }))
       : []
   );
+  const router = useRouter();
   const d = new Date();
   const followedCategories = useFollowedCategories();
   const setFollowedCategories = useSetFollowedCategories();
@@ -84,6 +87,7 @@ const CategoryBoard = ({ isLogin }: props) => {
                           image={chapter?.book?.coverImage || ""}
                           rank={index + 1}
                           chapterId={chapter?.id as string}
+                          read={chapter?._count.views || 0}
                         />
                       )
                   )}
@@ -97,6 +101,7 @@ const CategoryBoard = ({ isLogin }: props) => {
                           image={chapter?.book?.coverImage || ""}
                           rank={index + 1}
                           chapterId={chapter?.id as string}
+                          read={chapter?._count.views || 0}
                         />
                       )
                   )}
@@ -110,6 +115,7 @@ const CategoryBoard = ({ isLogin }: props) => {
                           image={chapter?.book?.coverImage || ""}
                           rank={index + 1}
                           chapterId={chapter?.id as string}
+                          read={chapter?._count.views || 0}
                         />
                       )
                   )}
@@ -121,15 +127,26 @@ const CategoryBoard = ({ isLogin }: props) => {
                       index <= 5 && (
                         <div
                           key={chapter?.id}
-                          className="flex w-44 cursor-pointer gap-1 rounded-lg px-2 py-1 text-white hover:bg-dark-500"
+                          onClick={() =>
+                            void router.push(
+                              `/chapter/${chapter?.id as string}`
+                            )
+                          }
+                          className="flex w-56 cursor-pointer gap-1 rounded-lg px-2 py-1 text-white hover:bg-dark-500"
                         >
                           <h1 className="font-semibold">{index + 1}.</h1>
-                          <div className="mt-0.5 flex flex-col">
+                          <div className="mt-0.5 flex w-full flex-col gap-1">
                             <h1 className="text-sm font-semibold">
                               {chapter?.title}
                             </h1>
                             <p className="text-xs font-light">
                               By {chapter?.owner.penname}
+                            </p>
+                          </div>
+                          <div className="flex w-fit items-center gap-1 rounded-lg bg-gray-700 px-2 shadow-lg">
+                            <HiEye className="h-3 w-3 text-white" />
+                            <p className="text-xs text-white">
+                              {chapter?._count.views}
                             </p>
                           </div>
                         </div>

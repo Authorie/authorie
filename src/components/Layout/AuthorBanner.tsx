@@ -251,7 +251,7 @@ const AuthorBanner = ({
       </label>
       <form
         onSubmit={(e) => void onSubmitHandler(e)}
-        className="ml-40 h-full max-w-xl bg-black/50 px-7 pt-7 backdrop-blur-lg"
+        className="ml-40 h-full max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg"
       >
         <div className="flex justify-between">
           <label
@@ -495,7 +495,7 @@ const AuthorBannerContainer = ({ user, penname }: props) => {
         {user ? (
           <AuthorBanner tab={tab} user={user} />
         ) : (
-          <div className="ml-40 grid h-full max-w-xl items-center justify-center bg-black/80 px-7 pt-7 backdrop-blur-lg">
+          <div className="ml-40 grid h-full max-w-xl items-center justify-center bg-black/60 px-7 pt-7 backdrop-blur-lg">
             <LoadingSpinner />
           </div>
         )}

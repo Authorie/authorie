@@ -8,6 +8,7 @@ import { generateSSGHelper } from "@server/utils";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import Image from "next/legacy/image";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -50,6 +51,7 @@ export const getServerSideProps = async (
 };
 
 const CreateBook = () => {
+  const router = useRouter();
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
   const { data: user } = api.user.getData.useQuery();
@@ -61,7 +63,6 @@ const CreateBook = () => {
     useImageUpload();
   const {
     register,
-    reset,
     handleSubmit,
     watch,
     formState: { errors },
@@ -112,13 +113,13 @@ const CreateBook = () => {
       success: `Created ${title} successfully!`,
       error: "Error occured while creating book!",
     });
-    reset();
+    void router.push(`/${user?.penname as string}/book`);
   });
 
   return (
     <form
       onSubmit={(e) => void submitHandler(e)}
-      className="items-center rounded-b-2xl bg-white px-10 py-10"
+      className="items-center rounded-b-2xl bg-white px-10 py-5"
     >
       <div className="flex flex-col gap-10">
         <div className="relative flex min-h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pb-11 pt-24 drop-shadow-lg">

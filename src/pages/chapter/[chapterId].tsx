@@ -218,7 +218,7 @@ const ChapterPage = ({ chapterId }: props) => {
   return (
     <div className="relative flex h-screen w-full flex-col">
       {chapter && chapter.book && chapter.book.status !== BookStatus.DRAFT ? (
-        <div className="overflow-y-scroll">
+        <div className="flex h-full flex-col overflow-y-scroll">
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
               <h2 className="text-lg font-semibold text-white">
@@ -250,20 +250,19 @@ const ChapterPage = ({ chapterId }: props) => {
                 <ChapterCommentInput chapterId={chapterId} />
               </div>
             )}
-            <div className="flex cursor-pointer items-center gap-2 rounded-full px-3 py-2 hover:bg-slate-100">
-              <HiOutlineArrowTopRightOnSquare className="h-6 w-6" />
-            </div>
             <ReadChapterPopover editor={editor} />
+            <div className="flex cursor-pointer items-center gap-2 rounded-full px-2 py-1 hover:bg-gray-500">
+              <HiOutlineArrowTopRightOnSquare className="h-5 w-5 text-white" />
+            </div>
             <div className="mx-10">
               <HiOutlineChevronRight className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
             </div>
           </div>
-
-          <div className="relative mb-16 mt-0 flex grow justify-between p-4">
-            <div className="w-[800px]">
+          <div className="relative mt-0 flex h-full justify-between px-4">
+            <div className="w-[800px] py-4">
               <EditorContent editor={editor} />
             </div>
-            <div className="sticky max-h-96 min-h-fit w-80 overflow-y-auto rounded-lg bg-gray-400 px-2">
+            <div className="sticky grow overflow-y-auto bg-gray-200 px-2 py-1">
               {comments && comments.length !== 0 ? (
                 <div>
                   {isSuccess &&

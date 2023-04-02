@@ -61,9 +61,9 @@ const Comment = ({ comment }: props) => {
   }, [isLike]);
 
   return (
-    <div className="my-2 rounded-xl bg-white px-1">
+    <div className="my-2 rounded-xl bg-white px-1 pt-1">
       <div className="flex gap-1 ">
-        <div className="mt-5 h-6 w-6 overflow-hidden rounded-full">
+        <div className="mt-6 h-6 w-6 overflow-hidden rounded-full">
           <Image
             src={comment.user.image || "/placeholder_profile.png"}
             alt={`${comment.user.penname || "user"} profile image`}
@@ -82,26 +82,28 @@ const Comment = ({ comment }: props) => {
                 alt={`${comment.user.penname || "user"} commment's image`}
               />
             )}
-            <div className="flex grow items-center justify-between">
+            <div className="flex h-8 grow items-center justify-between">
               <p className="text-sm">{comment.content}</p>
               <HiEllipsisHorizontal className="h-7 w-7" />
             </div>
           </div>
-          <div className="my-1 flex items-center gap-7">
-            <LikeButton
-              isAuthenticated={status === "authenticated"}
-              isLiked={Boolean(isLiked)}
-              numberOfLike={comment._count.likes}
-              onClickHandler={onLikeHandler}
-              small
-            />
-            {comment.parentCommentId === null && (
-              <CommentButton
-                numberOfComments={comment._count.replies}
-                onClickHandler={() => setOpenReplies((prev) => !prev)}
+          <div className="my-1 flex items-center justify-between pr-2">
+            <div className="flex gap-7">
+              <LikeButton
+                isAuthenticated={status === "authenticated"}
+                isLiked={Boolean(isLiked)}
+                numberOfLike={comment._count.likes}
+                onClickHandler={onLikeHandler}
                 small
               />
-            )}
+              {comment.parentCommentId === null && (
+                <CommentButton
+                  numberOfComments={comment._count.replies}
+                  onClickHandler={() => setOpenReplies((prev) => !prev)}
+                  small
+                />
+              )}
+            </div>
             <p className="text-xs text-dark-400">
               {comment.createdAt.toDateString().split(" ").slice(1).join(" ")}
             </p>
@@ -111,12 +113,12 @@ const Comment = ({ comment }: props) => {
       {openReplies &&
         "replies" in comment &&
         comment.replies.map((reply) => (
-          <div key={comment.id} className="ml-10">
+          <div key={comment.id} className="-mb-1 -mt-2 ml-7">
             <Comment comment={reply} />
           </div>
         ))}
       {openReplies && (
-        <div className="ml-10">
+        <div className="ml-7">
           <ReplyCommentInput
             chapterId={comment.chapterId}
             parentId={comment.id || undefined}

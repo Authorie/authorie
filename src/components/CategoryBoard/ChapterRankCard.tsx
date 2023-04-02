@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { HiEye } from "react-icons/hi2";
 
 type props = {
   chapterTitle: string;
@@ -7,6 +8,7 @@ type props = {
   authorPenname: string;
   rank: number;
   chapterId: string;
+  read: number;
 };
 
 const ChapterRankCard = ({
@@ -15,6 +17,7 @@ const ChapterRankCard = ({
   authorPenname,
   rank,
   chapterId,
+  read,
 }: props) => {
   const router = useRouter();
   return (
@@ -24,9 +27,9 @@ const ChapterRankCard = ({
         rank === 3 ? "mt-12" : ""
       } ${
         rank === 2 ? "mt-6" : ""
-      } relative cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]`}
+      } relative h-52 w-36 cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]`}
     >
-      <div className="h-fit w-fit overflow-hidden rounded-sm shadow-lg">
+      <div className="h-full w-full overflow-hidden rounded-sm shadow-lg">
         {image ? (
           <Image
             src={image}
@@ -37,6 +40,10 @@ const ChapterRankCard = ({
         ) : (
           <div className="h-52 w-36 bg-authGreen-500" />
         )}
+        <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-gray-600 px-2">
+          <HiEye className="h-3 w-3 text-white" />
+          <p className="text-xs text-white">{read}</p>
+        </div>
         <div
           className={`absolute left-2 top-28 z-10 h-32 w-32 rounded-md p-2 shadow-xl backdrop-blur-2xl ${
             rank === 1 ? "bg-gold/60" : ""
