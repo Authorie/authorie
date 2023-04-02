@@ -346,7 +346,6 @@ const BookContent = ({ bookId, penname }: props) => {
             onClick={() => router.back()}
             className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
-
           <div className="z-10 flex gap-7 pb-5 pt-10">
             <div className="ml-7 flex flex-col">
               <div className="flex">
@@ -561,21 +560,6 @@ const BookContent = ({ bookId, penname }: props) => {
                   isEdit ? "justify-end gap-2" : "justify-center"
                 } ${"flex h-52 flex-col gap-2"}`}
               >
-                {!isEdit && (
-                  <div className="flex items-start gap-2">
-                    {book.categories.map((c) => (
-                      <div
-                        key={c.category.id}
-                        onClick={() =>
-                          void router.push(`/category/${c.category.title}`)
-                        }
-                        className="cursor-pointer rounded-full bg-orange-400 px-3 text-xs font-light text-white hover:bg-orange-500"
-                      >
-                        {c.category.title}
-                      </div>
-                    ))}
-                  </div>
-                )}
                 <div className="flex gap-4">
                   {isEdit ? (
                     <div className="flex flex-col gap-4">

@@ -67,9 +67,6 @@ const ChapterPage = ({ chapterId }: props) => {
   const { data: chapter } = api.chapter.getData.useQuery({
     id: chapterId,
   });
-  const { data: book } = api.book.getData.useQuery({
-    id: chapter?.bookId as string,
-  });
   const { data: isLike } = api.comment.isLike.useQuery({
     id: chapterId,
   });
@@ -164,6 +161,7 @@ const ChapterPage = ({ chapterId }: props) => {
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
+    if (!localStorage) return;
     const localData = localStorage.getItem(chapterId);
     if (localData) {
       editor.commands.setContent(JSON.parse(localData) as JSONContent);
@@ -219,10 +217,7 @@ const ChapterPage = ({ chapterId }: props) => {
 
   return (
     <div className="relative flex h-screen w-full flex-col">
-      {chapter &&
-      book &&
-      (book.status === BookStatus.PUBLISHED ||
-        book.status === BookStatus.COMPLETED) ? (
+      {chapter && chapter.book && chapter.book.status !== BookStatus.DRAFT ? (
         <div className="overflow-y-scroll">
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
