@@ -8,45 +8,6 @@ import CategoryBar from "./CategoryBar/CategoryBar";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 import ChapterRankCard from "./ChapterRankCard";
 
-const chapterRanking = [
-  {
-    chapterId: "1",
-    title: "first chap",
-    author: "Mr one",
-    image: "",
-  },
-  {
-    chapterId: "2",
-    title: "second chap",
-    author: "Mr two",
-    image: "",
-  },
-  {
-    chapterId: "3",
-    title: "third chap",
-    author: "Mr three",
-    image: "",
-  },
-  {
-    chapterId: "4",
-    title: "fourth chap",
-    author: "Mr four",
-    image: "",
-  },
-  {
-    chapterId: "5",
-    title: "fifth chap",
-    author: "Mr five",
-    image: "",
-  },
-  {
-    chapterId: "6",
-    title: "sixed chap",
-    author: "Mr six",
-    image: "",
-  },
-];
-
 type props = {
   isLogin: boolean;
 };
@@ -66,6 +27,14 @@ const CategoryBoard = ({ isLogin }: props) => {
     "November",
     "December",
   ];
+  const { data: leaderboard } = api.chapter.getLeaderboard.useQuery({
+    limit: 6,
+  });
+  const chapters = api.useQueries((t) =>
+    leaderboard
+      ? leaderboard?.map((id) => t.chapter.getData({ id: id.chapterId }))
+      : []
+  );
   const d = new Date();
   const followedCategories = useFollowedCategories();
   const setFollowedCategories = useSetFollowedCategories();
@@ -91,7 +60,7 @@ const CategoryBoard = ({ isLogin }: props) => {
               categoriesList={categories}
               followedCategories={followedCategories}
             />
-          ) : (
+          ) : leaderboard ? (
             <div className="flex h-full w-full justify-between px-10 py-5">
               <div className="flex flex-col gap-3">
                 <div className="w-24 font-bold text-white">
@@ -105,62 +74,62 @@ const CategoryBoard = ({ isLogin }: props) => {
               </div>
               <div className="flex gap-10">
                 <div className="flex gap-4">
-                  {chapterRanking.map(
-                    (chapter, index) =>
+                  {chapters.map(
+                    ({ data: chapter }, index) =>
                       index === 1 && (
                         <ChapterRankCard
-                          key={chapter.chapterId}
-                          chapterTitle={chapter.title}
-                          authorPenname={chapter.author}
-                          image={chapter.image}
+                          key={chapter?.id}
+                          chapterTitle={chapter?.title as string}
+                          authorPenname={chapter?.owner.penname as string}
+                          image={chapter?.book?.coverImage || ""}
                           rank={index + 1}
-                          chapterId={chapter.chapterId}
+                          chapterId={chapter?.id as string}
                         />
                       )
                   )}
-                  {chapterRanking.map(
-                    (chapter, index) =>
+                  {chapters.map(
+                    ({ data: chapter }, index) =>
                       index === 0 && (
                         <ChapterRankCard
-                          key={chapter.chapterId}
-                          chapterTitle={chapter.title}
-                          authorPenname={chapter.author}
-                          image={chapter.image}
+                          key={chapter?.id}
+                          chapterTitle={chapter?.title as string}
+                          authorPenname={chapter?.owner.penname as string}
+                          image={chapter?.book?.coverImage || ""}
                           rank={index + 1}
-                          chapterId={chapter.chapterId}
+                          chapterId={chapter?.id as string}
                         />
                       )
                   )}
-                  {chapterRanking.map(
-                    (chapter, index) =>
+                  {chapters.map(
+                    ({ data: chapter }, index) =>
                       index === 2 && (
                         <ChapterRankCard
-                          key={chapter.chapterId}
-                          chapterTitle={chapter.title}
-                          authorPenname={chapter.author}
-                          image={chapter.image}
+                          key={chapter?.id}
+                          chapterTitle={chapter?.title as string}
+                          authorPenname={chapter?.owner.penname as string}
+                          image={chapter?.book?.coverImage || ""}
                           rank={index + 1}
-                          chapterId={chapter.chapterId}
+                          chapterId={chapter?.id as string}
                         />
                       )
                   )}
                 </div>
                 <div className="flex flex-col gap-5 self-center">
-                  {chapterRanking.map(
-                    (chapter, index) =>
+                  {chapters.map(
+                    ({ data: chapter }, index) =>
                       index > 2 &&
                       index <= 5 && (
                         <div
-                          key={chapter.chapterId}
+                          key={chapter?.id}
                           className="flex w-44 cursor-pointer gap-1 rounded-lg px-2 py-1 text-white hover:bg-dark-500"
                         >
                           <h1 className="font-semibold">{index + 1}.</h1>
                           <div className="mt-0.5 flex flex-col">
                             <h1 className="text-sm font-semibold">
-                              {chapter.title}
+                              {chapter?.title}
                             </h1>
                             <p className="text-xs font-light">
-                              By {chapter.author}
+                              By {chapter?.owner.penname}
                             </p>
                           </div>
                         </div>
@@ -168,6 +137,12 @@ const CategoryBoard = ({ isLogin }: props) => {
                   )}
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="flex">
+              <h1 className="text-4xl font-bold text-white">
+                Ranking has not started yet!
+              </h1>
             </div>
           )}
         </div>
