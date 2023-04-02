@@ -12,6 +12,7 @@ module.exports = {
         current: "currentColor",
         white: "#ffffff",
         background: "#f1f1f1",
+        gold: "#F3C874",
         dark: {
           100: "#EDEDED",
           200: "#D9D9D9",
