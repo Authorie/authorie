@@ -112,7 +112,7 @@ const NavigationSidebar = ({ user }: props) => {
                 href="/create/book"
                 className="justify-center gap-4 bg-green-700 text-white hover:bg-green-800"
               >
-                <HiPencil width="24" height="24" />
+                <HiPencil className="h-6 w-6" />
                 <span className="hidden sm:block">Create</span>
               </Link>
               <Button
@@ -122,7 +122,7 @@ const NavigationSidebar = ({ user }: props) => {
                   selectCategory("all");
                 }}
               >
-                <HiOutlineArrowLeftOnRectangle width="24" height="24" />
+                <HiOutlineArrowLeftOnRectangle className="h-6 w-6" />
                 <span className="hidden sm:block">Signout</span>
               </Button>
             </>
@@ -134,7 +134,7 @@ const NavigationSidebar = ({ user }: props) => {
                 selectCategory("all");
               }}
             >
-              <HiOutlineArrowRightOnRectangle width="24" height="24" />
+              <HiOutlineArrowRightOnRectangle className="h-6 w-6" />
               <span className="hidden sm:block">Login</span>
             </Button>
           )}
