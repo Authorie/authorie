@@ -110,7 +110,7 @@ const BookPage = ({ penname }: props) => {
                           0
                         )}
                         read={book.chapters.reduce(
-                          (acc, curr) => acc + curr.views,
+                          (acc, curr) => acc + curr._count.views,
                           0
                         )}
                       />
@@ -139,7 +139,7 @@ const BookPage = ({ penname }: props) => {
                         0
                       )}
                       read={book.chapters.reduce(
-                        (acc, curr) => acc + curr.views,
+                        (acc, curr) => acc + curr._count.views,
                         0
                       )}
                     />

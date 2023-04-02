@@ -4,6 +4,7 @@ import deleteDraftChapter from "./deleteDraft";
 import getAllChapters from "./getAllChapters";
 import getChapter from "./getChapter";
 import getDraftChapters from "./getDrafts";
+import getLeaderboard from "./getLeaderboard";
 import isLike from "./isLike";
 import like from "./like";
 import readChapter from "./readChapter";
@@ -13,6 +14,7 @@ export const chapterRouter = createTRPCRouter({
   getAll: getAllChapters,
   getData: getChapter,
   getDrafts: getDraftChapters,
+  getLeaderboard: getLeaderboard,
   create: createChapter,
   deleteDraft: deleteDraftChapter,
   read: readChapter,
