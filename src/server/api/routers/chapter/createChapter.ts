@@ -90,27 +90,30 @@ const createChapter = protectedProcedure
           message: "You can't change the book of a chapter",
         });
       }
-    }
 
-    await ctx.prisma.chapter.upsert({
-      where: { id: chapterId },
-      create: {
-        title: title,
-        content: content,
-        publishedAt:
-          typeof publishedAt === "boolean" ? new Date() : publishedAt,
-        bookId,
-        ownerId: ctx.session.user.id,
-      },
-      update: {
-        title: title,
-        content: content,
-        publishedAt:
-          typeof publishedAt === "boolean" ? new Date() : publishedAt,
-        bookId,
-        ownerId: ctx.session.user.id,
-      },
-    });
+      await ctx.prisma.chapter.update({
+        where: { id: chapterId },
+        data: {
+          title: title,
+          content: content,
+          publishedAt:
+            typeof publishedAt === "boolean" ? new Date() : publishedAt,
+          bookId,
+          ownerId: ctx.session.user.id,
+        },
+      });
+    } else {
+      await ctx.prisma.chapter.create({
+        data: {
+          title: title,
+          content: content,
+          publishedAt:
+            typeof publishedAt === "boolean" ? new Date() : publishedAt,
+          bookId,
+          ownerId: ctx.session.user.id,
+        },
+      });
+    }
   });
 
 export default createChapter;
