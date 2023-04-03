@@ -25,6 +25,7 @@ import { ratelimit } from "../ratelimit";
 import { s3 } from "../s3";
 
 type CreateContextOptions = {
+  ip: string | undefined;
   session: Session | null;
 };
 
@@ -39,6 +40,7 @@ type CreateContextOptions = {
  */
 export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
+    ip: opts.ip,
     session: opts.session,
     prisma,
     ratelimit,
@@ -56,10 +58,20 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the unstable_getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  const ip = parseIpFromReq(req);
 
   return createInnerTRPCContext({
+    ip,
     session,
   });
+};
+
+const parseIpFromReq = (req: NextApiRequest) => {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string") {
+    return forwardedFor.split(",")[0]?.trim();
+  }
+  return req.socket?.remoteAddress;
 };
 
 /**
@@ -69,6 +81,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  * transformer
  */
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { NextApiRequest } from "next";
 import superjson from "superjson";
 
 const t = initTRPC
