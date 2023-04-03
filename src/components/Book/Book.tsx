@@ -118,7 +118,7 @@ const Book = ({
             {coverImage ? (
               <Image src={coverImage} alt="book picture" fill />
             ) : (
-              <div className="h-full w-full bg-authGreen-400" />
+              <div className="absolute h-full w-full bg-authGreen-400" />
             )}
             <div
               className={`

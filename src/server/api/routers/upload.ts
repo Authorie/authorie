@@ -38,7 +38,6 @@ export const uploadRouter = createTRPCRouter({
   uploadImage: protectedProcedure
     .input(
       z.object({
-        title: z.string().optional(), // deprecated
         image: z.string(),
       })
     )

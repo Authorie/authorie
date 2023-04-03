@@ -21,7 +21,6 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
     if (imageData) {
       profileImageUrl = await uploadImage.mutateAsync({
         image: imageData,
-        title: imageName,
       });
       editor.chain().focus().setImage({ src: profileImageUrl }).run();
       resetImageData();

@@ -24,7 +24,7 @@ const CategoryBar = ({
         title="Open Categories"
         type="button"
         onClick={onOpenCategories}
-        className={`flex aspect-square items-center justify-center rounded-full px-2 text-white ${
+        className={`h-210 flex aspect-square w-9 items-center justify-center rounded-full text-white ${
           openCategories
             ? "bg-yellow-700 hover:bg-yellow-800"
             : "bg-black hover:bg-dark-500"

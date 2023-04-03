@@ -13,80 +13,69 @@ const createComment = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-    try {
-      await ctx.prisma.chapter.findFirstOrThrow({
-        where: {
-          id: input.id,
-          book: {
-            status: {
-              in: [
-                BookStatus.PUBLISHED,
-                BookStatus.COMPLETED,
-                BookStatus.ARCHIVED,
-              ],
-            },
-          },
-          publishedAt: {
-            lte: new Date(),
+    const chapter = await ctx.prisma.chapter.findFirstOrThrow({
+      where: {
+        id: input.id,
+        book: {
+          status: {
+            in: [
+              BookStatus.PUBLISHED,
+              BookStatus.COMPLETED,
+              BookStatus.ARCHIVED,
+            ],
           },
         },
-        include: { book: true },
-      });
-    } catch (err) {
+        publishedAt: {
+          lte: new Date(),
+        },
+      },
+      include: { book: true },
+    });
+
+    if (!chapter) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Chapter not found",
-        cause: err,
       });
     }
 
     if (input.parent) {
-      try {
-        await ctx.prisma.chapterComment.findUniqueOrThrow({
-          where: {
-            id: input.parent,
-          },
-        });
-      } catch (err) {
+      const parent = await ctx.prisma.chapterComment.findUniqueOrThrow({
+        where: {
+          id: input.parent,
+        },
+      });
+      if (!parent) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Parent comment not found",
-          cause: err,
         });
       }
     }
 
-    try {
-      await ctx.prisma.chapterComment.create({
-        data: {
-          image: input.image,
-          content: input.content,
-          chapter: {
-            connect: {
-              id: input.id,
-            },
+    await ctx.prisma.chapterComment.create({
+      data: {
+        image: input.image,
+        content: input.content,
+        chapter: {
+          connect: {
+            id: input.id,
           },
-          user: {
-            connect: {
-              id: ctx.session.user.id,
-            },
-          },
-          parent: input.parent
-            ? {
-                connect: {
-                  id: input.parent,
-                },
-              }
-            : undefined,
         },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "failed to comment",
-        cause: err,
-      });
-    }
+        user: {
+          connect: {
+            id: ctx.session.user.id,
+          },
+        },
+        parent: input.parent
+          ? {
+              connect: {
+                id: input.parent,
+              },
+            }
+          : undefined,
+      },
+    });
   });
 
 export default createComment;

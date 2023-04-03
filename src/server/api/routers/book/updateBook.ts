@@ -26,8 +26,13 @@ const updateBook = protectedProcedure
       chaptersArrangement,
     } = input;
 
-    const book = await ctx.prisma.book.findUnique({
-      where: { id },
+    const book = await ctx.prisma.book.findFirst({
+      where: {
+        id,
+        owners: {
+          some: { userId: ctx.session.user.id, status: BookOwnerStatus.OWNER },
+        },
+      },
       include: {
         owners: {
           where: {
@@ -43,13 +48,6 @@ const updateBook = protectedProcedure
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "book not found",
-      });
-    }
-
-    if (book.owners.length === 0) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "you are not the owner of this book",
       });
     }
 

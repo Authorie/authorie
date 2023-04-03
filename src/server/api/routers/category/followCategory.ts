@@ -10,34 +10,26 @@ const followCategory = protectedProcedure
         id: input,
       },
     });
-    if (category === null) {
+    if (!category) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: `category does not exist: ${input}`,
       });
     }
 
-    try {
-      await ctx.prisma.categoriesOnUsers.upsert({
-        where: {
-          categoryId_userId: {
-            categoryId: input,
-            userId: ctx.session.user.id,
-          },
-        },
-        create: {
-          userId: ctx.session.user.id,
+    await ctx.prisma.categoriesOnUsers.upsert({
+      where: {
+        categoryId_userId: {
           categoryId: input,
+          userId: ctx.session.user.id,
         },
-        update: {},
-      });
-    } catch (e) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `error following category: ${category.title}`,
-        cause: e,
-      });
-    }
+      },
+      create: {
+        userId: ctx.session.user.id,
+        categoryId: input,
+      },
+      update: {},
+    });
   });
 
 export default followCategory;

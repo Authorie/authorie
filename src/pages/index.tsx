@@ -27,9 +27,6 @@ export const getServerSideProps = async (
       limit: 10,
     }),
   ];
-  if (session) {
-    promises.push(ssg.category.getFollowed.prefetch());
-  }
 
   await Promise.allSettled(promises);
   return {

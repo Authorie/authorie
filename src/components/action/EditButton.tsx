@@ -14,9 +14,7 @@ export const EditButton = ({ onEdit, isOwner, reset, isEdit }: props) => {
         {!isEdit && (
           <HiOutlinePencilSquare
             className={`h-8 w-8 ${
-              isOwner
-                ? " rounded-lg p-1 text-gray-800 hover:bg-gray-200"
-                : "hidden"
+              isOwner ? "rounded-lg text-gray-800 hover:bg-gray-200" : "hidden"
             }`}
           />
         )}

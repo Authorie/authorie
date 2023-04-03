@@ -41,6 +41,8 @@
     "@trpc/next": "^10.18.0",
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
+    "@upstash/ratelimit": "^0.4.1",
+    "@upstash/redis": "^1.20.2",
     "@vercel/analytics": "^0.1.11",
     "date-fns": "^2.29.3",
     "next": "13.2.4",

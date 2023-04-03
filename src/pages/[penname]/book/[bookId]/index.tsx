@@ -346,7 +346,7 @@ const BookContent = ({ bookId, penname }: props) => {
             onClick={() => router.back()}
             className="absolute left-2 top-2 z-10 h-8 w-8 cursor-pointer rounded-full border border-gray-500 bg-gray-200 p-1 hover:bg-gray-400"
           />
-          <div className="z-10 flex gap-7 pb-5 pt-10">
+          <div className="z-10 mt-10 flex gap-7 pb-5 pt-12">
             <div className="ml-7 flex flex-col">
               <div className="flex">
                 <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
@@ -385,7 +385,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         )}
                       </button>
                     )}
-                    {book.isOwner && (
+                    {book.isOwner && !isEdit && (
                       <button
                         type="button"
                         onClick={() =>
@@ -472,11 +472,6 @@ const BookContent = ({ bookId, penname }: props) => {
                       )}
                     </div>
                   )}
-                  {!isEdit && (
-                    <p className="text-sm font-light">
-                      {book.categories.map((c) => c.category.title).join(" ")}
-                    </p>
-                  )}
                 </div>
                 {!isEdit && (
                   <div>
@@ -485,7 +480,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void draftBookHandler()}
-                          className="h-8 w-32 rounded-md bg-gradient-to-b from-authGreen-400 to-authBlue-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
+                          className="h-8 w-32 rounded-md bg-gradient-to-b from-authBlue-500 to-authBlue-600 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-authBlue-600 hover:to-authBlue-700"
                         >
                           Start Writing
                         </button>
@@ -494,7 +489,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void publishBookHandler()}
-                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-green-400 to-green-500 font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-green-400 to-green-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
                         >
                           Publish
                         </button>
@@ -503,7 +498,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void completeBookHandler()}
-                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
                         >
                           Complete
                         </button>
@@ -513,7 +508,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void deleteBookHandler()}
-                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
                         >
                           Delete
                         </button>
@@ -523,7 +518,7 @@ const BookContent = ({ bookId, penname }: props) => {
                         <button
                           type="button"
                           onClick={() => void archiveBookHandler()}
-                          className="h-10 w-36 rounded-lg bg-gradient-to-b from-red-400 to-red-500 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
                         >
                           Archive
                         </button>
@@ -560,6 +555,21 @@ const BookContent = ({ bookId, penname }: props) => {
                   isEdit ? "justify-end gap-2" : "justify-center"
                 } ${"flex h-52 flex-col gap-2"}`}
               >
+                {!isEdit && (
+                  <div className="flex max-w-2xl flex-wrap gap-2 ">
+                    {book.categories.map((c) => (
+                      <div
+                        key={c.category.id}
+                        onClick={() =>
+                          void router.push(`/category/${c.category.title}`)
+                        }
+                        className="cursor-pointer rounded-full bg-authGreen-500 px-3 text-xs font-light text-white hover:bg-authGreen-600"
+                      >
+                        {c.category.title}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex gap-4">
                   {isEdit ? (
                     <div className="flex flex-col gap-4">
@@ -663,7 +673,7 @@ const BookContent = ({ bookId, penname }: props) => {
                     </div>
                   )}
                   {book.chapters.length === 0 && !isChapterCreatable && (
-                    <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
+                    <div className="flex h-16 w-full items-center justify-center rounded-lg bg-white p-3 shadow-lg">
                       <span className="text-lg font-semibold">
                         Move book state to create chapter
                       </span>

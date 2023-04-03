@@ -6,6 +6,12 @@ import { z } from "zod";
 const readChapter = publicProcedure
   .input(z.object({ id: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
+    const identifier = ctx.session?.user.id || "anonymous";
+    const { success } = await ctx.ratelimit.limit(identifier, {
+      geo: { ip: ctx.ip },
+    });
+    if (!success) return;
+
     const chapter = await ctx.prisma.chapter.findUniqueOrThrow({
       where: {
         id: input.id,
