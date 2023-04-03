@@ -7,13 +7,13 @@ import { getServerAuthSession } from "@server/auth";
 import { generateSSGHelper } from "@server/utils";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
-import * as z from "zod";
+import z from "zod";
 
 const validationSchema = z.object({
   title: z
@@ -123,9 +123,9 @@ const CreateBook = () => {
     >
       <div className="flex flex-col gap-10">
         <div className="relative flex min-h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pb-11 pt-24 drop-shadow-lg">
-          <div className="absolute left-0 right-0 top-0 -z-10 h-72 overflow-hidden rounded-t-lg">
+          <div className="absolute left-0 right-0 top-0 -z-10 h-72 self-end overflow-hidden rounded-t-lg">
             {bookWallpaper ? (
-              <Image src={bookWallpaper} layout="fill" alt="book's wallpaper" />
+              <Image src={bookWallpaper} fill alt="book's wallpaper" />
             ) : (
               <div className="h-full w-full bg-authGreen-500"></div>
             )}
@@ -159,9 +159,8 @@ const CreateBook = () => {
             />
             <Image
               src={bookCover ? bookCover : "/placeholder_book_cover.png"}
-              alt="dummy-pic"
-              width={208}
-              height={288}
+              fill
+              alt="book's cover"
               className="rounded-md object-cover"
             />
             <HiOutlinePhoto className="absolute bottom-2 right-2 h-8 w-8 rounded-md bg-gray-100" />

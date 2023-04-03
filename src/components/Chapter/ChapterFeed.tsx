@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 
 type props = {
-  chapter: RouterOutputs["chapter"]["getAll"]["items"][number];
+  chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];
 };
 
 const ChapterFeed = ({ chapter }: props) => {

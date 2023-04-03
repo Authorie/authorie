@@ -9,6 +9,11 @@ import {
 } from "react-icons/hi2";
 import { RiMarkPenLine, RiText } from "react-icons/ri";
 
+type Font = {
+  id: string;
+  name: string;
+};
+
 const fonts = [
   { id: "Inter", name: "Inter" },
   { id: "Arial", name: "Arial" },
@@ -17,47 +22,38 @@ const fonts = [
   { id: "Helvetica", name: "Helvetica" },
   { id: "Verdana", name: "Verdana" },
   { id: "Futura", name: "Futura" },
-];
+] as Font[];
 
 const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
-  let initialTextSize;
-  let initialFontFamily: string | null;
-  if (typeof localStorage !== "undefined" && localStorage.getItem("textSize")) {
-    initialTextSize = localStorage.getItem("textSize");
-  } else {
-    initialTextSize = null;
-  }
-  if (
-    typeof localStorage !== "undefined" &&
-    localStorage.getItem("fontFamily")
-  ) {
-    initialFontFamily = localStorage.getItem("fontFamily");
-  } else {
-    initialFontFamily = null;
-  }
-  const [textSize, setTextSize] = useState(
-    initialTextSize ? +initialTextSize : 16
-  );
-  let foundFont = null;
-  if (initialFontFamily) {
-    foundFont = fonts.find((font) => font.id === initialFontFamily);
-  }
+  const [textSize, setTextSize] = useState(16);
+  const [fontFamily, setFontFamily] = useState(fonts[0] as Font);
 
-  const [fontFamily, setFontFamily] = useState(
-    foundFont
-      ? foundFont
-      : (fonts[0] as {
-          id: string;
-          name: string;
-        })
-  );
+  useEffect(() => {
+    setTextSize((prevTextSize) => {
+      if (!localStorage) return prevTextSize;
+      const fontSize = localStorage.getItem("textSize");
+      return fontSize ? +fontSize : prevTextSize;
+    });
+    setFontFamily((prevFontFamily) => {
+      if (!localStorage) return prevFontFamily;
+      const fontFamily = localStorage.getItem("fontFamily") || "Inter";
+      const foundFont = fonts.find((font) => font.id === fontFamily);
+      return foundFont || prevFontFamily;
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      localStorage.setItem("textSize", textSize.toString());
+      localStorage.setItem("fontFamily", fontFamily.id);
+    };
+  });
 
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--editor-h2",
       (textSize / 16).toString() + "rem"
     );
-    localStorage.setItem("textSize", textSize.toString());
   }, [textSize]);
 
   useEffect(() => {
@@ -65,15 +61,14 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
     localStorage.setItem("fontFamily", fontFamily.id);
   }, [editor, fontFamily]);
 
-  const onSizeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTextSize(+e.target.value);
+  const onSizeChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    setTextSize(+target.value);
   };
+
   return (
     <Popover className="relative">
-      <Popover.Button>
-        <button className="flex cursor-pointer items-center rounded-full border border-white p-1 text-white hover:bg-gray-500">
-          <RiText className="h-3 w-3" />
-        </button>
+      <Popover.Button className="flex cursor-pointer items-center rounded-full border border-white p-1 text-white hover:bg-gray-500">
+        <RiText className="h-3 w-3" />
       </Popover.Button>
       <Transition
         as={Fragment}
@@ -89,7 +84,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
             <div className="flex items-center justify-between">
               <button
                 onClick={() => {
-                  setTextSize(textSize - 1);
+                  setTextSize((prevState) => prevState - 1);
                 }}
                 className="m-1 flex h-7 w-7 cursor-pointer items-center justify-center text-white"
               >
@@ -106,7 +101,7 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
               />
               <button
                 onClick={() => {
-                  setTextSize(textSize + 1);
+                  setTextSize((prevState) => prevState + 1);
                 }}
                 className="m-1 flex h-7 w-7 cursor-pointer items-center justify-center text-white"
               >
@@ -149,9 +144,9 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                       className="absolute right-0 mt-1 max-h-60
                      overflow-hidden overflow-y-auto rounded-md bg-white py-1 text-base shadow-lg focus:outline-none sm:text-sm"
                     >
-                      {fonts.map((font, index) => (
+                      {fonts.map((font) => (
                         <Listbox.Option
-                          key={index}
+                          key={font.id}
                           className={({ active }) =>
                             `relative w-full cursor-default select-none whitespace-nowrap py-2 pl-5 pr-4 ${
                               active

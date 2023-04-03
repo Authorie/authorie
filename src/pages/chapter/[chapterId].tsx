@@ -4,9 +4,8 @@ import Comment from "@components/Comment/Comment";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
 import { BookStatus } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
+import { generateSSGHelper } from "@server/utils";
 import CharacterCount from "@tiptap/extension-character-count";
 import Color from "@tiptap/extension-color";
 import FontFamily from "@tiptap/extension-font-family";
@@ -22,34 +21,30 @@ import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
-import superjson from "superjson";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
+  const ssg = generateSSGHelper(session);
   const chapterId = context.query.chapterId as string;
-  await ssg.chapter.getData.prefetch({ id: chapterId });
-  await ssg.comment.getAll.prefetch({ chapterId: chapterId });
-  await ssg.chapter.isLike.prefetch({ id: chapterId });
+  await Promise.all([
+    ssg.chapter.getData.prefetch({ id: chapterId }),
+    ssg.comment.getAll.prefetch({ chapterId: chapterId }),
+    ssg.chapter.isLike.prefetch({ id: chapterId }),
+  ]);
   return {
     props: {
       trpcState: ssg.dehydrate(),
@@ -67,18 +62,10 @@ const ChapterPage = ({ chapterId }: props) => {
   const { data: chapter } = api.chapter.getData.useQuery({
     id: chapterId,
   });
-  const { data: isLike } = api.comment.isLike.useQuery({
+  const { data: isLiked } = api.chapter.isLike.useQuery({
     id: chapterId,
   });
-  const [isLiked, setIsLiked] = useState(isLike);
-  const readChapter = api.chapter.read.useMutation({
-    onSuccess() {
-      void utils.chapter.invalidate();
-    },
-    onSettled: () => {
-      void utils.chapter.invalidate();
-    },
-  });
+  const readChapter = api.chapter.read.useMutation();
   const {
     data: comments,
     isSuccess,
@@ -174,10 +161,6 @@ const ChapterPage = ({ chapterId }: props) => {
     readChapter.mutate({ id: chapterId });
   }, []);
 
-  useEffect(() => {
-    setIsLiked(isLike);
-  }, [isLike]);
-
   const likeMutation = api.chapter.like.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
@@ -186,7 +169,7 @@ const ChapterPage = ({ chapterId }: props) => {
       return { previousLike };
     },
     onSettled: () => {
-      void utils.book.invalidate();
+      void utils.chapter.isLike.invalidate({ id: chapterId });
     },
   });
 
@@ -198,20 +181,21 @@ const ChapterPage = ({ chapterId }: props) => {
       return { previousLike };
     },
     onSettled: () => {
-      void utils.book.invalidate();
+      void utils.chapter.isLike.invalidate({ id: chapterId });
     },
   });
 
   const onLikeHandler = () => {
-    if (likeMutation.isLoading && unlikeMutation.isLoading) return;
+    if (
+      isLiked === undefined ||
+      likeMutation.isLoading ||
+      unlikeMutation.isLoading
+    )
+      return;
     if (isLiked) {
-      setIsLiked(false);
       unlikeMutation.mutate({ id: chapterId });
-      return;
     } else {
-      setIsLiked(true);
       likeMutation.mutate({ id: chapterId });
-      return;
     }
   };
 

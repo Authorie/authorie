@@ -57,6 +57,21 @@ const searchBooks = publicProcedure
           },
         ],
       },
+      include: {
+        owners: {
+          where: {
+            status: BookOwnerStatus.OWNER,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                penname: true,
+              },
+            },
+          },
+        },
+      },
     });
     return makePagination(books, limit);
   });

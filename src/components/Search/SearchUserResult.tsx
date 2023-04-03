@@ -1,18 +1,13 @@
 import type { RouterOutputs } from "@utils/api";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { HiUser } from "react-icons/hi2";
 
 type props = {
   user: RouterOutputs["search"]["searchUsers"]["items"][number];
+  onClickCard: () => void;
 };
 
-const SearchUserResult = ({ user }: props) => {
-  const router = useRouter();
-  const onClickCard = () => {
-    void router.push(`/${user.penname as string}`);
-  };
-
+const SearchUserResult = ({ user, onClickCard }: props) => {
   return (
     <div
       onClick={onClickCard}
@@ -23,7 +18,7 @@ const SearchUserResult = ({ user }: props) => {
       </div>
       <div className="grow py-3">
         <p className="text-xs font-semibold text-authBlue-500">AUTHOR</p>
-        <h1 className="text-2xl font-bold text-authBlue-500">{user.penname}</h1>
+        <h4 className="text-2xl font-bold text-authBlue-500">{user.penname}</h4>
         <div className="flex gap-16 text-sm">
           <p>
             <span className="font-semibold text-authBlue-500">

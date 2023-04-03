@@ -1,12 +1,14 @@
 import { Dialog } from "@headlessui/react";
 import useSearch from "@hooks/search";
 import { api } from "@utils/api";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
 import SearchBookResult from "./SearchBookResult";
+import SearchChapterResult from "./SearchChapterResult";
 import SearchUserResult from "./SearchUserResult";
 
-const allCategory = ["Users", "Books"] as const;
+const allCategory = ["Users", "Books", "Chapters"] as const;
 
 type SearchCategory = (typeof allCategory)[number];
 
@@ -27,15 +29,18 @@ const categoryButtonClassName = (
 };
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
+  const router = useRouter();
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
   const { data: users } = api.search.searchUsers.useInfiniteQuery(
     {
       search: searchTerm,
+      limit: 3,
     },
     {
       enabled: openDialog && selectedCategory === "Users" && enableSearch,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
   const { data: books } = api.search.searchBooks.useInfiniteQuery(
@@ -51,6 +56,29 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
+  const { data: chapters } = api.search.searchChapters.useInfiniteQuery(
+    {
+      search: searchTerm,
+      limit: 3,
+    },
+    {
+      enabled: openDialog && selectedCategory === "Chapters" && enableSearch,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+
+  const redirectUserHandler = (penname: string) => () => {
+    void router.push(`/${penname}`);
+    onCloseDialog();
+  };
+  const redirectBookHandler = (penname: string, bookId: string) => () => {
+    void router.push(`/${penname}/book/${bookId}`);
+    onCloseDialog();
+  };
+  const redirectChapterHandler = (chapterId: string) => () => {
+    void router.push(`/chapter/${chapterId}`);
+    onCloseDialog();
+  };
 
   // TODO: handle loading, empty and error state
   const searchResults = (category: SearchCategory) => {
@@ -58,11 +86,36 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       case "Users":
         return users?.pages
           .flatMap((page) => page.items)
-          .map((user) => <SearchUserResult key={user.id} user={user} />);
+          .map((user) => (
+            <SearchUserResult
+              key={user.id}
+              user={user}
+              onClickCard={redirectUserHandler(user.penname as string)}
+            />
+          ));
       case "Books":
         return books?.pages
           .flatMap((page) => page.items)
-          .map((book) => <SearchBookResult key={book.id} book={book} />);
+          .map((book) => (
+            <SearchBookResult
+              key={book.id}
+              book={book}
+              onClickCard={redirectBookHandler(
+                book.owners[0]?.user.penname as string,
+                book.id
+              )}
+            />
+          ));
+      case "Chapters":
+        return chapters?.pages
+          .flatMap((page) => page.items)
+          .map((chapter) => (
+            <SearchChapterResult
+              key={chapter.id}
+              chapter={chapter}
+              onClickCard={redirectChapterHandler(chapter.id)}
+            />
+          ));
     }
   };
 
