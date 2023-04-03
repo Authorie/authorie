@@ -52,7 +52,19 @@ export const getServerSideProps = async (
   });
   const penname = context.query.penname as string;
   const bookId = context.query.bookId as string;
-  await ssg.book.getData.prefetch({ id: bookId });
+
+  if (z.string().cuid().safeParse(bookId).success) {
+    await ssg.book.getData.prefetch({ id: bookId });
+  } else {
+    return {
+      props: {
+        session,
+        bookId,
+        penname,
+        invalidBookId: true,
+      },
+    };
+  }
 
   return {
     props: {
@@ -66,18 +78,29 @@ export const getServerSideProps = async (
 
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
-const BookContent = ({ bookId, penname }: props) => {
+const BookContent = ({ bookId, penname, invalidBookId }: props) => {
   const router = useRouter();
   const utils = api.useContext();
   const [isEdit, setIsEdit] = useState(false);
-  const { data: categories } = api.category.getAll.useQuery();
-  const { data: book } = api.book.getData.useQuery({
-    id: bookId,
+  const { data: categories } = api.category.getAll.useQuery(undefined, {
+    enabled: !invalidBookId,
   });
+  const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery(
+    {
+      id: bookId,
+    },
+    {
+      enabled: !invalidBookId,
+    }
+  );
+  console.log(isBookFetched);
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
   );
-  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
+  const { data: isFavorite } = api.book.isFavorite.useQuery(
+    { id: bookId },
+    { enabled: !invalidBookId }
+  );
   const {
     imageData: bookCover,
     uploadHandler: setBookCover,
@@ -317,9 +340,18 @@ const BookContent = ({ bookId, penname }: props) => {
     });
   });
 
+  if (invalidBookId || (isBookFetched && !book)) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <h2 className="text-3xl font-bold">Book not found</h2>
+        <p className="text-lg font-light">Please check the url</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full items-center justify-center px-6">
-      {book ? (
+      {book && (
         <form
           id="submit-changes"
           onSubmit={(e) => void onSaveHandler(e)}
@@ -666,7 +698,7 @@ const BookContent = ({ bookId, penname }: props) => {
                       onClick={() => void router.push("/create/chapter")}
                       className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01] hover:bg-gray-300"
                     >
-                      <HiOutlinePlusCircle className="w-8" />
+                      <HiOutlinePlusCircle className="h-8 w-8" />
                       <span className="text-lg font-semibold">
                         Create new chapter
                       </span>
@@ -687,10 +719,6 @@ const BookContent = ({ bookId, penname }: props) => {
             </div>
           </div>
         </form>
-      ) : (
-        <div className="flex h-96 w-full items-center justify-center">
-          <p className="text-3xl font-bold">This book does not exist...</p>
-        </div>
       )}
     </div>
   );
