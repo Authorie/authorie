@@ -25,7 +25,7 @@ import { ratelimit } from "../ratelimit";
 import { s3 } from "../s3";
 
 type CreateContextOptions = {
-  ip: string | undefined;
+  ip?: string | undefined;
   session: Session | null;
 };
 
