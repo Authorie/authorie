@@ -1,6 +1,6 @@
 import { BookOwnerStatus } from "@prisma/client";
 
-interface owners {
+interface withOwners {
   owners: {
     status: BookOwnerStatus;
     user: {
@@ -15,7 +15,7 @@ type WithIsOwner<T> = T & {
   isCollborator: boolean;
 };
 
-export function computeIsOwner<User extends owners>(
+export function computeIsOwner<User extends withOwners>(
   userId: string | undefined,
   user: User
 ): WithIsOwner<User> {

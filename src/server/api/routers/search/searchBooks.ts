@@ -1,7 +1,6 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { publicProcedure } from "@server/api/trpc";
 import { makePagination } from "@server/utils";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const searchBooks = publicProcedure
@@ -15,59 +14,51 @@ const searchBooks = publicProcedure
         status: z.nativeEnum(BookStatus).array().optional(),
       }),
       cursor: z.string().cuid().optional(),
-      limit: z.number().int().min(1).max(10).optional(),
+      limit: z.number().int().min(1).max(10).default(5),
     })
   )
   .query(async ({ ctx, input }) => {
     const { search, limit, cursor } = input;
-    try {
-      const books = await ctx.prisma.book.findMany({
-        take: limit ? limit + 1 : undefined,
-        cursor: cursor ? { id: cursor } : undefined,
-        where: {
-          owners: {
-            some: {
-              user: search.userId
-                ? {
-                    id: search.userId,
-                  }
-                : {
-                    penname: {
-                      contains: search.penname,
-                    },
+    const books = await ctx.prisma.book.findMany({
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+      where: {
+        owners: {
+          some: {
+            user: search.userId
+              ? {
+                  id: search.userId,
+                }
+              : {
+                  penname: {
+                    contains: search.penname,
                   },
-              status: {
-                in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
-              },
+                },
+            status: {
+              in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
             },
           },
-          OR: [
-            {
-              title: {
-                contains: search.title,
-              },
-            },
-            {
-              description: {
-                contains: search.description,
-              },
-            },
-            {
-              status: {
-                in: search.status,
-              },
-            },
-          ],
         },
-      });
-      return makePagination(books, limit || books.length + 1);
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: err,
-      });
-    }
+        OR: [
+          {
+            title: {
+              contains: search.title,
+            },
+          },
+          {
+            description: {
+              contains: search.description,
+            },
+          },
+          {
+            status: {
+              in: search.status,
+            },
+          },
+        ],
+      },
+    });
+    return makePagination(books, limit);
   });
 
 export default searchBooks;

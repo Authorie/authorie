@@ -5,26 +5,23 @@ import { z } from "zod";
 const like = protectedProcedure
   .input(z.object({ id: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
-    let chapter;
-    try {
-      chapter = await ctx.prisma.chapter.findUniqueOrThrow({
-        where: {
-          id: input.id,
-        },
-        include: {
-          book: {
-            select: {
-              status: true,
-            },
+    const chapter = await ctx.prisma.chapter.findUnique({
+      where: {
+        id: input.id,
+      },
+      include: {
+        book: {
+          select: {
+            status: true,
           },
         },
-      });
-    } catch (err) {
-      console.error(err);
+      },
+    });
+
+    if (!chapter) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Chapter not found",
-        cause: err,
       });
     }
 
@@ -35,36 +32,27 @@ const like = protectedProcedure
       });
     }
 
-    try {
-      await ctx.prisma.chapterLike.upsert({
-        where: {
-          chapterId_userId: {
-            chapterId: input.id,
-            userId: ctx.session.user.id,
+    await ctx.prisma.chapterLike.upsert({
+      where: {
+        chapterId_userId: {
+          chapterId: input.id,
+          userId: ctx.session.user.id,
+        },
+      },
+      create: {
+        chapter: {
+          connect: {
+            id: input.id,
           },
         },
-        create: {
-          chapter: {
-            connect: {
-              id: input.id,
-            },
-          },
-          user: {
-            connect: {
-              id: ctx.session.user.id,
-            },
+        user: {
+          connect: {
+            id: ctx.session.user.id,
           },
         },
-        update: {},
-      });
-    } catch (err) {
-      console.error(err);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "failed to like",
-        cause: err,
-      });
-    }
+      },
+      update: {},
+    });
   });
 
 export default like;

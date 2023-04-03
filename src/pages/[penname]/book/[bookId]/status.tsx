@@ -396,13 +396,11 @@ const StatusPage = ({ bookId, penname }: props) => {
       const promises = [
         bookCover
           ? uploadImageUrl.mutateAsync({
-              title: `${data.title}'s book cover image`,
               image: bookCover,
             })
           : undefined,
         bookWallpaper
           ? uploadImageUrl.mutateAsync({
-              title: `${data.title}'s book wallpaper`,
               image: bookWallpaper,
             })
           : undefined,

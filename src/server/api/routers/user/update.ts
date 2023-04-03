@@ -16,23 +16,15 @@ const update = protectedProcedure
     const { penname, profileImageUrl, wallpaperImageUrl, bio } = input;
 
     if (penname) {
-      try {
-        const exists = await ctx.prisma.user.findUnique({
-          where: {
-            penname: penname,
-          },
-        });
-        if (exists !== null && exists.id !== ctx.session.user.id) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `penname already taken: ${penname}`,
-          });
-        }
-      } catch (e) {
+      const exists = await ctx.prisma.user.findUnique({
+        where: {
+          penname: penname,
+        },
+      });
+      if (exists !== null && exists.id !== ctx.session.user.id) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "something went wrong",
-          cause: e,
+          code: "BAD_REQUEST",
+          message: `penname already taken: ${penname}`,
         });
       }
     }
@@ -44,20 +36,12 @@ const update = protectedProcedure
       wallpaperImage: wallpaperImageUrl,
     };
 
-    try {
-      return await ctx.prisma.user.update({
-        where: {
-          id: ctx.session.user.id,
-        },
-        data: userData,
-      });
-    } catch (e) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: e,
-      });
-    }
+    return await ctx.prisma.user.update({
+      where: {
+        id: ctx.session.user.id,
+      },
+      data: userData,
+    });
   });
 
 export default update;

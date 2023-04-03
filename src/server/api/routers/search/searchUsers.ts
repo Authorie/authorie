@@ -1,6 +1,5 @@
 import { publicProcedure } from "@server/api/trpc";
 import { makePagination } from "@server/utils";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 interface withFollowingFollower {
@@ -43,44 +42,36 @@ const searchUsers = publicProcedure
   )
   .query(async ({ ctx, input }) => {
     const { search, limit, cursor } = input;
-    try {
-      const users = (
-        await ctx.prisma.user.findMany({
-          take: limit + 1,
-          cursor: cursor ? { id: cursor } : undefined,
-          where: {
-            penname: {
-              contains: search,
+    const users = (
+      await ctx.prisma.user.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+        where: {
+          penname: {
+            contains: search,
+          },
+        },
+        include: {
+          followers: {
+            select: {
+              followerId: true,
             },
           },
-          include: {
-            followers: {
-              select: {
-                followerId: true,
-              },
-            },
-            following: {
-              select: {
-                followingId: true,
-              },
-            },
-            _count: {
-              select: {
-                followers: true,
-                following: true,
-              },
+          following: {
+            select: {
+              followingId: true,
             },
           },
-        })
-      ).map((user) => computeIsFollowingEachOther(ctx.session?.user.id, user));
-      return makePagination(users, limit);
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: err,
-      });
-    }
+          _count: {
+            select: {
+              followers: true,
+              following: true,
+            },
+          },
+        },
+      })
+    ).map((user) => computeIsFollowingEachOther(ctx.session?.user.id, user));
+    return makePagination(users, limit);
   });
 
 export default searchUsers;
