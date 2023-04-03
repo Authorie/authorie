@@ -69,12 +69,15 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
 
   const redirectUserHandler = (penname: string) => () => {
     void router.push(`/${penname}`);
+    onCloseDialog();
   };
   const redirectBookHandler = (penname: string, bookId: string) => () => {
     void router.push(`/${penname}/book/${bookId}`);
+    onCloseDialog();
   };
   const redirectChapterHandler = (chapterId: string) => () => {
     void router.push(`/chapter/${chapterId}`);
+    onCloseDialog();
   };
 
   // TODO: handle loading, empty and error state
