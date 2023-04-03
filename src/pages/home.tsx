@@ -23,7 +23,7 @@ const HomePage = () => {
           Get Started
         </button>
       </div>
-      <div className="flex h-[500px] items-center justify-end gap-10 bg-white px-36">
+      <div className="flex h-[500px] items-center justify-center gap-10 bg-white px-36">
         <h1 className="text-3xl font-bold">Our team</h1>
         <DeveloperInfoCard
           name={"Siriwudhi Sawaidee"}
