@@ -21,6 +21,8 @@ import { type Session } from "next-auth";
 
 import { getServerAuthSession } from "../auth";
 import { prisma } from "../db";
+import { ratelimit } from "../ratelimit";
+import { s3 } from "../s3";
 
 type CreateContextOptions = {
   session: Session | null;
@@ -39,6 +41,7 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
+    ratelimit,
     s3,
   };
 };
@@ -65,7 +68,6 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-import { s3 } from "@server/s3";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
