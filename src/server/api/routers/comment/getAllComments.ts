@@ -6,30 +6,29 @@ import { z } from "zod";
 const getAllComments = publicProcedure
   .input(z.object({ chapterId: z.string().cuid() }))
   .query(async ({ ctx, input }) => {
-    try {
-      await ctx.prisma.chapter.findFirstOrThrow({
-        where: {
-          id: input.chapterId,
-          book: {
-            status: {
-              in: [
-                BookStatus.PUBLISHED,
-                BookStatus.COMPLETED,
-                BookStatus.ARCHIVED,
-              ],
-            },
-          },
-          publishedAt: {
-            lte: new Date(),
+    const chapter = await ctx.prisma.chapter.findFirst({
+      where: {
+        id: input.chapterId,
+        book: {
+          status: {
+            in: [
+              BookStatus.PUBLISHED,
+              BookStatus.COMPLETED,
+              BookStatus.ARCHIVED,
+            ],
           },
         },
-        include: { book: true },
-      });
-    } catch (err) {
+        publishedAt: {
+          lte: new Date(),
+        },
+      },
+      include: { book: true },
+    });
+
+    if (!chapter) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Chapter not found",
-        cause: err,
       });
     }
 
