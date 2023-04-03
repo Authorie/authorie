@@ -18,32 +18,22 @@ const moveState = protectedProcedure
   )
   .mutation(async ({ ctx, input }) => {
     const { id, status, force } = input;
-    let book;
-    try {
-      book = await ctx.prisma.book.findUniqueOrThrow({
-        where: { id },
-        include: {
-          owners: true,
+    const book = await ctx.prisma.book.findFirst({
+      where: {
+        id,
+        owners: {
+          some: { userId: ctx.session.user.id, status: BookOwnerStatus.OWNER },
         },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "book not found",
-        cause: err,
-      });
-    }
+      },
+      include: {
+        owners: true,
+      },
+    });
 
-    if (
-      !book.owners.some(
-        (owner) =>
-          owner.userId === ctx.session.user.id &&
-          owner.status === BookOwnerStatus.OWNER
-      )
-    ) {
+    if (!book) {
       throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "you are not owner of this book",
+        code: "NOT_FOUND",
+        message: "book not found",
       });
     }
 
@@ -56,7 +46,7 @@ const moveState = protectedProcedure
           });
         }
         if (
-          force &&
+          !force &&
           book.owners.some((owner) => owner.status === BookOwnerStatus.INVITEE)
         ) {
           throw new TRPCError({
@@ -104,33 +94,25 @@ const moveState = protectedProcedure
         break;
     }
 
-    try {
-      await ctx.prisma.book.update({
-        where: { id },
-        data: {
-          status,
-          owners:
-            book.status === BookStatus.INITIAL
-              ? {
-                  deleteMany: {
-                    status: {
-                      notIn: [
-                        BookOwnerStatus.OWNER,
-                        BookOwnerStatus.COLLABORATOR,
-                      ],
-                    },
+    await ctx.prisma.book.update({
+      where: { id },
+      data: {
+        status,
+        owners:
+          book.status === BookStatus.INITIAL
+            ? {
+                deleteMany: {
+                  status: {
+                    notIn: [
+                      BookOwnerStatus.OWNER,
+                      BookOwnerStatus.COLLABORATOR,
+                    ],
                   },
-                }
-              : undefined,
-        },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "failed to move book state",
-        cause: err,
-      });
-    }
+                },
+              }
+            : undefined,
+      },
+    });
   });
 
 export default moveState;

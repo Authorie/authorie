@@ -7,31 +7,19 @@ const deleteBook = protectedProcedure
   .input(z.object({ id: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
     const { id } = input;
-    let book;
-    try {
-      book = await ctx.prisma.book.findUniqueOrThrow({
-        where: { id: input.id },
-        include: {
-          owners: {
-            where: {
-              userId: ctx.session.user.id,
-              status: BookOwnerStatus.OWNER,
-            },
-          },
+    const book = await ctx.prisma.book.findFirst({
+      where: {
+        id: input.id,
+        owners: {
+          some: { userId: ctx.session.user.id, status: BookOwnerStatus.OWNER },
         },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "book not found",
-        cause: err,
-      });
-    }
+      },
+    });
 
-    if (book.owners.length === 0) {
+    if (!book) {
       throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "you are not owner of this book",
+        code: "NOT_FOUND",
+        message: "book not found",
       });
     }
 
@@ -43,17 +31,9 @@ const deleteBook = protectedProcedure
       });
     }
 
-    try {
-      await ctx.prisma.book.delete({
-        where: { id },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "failed to delete book",
-        cause: err,
-      });
-    }
+    await ctx.prisma.book.delete({
+      where: { id },
+    });
   });
 
 export default deleteBook;
