@@ -21,8 +21,11 @@ import { type Session } from "next-auth";
 
 import { getServerAuthSession } from "../auth";
 import { prisma } from "../db";
+import { ratelimit } from "../ratelimit";
+import { s3 } from "../s3";
 
 type CreateContextOptions = {
+  ip?: string | undefined;
   session: Session | null;
 };
 
@@ -37,8 +40,10 @@ type CreateContextOptions = {
  */
 export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
+    ip: opts.ip,
     session: opts.session,
     prisma,
+    ratelimit,
     s3,
   };
 };
@@ -53,10 +58,20 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the unstable_getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  const ip = parseIpFromReq(req);
 
   return createInnerTRPCContext({
+    ip,
     session,
   });
+};
+
+const parseIpFromReq = (req: NextApiRequest) => {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string") {
+    return forwardedFor.split(",")[0]?.trim();
+  }
+  return req.socket?.remoteAddress;
 };
 
 /**
@@ -65,8 +80,8 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-import { s3 } from "@server/s3";
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { NextApiRequest } from "next";
 import superjson from "superjson";
 
 const t = initTRPC
