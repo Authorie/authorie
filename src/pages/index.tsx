@@ -23,7 +23,7 @@ export const getServerSideProps = async (
 
   const promises = [
     ssg.category.getAll.prefetch(),
-    ssg.chapter.getAll.prefetchInfinite({
+    ssg.chapter.getFeeds.prefetchInfinite({
       limit: 10,
     }),
   ];
@@ -48,7 +48,7 @@ const Home = () => {
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
-  const { data } = api.chapter.getAll.useInfiniteQuery(
+  const { data } = api.chapter.getFeeds.useInfiniteQuery(
     {
       limit: 10,
       categoryIds: categoryIds,
