@@ -8,60 +8,47 @@ const responseCollaborationInvite = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const { bookId, accept } = input;
     // check if the book exists
-    try {
-      await ctx.prisma.book.findUniqueOrThrow({
-        where: {
-          id: bookId,
-        },
-      });
-    } catch (err) {
+    const book = await ctx.prisma.book.findUnique({
+      where: {
+        id: bookId,
+      },
+    });
+    if (!book) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "book does not exist",
-        cause: err,
+        message: "book not found",
       });
     }
 
     // check if the user is already a collaborator
-    try {
-      await ctx.prisma.bookOwner.findFirstOrThrow({
-        where: {
-          bookId,
-          userId: ctx.session.user.id,
-          status: BookOwnerStatus.INVITEE,
-        },
-      });
-    } catch (err) {
+    const isCollaborator = await ctx.prisma.bookOwner.findFirst({
+      where: {
+        bookId,
+        userId: ctx.session.user.id,
+        status: BookOwnerStatus.INVITEE,
+      },
+    });
+    if (!isCollaborator) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "you are not invited to this book",
-        cause: err,
+        message: "you are not invited to collaborate on this book",
       });
     }
 
     // update the book owner status
-    try {
-      await ctx.prisma.bookOwner.update({
-        where: {
-          bookId_userId: {
-            bookId,
-            userId: ctx.session.user.id,
-          },
+    await ctx.prisma.bookOwner.update({
+      where: {
+        bookId_userId: {
+          bookId,
+          userId: ctx.session.user.id,
         },
-        data: {
-          status: accept
-            ? BookOwnerStatus.COLLABORATOR
-            : BookOwnerStatus.REJECTED,
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: err,
-      });
-    }
+      },
+      data: {
+        status: accept
+          ? BookOwnerStatus.COLLABORATOR
+          : BookOwnerStatus.REJECTED,
+      },
+    });
   });
 
 export default responseCollaborationInvite;
