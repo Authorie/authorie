@@ -26,11 +26,11 @@ import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import NextImage from "next/image";
-import { useState } from "react";
 import { useRouter } from "next/router";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import superjson from "superjson";
-import * as z from "zod";
+import z from "zod";
 
 const validationSchema = z.object({
   title: z

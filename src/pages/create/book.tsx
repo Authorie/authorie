@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
-import * as z from "zod";
+import z from "zod";
 
 const validationSchema = z.object({
   title: z

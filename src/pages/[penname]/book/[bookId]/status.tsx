@@ -23,7 +23,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
 import superjson from "superjson";
-import * as z from "zod";
+import z from "zod";
 
 const validationSchema = z.object({
   title: z

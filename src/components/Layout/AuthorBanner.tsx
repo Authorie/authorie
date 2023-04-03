@@ -12,7 +12,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
-import * as z from "zod";
+import z from "zod";
 
 const AuthorTab = [
   { title: "HOME", url: "" },

@@ -1,11 +1,11 @@
 import LoadingSpinner from "@components/ui/LoadingSpinner";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { getServerAuthSession } from "@server/auth";
 import { api } from "@utils/api";
 import { type GetServerSidePropsContext } from "next";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 
 const validationSchema = z.object({
   penname: z
@@ -65,7 +65,7 @@ const NewUser = () => {
         <input
           {...register("penname")}
           aria-invalid={errorsExist}
-          className={`focus:shadow-outline w-96 appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
+          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${
             errorsExist ? "border-red-500" : ""
           }`}
           id="username"
@@ -89,7 +89,7 @@ const NewUser = () => {
         type="submit"
         disabled={updateUser.isLoading}
         aria-disabled={updateUser.isLoading}
-        className="flex h-10 w-32 items-center justify-center rounded-full bg-green-500 py-2 px-8 font-bold text-white hover:bg-green-600"
+        className="flex h-10 w-32 items-center justify-center rounded-full bg-green-500 px-8 py-2 font-bold text-white hover:bg-green-600"
       >
         {updateUser.isLoading ? <LoadingSpinner /> : <span>Confirm</span>}
       </button>
