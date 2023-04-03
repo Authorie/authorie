@@ -27,6 +27,20 @@ const searchChapters = publicProcedure
           },
         },
       },
+      include: {
+        book: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+            penname: true,
+          },
+        },
+      },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,
     });

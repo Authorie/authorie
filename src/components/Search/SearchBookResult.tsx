@@ -4,13 +4,10 @@ import { HiBookOpen } from "react-icons/hi2";
 
 type props = {
   book: RouterOutputs["search"]["searchBooks"]["items"][number];
+  onClickCard: () => void;
 };
 
-const SearchBookResult = ({ book }: props) => {
-  const onClickCard = () => {
-    console.log("redirect!");
-  };
-
+const SearchBookResult = ({ book, onClickCard }: props) => {
   return (
     <div
       onClick={onClickCard}
@@ -21,10 +18,10 @@ const SearchBookResult = ({ book }: props) => {
       </div>
       <div className="grow py-3">
         <p className="text-xs font-semibold text-authGreen-500">BOOK</p>
-        <h1 className="text-2xl font-bold text-authGreen-500">{book.title}</h1>
+        <h4 className="text-2xl font-bold text-authGreen-500">{book.title}</h4>
         <div className="flex gap-24 text-xs text-dark-400">
           <p>{`publish : ${book.createdAt.toLocaleDateString()}`}</p>
-          <p>{`author : MOCK`}</p>
+          <p>{`author : ${book.owners[0]?.user.penname as string}`}</p>
         </div>
         <p className="mt-4 line-clamp-2 text-xs text-dark-600">
           {book.description || ""}
