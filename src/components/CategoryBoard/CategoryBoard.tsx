@@ -2,13 +2,13 @@ import {
   useFollowedCategories,
   useSetFollowedCategories,
 } from "@hooks/followedCategories";
+import type { RouterOutputs } from "@utils/api";
 import { api } from "@utils/api";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import CategoryBar from "./CategoryBar/CategoryBar";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 import ChapterRankCard from "./ChapterRankCard";
-import { HiEye } from "react-icons/hi2";
-import { useRouter } from "next/router";
+import ChapterRankMinicard from "./ChapterRankMinicard";
 
 type props = {
   isLogin: boolean;
@@ -37,8 +37,6 @@ const CategoryBoard = ({ isLogin }: props) => {
       ? leaderboard?.map((id) => t.chapter.getData({ id: id.chapterId }))
       : []
   );
-  const router = useRouter();
-  const d = new Date();
   const followedCategories = useFollowedCategories();
   const setFollowedCategories = useSetFollowedCategories();
   const [showCategories, setShowCategories] = useState(false);
@@ -52,6 +50,15 @@ const CategoryBoard = ({ isLogin }: props) => {
   const onOpenCategoriesHandler = useCallback(() => {
     setShowCategories((prev) => !prev);
   }, [setShowCategories]);
+  const topChapters = useMemo(() => {
+    if (chapters.some((chapter) => chapter.data === undefined)) {
+      return undefined;
+    }
+
+    return chapters.map(
+      (chapter) => chapter.data
+    ) as unknown as RouterOutputs["chapter"]["getData"][];
+  }, [chapters]);
 
   return (
     <>
@@ -63,7 +70,7 @@ const CategoryBoard = ({ isLogin }: props) => {
               categoriesList={categories}
               followedCategories={followedCategories}
             />
-          ) : leaderboard ? (
+          ) : (
             <div className="flex h-full w-full justify-between px-10 py-5">
               <div className="flex flex-col gap-3">
                 <div className="w-24 font-bold text-white">
@@ -72,94 +79,62 @@ const CategoryBoard = ({ isLogin }: props) => {
                   <span className="text-4xl">Month</span>
                 </div>
                 <span className="text-xl font-semibold text-authGreen-400">
-                  {month[d.getMonth()]}
+                  {month[new Date().getMonth()]}
                 </span>
               </div>
               <div className="flex gap-10">
                 <div className="flex gap-4">
-                  {chapters.map(
-                    ({ data: chapter }, index) =>
-                      index === 1 && (
+                  {topChapters && (
+                    <>
+                      {topChapters[1] && (
                         <ChapterRankCard
-                          key={chapter?.id}
-                          chapterTitle={chapter?.title as string}
-                          authorPenname={chapter?.owner.penname as string}
-                          image={chapter?.book?.coverImage || ""}
-                          rank={index + 1}
-                          chapterId={chapter?.id as string}
-                          read={chapter?._count.views || 0}
+                          rank={2}
+                          chapterTitle={topChapters[1].title}
+                          authorPenname={topChapters[1].owner.penname as string}
+                          image={topChapters[1].book?.coverImage || ""}
+                          chapterId={topChapters[1].id}
+                          read={topChapters[1]._count.views || 0}
                         />
-                      )
-                  )}
-                  {chapters.map(
-                    ({ data: chapter }, index) =>
-                      index === 0 && (
+                      )}
+                      {topChapters[0] && (
                         <ChapterRankCard
-                          key={chapter?.id}
-                          chapterTitle={chapter?.title as string}
-                          authorPenname={chapter?.owner.penname as string}
-                          image={chapter?.book?.coverImage || ""}
-                          rank={index + 1}
-                          chapterId={chapter?.id as string}
-                          read={chapter?._count.views || 0}
+                          rank={1}
+                          chapterTitle={topChapters[0].title}
+                          authorPenname={topChapters[0].owner.penname as string}
+                          image={topChapters[0].book?.coverImage || ""}
+                          chapterId={topChapters[0].id}
+                          read={topChapters[0]._count.views || 0}
                         />
-                      )
-                  )}
-                  {chapters.map(
-                    ({ data: chapter }, index) =>
-                      index === 2 && (
+                      )}
+                      {topChapters[2] && (
                         <ChapterRankCard
-                          key={chapter?.id}
-                          chapterTitle={chapter?.title as string}
-                          authorPenname={chapter?.owner.penname as string}
-                          image={chapter?.book?.coverImage || ""}
-                          rank={index + 1}
-                          chapterId={chapter?.id as string}
-                          read={chapter?._count.views || 0}
+                          rank={3}
+                          chapterTitle={topChapters[2].title}
+                          authorPenname={topChapters[2].owner.penname as string}
+                          image={topChapters[2].book?.coverImage || ""}
+                          chapterId={topChapters[2].id}
+                          read={topChapters[2]._count.views || 0}
                         />
-                      )
+                      )}
+                    </>
                   )}
                 </div>
                 <div className="flex flex-col gap-5 self-center">
-                  {chapters.map(
-                    ({ data: chapter }, index) =>
-                      index > 2 &&
-                      index <= 5 && (
-                        <div
-                          key={chapter?.id}
-                          onClick={() =>
-                            void router.push(
-                              `/chapter/${chapter?.id as string}`
-                            )
-                          }
-                          className="flex w-56 cursor-pointer gap-1 rounded-lg px-2 py-1 text-white hover:bg-dark-500"
-                        >
-                          <h1 className="font-semibold">{index + 1}.</h1>
-                          <div className="mt-0.5 flex w-full flex-col gap-1">
-                            <h1 className="text-sm font-semibold">
-                              {chapter?.title}
-                            </h1>
-                            <p className="text-xs font-light">
-                              By {chapter?.owner.penname}
-                            </p>
-                          </div>
-                          <div className="flex w-fit items-center gap-1 rounded-lg bg-gray-700 px-2 shadow-lg">
-                            <HiEye className="h-3 w-3 text-white" />
-                            <p className="text-xs text-white">
-                              {chapter?._count.views}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                  )}
+                  {topChapters &&
+                    topChapters
+                      .slice(3)
+                      .map((chapter, index) => (
+                        <ChapterRankMinicard
+                          key={chapter.id}
+                          rank={index + 4}
+                          id={chapter.id}
+                          title={chapter.title}
+                          penname={chapter.owner.penname as string}
+                          views={chapter._count.views}
+                        />
+                      ))}
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex">
-              <h1 className="text-4xl font-bold text-white">
-                Ranking has not started yet!
-              </h1>
             </div>
           )}
         </div>
