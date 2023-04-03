@@ -25,7 +25,7 @@ const getLeaderboard = publicProcedure
     firstDayNextMonth.setDate(1);
     firstDayNextMonth.setHours(0, 0, 0, 0);
 
-    const views = await ctx.prisma.chapterView.groupBy({
+    return await ctx.prisma.chapterView.groupBy({
       by: ["chapterId"],
       where: {
         createdAt: {
@@ -44,8 +44,6 @@ const getLeaderboard = publicProcedure
       take: limit,
       skip,
     });
-
-    return views;
   });
 
 export default getLeaderboard;
