@@ -50,7 +50,7 @@ const DateInput = ({ getDay, getMonth, getYear, date }: props) => {
         <p className="text-xs font-light">Day</p>
         <input
           value={date.day}
-          className="w-10 rounded-lg p-1 text-center text-lg font-semibold outline-none focus:outline-none"
+          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="text"
           onChange={handleDayChange}
           maxLength={2}
@@ -61,7 +61,7 @@ const DateInput = ({ getDay, getMonth, getYear, date }: props) => {
         <p className="text-xs font-light">Month</p>
         <input
           value={date.month}
-          className="w-10 rounded-lg p-1 text-center text-lg  font-semibold outline-none focus:outline-none"
+          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="text"
           onChange={handleMonthChange}
           maxLength={2}
@@ -73,7 +73,7 @@ const DateInput = ({ getDay, getMonth, getYear, date }: props) => {
         <p className="text-xs font-light">Year</p>
         <input
           value={date.year}
-          className="w-16 rounded-lg p-1 text-center text-lg  font-semibold outline-none focus:outline-none"
+          className="w-16 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="text"
           onChange={handleYearChange}
           maxLength={4}

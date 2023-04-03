@@ -31,6 +31,8 @@ import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import superjson from "superjson";
 import * as z from "zod";
+import { Popover } from "@headlessui/react";
+import DateTimeInputField from "@components/DateTimeInput/DateTimeInputField";
 
 const validationSchema = z.object({
   title: z
@@ -212,7 +214,7 @@ const CreateChapter = () => {
       });
     }
   };
-  const publishDraftChapterHandler = async () => {
+  const publishDraftChapterHandler = async (date?: Date) => {
     if (!editor) return;
     const validationError = validateInput();
     if (!book) return;
@@ -227,7 +229,7 @@ const CreateChapter = () => {
           title: title,
           content: editor.getJSON(),
           bookId: book ? book.id : undefined,
-          publishedAt: true,
+          publishedAt: date || true,
         },
         {
           async onSettled(data) {
@@ -379,17 +381,32 @@ const CreateChapter = () => {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
+                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
                   onClick={() => void saveDraftChapterHandler()}
                 >
                   Save
                 </button>
+                <Popover>
+                  <Popover.Panel className="relative">
+                    <div className="absolute -right-32 bottom-2 z-10">
+                      <DateTimeInputField
+                        label={"Confirm Publish"}
+                        onSubmit={(date: Date) =>
+                          void publishDraftChapterHandler(date)
+                        }
+                      />
+                    </div>
+                  </Popover.Panel>
+                  <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
+                    Set Publish Date
+                  </Popover.Button>
+                </Popover>
                 <button
                   type="button"
                   onClick={() => void publishDraftChapterHandler()}
-                  className="h-8 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
+                  className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
                 >
-                  Publish
+                  Publish Now
                 </button>
               </div>
             </div>

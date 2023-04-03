@@ -44,7 +44,7 @@ const TimeInput = ({ getHour, getMinute, getAmpm, time }: props) => {
     <div>
       <div className="flex items-center gap-2">
         <input
-          className="w-10 rounded-lg p-1 text-center text-lg font-semibold outline-none focus:outline-none"
+          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="text"
           value={time.hours}
           onChange={handleHoursChange}
@@ -54,7 +54,7 @@ const TimeInput = ({ getHour, getMinute, getAmpm, time }: props) => {
         />
         <p className="font-semibold">:</p>
         <input
-          className="w-10 rounded-lg p-1 text-center text-lg font-semibold outline-none focus:outline-none"
+          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="text"
           value={time.minutes}
           onChange={handleMinutesChange}
@@ -65,16 +65,16 @@ const TimeInput = ({ getHour, getMinute, getAmpm, time }: props) => {
         <div className="flex gap-1">
           <button
             className={`rounded-lg ${
-              time.ampm === "am" ? "bg-dark-200" : ""
-            } px-2 py-1 text-lg`}
+              time.ampm === "am" ? "bg-dark-300" : "hover:bg-dark-200"
+            } px-2 py-1`}
             onClick={(event) => handleAmPmChange(event, "am")}
           >
             AM
           </button>
           <button
             className={`rounded-lg ${
-              time.ampm === "pm" ? "bg-dark-200" : ""
-            } px-2 py-1 text-lg`}
+              time.ampm === "pm" ? "bg-dark-300" : "hover:bg-dark-200"
+            } px-2 py-1`}
             onClick={(event) => handleAmPmChange(event, "pm")}
           >
             PM
