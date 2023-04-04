@@ -1,4 +1,4 @@
-import Book from "@components/Book/Book";
+import BookList from "@components/Book/BookList";
 import { BookStatus } from "@prisma/client";
 import { getServerAuthSession } from "@server/auth";
 import { generateSSGHelper } from "@server/utils";
@@ -8,7 +8,6 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useState } from "react";
 import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
 
@@ -18,10 +17,7 @@ export const getServerSideProps = async (
   const session = await getServerAuthSession(context);
   const ssg = generateSSGHelper(session);
   const penname = context.query.penname as string;
-  const promises = [
-    ssg.book.getAll.prefetch({ penname }),
-    ssg.user.getData.prefetch(penname),
-  ];
+  const promises = [ssg.user.getData.prefetch(penname)];
   if (session) promises.push(ssg.user.getData.prefetch(undefined));
   await Promise.allSettled(promises);
 
@@ -37,14 +33,17 @@ export const getServerSideProps = async (
 type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 const BookPage = ({ penname }: props) => {
-  const { status } = useSession();
+  const { data: session } = useSession();
   const [openArchive, setOpenArchive] = useState(false);
-  const { data: user } = api.user.getData.useQuery(undefined, {
-    enabled: status === "authenticated",
+  const { data: user } = api.user.getData.useQuery(penname);
+  const { data: books, isLoading: bookIsLoading } = api.book.getAll.useQuery({
+    penname,
   });
-  const { data: books } = api.book.getAll.useQuery({ penname });
   const archiveBooks = books?.filter(
     (book) => book.status === BookStatus.ARCHIVED
+  );
+  const nonarchiveBooks = books?.filter(
+    (book) => book.status !== BookStatus.ARCHIVED
   );
   return (
     <div className="mb-8 mt-6 w-[1024px]">
@@ -68,82 +67,15 @@ const BookPage = ({ penname }: props) => {
             </div>
           )}
         </div>
-        {books &&
-          books.length === 0 &&
-          (user && user.penname === penname ? (
-            <div className="flex flex-col items-center gap-4">
-              <p>You still don&apos;t have any book yet. Wanna create one?</p>
-              <Link
-                href="/create/book"
-                className="rounded-lg bg-green-600 px-3 py-2 text-white hover:bg-green-700"
-              >
-                Create book now!
-              </Link>
-            </div>
-          ) : (
-            <div>
-              <p>{`${penname} still has not published any book yet!`}</p>
-            </div>
-          ))}
-        {books && (
-          <>
-            {!openArchive ? (
-              <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-                {books.map(
-                  (book) =>
-                    book.status !== BookStatus.ARCHIVED && (
-                      <Book
-                        key={book.id}
-                        id={book.id}
-                        title={book.title}
-                        coverImage={book.coverImage}
-                        description={book.description}
-                        isOwner={book.isOwner}
-                        status={book.status}
-                        like={book.chapters.reduce(
-                          (acc, curr) => acc + curr._count.likes,
-                          0
-                        )}
-                        read={book.chapters.reduce(
-                          (acc, curr) => acc + curr._count.views,
-                          0
-                        )}
-                      />
-                    )
-                )}
-              </div>
-            ) : (
-              archiveBooks &&
-              (archiveBooks.length === 0 ? (
-                <div className="flex items-center justify-center text-xl font-bold">
-                  <p>No book being archived</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-                  {archiveBooks.map((book) => (
-                    <Book
-                      key={book.id}
-                      id={book.id}
-                      title={book.title}
-                      coverImage={book.coverImage}
-                      description={book.description}
-                      isOwner={book.isOwner}
-                      status={book.status}
-                      like={book.chapters.reduce(
-                        (acc, curr) => acc + curr._count.likes,
-                        0
-                      )}
-                      read={book.chapters.reduce(
-                        (acc, curr) => acc + curr._count.views,
-                        0
-                      )}
-                    />
-                  ))}
-                </div>
-              ))
-            )}
-          </>
+        {user && books && archiveBooks && nonarchiveBooks && (
+          <BookList
+            books={openArchive ? archiveBooks : nonarchiveBooks}
+            isOwner={user.id === session?.user.id}
+            isArchived={openArchive}
+            penname={penname}
+          />
         )}
+        {bookIsLoading && <p>Loading...</p>}
       </div>
       {openArchive && (
         <p className="mt-4 text-sm text-gray-600">
