@@ -20,7 +20,20 @@ import TextStyle from "@tiptap/extension-text-style";
 import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import BulletList from "@tiptap/extension-bullet-list";
+import Document from "@tiptap/extension-document";
+import HardBreak from "@tiptap/extension-hard-break";
+import ListItem from "@tiptap/extension-list-item";
+import OrderedList from "@tiptap/extension-ordered-list";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import Strike from "@tiptap/extension-strike";
+import Dropcursor from "@tiptap/extension-dropcursor";
+import Gapcursor from "@tiptap/extension-gapcursor";
+import History from "@tiptap/extension-history";
+
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
@@ -76,22 +89,30 @@ const ChapterPage = ({ chapterId }: props) => {
   const editor = useEditor({
     content: "",
     extensions: [
-      StarterKit.configure({
-        heading: false,
-        paragraph: {
-          HTMLAttributes: {
-            class: "text-[length:var(--editor-h2)]",
-          },
+      Document,
+      HardBreak,
+      ListItem,
+      Text,
+      Bold,
+      Italic,
+      Strike,
+      Dropcursor,
+      Gapcursor,
+      History,
+      Paragraph.configure({
+        HTMLAttributes: {
+          class: "text-[length:var(--editor-h2)]",
         },
-        bulletList: {
-          HTMLAttributes: {
-            class: "list-disc px-4",
-          },
+      }),
+      BulletList.configure({
+        HTMLAttributes: {
+          class: "list-disc px-4",
         },
-        orderedList: {
-          HTMLAttributes: {
-            class: "list-decimal px-4",
-          },
+      }),
+
+      OrderedList.configure({
+        HTMLAttributes: {
+          class: "list-decimal px-4",
         },
       }),
       Underline,
