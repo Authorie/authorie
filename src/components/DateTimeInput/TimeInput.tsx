@@ -1,84 +1,60 @@
-import React, { useRef } from "react";
+import dayjs from "dayjs";
+import { type ChangeEvent } from "react";
 
 type props = {
-  getHour: (value: string) => void;
-  getMinute: (value: string) => void;
-  getAmpm: (value: string) => void;
-  time: { hours: string; minutes: string; ampm: string };
+  datetime: Date;
+  setHour: (value: number) => void;
+  setMinute: (value: number) => void;
 };
 
-const TimeInput = ({ getHour, getMinute, getAmpm, time }: props) => {
-  const hourInputRef = useRef<HTMLInputElement>(null);
-  const minuteInputRef = useRef<HTMLInputElement>(null);
-
-  const handleHoursChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value.length <= 2 && /^\d*$/.test(value) && Number(value) <= 12) {
-      getHour(value);
-      if (value && value.length === 2) {
-        minuteInputRef.current?.focus();
+const TimeInput = ({ setHour, setMinute, datetime }: props) => {
+  const handleHoursChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const hours = parseInt(event.target.value);
+    if (!isNaN(hours)) {
+      if (hours > 23) {
+        setHour(0);
+      } else if (hours < 0) {
+        setHour(23);
+      } else {
+        setHour(hours);
       }
-    } else {
-      getHour("");
     }
   };
 
   const handleMinutesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value.length <= 2 && /^\d*$/.test(value) && Number(value) <= 59) {
-      getMinute(value);
-    } else {
-      getMinute("");
+    const minutes = parseInt(event.target.value);
+    if (!isNaN(minutes)) {
+      if (minutes > 59) {
+        setMinute(0);
+      } else if (minutes < 0) {
+        setMinute(59);
+      } else {
+        setMinute(minutes);
+      }
     }
-  };
-
-  const handleAmPmChange = (
-    event: React.MouseEvent<HTMLButtonElement>,
-    value: string
-  ) => {
-    event.preventDefault();
-    getAmpm(value);
   };
 
   return (
     <div>
       <div className="flex items-center gap-2">
-        <input
-          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
-          type="text"
-          value={time.hours}
-          onChange={handleHoursChange}
-          maxLength={2}
-          ref={hourInputRef}
-          placeholder="00"
-        />
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-light">Hour</p>
+          <input
+            className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
+            type="number"
+            value={dayjs(datetime).hour()}
+            onChange={handleHoursChange}
+          />
+        </div>
         <p className="font-semibold">:</p>
-        <input
-          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
-          type="text"
-          value={time.minutes}
-          onChange={handleMinutesChange}
-          maxLength={2}
-          ref={minuteInputRef}
-          placeholder="00"
-        />
-        <div className="flex gap-1">
-          <button
-            className={`rounded-lg ${
-              time.ampm === "am" ? "bg-dark-300" : "hover:bg-dark-200"
-            } px-2 py-1`}
-            onClick={(event) => handleAmPmChange(event, "am")}
-          >
-            AM
-          </button>
-          <button
-            className={`rounded-lg ${
-              time.ampm === "pm" ? "bg-dark-300" : "hover:bg-dark-200"
-            } px-2 py-1`}
-            onClick={(event) => handleAmPmChange(event, "pm")}
-          >
-            PM
-          </button>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-light">Minute</p>
+          <input
+            className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
+            type="number"
+            value={dayjs(datetime).minute()}
+            onChange={handleMinutesChange}
+          />
         </div>
       </div>
     </div>

@@ -1,46 +1,44 @@
-import React, { useRef } from "react";
+import dayjs from "dayjs";
+import React from "react";
 
 type props = {
-  getDay: (value: string) => void;
-  getMonth: (value: string) => void;
-  getYear: (value: string) => void;
-  date: { day: string; month: string; year: string };
+  datetime: Date;
+  setDay: (value: number) => void;
+  setMonth: (value: number) => void;
+  setYear: (value: number) => void;
 };
 
-const DateInput = ({ getDay, getMonth, getYear, date }: props) => {
-  const monthRef = useRef<HTMLInputElement>(null);
-  const yearRef = useRef<HTMLInputElement>(null);
-
+const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
   const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value.length <= 2 && !isNaN(Number(value))) {
-      getDay(value);
-      if (value.length === 2) {
-        monthRef.current?.focus();
+    const day = parseInt(event.target.value);
+    if (!isNaN(day)) {
+      if (day > dayjs(datetime).daysInMonth()) {
+        setDay(1);
+      } else if (day < 1) {
+        setDay(dayjs(datetime).daysInMonth());
+      } else {
+        setDay(day);
       }
-    } else {
-      getDay("");
     }
   };
 
   const handleMonthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value.length <= 2 && !isNaN(Number(value)) && Number(value) <= 12) {
-      getMonth(value);
-      if (value.length === 2) {
-        yearRef.current?.focus();
+    const month = parseInt(event.target.value);
+    if (!isNaN(month)) {
+      if (month > 12) {
+        setMonth(1);
+      } else if (month < 1) {
+        setMonth(12);
+      } else {
+        setMonth(month);
       }
-    } else {
-      getMonth("");
     }
   };
 
   const handleYearChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (value.length <= 4 && !isNaN(Number(value))) {
-      getYear(value);
-    } else {
-      getYear("");
+    const year = parseInt(event.target.value);
+    if (!isNaN(year)) {
+      setYear(year);
     }
   };
 
@@ -49,36 +47,29 @@ const DateInput = ({ getDay, getMonth, getYear, date }: props) => {
       <div className="flex flex-col gap-1">
         <p className="text-xs font-light">Day</p>
         <input
-          value={date.day}
+          value={dayjs(datetime).date()}
           className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
-          type="text"
+          type="number"
           onChange={handleDayChange}
-          maxLength={2}
-          placeholder="DD"
         />
       </div>
       <div className="flex flex-col gap-1">
         <p className="text-xs font-light">Month</p>
         <input
-          value={date.month}
+          value={dayjs(datetime).month() + 1}
           className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
-          type="text"
+          type="number"
           onChange={handleMonthChange}
-          maxLength={2}
-          ref={monthRef}
-          placeholder="MM"
         />
       </div>
       <div className="flex flex-col gap-1">
         <p className="text-xs font-light">Year</p>
         <input
-          value={date.year}
+          value={dayjs(datetime).year()}
           className="w-16 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
-          type="text"
+          type="number"
           onChange={handleYearChange}
-          maxLength={4}
-          ref={yearRef}
-          placeholder="YYYY"
+          min={dayjs().year()}
         />
       </div>
     </div>
