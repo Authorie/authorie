@@ -2,7 +2,9 @@ import BookComboBox from "@components/Create/Chapter/BookComboBox";
 import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
 import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
+import DateTimeInputField from "@components/DateTimeInput/DateTimeInputField";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { Popover } from "@headlessui/react";
 import { BookStatus, type Book, type Chapter } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
@@ -26,7 +28,6 @@ import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import NextImage from "next/image";
-import { useRouter } from "next/router";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import superjson from "superjson";
@@ -74,7 +75,6 @@ export const getServerSideProps = async (
 
 const CreateChapter = () => {
   const { status } = useSession();
-  const router = useRouter();
   const context = api.useContext();
   const [title, setTitle] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
@@ -82,7 +82,9 @@ const CreateChapter = () => {
   });
   const [animationParent] = useAutoAnimate();
   const [book, setBook] = useState<Book | null>(null);
-  const [chapterId, setChapterId] = useState<string | undefined>();
+  const [chapter, setChapter] = useState<
+    (Chapter & { book: Book | null }) | null
+  >(null);
   const editor = useEditor({
     content: "",
     extensions: [
@@ -162,10 +164,10 @@ const CreateChapter = () => {
     return validationResult.success ? undefined : validationResult.error;
   };
   const deleteDraftChapterHandler = async () => {
-    if (chapterId) {
+    if (chapter) {
       const promise = deleteChapterMutation.mutateAsync(
         {
-          id: chapterId,
+          id: chapter.id,
         },
         {
           async onSettled(data) {
@@ -193,10 +195,11 @@ const CreateChapter = () => {
     } else {
       const promise = createChapterMutation.mutateAsync(
         {
-          chapterId,
+          chapterId: chapter ? chapter.id : undefined,
           title,
           content: editor.getJSON(),
           bookId: book ? book.id : undefined,
+          publishedAt: null,
         },
         {
           async onSettled(data) {
@@ -212,7 +215,7 @@ const CreateChapter = () => {
       });
     }
   };
-  const publishDraftChapterHandler = async () => {
+  const publishDraftChapterHandler = async (date?: Date) => {
     if (!editor) return;
     const validationError = validateInput();
     if (!book) return;
@@ -223,11 +226,11 @@ const CreateChapter = () => {
     } else {
       const promise = createChapterMutation.mutateAsync(
         {
-          chapterId,
+          chapterId: chapter ? chapter.id : undefined,
           title: title,
           content: editor.getJSON(),
           bookId: book ? book.id : undefined,
-          publishedAt: true,
+          publishedAt: date || true,
         },
         {
           async onSettled(data) {
@@ -236,7 +239,7 @@ const CreateChapter = () => {
           },
         }
       );
-      void router.push(`/${user?.penname as string}/book/${book.id}`);
+      // void router.push(`/${user?.penname as string}/book /${book.id}`);
       await toast.promise(promise, {
         loading: "Publishing...",
         success: "Published!",
@@ -254,13 +257,13 @@ const CreateChapter = () => {
       setErrors({
         title: undefined,
       });
-      setChapterId(chapter.id);
+      setChapter(chapter);
       setTitle(chapter.title);
       editor.commands.setContent(chapter.content as JSONContent);
       setBook(chapter.book as Book);
       return;
     } else {
-      setChapterId(undefined);
+      setChapter(null);
       setTitle("");
       editor?.commands.setContent("");
       setBook(null);
@@ -291,16 +294,16 @@ const CreateChapter = () => {
         <ul ref={animationParent} className="flex flex-col gap-3">
           <ChapterDraftCard
             title="Create a new chapter"
-            selected={chapterId === undefined}
+            selected={chapter === null}
             onClickHandler={() => selectDraftHandler(undefined)}
           />
           {draftChapters &&
-            draftChapters.map((chapter) => (
+            draftChapters.map((draftChapter) => (
               <ChapterDraftCard
-                key={chapter.id}
-                title={chapter.title}
-                selected={chapterId === chapter.id}
-                onClickHandler={() => selectDraftHandler(chapter.id)}
+                key={draftChapter.id}
+                title={draftChapter.title}
+                selected={chapter ? chapter.id === draftChapter.id : false}
+                onClickHandler={() => selectDraftHandler(draftChapter.id)}
               />
             ))}
         </ul>
@@ -371,7 +374,7 @@ const CreateChapter = () => {
               <button
                 type="button"
                 className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
-                disabled={chapterId === undefined}
+                disabled={chapter === null}
                 onClick={() => void deleteDraftChapterHandler()}
               >
                 Delete
@@ -379,17 +382,33 @@ const CreateChapter = () => {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white"
+                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
                   onClick={() => void saveDraftChapterHandler()}
                 >
                   Save
                 </button>
+                <Popover>
+                  <Popover.Panel className="relative">
+                    <div className="absolute -right-32 bottom-2 z-10">
+                      <DateTimeInputField
+                        initialDate={chapter ? chapter.publishedAt : null}
+                        label={"Confirm Publish"}
+                        onSubmit={(date: Date) =>
+                          void publishDraftChapterHandler(date)
+                        }
+                      />
+                    </div>
+                  </Popover.Panel>
+                  <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
+                    Set Publish Date
+                  </Popover.Button>
+                </Popover>
                 <button
                   type="button"
                   onClick={() => void publishDraftChapterHandler()}
-                  className="h-8 w-24 rounded-lg bg-authGreen-600 text-sm font-semibold text-white"
+                  className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
                 >
-                  Publish
+                  Publish Now
                 </button>
               </div>
             </div>

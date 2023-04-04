@@ -16,6 +16,7 @@ const createChapter = protectedProcedure
           z.date().refine((date) => date.getTime() > Date.now()),
           z.boolean(),
         ])
+        .nullish()
         .optional(),
     })
   )
@@ -97,7 +98,11 @@ const createChapter = protectedProcedure
           title: title,
           content: content,
           publishedAt:
-            typeof publishedAt === "boolean" ? new Date() : publishedAt,
+            publishedAt === null
+              ? typeof publishedAt === "boolean"
+                ? new Date()
+                : publishedAt
+              : null,
           bookId,
           ownerId: ctx.session.user.id,
         },
