@@ -1,9 +1,7 @@
 import Book from "@components/Book/Book";
 import { BookStatus } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { generateSSGHelper } from "@server/utils";
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
@@ -13,19 +11,17 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
 import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
-import superjson from "superjson";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
+  const ssg = generateSSGHelper(session);
   const penname = context.query.penname as string;
-  const promises = [ssg.book.getAll.prefetch({ penname })];
+  const promises = [
+    ssg.book.getAll.prefetch({ penname }),
+    ssg.user.getData.prefetch(penname),
+  ];
   if (session) promises.push(ssg.user.getData.prefetch(undefined));
   await Promise.allSettled(promises);
 
@@ -47,10 +43,9 @@ const BookPage = ({ penname }: props) => {
     enabled: status === "authenticated",
   });
   const { data: books } = api.book.getAll.useQuery({ penname });
-  const { data: archiveBooks } = api.book.getAll.useQuery({
-    penname: penname,
-    status: [BookStatus.ARCHIVED],
-  });
+  const archiveBooks = books?.filter(
+    (book) => book.status === BookStatus.ARCHIVED
+  );
   return (
     <div className="mb-8 mt-6 w-[1024px]">
       <div className={"max-h-full rounded-lg p-4 px-6 shadow-lg"}>

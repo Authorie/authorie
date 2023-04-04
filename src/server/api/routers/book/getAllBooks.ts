@@ -7,25 +7,10 @@ const getAllBooks = publicProcedure
   .input(
     z.object({
       penname: z.string(),
-      status: z
-        .enum([
-          BookStatus.INITIAL,
-          BookStatus.DRAFT,
-          BookStatus.PUBLISHED,
-          BookStatus.COMPLETED,
-          BookStatus.ARCHIVED,
-        ])
-        .array()
-        .default([
-          BookStatus.INITIAL,
-          BookStatus.DRAFT,
-          BookStatus.PUBLISHED,
-          BookStatus.COMPLETED,
-        ]),
     })
   )
   .query(async ({ ctx, input }) => {
-    const { penname, status } = input;
+    const { penname } = input;
     const bookFindManyArgs = {
       where: {},
       include: {
@@ -66,9 +51,7 @@ const getAllBooks = publicProcedure
     if (!ctx.session?.user.id) {
       bookFindManyArgs.where = {
         status: {
-          in: [BookStatus.PUBLISHED, BookStatus.COMPLETED].filter((s) =>
-            status.includes(s)
-          ),
+          in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
         },
         owners: {
           some: {
@@ -83,9 +66,7 @@ const getAllBooks = publicProcedure
         OR: [
           {
             status: {
-              in: [BookStatus.INITIAL, BookStatus.DRAFT].filter((s) =>
-                status.includes(s)
-              ),
+              in: [BookStatus.INITIAL, BookStatus.DRAFT],
             },
             owners: {
               some: {
@@ -104,9 +85,7 @@ const getAllBooks = publicProcedure
           },
           {
             status: {
-              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED].filter((s) =>
-                status.includes(s)
-              ),
+              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
             },
             owners: {
               some: {
@@ -118,7 +97,7 @@ const getAllBooks = publicProcedure
           },
           {
             status: {
-              in: [BookStatus.ARCHIVED].filter((s) => status.includes(s)),
+              in: [BookStatus.ARCHIVED],
             },
             owners: {
               some: {
