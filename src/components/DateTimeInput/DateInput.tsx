@@ -48,7 +48,7 @@ const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
         <p className="text-xs font-light">Day</p>
         <input
           value={dayjs(datetime).date()}
-          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
+          className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="number"
           onChange={handleDayChange}
         />
@@ -57,7 +57,7 @@ const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
         <p className="text-xs font-light">Month</p>
         <input
           value={dayjs(datetime).month() + 1}
-          className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
+          className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="number"
           onChange={handleMonthChange}
         />

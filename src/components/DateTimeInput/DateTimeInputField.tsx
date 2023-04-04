@@ -4,12 +4,13 @@ import dayjs from "dayjs";
 import { useState } from "react";
 
 type props = {
-  onSubmit: (data: Date) => void;
   label: string;
+  initialDate: Date | null;
+  onSubmit: (data: Date) => void;
 };
 
-const DateTimeInputField = ({ onSubmit, label }: props) => {
-  const [datetime, setDatetime] = useState(new Date());
+const DateTimeInputField = ({ onSubmit, label, initialDate }: props) => {
+  const [datetime, setDatetime] = useState(initialDate || new Date());
   const [error, setError] = useState({ isError: false, message: "" });
 
   const setDatetimeHandler = (unit: dayjs.UnitType, value: number) => {

@@ -40,7 +40,7 @@ const TimeInput = ({ setHour, setMinute, datetime }: props) => {
         <div className="flex flex-col gap-1">
           <p className="text-xs font-light">Hour</p>
           <input
-            className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
+            className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
             type="number"
             value={dayjs(datetime).hour()}
             onChange={handleHoursChange}
@@ -50,7 +50,7 @@ const TimeInput = ({ setHour, setMinute, datetime }: props) => {
         <div className="flex flex-col gap-1">
           <p className="text-xs font-light">Minute</p>
           <input
-            className="w-10 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
+            className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
             type="number"
             value={dayjs(datetime).minute()}
             onChange={handleMinutesChange}
