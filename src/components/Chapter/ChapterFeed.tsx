@@ -1,7 +1,19 @@
 import { CommentButton, LikeButton } from "@components/action";
 import type { Content } from "@tiptap/react";
 import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import BulletList from "@tiptap/extension-bullet-list";
+import Document from "@tiptap/extension-document";
+import HardBreak from "@tiptap/extension-hard-break";
+import ListItem from "@tiptap/extension-list-item";
+import OrderedList from "@tiptap/extension-ordered-list";
+import Paragraph from "@tiptap/extension-paragraph";
+import Text from "@tiptap/extension-text";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import Strike from "@tiptap/extension-strike";
+import Dropcursor from "@tiptap/extension-dropcursor";
+import Gapcursor from "@tiptap/extension-gapcursor";
+import History from "@tiptap/extension-history";
 import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -17,7 +29,21 @@ const ChapterFeed = ({ chapter }: props) => {
   const editor = useEditor({
     editable: false,
     content: chapter.content as Content,
-    extensions: [StarterKit],
+    extensions: [
+      Document,
+      HardBreak,
+      ListItem,
+      Text,
+      Bold,
+      Italic,
+      Strike,
+      Dropcursor,
+      Gapcursor,
+      History,
+      Paragraph,
+      BulletList,
+      OrderedList,
+    ],
   });
   const { data: isLike } = api.comment.isLike.useQuery({ id: chapter.id });
 
