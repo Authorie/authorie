@@ -47,7 +47,7 @@ const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
       <div className="flex flex-col gap-1">
         <p className="text-xs font-light">Day</p>
         <input
-          value={dayjs(datetime).date()}
+          value={dayjs(datetime).format("DD")}
           className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="number"
           onChange={handleDayChange}
@@ -56,7 +56,7 @@ const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
       <div className="flex flex-col gap-1">
         <p className="text-xs font-light">Month</p>
         <input
-          value={dayjs(datetime).month() + 1}
+          value={dayjs(datetime).format("MM")}
           className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="number"
           onChange={handleMonthChange}
@@ -65,7 +65,7 @@ const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
       <div className="flex flex-col gap-1">
         <p className="text-xs font-light">Year</p>
         <input
-          value={dayjs(datetime).year()}
+          value={dayjs(datetime).format("YYYY")}
           className="w-16 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="number"
           onChange={handleYearChange}

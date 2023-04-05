@@ -36,23 +36,23 @@ const TimeInput = ({ setHour, setMinute, datetime }: props) => {
 
   return (
     <div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-end gap-2">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-light">Hour</p>
           <input
             className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
             type="number"
-            value={dayjs(datetime).hour()}
+            value={dayjs(datetime).format("HH")}
             onChange={handleHoursChange}
           />
         </div>
-        <p className="font-semibold">:</p>
+        <p className="mb-1 font-semibold">:</p>
         <div className="flex flex-col gap-1">
           <p className="text-xs font-light">Minute</p>
           <input
             className="w-12 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
             type="number"
-            value={dayjs(datetime).minute()}
+            value={dayjs(datetime).format("mm")}
             onChange={handleMinutesChange}
           />
         </div>
