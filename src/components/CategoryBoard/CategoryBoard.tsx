@@ -12,9 +12,10 @@ import ChapterRankMinicard from "./ChapterRankMinicard";
 
 type props = {
   isLogin: boolean;
+  refetchFeed: (date: Date) => void;
 };
 
-const CategoryBoard = ({ isLogin }: props) => {
+const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
   const month = [
     "January",
     "February",
@@ -144,6 +145,7 @@ const CategoryBoard = ({ isLogin }: props) => {
         categories={followedCategories}
         openCategories={showCategories}
         onOpenCategories={onOpenCategoriesHandler}
+        refetchFeed={(date: Date) => void refetchFeed(date)}
       />
     </>
   );

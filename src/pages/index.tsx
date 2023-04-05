@@ -10,6 +10,7 @@ import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import superjson from "superjson";
+import { useState } from "react";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -38,6 +39,7 @@ export const getServerSideProps = async (
 };
 // TODO: Guard categories with auth
 const Home = () => {
+  const [dateSelected, setDateSelected] = useState<Date>(new Date());
   const { data: session } = useSession();
   const { data: categories } = api.category.getAll.useQuery();
   const selectedCategories = useSelectedCategory();
@@ -48,19 +50,27 @@ const Home = () => {
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
-  const { data } = api.chapter.getFeeds.useInfiniteQuery(
+  const { data, refetch } = api.chapter.getFeeds.useInfiniteQuery(
     {
       limit: 10,
       categoryIds: categoryIds,
+      publishedAt: dateSelected || undefined,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,
     }
   );
+  const refetchFeed = async (date: Date) => {
+    setDateSelected(date);
+    await refetch();
+  };
 
   return (
     <div className="flex flex-col px-10 py-4">
-      <CategoryBoard isLogin={Boolean(session)} />
+      <CategoryBoard
+        isLogin={Boolean(session)}
+        refetchFeed={(date: Date) => void refetchFeed(date)}
+      />
       <div className="flex flex-col gap-8">
         {data &&
           data.pages

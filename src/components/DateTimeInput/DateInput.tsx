@@ -6,9 +6,18 @@ type props = {
   setDay: (value: number) => void;
   setMonth: (value: number) => void;
   setYear: (value: number) => void;
+  min?: number;
+  max?: boolean;
 };
 
-const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
+const DateInput = ({
+  setDay,
+  setMonth,
+  setYear,
+  datetime,
+  min,
+  max,
+}: props) => {
   const handleDayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const day = parseInt(event.target.value);
     if (!isNaN(day)) {
@@ -69,7 +78,8 @@ const DateInput = ({ setDay, setMonth, setYear, datetime }: props) => {
           className="w-16 rounded-lg p-1 text-center font-semibold outline-none focus:outline-none"
           type="number"
           onChange={handleYearChange}
-          min={dayjs().year()}
+          min={min ? min : dayjs().year()}
+          max={max ? dayjs().year() : undefined}
         />
       </div>
     </div>

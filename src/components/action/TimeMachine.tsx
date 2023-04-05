@@ -23,12 +23,12 @@ export const TimeMachine = ({ refetchFeed }: props) => {
   const submitHandler = () => {
     const now = new Date();
     const isValid = dayjs(date).isValid();
-    const isPast = dayjs(now).isBefore(date);
+    const isFuture = dayjs(now).isAfter(date);
     if (!isValid) {
       setError({ isError: true, message: "Invalid date" });
       return;
-    } else if (!isPast) {
-      setError({ isError: true, message: "Date must be in the future" });
+    } else if (!isFuture) {
+      setError({ isError: true, message: "Date must be in the past" });
       return;
     } else {
       setError({ isError: false, message: "" });
@@ -52,16 +52,16 @@ export const TimeMachine = ({ refetchFeed }: props) => {
             />
             <div className="flex items-center justify-center gap-3">
               <button
-                onClick={submitHandler}
-                className="rounded-lg bg-green-600 px-2 py-1 text-xs font-semibold text-white hover:bg-green-700"
-              >
-                Confirm
-              </button>
-              <button
                 onClick={() => close()}
                 className="rounded-lg border border-gray-500 px-2 py-1 text-xs text-gray-500 hover:bg-gray-300"
               >
                 Cancel
+              </button>
+              <button
+                onClick={submitHandler}
+                className="rounded-lg bg-green-600 px-2 py-1 text-xs font-semibold text-white hover:bg-green-700"
+              >
+                Confirm
               </button>
             </div>
             {error.isError && (
