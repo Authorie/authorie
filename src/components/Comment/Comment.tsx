@@ -1,6 +1,6 @@
-import { CommentButton, LikeButton } from "@components/action";
-import type { RouterOutputs } from "@utils/api";
-import { api } from "@utils/api";
+import { CommentButton, LikeButton } from "~/components/action";
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";

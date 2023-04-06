@@ -1,4 +1,4 @@
-import { createTRPCRouter } from "@server/api/trpc";
+import { createTRPCRouter } from "~/server/api/trpc";
 import createBook from "./createBook";
 import deleteBook from "./deleteBook";
 import favorite from "./favorite";

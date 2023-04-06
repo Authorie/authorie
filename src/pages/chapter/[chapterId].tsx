@@ -1,14 +1,13 @@
-import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
-import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
-import Comment from "@components/Comment/Comment";
-import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
-import { useReader } from "@hooks/reader";
+import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapterPopover";
+import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
+import Comment from "~/components/Comment/Comment";
+import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { BookStatus } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
+import { getServerAuthSession } from "~/server/auth";
+import { generateSSGHelper } from "~/server/utils";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -20,6 +19,7 @@ import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
+import { useReader } from "~/hooks/reader";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext

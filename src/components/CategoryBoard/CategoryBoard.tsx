@@ -1,11 +1,11 @@
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
+import dayjs from "dayjs";
+import { useCallback, useMemo, useState } from "react";
 import {
   useFollowedCategories,
   useSetFollowedCategories,
-} from "@hooks/followedCategories";
-import type { RouterOutputs } from "@utils/api";
-import { api } from "@utils/api";
-import dayjs from "dayjs";
-import { useCallback, useMemo, useState } from "react";
+} from "~/hooks/followedCategories";
 import CategoryBar from "./CategoryBar/CategoryBar";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 import ChapterRankCard from "./ChapterRankCard";

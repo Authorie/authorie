@@ -1,4 +1,4 @@
-import { protectedProcedure } from "@server/api/trpc";
+import { protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 
 const getBookCollaborators = protectedProcedure

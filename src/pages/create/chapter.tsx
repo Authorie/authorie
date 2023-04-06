@@ -1,17 +1,17 @@
-import BookComboBox from "@components/Create/Chapter/BookComboBox";
-import DraftChapterBoard from "@components/Create/Chapter/DraftChapterBoard";
-import { useEditor } from "@hooks/editor";
+import BookComboBox from "~/components/Create/Chapter/BookComboBox";
+import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { BookStatus, type Book, type Chapter } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
+import { getServerAuthSession } from "~/server/auth";
+import { generateSSGHelper } from "~/server/utils";
 import type { JSONContent } from "@tiptap/react";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import type { GetServerSidePropsContext } from "next";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useState } from "react";
+import { useEditor } from "~/hooks/editor";
 const CreateChapterBoard = dynamic(
-  () => import("@components/Create/Chapter/CreateChapterBoard")
+  () => import("~/components/Create/Chapter/CreateChapterBoard")
 );
 
 export const getServerSideProps = async (

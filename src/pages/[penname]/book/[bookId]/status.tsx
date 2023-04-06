@@ -1,17 +1,16 @@
-import AuthorList from "@components/Book/AuthorList";
-import BookCoverEditable from "@components/Book/BookCoverEditable";
-import DialogLayout from "@components/Dialog/DialogLayout";
-import { CategoryPopover } from "@components/action/CategoryPopover";
-import { EditButton } from "@components/action/EditButton";
+import AuthorList from "~/components/Book/AuthorList";
+import BookCoverEditable from "~/components/Book/BookCoverEditable";
+import DialogLayout from "~/components/Dialog/DialogLayout";
+import { CategoryPopover } from "~/components/action/CategoryPopover";
+import { EditButton } from "~/components/action/EditButton";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
+import { appRouter } from "~/server/api/root";
+import { createInnerTRPCContext } from "~/server/api/trpc";
+import { getServerAuthSession } from "~/server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -24,6 +23,7 @@ import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
 import superjson from "superjson";
 import z from "zod";
+import useImageUpload from "~/hooks/imageUpload";
 
 const validationSchema = z.object({
   title: z

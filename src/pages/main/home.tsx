@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import Image from "next/image";
-import DeveloperInfoCard from "@components/Card/DeveloperInfoCard";
+import DeveloperInfoCard from "~/components/Card/DeveloperInfoCard";
 import { HiEnvelope } from "react-icons/hi2";
 
 const HomePage = () => {

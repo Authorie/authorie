@@ -1,15 +1,14 @@
-import ChapterCard from "@components/Chapter/ChapterCard";
-import { EditButton } from "@components/action/EditButton";
+import ChapterCard from "~/components/Chapter/ChapterCard";
+import { EditButton } from "~/components/action/EditButton";
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
+import { appRouter } from "~/server/api/root";
+import { createInnerTRPCContext } from "~/server/api/trpc";
+import { getServerAuthSession } from "~/server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
@@ -32,6 +31,7 @@ import {
 } from "react-icons/hi2";
 import superjson from "superjson";
 import z from "zod";
+import useImageUpload from "~/hooks/imageUpload";
 
 const validationSchema = z.object({
   title: z

@@ -1,8 +1,8 @@
-import BookList from "@components/Book/BookList";
+import BookList from "~/components/Book/BookList";
 import { BookStatus } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
-import { api } from "@utils/api";
+import { getServerAuthSession } from "~/server/auth";
+import { generateSSGHelper } from "~/server/utils";
+import { api } from "~/utils/api";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,

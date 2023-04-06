@@ -1,7 +1,7 @@
-import LoadingSpinner from "@components/ui/LoadingSpinner";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getServerAuthSession } from "@server/auth";
-import { api } from "@utils/api";
+import { getServerAuthSession } from "~/server/auth";
+import { api } from "~/utils/api";
 import { type GetServerSidePropsContext } from "next";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";

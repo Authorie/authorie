@@ -1,11 +1,10 @@
-import { AddAuthorModal } from "@components/action/AddAuthorModal";
+import { AddAuthorModal } from "~/components/action/AddAuthorModal";
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
 import type { Category, User } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
-import { api } from "@utils/api";
+import { getServerAuthSession } from "~/server/auth";
+import { generateSSGHelper } from "~/server/utils";
+import { api } from "~/utils/api";
 import type { GetServerSidePropsContext } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -14,6 +13,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
 import z from "zod";
+import useImageUpload from "~/hooks/imageUpload";
 
 const validationSchema = z.object({
   title: z

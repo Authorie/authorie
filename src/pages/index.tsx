@@ -1,17 +1,17 @@
-import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import { useFollowedCategories } from "@hooks/followedCategories";
-import { useSelectedCategory } from "@hooks/selectedCategory";
-import { useSelectedDate } from "@hooks/selectedDate";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
+import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
+import { appRouter } from "~/server/api/root";
+import { createInnerTRPCContext } from "~/server/api/trpc";
+import { getServerAuthSession } from "~/server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import superjson from "superjson";
-const ChapterFeed = dynamic(() => import("@components/Chapter/ChapterFeed"));
+import { useFollowedCategories } from "~/hooks/followedCategories";
+import { useSelectedCategory } from "~/hooks/selectedCategory";
+import { useSelectedDate } from "~/hooks/selectedDate";
+const ChapterFeed = dynamic(() => import("~/components/Chapter/ChapterFeed"));
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext

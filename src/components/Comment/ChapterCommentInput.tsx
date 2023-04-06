@@ -1,7 +1,7 @@
-import useImageUpload from "@hooks/imageUpload";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import { useState, type FormEvent } from "react";
 import { HiOutlinePhoto } from "react-icons/hi2";
+import useImageUpload from "~/hooks/imageUpload";
 
 type props = {
   chapterId: string;

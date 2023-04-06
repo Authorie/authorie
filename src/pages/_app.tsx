@@ -1,9 +1,9 @@
-import Layout from "@components/Layout/Layout";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
+import Layout from "~/components/Layout/Layout";
+import { appRouter } from "~/server/api/root";
+import { createInnerTRPCContext } from "~/server/api/trpc";
+import { getServerAuthSession } from "~/server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import { Analytics } from "@vercel/analytics/react";
 import type {
   GetServerSidePropsContext,

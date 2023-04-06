@@ -1,5 +1,5 @@
 import { BookStatus } from "@prisma/client";
-import { publicProcedure } from "@server/api/trpc";
+import { publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { computeIsOwner } from "./utils";
 

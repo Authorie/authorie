@@ -1,6 +1,6 @@
-import { env } from "@env/server.mjs";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { env } from "~/env.mjs";
 
 export const ratelimit = new Ratelimit({
   redis: new Redis({
