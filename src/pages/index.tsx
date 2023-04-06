@@ -1,6 +1,7 @@
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
 import { useFollowedCategories } from "@hooks/followedCategories";
 import { useSelectedCategory } from "@hooks/selectedCategory";
+import { useSelectedDate } from "@hooks/selectedDate";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
@@ -9,7 +10,6 @@ import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
 import superjson from "superjson";
 const ChapterFeed = dynamic(() => import("@components/Chapter/ChapterFeed"));
 
@@ -40,7 +40,7 @@ export const getServerSideProps = async (
 };
 
 const Home = () => {
-  const [dateSelected, setDateSelected] = useState<Date>(new Date());
+  const selectedDate = useSelectedDate();
   const { status } = useSession();
   const { data: categories } = api.category.getAll.useQuery();
   const selectedCategories = useSelectedCategory();
@@ -51,27 +51,20 @@ const Home = () => {
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
-  const { data, refetch } = api.chapter.getFeeds.useInfiniteQuery(
+  const { data } = api.chapter.getFeeds.useInfiniteQuery(
     {
       limit: 10,
       categoryIds: categoryIds,
-      publishedAt: dateSelected || undefined,
+      publishedAt: selectedDate,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,
     }
   );
-  const refetchFeed = async (date: Date) => {
-    setDateSelected(date);
-    await refetch();
-  };
 
   return (
     <div className="flex flex-col px-10 py-4">
-      <CategoryBoard
-        isLogin={status === "authenticated"}
-        refetchFeed={setDateSelected}
-      />
+      <CategoryBoard isLogin={status === "authenticated"} />
       <div className="flex flex-col gap-8">
         {data &&
           data.pages

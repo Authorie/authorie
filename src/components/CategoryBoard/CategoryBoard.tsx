@@ -13,10 +13,9 @@ import ChapterRankMinicard from "./ChapterRankMinicard";
 
 type props = {
   isLogin: boolean;
-  refetchFeed: (date: Date) => void;
 };
 
-const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
+const CategoryBoard = ({ isLogin }: props) => {
   const { data: leaderboard } = api.chapter.getLeaderboard.useQuery({
     limit: 6,
   });
@@ -133,7 +132,6 @@ const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
         categories={followedCategories}
         openCategories={showCategories}
         onOpenCategories={onOpenCategoriesHandler}
-        refetchFeed={refetchFeed}
       />
     </>
   );

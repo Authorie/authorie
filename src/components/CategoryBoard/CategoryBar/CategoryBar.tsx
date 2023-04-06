@@ -1,15 +1,14 @@
+import { TimeMachine } from "@components/action/TimeMachine";
 import { useSelectedCategory } from "@hooks/selectedCategory";
 import type { Category } from "@prisma/client";
 import { HiOutlinePlus, HiOutlineXMark } from "react-icons/hi2";
 import CategoryItem from "./CategoryItem";
-import { TimeMachine } from "@components/action/TimeMachine";
 
 type props = {
   isLogin: boolean;
   categories: Category[] | undefined;
   onOpenCategories: () => void;
   openCategories: boolean;
-  refetchFeed: (date: Date) => void;
 };
 
 const CategoryBar = ({
@@ -17,7 +16,6 @@ const CategoryBar = ({
   categories,
   onOpenCategories,
   openCategories,
-  refetchFeed,
 }: props) => {
   const selectedCategory = useSelectedCategory();
 
@@ -61,7 +59,7 @@ const CategoryBar = ({
           />
         ))}
       </div>
-      <TimeMachine refetchFeed={(date: Date) => void refetchFeed(date)} />
+      <TimeMachine />
     </div>
   );
 };

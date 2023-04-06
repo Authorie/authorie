@@ -1,39 +1,30 @@
-import { Popover } from "@headlessui/react";
-import { HiCalendar } from "react-icons/hi2";
 import DateInput from "@components/DateTimeInput/DateInput";
-import { useState } from "react";
+import { Popover } from "@headlessui/react";
+import { useSelectDate, useSelectedDate } from "@hooks/selectedDate";
 import dayjs from "dayjs";
+import { useState } from "react";
+import { HiCalendar } from "react-icons/hi2";
 
-type props = {
-  refetchFeed: (date: Date) => void;
-};
-
-export const TimeMachine = ({ refetchFeed }: props) => {
-  const [date, setDate] = useState(new Date());
+export const TimeMachine = () => {
+  const selectDate = useSelectDate();
+  const selectedDate = useSelectedDate();
   const [error, setError] = useState({ isError: false, message: "" });
 
   const setDatetimeHandler = (unit: dayjs.UnitType, value: number) => {
-    setDate((prev) => {
-      const date = dayjs(prev).set(unit, value);
-      if (!date.isValid()) return prev;
-      return date.toDate();
-    });
+    const date = dayjs(selectedDate).set(unit, value);
+    selectDate(date.toDate());
   };
 
   const submitHandler = () => {
-    const now = new Date();
-    const isValid = dayjs(date).isValid();
-    const isFuture = dayjs(now).isAfter(date);
-    if (!isValid) {
+    const isInvalid = !dayjs(selectedDate).isValid();
+    const isPast = dayjs().isAfter(selectedDate);
+    if (isInvalid) {
       setError({ isError: true, message: "Invalid date" });
-      return;
-    } else if (!isFuture) {
+    } else if (!isPast) {
       setError({ isError: true, message: "Date must be in the past" });
-      return;
     } else {
       setError({ isError: false, message: "" });
     }
-    refetchFeed(date);
   };
   return (
     <Popover className="h-full">
@@ -41,7 +32,7 @@ export const TimeMachine = ({ refetchFeed }: props) => {
         {({ close }) => (
           <>
             <DateInput
-              datetime={date}
+              datetime={selectedDate}
               setDay={(value: number) => setDatetimeHandler("date", value)}
               setMonth={(value: number) =>
                 setDatetimeHandler("month", value - 1)
