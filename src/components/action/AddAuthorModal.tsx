@@ -1,8 +1,8 @@
-import Image from "next/image";
 import type { User } from "@prisma/client";
-import useSearch from "@hooks/search";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
+import useSearch from "~/hooks/search";
 
 type props = {
   toogleCollaboratorsHandler: (collaborator: User) => void;
@@ -79,7 +79,7 @@ export const AddAuthorModal = ({
       </div>
       <input
         type="text"
-        className="focus:shadow-outline mt-2 w-72 rounded-lg bg-white py-2 px-3 text-xs focus:outline-none"
+        className="focus:shadow-outline mt-2 w-72 rounded-lg bg-white px-3 py-2 text-xs focus:outline-none"
         placeholder="Enter author's pen name..."
         onChange={searchTermChangeHandler}
       />

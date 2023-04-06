@@ -1,9 +1,9 @@
-import DateInput from "@components/DateTimeInput/DateInput";
+import DateInput from "~/components/DateTimeInput/DateInput";
 import { Popover } from "@headlessui/react";
-import { useSelectDate, useSelectedDate } from "@hooks/selectedDate";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { HiCalendar } from "react-icons/hi2";
+import { useSelectDate, useSelectedDate } from "~/hooks/selectedDate";
 
 export const TimeMachine = () => {
   const selectDate = useSelectDate();

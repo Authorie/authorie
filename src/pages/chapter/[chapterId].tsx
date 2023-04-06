@@ -1,54 +1,61 @@
-import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
-import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
-import Comment from "@components/Comment/Comment";
-import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
-import { useReader } from "@hooks/reader";
 import { BookStatus } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api } from "@utils/api";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
+import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
+import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapterPopover";
+import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
+import Comment from "~/components/Comment/Comment";
+import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
+import { useReader } from "~/hooks/reader";
+import { generateSSGHelper } from "~/server/utils";
+import { api } from "~/utils/api";
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = generateSSGHelper(session);
-  const chapterId = context.query.chapterId as string;
-  await Promise.all([
-    ssg.chapter.getData.prefetch({ id: chapterId }),
-    ssg.comment.getAll.prefetch({ chapterId: chapterId }),
-    ssg.chapter.isLike.prefetch({ id: chapterId }),
-  ]);
+export async function getStaticPaths() {
+  const ssg = generateSSGHelper(null);
+  const chapterIds = await ssg.chapter.getAllIds.fetch();
   return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-      chapterId,
-    },
+    paths: chapterIds.map(({ id }) => ({
+      params: { chapterId: id },
+    })),
+    fallback: false,
   };
-};
+}
 
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
+export async function getStaticProps({ params }: GetStaticPropsContext) {
+  if (!params) return { props: {} };
+  const ssg = generateSSGHelper(null);
+  const chapterId = params.chapterId as string;
+  try {
+    const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+    return {
+      props: {
+        chapter,
+      },
+      revalidate: 60,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      notFound: true,
+    };
+  }
+}
 
-const ChapterPage = ({ chapterId }: props) => {
+type props = InferGetStaticPropsType<typeof getStaticProps>;
+
+const ChapterPage = ({ chapter }: props) => {
+  const router = useRouter();
+  const chapterId = router.query.chapterId as string;
   const { status } = useSession();
   const utils = api.useContext();
-  const { data: chapter } = api.chapter.getData.useQuery({
-    id: chapterId,
-  });
   const { data: isLiked } = api.chapter.isLike.useQuery({
     id: chapterId,
   });
@@ -80,6 +87,7 @@ const ChapterPage = ({ chapterId }: props) => {
 
   useEffect(() => {
     readChapter.mutate({ id: chapterId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const likeMutation = api.chapter.like.useMutation({

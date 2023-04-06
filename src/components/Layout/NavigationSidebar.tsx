@@ -1,6 +1,3 @@
-import { Button, Link } from "@components/ui/NavigationItems";
-import { useSelectCategory } from "@hooks/selectedCategory";
-import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -15,7 +12,10 @@ import {
   HiOutlineMagnifyingGlass,
   HiPencil,
 } from "react-icons/hi2";
-const SearchModal = dynamic(() => import("@components/Search/SearchModal"));
+import { Button, Link } from "~/components/ui/NavigationItems";
+import { useSelectCategory } from "~/hooks/selectedCategory";
+import type { RouterOutputs } from "~/utils/api";
+const SearchModal = dynamic(() => import("~/components/Search/SearchModal"));
 
 type props = {
   user: RouterOutputs["user"]["getData"] | undefined;
@@ -73,11 +73,11 @@ const NavigationSidebar = ({ user }: props) => {
         </Link>
         {session && (
           <>
-            <Link href="/notifications">
+            <Link aria-label="/notifications" href="/404">
               <HiOutlineBell className="h-7 w-7" />
               <span className="hidden sm:inline-block">Notification</span>
             </Link>
-            <Link href="/messages">
+            <Link aria-label="/messages" href="/404">
               <HiOutlineChatBubbleOvalLeftEllipsis className="h-7 w-7" />
               <span className="hidden sm:inline-block">Messages</span>
             </Link>

@@ -1,11 +1,10 @@
-import LoadingSpinner from "@components/ui/LoadingSpinner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getServerAuthSession } from "@server/auth";
-import { api } from "@utils/api";
-import { type GetServerSidePropsContext } from "next";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   penname: z
@@ -16,24 +15,6 @@ const validationSchema = z.object({
 
 type ValidationSchema = z.infer<typeof validationSchema>;
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  if (!session || session.user.penname !== null) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: true,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
-};
-
 const NewUser = () => {
   const {
     register,
@@ -43,6 +24,17 @@ const NewUser = () => {
     resolver: zodResolver(validationSchema),
   });
   const router = useRouter();
+  useSession({
+    required: true,
+    onUnauthenticated() {
+      void router.replace("/auth/signIn");
+    },
+  });
+  api.user.getData.useQuery(undefined, {
+    onSuccess(data) {
+      if (data.penname) void router.replace("/");
+    },
+  });
   const updateUser = api.user.update.useMutation({
     onSuccess() {
       void router.replace("/");

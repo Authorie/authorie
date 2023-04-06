@@ -1,11 +1,11 @@
-import { CommentButton, LikeButton } from "@components/action";
-import { useReader } from "@hooks/reader";
+import { CommentButton, LikeButton } from "~/components/action";
 import type { Content } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api, type RouterOutputs } from "@utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useReader } from "~/hooks/reader";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];

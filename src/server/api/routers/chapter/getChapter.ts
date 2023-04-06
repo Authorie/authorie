@@ -1,4 +1,4 @@
-import { publicProcedure } from "@server/api/trpc";
+import { publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 
 const getChapter = publicProcedure

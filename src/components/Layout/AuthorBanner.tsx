@@ -1,10 +1,9 @@
-import UserCard from "@components/Card/UserCard";
-import DialogLayout from "@components/Dialog/DialogLayout";
-import LoadingSpinner from "@components/ui/LoadingSpinner";
+import UserCard from "~/components/Card/UserCard";
+import DialogLayout from "~/components/Dialog/DialogLayout";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
-import type { RouterOutputs } from "@utils/api";
-import { api } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -13,6 +12,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
 import z from "zod";
+import useImageUpload from "~/hooks/imageUpload";
 
 const AuthorTab = [
   { title: "HOME", url: "" },

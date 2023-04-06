@@ -1,4 +1,4 @@
-import type { RouterOutputs } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import { HiDocument } from "react-icons/hi2";
 
 type props = {

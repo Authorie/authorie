@@ -1,5 +1,5 @@
 import { BookStatus } from "@prisma/client";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";

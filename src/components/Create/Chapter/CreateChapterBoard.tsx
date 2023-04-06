@@ -1,9 +1,9 @@
-import DateTimeInputField from "@components/DateTimeInput/DateTimeInputField";
+import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
 import { Popover } from "@headlessui/react";
 import type { Chapter } from "@prisma/client";
 import type { Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import toast from "react-hot-toast";
 import z from "zod";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";

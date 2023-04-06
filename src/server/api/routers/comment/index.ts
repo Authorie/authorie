@@ -1,4 +1,4 @@
-import { createTRPCRouter } from "@server/api/trpc";
+import { createTRPCRouter } from "~/server/api/trpc";
 import createComment from "./createComment";
 import getAllComments from "./getAllComments";
 import isLike from "./isLike";

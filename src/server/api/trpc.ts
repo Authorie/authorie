@@ -19,7 +19,7 @@
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 
-import { tracer } from "@server/tracing";
+import { tracer } from "~/server/tracing";
 import { getServerAuthSession } from "../auth";
 import { prisma } from "../db";
 import { ratelimit } from "../ratelimit";

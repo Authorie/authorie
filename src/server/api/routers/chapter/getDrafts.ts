@@ -1,4 +1,4 @@
-import { protectedProcedure } from "@server/api/trpc";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const getDraftChapters = protectedProcedure.query(async ({ ctx }) => {
   const lastHour = new Date();

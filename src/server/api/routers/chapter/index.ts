@@ -1,16 +1,19 @@
-import { createTRPCRouter } from "@server/api/trpc";
+import { createTRPCRouter } from "~/server/api/trpc";
 import createChapter from "./createChapter";
 import deleteDraftChapter from "./deleteDraft";
+import getAllChapterIds from "./getAllChapterIds";
 import getChapter from "./getChapter";
 import getDraftChapters from "./getDrafts";
 import getFeeds from "./getFeeds";
 import getLeaderboard from "./getLeaderboard";
 import isLike from "./isLike";
 import like from "./like";
+getAllChapterIds;
 import readChapter from "./readChapter";
 import unlike from "./unlike";
 
 export const chapterRouter = createTRPCRouter({
+  getAllIds: getAllChapterIds,
   getFeeds: getFeeds,
   getData: getChapter,
   getDrafts: getDraftChapters,

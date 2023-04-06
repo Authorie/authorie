@@ -1,29 +1,20 @@
-import AuthorList from "@components/Book/AuthorList";
-import BookCoverEditable from "@components/Book/BookCoverEditable";
-import DialogLayout from "@components/Dialog/DialogLayout";
-import { CategoryPopover } from "@components/action/CategoryPopover";
-import { EditButton } from "@components/action/EditButton";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useReducer, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
-import superjson from "superjson";
 import z from "zod";
+import AuthorList from "~/components/Book/AuthorList";
+import BookCoverEditable from "~/components/Book/BookCoverEditable";
+import DialogLayout from "~/components/Dialog/DialogLayout";
+import { CategoryPopover } from "~/components/action/CategoryPopover";
+import { EditButton } from "~/components/action/EditButton";
+import useImageUpload from "~/hooks/imageUpload";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   title: z
@@ -35,32 +26,6 @@ const validationSchema = z.object({
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-  const penname = context.query.penname as string;
-  const bookId = context.query.bookId as string;
-  await ssg.book.getData.prefetch({ id: bookId });
-  await ssg.category.getAll.prefetch();
-  await ssg.user.getBookCollaborators.prefetch({ bookId: bookId });
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-      bookId,
-      penname,
-    },
-  };
-};
-
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 type DialogState =
   | {
@@ -127,7 +92,10 @@ const dialogReducer = (state: DialogState, action: DialogAction) => {
   }
 };
 
-const StatusPage = ({ bookId, penname }: props) => {
+const StatusPage = () => {
+  const router = useRouter();
+  const bookId = router.query.bookId as string;
+  const penname = router.query.penname as string;
   const [dialogState, dispatchDialog] = useReducer(
     dialogReducer,
     dialogInitialState
@@ -143,7 +111,6 @@ const StatusPage = ({ bookId, penname }: props) => {
     uploadHandler: setBookWallpaper,
     resetImageData: resetBookWallpaper,
   } = useImageUpload();
-  const router = useRouter();
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
   const { data: collaborators } = api.user.getBookCollaborators.useQuery({

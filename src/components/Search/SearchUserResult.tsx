@@ -1,4 +1,4 @@
-import type { RouterOutputs } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import Image from "next/image";
 import { HiUser } from "react-icons/hi2";
 

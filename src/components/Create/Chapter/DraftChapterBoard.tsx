@@ -1,6 +1,6 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import type { Book, Chapter } from "@prisma/client";
-import type { RouterOutputs } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import ChapterDraftCard from "./ChapterDraftCard";
 
 type props = {
