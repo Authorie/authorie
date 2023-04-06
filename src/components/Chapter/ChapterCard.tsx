@@ -11,7 +11,10 @@ const ChapterCard = ({ chapter }: props) => {
   const router = useRouter();
   const onEditHandler = (e: MouseEvent) => {
     e.stopPropagation();
-    void router.push("/create/chapter");
+    void router.push({
+      pathname: "/create/chapter",
+      query: { chapterId: chapter.id },
+    });
   };
   return (
     <div

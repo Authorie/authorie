@@ -2,7 +2,8 @@ import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
@@ -12,10 +13,15 @@ const CreateChapterBoard = dynamic(
 );
 
 const CreateChapter = () => {
-  const [title, setTitle] = useState("");
+  const router = useRouter();
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
+  const editChapterSelected = router.query.chapterId;
+  const { data: selectedChapter, refetch } = api.chapter.getData.useQuery({
+    id: editChapterSelected ? (editChapterSelected as string) : "",
+  });
+  const [title, setTitle] = useState("");
   const [book, setBook] = useState<Book | null>(null);
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
@@ -45,6 +51,22 @@ const CreateChapter = () => {
       return book;
     });
   };
+
+  useEffect(() => {
+    if (!editor) return;
+    setErrors({
+      title: undefined,
+    });
+    void refetch();
+    if (selectedChapter) {
+      setChapter(selectedChapter);
+      setTitle(selectedChapter?.title || "");
+      editor.commands.setContent(
+        selectedChapter ? (selectedChapter.content as JSONContent) : ""
+      );
+      setBook(selectedChapter ? selectedChapter.book : null);
+    }
+  }, [editor]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
