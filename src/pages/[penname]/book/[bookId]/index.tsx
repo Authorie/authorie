@@ -23,8 +23,6 @@ import ChapterCardList from "~/components/Chapter/ChapterCardList";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
 
 const validationSchema = z.object({
   title: z
@@ -663,13 +661,11 @@ const BookContent = () => {
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 {book.chapters && (
-                  <DndProvider backend={HTML5Backend}>
-                    <ChapterCardList
-                      isEdit={isEdit}
-                      isChapterCreatable={isChapterCreatable}
-                      chapters={book.chapters}
-                    />
-                  </DndProvider>
+                  <ChapterCardList
+                    isEdit={isEdit}
+                    isChapterCreatable={isChapterCreatable}
+                    chapters={book.chapters}
+                  />
                 )}
               </div>
             </div>

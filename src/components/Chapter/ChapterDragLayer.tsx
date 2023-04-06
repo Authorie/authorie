@@ -1,6 +1,6 @@
 import type { XYCoord } from "react-dnd";
 import { useDragLayer } from "react-dnd";
-import type { RouterOutputs } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import ChapterCard from "./ChapterCard";
 
 function getItemStyles(

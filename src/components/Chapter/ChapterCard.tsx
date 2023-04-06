@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
+import { useEffect } from "react";
+import { useDrag, useDrop } from "react-dnd";
+import { getEmptyImage } from "react-dnd-html5-backend";
 import { HiEye, HiHeart, HiPencil } from "react-icons/hi2";
 import type { RouterOutputs } from "~/utils/api";
-import { useDrag, useDrop } from "react-dnd";
-import React, { useEffect } from "react";
-import { getEmptyImage } from "react-dnd-html5-backend";
 
 type props = {
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
@@ -35,34 +35,29 @@ const ChapterCard = ({
   };
   const originalIndex = findChapter(chapter.id).index;
 
-  const id = chapter.id;
-
   const [{ isDragging }, drag, preview] = useDrag(
-    () => ({
+    {
       type: "chapter",
-      item: { id, originalIndex },
+      item: { id: chapter.id, originalIndex },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
       end: (item, monitor) => {
         const { id: droppedId, originalIndex } = item;
-        const didDrop = monitor.didDrop();
-
-        if (!didDrop) {
+        if (!monitor.didDrop()) {
           moveChapter(droppedId, originalIndex);
         }
       },
       canDrag: isEdit,
-    }),
-    [id, originalIndex, moveChapter, isEdit]
+    },
+    [chapter.id, originalIndex, moveChapter, isEdit]
   );
-
   const [, drop] = useDrop(
     () => ({
       accept: "chapter",
       hover({ id: draggedId }: { id: string; originalIndex: number }) {
-        if (draggedId !== id) {
-          const { index: overIndex } = findChapter(id);
+        if (draggedId !== chapter.id) {
+          const { index: overIndex } = findChapter(chapter.id);
           moveChapter(draggedId, overIndex);
         }
       },
@@ -76,7 +71,6 @@ const ChapterCard = ({
 
   return (
     <div
-      key={id}
       ref={(node) => drag(drop(node))}
       onClick={() => void router.push(`/chapter/${chapter.id}`)}
       className={`z-10 flex h-16 w-full cursor-pointer items-center justify-between rounded-lg bg-white 
