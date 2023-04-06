@@ -1,6 +1,7 @@
 import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
+import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -14,16 +15,47 @@ import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
 import Comment from "~/components/Comment/Comment";
 import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { useReader } from "~/hooks/reader";
+import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
 
-const ChapterPage = () => {
+export async function getStaticPaths() {
+  const ssg = generateSSGHelper(null);
+  const chapterIds = await ssg.chapter.getAllIds.fetch();
+  return {
+    paths: chapterIds.map(({ id }) => ({
+      params: { chapterId: id },
+    })),
+    fallback: false,
+  };
+}
+
+export async function getStaticProps({ params }: GetStaticPropsContext) {
+  if (!params) return { props: {} };
+  const ssg = generateSSGHelper(null);
+  const chapterId = params.chapterId as string;
+  try {
+    const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+    return {
+      props: {
+        chapter,
+      },
+      revalidate: 60,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      notFound: true,
+    };
+  }
+}
+
+type props = InferGetStaticPropsType<typeof getStaticProps>;
+
+const ChapterPage = ({ chapter }: props) => {
   const router = useRouter();
   const chapterId = router.query.chapterId as string;
   const { status } = useSession();
   const utils = api.useContext();
-  const { data: chapter } = api.chapter.getData.useQuery({
-    id: chapterId,
-  });
   const { data: isLiked } = api.chapter.isLike.useQuery({
     id: chapterId,
   });
@@ -55,6 +87,7 @@ const ChapterPage = () => {
 
   useEffect(() => {
     readChapter.mutate({ id: chapterId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const likeMutation = api.chapter.like.useMutation({
