@@ -2,28 +2,35 @@ import DateInput from "@components/DateTimeInput/DateInput";
 import { Popover } from "@headlessui/react";
 import { useSelectDate, useSelectedDate } from "@hooks/selectedDate";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HiCalendar } from "react-icons/hi2";
 
 export const TimeMachine = () => {
   const selectDate = useSelectDate();
   const selectedDate = useSelectedDate();
+  const [date, setDate] = useState(selectedDate);
   const [error, setError] = useState({ isError: false, message: "" });
 
+  useEffect(() => {
+    setDate(selectedDate);
+  }, [selectedDate]);
+
   const setDatetimeHandler = (unit: dayjs.UnitType, value: number) => {
-    const date = dayjs(selectedDate).set(unit, value);
-    selectDate(date.toDate());
+    setDate((prev) => {
+      return dayjs(prev).set(unit, value).toDate();
+    });
   };
 
   const submitHandler = () => {
-    const isInvalid = !dayjs(selectedDate).isValid();
-    const isPast = dayjs().isAfter(selectedDate);
+    const isInvalid = !dayjs(date).isValid();
+    const isPast = dayjs().isAfter(date);
     if (isInvalid) {
       setError({ isError: true, message: "Invalid date" });
     } else if (!isPast) {
       setError({ isError: true, message: "Date must be in the past" });
     } else {
       setError({ isError: false, message: "" });
+      selectDate(date);
     }
   };
   return (
@@ -32,7 +39,7 @@ export const TimeMachine = () => {
         {({ close }) => (
           <>
             <DateInput
-              datetime={selectedDate}
+              datetime={date}
               setDay={(value: number) => setDatetimeHandler("date", value)}
               setMonth={(value: number) =>
                 setDatetimeHandler("month", value - 1)
@@ -43,7 +50,10 @@ export const TimeMachine = () => {
             />
             <div className="flex items-center justify-center gap-3">
               <button
-                onClick={() => close()}
+                onClick={() => {
+                  selectDate(undefined);
+                  close();
+                }}
                 className="rounded-lg border border-gray-500 px-2 py-1 text-xs text-gray-500 hover:bg-gray-300"
               >
                 Cancel

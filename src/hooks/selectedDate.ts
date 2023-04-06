@@ -6,11 +6,13 @@ type SelectedDateStore = {
   selectDate: (date: Date | undefined) => void;
 };
 
+const currentDate = new Date();
+
 const useSelectedDateStore = create<SelectedDateStore>()(
   devtools((set) => ({
-    selectedDate: new Date(),
+    selectedDate: currentDate,
     selectDate: (date: Date | undefined) =>
-      set(() => ({ selectedDate: date || new Date() })),
+      set(() => ({ selectedDate: date || currentDate })),
   }))
 );
 
