@@ -1,13 +1,13 @@
 import { BookStatus } from "@prisma/client";
-import { publicProcedure } from "@server/api/trpc";
-import { makePagination } from "@server/utils";
+import { publicProcedure } from "~/server/api/trpc";
+import { makePagination } from "~/server/utils";
 import { z } from "zod";
 
-const getAllChapters = publicProcedure
+const getFeeds = publicProcedure
   .input(
     z.object({
       categoryIds: z.string().cuid().array().optional(),
-      publishedAt: z.date().optional(),
+      publishedAt: z.date().default(new Date()),
       cursor: z.string().cuid().optional(),
       limit: z.number().int().default(20),
     })
@@ -16,7 +16,9 @@ const getAllChapters = publicProcedure
     const { categoryIds, publishedAt, cursor, limit } = input;
     const chapters = await ctx.prisma.chapter.findMany({
       where: {
-        publishedAt: publishedAt ? { lte: publishedAt } : {},
+        publishedAt: {
+          lte: publishedAt,
+        },
         book: {
           status: {
             in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
@@ -35,7 +37,7 @@ const getAllChapters = publicProcedure
           select: {
             id: true,
             title: true,
-            coverImage: true,
+            wallpaperImage: true,
           },
         },
         owner: {
@@ -47,6 +49,7 @@ const getAllChapters = publicProcedure
         },
         _count: {
           select: {
+            views: true,
             likes: true,
             comments: true,
           },
@@ -61,4 +64,4 @@ const getAllChapters = publicProcedure
     return makePagination(chapters, limit);
   });
 
-export default getAllChapters;
+export default getFeeds;

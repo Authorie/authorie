@@ -1,12 +1,11 @@
-import Image from "next/image";
-import EllipsisHorizontalIcon from "@heroicons/react/24/solid/EllipsisHorizontalIcon";
-
-import type { RouterOutputs } from "@utils/api";
-import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { api } from "@utils/api";
-import CommentInput from "./CommentInput";
-import { LikeButton, CommentButton } from "@components/action";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { HiEllipsisHorizontal } from "react-icons/hi2";
+import { CommentButton, LikeButton } from "~/components/action";
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
+import ReplyCommentInput from "./ReplyCommentInput";
 
 type props = {
   comment:
@@ -18,8 +17,12 @@ const Comment = ({ comment }: props) => {
   const { status } = useSession();
   const utils = api.useContext();
   const [openReplies, setOpenReplies] = useState(false);
-  const { data: isLike } = api.comment.isLike.useQuery({ id: comment.id });
-  const likeMutation = api.chapter.like.useMutation({
+  const { data: isLike } = api.comment.isLike.useQuery(
+    { id: comment.id },
+    { enabled: status === "authenticated" }
+  );
+  const [isLiked, setIsLiked] = useState(isLike);
+  const likeMutation = api.comment.like.useMutation({
     onMutate: async () => {
       await utils.comment.isLike.cancel();
       const previousLike = utils.comment.isLike.getData();
@@ -27,10 +30,11 @@ const Comment = ({ comment }: props) => {
       return { previousLike };
     },
     onSettled: () => {
+      void utils.comment.invalidate();
       void utils.book.invalidate();
     },
   });
-  const unlikeMutation = api.chapter.unlike.useMutation({
+  const unlikeMutation = api.comment.unlike.useMutation({
     onMutate: async () => {
       await utils.comment.isLike.cancel();
       const previousLike = utils.comment.isLike.getData();
@@ -44,17 +48,25 @@ const Comment = ({ comment }: props) => {
 
   const onLikeHandler = () => {
     if (likeMutation.isLoading && unlikeMutation.isLoading) return;
-    if (isLike) {
+    if (isLiked) {
       unlikeMutation.mutate({ id: comment.id });
+      setIsLiked(false);
+      return;
     } else {
       likeMutation.mutate({ id: comment.id });
+      setIsLiked(true);
+      return;
     }
   };
 
+  useEffect(() => {
+    setIsLiked(isLike);
+  }, [isLike]);
+
   return (
-    <div className="mt-3 rounded-xl bg-white py-1 pl-3 pr-1">
-      <div className="flex gap-3 ">
-        <div className="mt-4 h-8 w-8 overflow-hidden rounded-full">
+    <div className="my-2 rounded-xl bg-white px-1 pt-1">
+      <div className="flex gap-1 ">
+        <div className="mt-6 h-6 w-6 overflow-hidden rounded-full">
           <Image
             src={comment.user.image || "/placeholder_profile.png"}
             alt={`${comment.user.penname || "user"} profile image`}
@@ -63,50 +75,57 @@ const Comment = ({ comment }: props) => {
           />
         </div>
         <div className="flex grow flex-col">
-          <span className="font-semibold text-authGreen-600">
+          <span className="text-sm font-semibold text-authGreen-600">
             {comment.user.penname || ""}
           </span>
-          <div className="flex rounded-lg bg-gray-200 px-4 py-1">
+          <div className="flex rounded-lg bg-gray-200 px-2">
             {comment.image !== null && (
               <Image
                 src={comment.image}
                 alt={`${comment.user.penname || "user"} commment's image`}
               />
             )}
-            <div className="flex grow items-center justify-between">
+            <div className="flex h-8 grow items-center justify-between">
               <p className="text-sm">{comment.content}</p>
-              <EllipsisHorizontalIcon className="h-7 w-7" />
+              <HiEllipsisHorizontal className="h-7 w-7" />
             </div>
           </div>
-          <div className="mt-1 flex items-center gap-7">
-            <LikeButton
-              isAuthenticated={status === "authenticated"}
-              isLike={Boolean(isLike)}
-              numberOfLike={comment._count.likes}
-              onClickHandler={onLikeHandler}
-              small
-            />
-            {comment.parentCommentId === null && (
-              <CommentButton
-                numberOfComments={comment._count.replies}
-                onClickHandler={() => setOpenReplies((prev) => !prev)}
+          <div className="my-1 flex items-center justify-between pr-2">
+            <div className="flex gap-7">
+              <LikeButton
+                isAuthenticated={status === "authenticated"}
+                isLiked={Boolean(isLiked)}
+                numberOfLike={comment._count.likes}
+                onClickHandler={onLikeHandler}
                 small
               />
-            )}
-            <p className="text-xs text-dark-400">date time</p>
+              {comment.parentCommentId === null && (
+                <CommentButton
+                  numberOfComments={comment._count.replies}
+                  onClickHandler={() => setOpenReplies((prev) => !prev)}
+                  small
+                />
+              )}
+            </div>
+            <p className="text-xs text-dark-400">
+              {comment.createdAt.toDateString().split(" ").slice(1).join(" ")}
+            </p>
           </div>
         </div>
       </div>
       {openReplies &&
         "replies" in comment &&
         comment.replies.map((reply) => (
-          <div key={comment.id} className="ml-10">
+          <div key={comment.id} className="-mb-1 -mt-2 ml-7">
             <Comment comment={reply} />
           </div>
         ))}
       {openReplies && (
-        <div className="ml-10">
-          <CommentInput chapterId={comment.chapterId} />
+        <div className="ml-7">
+          <ReplyCommentInput
+            chapterId={comment.chapterId}
+            parentId={comment.id || undefined}
+          />
         </div>
       )}
     </div>

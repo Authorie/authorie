@@ -1,88 +1,90 @@
 import { BookStatus } from "@prisma/client";
-import { publicProcedure } from "@server/api/trpc";
+import { publicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const getAllComments = publicProcedure
   .input(z.object({ chapterId: z.string().cuid() }))
   .query(async ({ ctx, input }) => {
-    try {
-      await ctx.prisma.chapter.findFirstOrThrow({
-        where: {
-          id: input.chapterId,
-          book: {
-            status: {
-              in: [
-                BookStatus.PUBLISHED,
-                BookStatus.COMPLETED,
-                BookStatus.ARCHIVED,
-              ],
-            },
-          },
-          publishedAt: {
-            lte: new Date(),
+    const chapter = await ctx.prisma.chapter.findFirst({
+      where: {
+        id: input.chapterId,
+        book: {
+          status: {
+            in: [
+              BookStatus.PUBLISHED,
+              BookStatus.COMPLETED,
+              BookStatus.ARCHIVED,
+            ],
           },
         },
-        include: { book: true },
-      });
-    } catch (err) {
+        publishedAt: {
+          lte: new Date(),
+        },
+      },
+      include: { book: true },
+    });
+
+    if (!chapter) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Chapter not found",
-        cause: err,
       });
     }
 
-    try {
-      const comments = await ctx.prisma.chapterComment.findMany({
-        where: {
-          chapterId: input.chapterId,
+    return await ctx.prisma.chapterComment.findMany({
+      where: {
+        chapterId: input.chapterId,
+        parent: {
+          is: null,
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              penname: true,
-              image: true,
-            },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            penname: true,
+            image: true,
           },
-          _count: {
-            select: {
-              likes: true,
-              replies: true,
-            },
+        },
+        _count: {
+          select: {
+            likes: true,
+            replies: true,
           },
-          replies: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  penname: true,
-                  image: true,
-                },
-              },
-              _count: {
-                select: {
-                  likes: true,
-                  replies: true,
-                },
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                penname: true,
+                image: true,
               },
             },
+            _count: {
+              select: {
+                likes: true,
+                replies: true,
+              },
+            },
+            likes: {
+              where: {
+                userId: ctx.session?.user.id,
+              },
+            },
           },
         },
-        orderBy: {
-          createdAt: "desc",
+        likes: {
+          where: {
+            userId: ctx.session?.user.id,
+          },
         },
-      });
-
-      return comments;
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to get chapter comments",
-        cause: err,
-      });
-    }
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
   });
 
 export default getAllComments;

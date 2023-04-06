@@ -1,7 +1,7 @@
-import LoadingSpinner from "@components/ui/LoadingSpinner";
-import { useFollowCategory } from "@hooks/followedCategories";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import type { Category } from "@prisma/client";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
+import { useFollowCategory } from "~/hooks/followedCategories";
 
 type props = {
   isLogin: boolean;
@@ -29,7 +29,7 @@ const CategoryChoice = ({ isLogin, category }: props) => {
     <button
       disabled={followCategoryMutation.isLoading}
       onClick={onClickHandler}
-      className="flex items-center justify-center rounded-3xl bg-authGreen-500 p-3 text-sm font-semibold hover:bg-authGreen-600"
+      className="flex items-center justify-center rounded-lg border-2 border-authGreen-500 py-1 text-sm hover:bg-authGreen-600"
     >
       {followCategoryMutation.isLoading ? (
         <LoadingSpinner />

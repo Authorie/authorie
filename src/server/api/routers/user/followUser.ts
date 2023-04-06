@@ -1,47 +1,23 @@
-import { Prisma } from "@prisma/client";
-import { protectedProcedure } from "@server/api/trpc";
-import { TRPCError } from "@trpc/server";
+import { protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 
 const followUser = protectedProcedure
   .input(z.string())
   .mutation(async ({ ctx, input }) => {
-    try {
-      await ctx.prisma.followingFollower.create({
-        data: {
-          follower: {
-            connect: {
-              id: ctx.session.user.id,
-            },
-          },
-          following: {
-            connect: {
-              id: input,
-            },
+    await ctx.prisma.followingFollower.create({
+      data: {
+        follower: {
+          connect: {
+            id: ctx.session.user.id,
           },
         },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === "P2002") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `user does not exist: ${input}`,
-            cause: e,
-          });
-        }
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `you are already following ${input}`,
-          cause: e,
-        });
-      }
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: e,
-      });
-    }
+        following: {
+          connect: {
+            id: input,
+          },
+        },
+      },
+    });
   });
 
 export default followUser;

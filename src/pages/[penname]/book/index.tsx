@@ -1,105 +1,67 @@
-import Book from "@components/Book/Book";
-// import {
-//   Bars3CenterLeftIcon,
-//   MagnifyingGlassIcon,
-// } from "@heroicons/react/24/outline";
 import { BookStatus } from "@prisma/client";
-import { api } from "@utils/api";
-import Link from "next/link";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { appRouter } from "@server/api/root";
-import superjson from "superjson";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
+import BookList from "~/components/Book/BookList";
+import BookLoading from "~/components/Book/BookLoading";
+import { api } from "~/utils/api";
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-  const penname = context.query.penname as string;
-  const promises = [ssg.book.getAll.prefetch({ penname })];
-  if (session) promises.push(ssg.user.getData.prefetch(undefined));
-  await Promise.allSettled(promises);
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
+const BookPage = () => {
+  const router = useRouter();
+  const penname = router.query.penname as string;
+  const { data: session } = useSession();
+  const [openArchive, setOpenArchive] = useState(false);
+  const { data: user } = api.user.getData.useQuery(penname);
+  const { data: books, isLoading: bookIsLoading } = api.book.getAll.useQuery(
+    {
       penname,
     },
-  };
-};
-
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
-
-const BookPage = ({ penname }: props) => {
-  const { status } = useSession();
-  const { data: user } = api.user.getData.useQuery(undefined, {
-    enabled: status === "authenticated",
-  });
-  const { data: books } = api.book.getAll.useQuery({ penname });
-
+    { enabled: penname !== undefined }
+  );
+  const archiveBooks = books?.filter(
+    (book) => book.status === BookStatus.ARCHIVED
+  );
+  const nonarchiveBooks = books?.filter(
+    (book) => book.status !== BookStatus.ARCHIVED
+  );
   return (
-    <div className="mb-8 mt-6 min-w-[1024px]">
-      <div className="max-h-full rounded-lg bg-white p-4 px-6 shadow-lg">
-        {/* <div className="mb-5 flex justify-between">
-          <Bars3CenterLeftIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
-          <MagnifyingGlassIcon className="h-7 w-7 rounded-lg bg-dark-100 text-authGreen-600" />
-        </div> */}
-        {books &&
-          books.items.length === 0 &&
-          (user && user.penname === penname ? (
-            <div className="flex flex-col items-center gap-4">
-              <p>You still don&apos;t have any book yet. Wanna create one?</p>
-              <Link
-                href="/create/book"
-                className="rounded-lg bg-green-600 px-3 py-2 text-white hover:bg-green-700"
-              >
-                Create book now!
-              </Link>
+    <div className="mb-8 mt-6 w-[1024px]">
+      <div className={"max-h-full rounded-lg p-4 px-6 shadow-lg"}>
+        <div className="flex items-center justify-start">
+          {!openArchive ? (
+            <div
+              onClick={() => setOpenArchive(true)}
+              className="mb-3 flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gray-400 px-4 py-1 text-sm font-semibold text-white hover:bg-gray-500"
+            >
+              <HiOutlineArchiveBox className="h-5 w-5" />
+              <p>View Archived</p>
             </div>
           ) : (
-            <div>
-              <p>{`${penname} still has not published any book yet!`}</p>
+            <div
+              onClick={() => setOpenArchive(false)}
+              className="mb-3 flex cursor-pointer items-center justify-center gap-2 rounded-full bg-authGreen-400 px-4 py-1 text-sm font-semibold text-white hover:bg-authGreen-500"
+            >
+              <HiOutlineArrowUturnLeft className="h-5 w-5" />
+              <p>View Book Shelf</p>
             </div>
-          ))}
-        {books && (
-          <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-            {books.items.map(
-              (book) =>
-                book.status !== BookStatus.ARCHIVED && (
-                  <Book
-                    key={book.id}
-                    id={book.id}
-                    title={book.title}
-                    coverImage={book.coverImage}
-                    description={book.description}
-                    isOwner={book.isOwner}
-                    status={book.status}
-                    like={book.chapters.reduce(
-                      (acc, curr) => acc + curr._count.likes,
-                      0
-                    )}
-                    read={book.chapters.reduce(
-                      (acc, curr) => acc + curr.views,
-                      0
-                    )}
-                  />
-                )
-            )}
-          </div>
+          )}
+        </div>
+        {user && books && archiveBooks && nonarchiveBooks && (
+          <BookList
+            books={openArchive ? archiveBooks : nonarchiveBooks}
+            isOwner={user.id === session?.user.id}
+            isArchived={openArchive}
+            penname={penname}
+          />
         )}
+        {bookIsLoading && <BookLoading />}
       </div>
+      {openArchive && (
+        <p className="mt-4 text-sm text-gray-600">
+          Noted: Unarchive to make the book viewable again
+        </p>
+      )}
     </div>
   );
 };

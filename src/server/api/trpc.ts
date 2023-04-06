@@ -19,10 +19,14 @@
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 
+import { tracer } from "~/server/tracing";
 import { getServerAuthSession } from "../auth";
 import { prisma } from "../db";
+import { ratelimit } from "../ratelimit";
+import { s3 } from "../s3";
 
 type CreateContextOptions = {
+  ip?: string | undefined;
   session: Session | null;
 };
 
@@ -37,8 +41,11 @@ type CreateContextOptions = {
  */
 export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
+    ip: opts.ip,
     session: opts.session,
+    tracer: tracer,
     prisma,
+    ratelimit,
     s3,
   };
 };
@@ -53,10 +60,25 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the unstable_getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  const ip = parseIpFromReq(req);
 
   return createInnerTRPCContext({
+    ip,
     session,
   });
+};
+
+/**
+ * Helper to parse the IP address from a NextApiRequest
+ * @param req NextApiRequest
+ * @returns IP address of the request
+ */
+const parseIpFromReq = (req: NextApiRequest) => {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string") {
+    return forwardedFor.split(",")[0]?.trim();
+  }
+  return req.socket?.remoteAddress;
 };
 
 /**
@@ -65,8 +87,9 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
  * This is where the trpc api is initialized, connecting the context and
  * transformer
  */
-import { s3 } from "@server/s3";
+import { SpanKind } from "@opentelemetry/api";
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { NextApiRequest } from "next";
 import superjson from "superjson";
 
 const t = initTRPC
@@ -92,29 +115,46 @@ const t = initTRPC
 export const createTRPCRouter = t.router;
 
 /**
+ * Middleware that starts a new span for every request
+ */
+const startingActiveSpan = t.middleware(async ({ ctx, next, path }) => {
+  const span = ctx.tracer.startSpan(path, { kind: SpanKind.SERVER });
+  const result = await next({
+    ctx: {
+      ...ctx,
+    },
+  });
+  span.end();
+  return result;
+});
+
+/**
  * Public (unauthed) procedure
  *
  * This is the base piece you use to build new queries and mutations on your
  * tRPC API. It does not guarantee that a user querying is authorized, but you
  * can still access user session data if they are logged in
  */
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure.use(startingActiveSpan);
 
 /**
  * Reusable middleware that enforces users are logged in before running the
  * procedure
  */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+const enforceUserIsAuthed = startingActiveSpan.unstable_pipe(
+  ({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        // infers the `session` as non-nullable
+        ...ctx,
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
   }
-  return next({
-    ctx: {
-      // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
-    },
-  });
-});
+);
 
 /**
  * Protected (authed) procedure

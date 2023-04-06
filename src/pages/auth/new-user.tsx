@@ -1,11 +1,10 @@
-import LoadingSpinner from "@components/ui/LoadingSpinner";
-import { getServerAuthSession } from "@server/auth";
-import { api } from "@utils/api";
-import { type GetServerSidePropsContext } from "next";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   penname: z
@@ -16,24 +15,6 @@ const validationSchema = z.object({
 
 type ValidationSchema = z.infer<typeof validationSchema>;
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  if (!session || session.user.penname !== null) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: true,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
-};
-
 const NewUser = () => {
   const {
     register,
@@ -43,6 +24,17 @@ const NewUser = () => {
     resolver: zodResolver(validationSchema),
   });
   const router = useRouter();
+  useSession({
+    required: true,
+    onUnauthenticated() {
+      void router.replace("/auth/signIn");
+    },
+  });
+  api.user.getData.useQuery(undefined, {
+    onSuccess(data) {
+      if (data.penname) void router.replace("/");
+    },
+  });
   const updateUser = api.user.update.useMutation({
     onSuccess() {
       void router.replace("/");
@@ -65,7 +57,7 @@ const NewUser = () => {
         <input
           {...register("penname")}
           aria-invalid={errorsExist}
-          className={`focus:shadow-outline w-96 appearance-none rounded border py-2 px-3 leading-tight text-gray-700 shadow focus:outline-none ${
+          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${
             errorsExist ? "border-red-500" : ""
           }`}
           id="username"
@@ -89,7 +81,7 @@ const NewUser = () => {
         type="submit"
         disabled={updateUser.isLoading}
         aria-disabled={updateUser.isLoading}
-        className="flex h-10 w-32 items-center justify-center rounded-full bg-green-500 py-2 px-8 font-bold text-white hover:bg-green-600"
+        className="flex h-10 w-32 items-center justify-center rounded-full bg-green-500 px-8 py-2 font-bold text-white hover:bg-green-600"
       >
         {updateUser.isLoading ? <LoadingSpinner /> : <span>Confirm</span>}
       </button>

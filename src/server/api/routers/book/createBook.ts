@@ -1,5 +1,5 @@
-import { BookOwnerStatus, BookStatus, Prisma } from "@prisma/client";
-import { protectedProcedure } from "@server/api/trpc";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -33,34 +33,25 @@ const createBook = protectedProcedure
           message: "Cannot invite users to a non-initial book",
         });
       }
-      let users;
-      try {
-        users = await ctx.prisma.user.findMany({
-          where: {
-            id: {
-              in: invitees,
+      const users = await ctx.prisma.user.findMany({
+        where: {
+          id: {
+            in: invitees,
+          },
+        },
+        include: {
+          followers: {
+            where: {
+              followerId: ctx.session.user.id,
             },
           },
-          include: {
-            followers: {
-              where: {
-                followerId: ctx.session.user.id,
-              },
-            },
-            following: {
-              where: {
-                followingId: ctx.session.user.id,
-              },
+          following: {
+            where: {
+              followingId: ctx.session.user.id,
             },
           },
-        });
-      } catch (err) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Something went wrong",
-          cause: err,
-        });
-      }
+        },
+      });
 
       if (users.length !== invitees.length) {
         throw new TRPCError({
@@ -84,51 +75,35 @@ const createBook = protectedProcedure
         }
       });
     }
-    try {
-      return await ctx.prisma.book.create({
-        data: {
-          title,
-          description,
-          coverImage: coverImageUrl,
-          wallpaperImage: wallpaperImageUrl,
-          status: initialStatus,
-          owners: {
-            createMany: {
-              data: [
-                {
-                  userId: ctx.session.user.id,
-                  status: BookOwnerStatus.OWNER,
-                },
-                ...invitees.map((invitee) => ({
-                  userId: invitee,
-                  status: BookOwnerStatus.INVITEE,
-                })),
-              ],
-            },
-          },
-          categories: {
-            createMany: {
-              data: input.categoryIds.map((categoryId) => ({ categoryId })),
-            },
+
+    await ctx.prisma.book.create({
+      data: {
+        title,
+        description,
+        coverImage: coverImageUrl,
+        wallpaperImage: wallpaperImageUrl,
+        status: initialStatus,
+        owners: {
+          createMany: {
+            data: [
+              {
+                userId: ctx.session.user.id,
+                status: BookOwnerStatus.OWNER,
+              },
+              ...invitees.map((invitee) => ({
+                userId: invitee,
+                status: BookOwnerStatus.INVITEE,
+              })),
+            ],
           },
         },
-      });
-    } catch (e) {
-      console.error(e);
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Failed to create book",
-          cause: e,
-        });
-      } else {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "failed to create book",
-          cause: e,
-        });
-      }
-    }
+        categories: {
+          createMany: {
+            data: input.categoryIds.map((categoryId) => ({ categoryId })),
+          },
+        },
+      },
+    });
   });
 
 export default createBook;

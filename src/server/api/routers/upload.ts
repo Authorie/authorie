@@ -1,9 +1,9 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { env } from "@env/server.mjs";
 import { createId } from "@paralleldrive/cuid2";
 import { TRPCError } from "@trpc/server";
 import { createHash } from "crypto";
 import { z } from "zod";
+import { env } from "~/env.mjs";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 type ImageType = "png" | "jpeg";
@@ -38,7 +38,6 @@ export const uploadRouter = createTRPCRouter({
   uploadImage: protectedProcedure
     .input(
       z.object({
-        title: z.string().optional(), // deprecated
         image: z.string(),
       })
     )

@@ -1,5 +1,5 @@
-import { env } from "@env/client.mjs";
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { env } from "~/env.mjs";
 
 const useSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -8,7 +8,7 @@ const useSearch = () => {
     setEnableSearch(false);
     const delayDebounceFn = setTimeout(() => {
       setEnableSearch(true);
-    }, env.NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS);
+    }, +env.NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS);
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
   const searchTermChangeHandler = useCallback(

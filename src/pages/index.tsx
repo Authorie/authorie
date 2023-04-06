@@ -1,48 +1,15 @@
-import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import ChapterPost from "@components/Chapter/ChapterPost";
-import { useFollowedCategories } from "@hooks/followedCategories";
-import { useSelectedCategory } from "@hooks/selectedCategory";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
-import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
-import { Fragment } from "react";
-import superjson from "superjson";
+import dynamic from "next/dynamic";
+import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
+import { useFollowedCategories } from "~/hooks/followedCategories";
+import { useSelectedCategory } from "~/hooks/selectedCategory";
+import { useSelectedDate } from "~/hooks/selectedDate";
+import { api } from "~/utils/api";
+const ChapterFeed = dynamic(() => import("~/components/Chapter/ChapterFeed"));
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-
-  const promises = [
-    ssg.category.getAll.prefetch(),
-    ssg.chapter.getAll.prefetchInfinite({
-      limit: 10,
-    }),
-  ];
-  if (session) {
-    promises.push(ssg.category.getFollowed.prefetch());
-  }
-
-  await Promise.allSettled(promises);
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-    },
-  };
-};
-// TODO: Guard categories with auth
 const Home = () => {
-  const { data: session } = useSession();
+  const selectedDate = useSelectedDate();
+  const { status } = useSession();
   const { data: categories } = api.category.getAll.useQuery();
   const selectedCategories = useSelectedCategory();
   const followedCategories = useFollowedCategories();
@@ -52,10 +19,11 @@ const Home = () => {
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
-  const { data, isSuccess } = api.chapter.getAll.useInfiniteQuery(
+  const { data } = api.chapter.getFeeds.useInfiniteQuery(
     {
       limit: 10,
       categoryIds: categoryIds,
+      publishedAt: selectedDate,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,
@@ -64,16 +32,14 @@ const Home = () => {
 
   return (
     <div className="flex flex-col px-10 py-4">
-      <CategoryBoard isLogin={Boolean(session)} />
+      <CategoryBoard isLogin={status === "authenticated"} />
       <div className="flex flex-col gap-8">
-        {isSuccess &&
-          data?.pages.map((page, index) => (
-            <Fragment key={index}>
-              {page.items.map((chapter) => (
-                <ChapterPost key={chapter.id} chapter={chapter} />
-              ))}
-            </Fragment>
-          ))}
+        {data &&
+          data.pages
+            .flatMap((page) => page.items)
+            .map((chapter) => (
+              <ChapterFeed key={chapter.id} chapter={chapter} />
+            ))}
       </div>
     </div>
   );

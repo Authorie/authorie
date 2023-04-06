@@ -1,16 +1,16 @@
 import { Dialog } from "@headlessui/react";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import useSearch from "@hooks/search";
-import { api, type RouterOutputs } from "@utils/api";
+import { api } from "~/utils/api";
+import { useRouter } from "next/router";
 import { useState } from "react";
+import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
+import useSearch from "~/hooks/search";
 import SearchBookResult from "./SearchBookResult";
+import SearchChapterResult from "./SearchChapterResult";
 import SearchUserResult from "./SearchUserResult";
 
-const allCategory = ["Users", "Books"] as const;
+const allCategory = ["Users", "Books", "Chapters"] as const;
 
 type SearchCategory = (typeof allCategory)[number];
-
-type Books = RouterOutputs["search"]["searchBooks"]["items"];
 
 type props = {
   openDialog: boolean;
@@ -29,15 +29,18 @@ const categoryButtonClassName = (
 };
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
+  const router = useRouter();
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
-  const { data: users } = api.search.searchUsers.useQuery(
+  const { data: users } = api.search.searchUsers.useInfiniteQuery(
     {
       search: searchTerm,
+      limit: 3,
     },
     {
       enabled: openDialog && selectedCategory === "Users" && enableSearch,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
   const { data: books } = api.search.searchBooks.useInfiniteQuery(
@@ -53,18 +56,66 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
+  const { data: chapters } = api.search.searchChapters.useInfiniteQuery(
+    {
+      search: searchTerm,
+      limit: 3,
+    },
+    {
+      enabled: openDialog && selectedCategory === "Chapters" && enableSearch,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+
+  const redirectUserHandler = (penname: string) => () => {
+    void router.push(`/${penname}`);
+    onCloseDialog();
+  };
+  const redirectBookHandler = (penname: string, bookId: string) => () => {
+    void router.push(`/${penname}/book/${bookId}`);
+    onCloseDialog();
+  };
+  const redirectChapterHandler = (chapterId: string) => () => {
+    void router.push(`/chapter/${chapterId}`);
+    onCloseDialog();
+  };
 
   // TODO: handle loading, empty and error state
   const searchResults = (category: SearchCategory) => {
     switch (category) {
       case "Users":
-        return users?.items.map((user) => (
-          <SearchUserResult key={user.id} user={user} />
-        ));
+        return users?.pages
+          .flatMap((page) => page.items)
+          .map((user) => (
+            <SearchUserResult
+              key={user.id}
+              user={user}
+              onClickCard={redirectUserHandler(user.penname as string)}
+            />
+          ));
       case "Books":
         return books?.pages
-          .reduce((acc, page) => [...acc, ...page.items], [] as Books)
-          .map((book) => <SearchBookResult key={book.id} book={book} />);
+          .flatMap((page) => page.items)
+          .map((book) => (
+            <SearchBookResult
+              key={book.id}
+              book={book}
+              onClickCard={redirectBookHandler(
+                book.owners[0]?.user.penname as string,
+                book.id
+              )}
+            />
+          ));
+      case "Chapters":
+        return chapters?.pages
+          .flatMap((page) => page.items)
+          .map((chapter) => (
+            <SearchChapterResult
+              key={chapter.id}
+              chapter={chapter}
+              onClickCard={redirectChapterHandler(chapter.id)}
+            />
+          ));
     }
   };
 
@@ -78,12 +129,12 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
               Search
             </Dialog.Title>
             <button type="button" onClick={onCloseDialog}>
-              <XMarkIcon className="h-6 w-6 stroke-[3]" />
+              <HiOutlineXMark className="h-6 w-6 stroke-[3]" />
             </button>
           </div>
           <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="h-6 w-6 stroke-dark-400" />
+              <HiOutlineMagnifyingGlass className="h-6 w-6 stroke-dark-400" />
             </span>
             <input
               className="block w-96 rounded border p-2 pl-10 text-sm text-gray-900  focus:outline-none"

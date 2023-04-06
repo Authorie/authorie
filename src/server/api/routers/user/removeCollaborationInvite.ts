@@ -1,5 +1,5 @@
 import { BookOwnerStatus } from "@prisma/client";
-import { protectedProcedure } from "@server/api/trpc";
+import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -9,21 +9,31 @@ const removeCollaborationInvite = protectedProcedure
     const { bookId, userId } = input;
 
     // check if the book exists
-    let book;
-    try {
-      book = await ctx.prisma.book.findUniqueOrThrow({
-        where: {
-          id: bookId,
+    const book = await ctx.prisma.book.findFirst({
+      where: {
+        id: bookId,
+        owners: {
+          some: {
+            userId: ctx.session.user.id,
+            status: BookOwnerStatus.OWNER,
+          },
         },
-        include: {
-          owners: true,
+      },
+      include: {
+        owners: {
+          where: {
+            status: {
+              in: [BookOwnerStatus.INVITEE, BookOwnerStatus.COLLABORATOR],
+            },
+          },
         },
-      });
-    } catch (err) {
+      },
+    });
+
+    if (!book) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "book does not exist",
-        cause: err,
+        message: "book not found",
       });
     }
 
@@ -34,21 +44,7 @@ const removeCollaborationInvite = protectedProcedure
       });
     }
 
-    // check if the user is the owner of the book
-    if (
-      !book.owners.some(
-        (owner) =>
-          owner.userId === ctx.session.user.id &&
-          owner.status === BookOwnerStatus.OWNER
-      )
-    ) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "you are not the owner of this book",
-      });
-    }
-
-    if (book.owners.find((owner) => owner.userId === userId)) {
+    if (!book.owners.find((owner) => owner.userId === userId)) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "user is not a collaborator / invitee",

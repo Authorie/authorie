@@ -1,6 +1,6 @@
-/** @type {import('tailwindcss').Config} */
+import { type Config } from "tailwindcss";
 
-module.exports = {
+export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -12,6 +12,7 @@ module.exports = {
         current: "currentColor",
         white: "#ffffff",
         background: "#f1f1f1",
+        gold: "#F3C874",
         dark: {
           100: "#EDEDED",
           200: "#D9D9D9",
@@ -29,7 +30,12 @@ module.exports = {
           600: "#718F6B",
         },
         authBlue: {
-          500: "#6889A7",
+          300: "#86a1b9",
+          400: "#7694af",
+          500: "#6687a6",
+          600: "#597b99",
+          700: "#506e89",
+          800: "#466179",
         },
         authYellow: {
           300: "#FBE09C",
@@ -39,4 +45,4 @@ module.exports = {
     },
   },
   plugins: [],
-};
+} satisfies Config;

@@ -1,11 +1,16 @@
-import { EyeIcon, HeartIcon, StarIcon } from "@heroicons/react/24/outline";
-import StarIconSolid from "@heroicons/react/24/solid/StarIcon";
 import { BookStatus } from "@prisma/client";
-import { api } from "@utils/api";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
 import toast from "react-hot-toast";
+import {
+  HiOutlineEye,
+  HiOutlineHeart,
+  HiOutlineStar,
+  HiStar,
+} from "react-icons/hi2";
+import { api } from "~/utils/api";
 
 type props = {
   id: string;
@@ -20,7 +25,6 @@ type props = {
 
 const Book = ({
   title,
-  description,
   read,
   like,
   id,
@@ -30,8 +34,12 @@ const Book = ({
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
+  const { status: authStatus } = useSession();
   const penname = router.query.penname as string;
-  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
+  const { data: isFavorite } = api.book.isFavorite.useQuery(
+    { id: id },
+    { enabled: authStatus === "authenticated" }
+  );
   const moveState = api.book.moveState.useMutation({
     async onMutate(newBook) {
       await utils.book.getData.cancel();
@@ -72,10 +80,8 @@ const Book = ({
   });
 
   const onClickHandler = () => {
-    if (!isOwner) {
+    if (status !== BookStatus.ARCHIVED) {
       void router.push(`/${penname}/book/${id}`);
-    } else {
-      return;
     }
   };
 
@@ -104,79 +110,68 @@ const Book = ({
   return (
     <div
       onClick={onClickHandler}
-      className={`${"flex cursor-pointer transition duration-100 ease-in-out"} ${
-        isOwner ? "group/bookOwner" : "hover:-translate-y-1 hover:scale-[1.01]"
-      }`}
+      className={`${
+        status === BookStatus.ARCHIVED
+          ? ""
+          : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      } flex`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
-      <div className="relative flex w-52 flex-col rounded-l-lg bg-white pb-2 shadow-lg">
+      <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">
         {isOwner && (
           <>
+            {coverImage ? (
+              <Image src={coverImage} alt="book picture" fill />
+            ) : (
+              <div className="absolute h-full w-full bg-authGreen-400" />
+            )}
             <div
               className={`
               ${status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
               ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
               ${status === BookStatus.PUBLISHED ? "bg-green-400" : ""} 
               ${status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
-              ${"absolute top-0 left-0 z-10 px-2 text-xs text-white"}
+              ${status === BookStatus.ARCHIVED ? "hidden" : ""}
+              ${"absolute left-0 top-0 z-10 px-2 text-xs text-white"}
               `}
             >
               {status}
             </div>
-            {status === "DRAFT" && (
+            {status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}
-                className="absolute top-2 right-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
+                className="absolute right-2 top-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
               >
                 Publish now
               </button>
             )}
-            <div className="invisible absolute z-10 flex h-full w-52 flex-col items-center justify-center gap-6 bg-black/60 group-hover/bookOwner:visible">
-              <button
-                onClick={() => void router.push(`/${penname}/book/${id}`)}
-                className="w-36 border-2 border-white bg-transparent py-2 text-white hover:bg-authGreen-600"
-              >
-                View Book
+            {status === BookStatus.ARCHIVED && (
+              <button className="absolute right-2 top-2 z-10 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700">
+                Unarchive
               </button>
-              <button
-                onClick={() =>
-                  void router.push(`/${penname}/book/${id}/status`)
-                }
-                className="w-36 border-2 border-white bg-transparent py-2 text-white hover:bg-authGreen-600"
-              >
-                View Status
-              </button>
-            </div>
+            )}
           </>
         )}
-        <div className="relative h-28 w-full overflow-hidden rounded-tl-lg">
-          {coverImage ? (
-            <Image src={coverImage} alt="book picture" fill />
-          ) : (
-            <div className="h-full w-full bg-authGreen-400" />
-          )}
-          {!isOwner && (
-            <button onClick={toggleFavoriteHandler}>
-              {isFavorite ? (
-                <StarIcon className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
-              ) : (
-                <StarIconSolid className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
-              )}
-            </button>
-          )}
-        </div>
-        <div className="flex grow flex-col justify-between px-2 pt-2">
-          <div className="flex w-full flex-col justify-center gap-2">
-            <h1 className="font-bold">{title}</h1>
-            <p className="text-xs font-light line-clamp-6">{description}</p>
+        {!isOwner && authStatus === "authenticated" && (
+          <button onClick={toggleFavoriteHandler}>
+            {isFavorite ? (
+              <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+            ) : (
+              <HiStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+            )}
+          </button>
+        )}
+        <div className="z-10 flex grow flex-col justify-between">
+          <div className="mt-10 flex w-full flex-col items-center justify-center gap-2 px-3">
+            <h1 className="rounded-full bg-white/80 px-2 font-bold">{title}</h1>
           </div>
-          <div className="flex justify-between">
-            <div className="mt-2 flex items-center gap-1">
-              <EyeIcon className="h-5 w-5 text-authGreen-600" />
+          <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
+            <div className="flex items-center gap-1">
+              <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
               <p className="text-xs font-medium text-authGreen-600">{read}</p>
             </div>
-            <div className="mt-2 flex items-center gap-1">
-              <HeartIcon className="h-5 w-5 text-red-400" />
+            <div className="flex items-center gap-1">
+              <HiOutlineHeart className="h-5 w-5 text-red-400" />
               <p className="text-xs font-medium text-red-400">{like}</p>
             </div>
           </div>

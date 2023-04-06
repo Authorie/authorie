@@ -1,16 +1,16 @@
 import { Popover } from "@headlessui/react";
-import { PhotoIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
-import type { Category } from "@prisma/client";
-import { api } from "@utils/api";
-import { useSession } from "next-auth/react";
-import Image from "next/legacy/image";
+import type { Category, User } from "@prisma/client";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import * as z from "zod";
+import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
+import z from "zod";
+import { AddAuthorModal } from "~/components/action/AddAuthorModal";
+import useImageUpload from "~/hooks/imageUpload";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   title: z
@@ -23,83 +23,99 @@ const validationSchema = z.object({
 type ValidationSchema = z.infer<typeof validationSchema>;
 
 const CreateBook = () => {
+  const router = useRouter();
+  const utils = api.useContext();
+  const { data: categories } = api.category.getAll.useQuery();
+  const { data: user } = api.user.getData.useQuery();
+  const [addedCategories, setAddedCategories] = useState<Category[]>([]);
+  const [addedCollaborators, setAddedCollaborators] = useState<User[]>([]);
   const { imageData: bookCover, uploadHandler: setBookCover } =
     useImageUpload();
   const { imageData: bookWallpaper, uploadHandler: setBookWallpaper } =
     useImageUpload();
-  const router = useRouter();
-  const { data: session } = useSession({
-    required: true,
-    onUnauthenticated() {
-      void router.push("/auth/signin");
-    },
-  });
   const {
     register,
-    reset,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
   });
-  const utils = api.useContext();
-  const { data: categories } = api.category.getAll.useQuery();
+
   const bookCreateMutation = api.book.create.useMutation({
     onSuccess: async () => {
       await utils.book.invalidate();
     },
   });
   const uploadImageUrl = api.upload.uploadImage.useMutation();
-  const [addedCategories, setAddedCategories] = useState<Category[]>([]);
-  const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
-    try {
-      let bookCoverUrl;
-      let wallpaperImageUrl;
-      if (bookCover) {
-        bookCoverUrl = await uploadImageUrl.mutateAsync({
-          title: `${data.title}'s book cover image`,
-          image: bookCover,
-        });
-      }
-      if (bookWallpaper) {
-        wallpaperImageUrl = await uploadImageUrl.mutateAsync({
-          title: `${data.title}'s book cover image`,
-          image: bookWallpaper,
-        });
-      }
-      const promiseCreateBook = bookCreateMutation.mutateAsync({
-        title: data.title,
-        description: data.description,
-        categoryIds: addedCategories.map((category) => category.id),
-        coverImageUrl: bookCoverUrl ? bookCoverUrl : undefined,
-        wallpaperImageUrl: wallpaperImageUrl ? wallpaperImageUrl : undefined,
-      });
-      await toast.promise(promiseCreateBook, {
-        loading: `Creating a book called ${data.title}`,
-        success: `Created ${data.title} successfully!`,
-        error: "Error occured while creating book!",
-      });
-      reset();
-    } catch (err) {
-      toast("Error occured while creating book!");
+
+  const toggleCollaboratorsHandler = (collaborator: User) => {
+    if (addedCollaborators.includes(collaborator)) {
+      setAddedCollaborators(
+        addedCollaborators.filter((data) => data !== collaborator)
+      );
+    } else {
+      setAddedCollaborators([...addedCollaborators, collaborator]);
     }
   };
 
+  const submitHandler = handleSubmit(async ({ title, description }) => {
+    const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
+      bookCover
+        ? await uploadImageUrl.mutateAsync({
+            image: bookCover,
+          })
+        : undefined,
+      bookWallpaper
+        ? await uploadImageUrl.mutateAsync({
+            image: bookWallpaper,
+          })
+        : undefined,
+    ] as const);
+    const promiseCreateBook = bookCreateMutation.mutateAsync({
+      title,
+      description,
+      coverImageUrl,
+      wallpaperImageUrl,
+      invitees: addedCollaborators.map((data) => data.id),
+      categoryIds: addedCategories.map((category) => category.id),
+    });
+    await toast.promise(promiseCreateBook, {
+      loading: `Creating a book called ${title}`,
+      success: `Created ${title} successfully!`,
+      error: "Error occured while creating book!",
+    });
+    void router.push(`/${user?.penname as string}/book`);
+  });
+
   return (
     <form
-      onSubmit={(e) => void handleSubmit(onSubmit)(e)}
-      className="items-center rounded-b-2xl bg-white py-10 px-10"
+      onSubmit={(e) => void submitHandler(e)}
+      className="items-center rounded-b-2xl bg-white px-10 py-5"
     >
       <div className="flex flex-col gap-10">
-        <div className="relative flex h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pt-24 pb-11 drop-shadow-lg">
-          <div className="absolute top-0 left-0 right-0 -z-10 h-72 overflow-hidden rounded-t-lg">
+        <div className="relative flex min-h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pb-11 pt-24 drop-shadow-lg">
+          <div className="absolute left-0 right-0 top-0 -z-10 h-72 self-end overflow-hidden rounded-t-lg">
             {bookWallpaper ? (
-              <Image src={bookWallpaper} layout="fill" alt="book's wallpaper" />
+              <Image src={bookWallpaper} fill alt="book's wallpaper" />
             ) : (
               <div className="h-full w-full bg-authGreen-500"></div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-gray-100" />
+            <label
+              htmlFor="BookWallpaper"
+              className="absolute left-4 top-4 h-7 w-8"
+            >
+              <input
+                type="file"
+                accept="image/png, image/jpeg"
+                name="BookWallpaper"
+                id="BookWallpaper"
+                className="hidden cursor-pointer"
+                onChange={setBookWallpaper}
+              />
+              <HiOutlinePhoto className="h-8 w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
+            </label>
           </div>
           <label
             htmlFor="BookCover"
@@ -115,25 +131,13 @@ const CreateBook = () => {
             />
             <Image
               src={bookCover ? bookCover : "/placeholder_book_cover.png"}
-              alt="dummy-pic"
-              width={208}
-              height={288}
+              fill
+              alt="book's cover"
               className="rounded-md object-cover"
             />
-            <PhotoIcon className="absolute right-2 bottom-2 w-8 rounded-md bg-gray-100" />
+            <HiOutlinePhoto className="absolute bottom-2 right-2 h-8 w-8 rounded-md bg-gray-100" />
           </label>
           <div className="flex grow flex-col justify-end gap-2 pt-6">
-            <label htmlFor="BookWallpaper" className="relative h-7 w-8">
-              <input
-                type="file"
-                accept="image/png, image/jpeg"
-                name="BookWallpaper"
-                id="BookWallpaper"
-                className="hidden cursor-pointer"
-                onChange={setBookWallpaper}
-              />
-              <PhotoIcon className="w-8 cursor-pointer rounded-md bg-gray-100 px-0.5 drop-shadow-sm" />
-            </label>
             <div className="flex items-end gap-2">
               <input
                 aria-invalid={errors.title ? "true" : "false"}
@@ -156,26 +160,41 @@ const CreateBook = () => {
             </div>
             {errors.title && (
               <p className="text-xs text-red-400" role="alert">
-                {errors.title.message}
+                {errors.title.message?.toString()}
               </p>
             )}
             <div className="flex flex-col gap-1 pl-1">
               <div className="flex items-center gap-2">
                 <h5 className="text-sm text-gray-500">Author</h5>
                 <div className="flex items-center gap-2">
-                  <div className="flex w-80 items-center gap-2 overflow-x-auto rounded-xl bg-authGreen-300 px-2 py-1 ">
+                  <div className="flex w-96 items-center gap-2 overflow-x-auto rounded-xl bg-authGreen-300 px-2 py-1 ">
                     <span className="select-none rounded-full bg-authGreen-600 px-2 py-0.5 text-xs text-white">
-                      {session?.user.penname}
+                      {user?.penname || ""}
                     </span>
+                    {addedCollaborators.map((collaborator) => (
+                      <span
+                        onClick={() => toggleCollaboratorsHandler(collaborator)}
+                        key={collaborator.id}
+                        className="cursor-pointer select-none rounded-full bg-authGreen-600 px-2 py-0.5 text-xs text-white hover:bg-red-600"
+                      >
+                        {collaborator.penname}
+                      </span>
+                    ))}
                   </div>
                   <Popover className="relative">
+                    <Popover.Panel className="absolute bottom-0 left-7 z-10">
+                      <AddAuthorModal
+                        toogleCollaboratorsHandler={toggleCollaboratorsHandler}
+                        addedCollaborators={addedCollaborators}
+                      />
+                    </Popover.Panel>
                     <Popover.Button
                       className="rounded-full bg-white"
                       type="button"
                     >
-                      <div className="flex items-center justify-center rounded-xl bg-authGreen-300 p-1">
+                      <div className="flex items-center justify-center rounded-xl bg-authGreen-300 p-1 hover:bg-authGreen-500">
                         <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
-                          <PlusIcon className="h-3 w-3 stroke-[3]" />
+                          <HiOutlinePlus className="h-3 w-3 stroke-[3]" />
                         </div>
                       </div>
                       <p className="sr-only">open user list</p>
@@ -186,7 +205,7 @@ const CreateBook = () => {
               <div className="flex items-center gap-2">
                 <h5 className="text-sm text-gray-500">Category</h5>
                 <div className="flex items-center gap-2">
-                  <div className="flex w-80 items-center gap-2 overflow-x-auto rounded-xl bg-authYellow-300 px-2 py-1">
+                  <div className="flex w-96 flex-wrap items-center gap-2 rounded-xl bg-authYellow-300 px-2 py-1">
                     {addedCategories.length === 0 && <div className="h-5" />}
                     {addedCategories.map((category) => (
                       <span
@@ -231,9 +250,9 @@ const CreateBook = () => {
                         className="rounded-full bg-white"
                         type="button"
                       >
-                        <div className="flex items-center justify-center rounded-xl bg-authYellow-300 p-1">
+                        <div className="flex items-center justify-center rounded-xl bg-authYellow-300 p-1 hover:bg-authYellow-500">
                           <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
-                            <PlusIcon className="h-3 w-3 stroke-[3]" />
+                            <HiOutlinePlus className="h-3 w-3 stroke-[3]" />
                           </div>
                         </div>
                         <p className="sr-only">open category list</p>
@@ -266,19 +285,25 @@ const CreateBook = () => {
             </div>
             {errors.description && (
               <p className="text-xs text-red-400" role="alert">
-                {errors.description.message}
+                {errors.description.message?.toString()}
               </p>
             )}
           </div>
         </div>
-        <button
-          type="submit"
-          disabled={bookCreateMutation.isLoading}
-          aria-disabled={bookCreateMutation.isLoading}
-          className="self-end rounded-xl bg-slate-500 py-2 px-8 font-semibold text-white hover:bg-slate-700"
-        >
-          Save
-        </button>
+        <div className="flex justify-between">
+          <p className="text-sm text-gray-500">
+            Noted: You can only invite the author who follow you and you follow
+            back
+          </p>
+          <button
+            type="submit"
+            disabled={bookCreateMutation.isLoading}
+            aria-disabled={bookCreateMutation.isLoading}
+            className="rounded-xl bg-slate-500 px-8 py-2 font-semibold text-white hover:bg-slate-700"
+          >
+            Save
+          </button>
+        </div>
       </div>
     </form>
   );
