@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import Image from "next/image";
-import DeveloperInfoCard from "@components/Card/DeveloperInfoCard";
+import DeveloperInfoCard from "~/components/Card/DeveloperInfoCard";
 import { HiEnvelope } from "react-icons/hi2";
 
 const HomePage = () => {
@@ -27,7 +27,7 @@ const HomePage = () => {
         <h1 className="text-3xl font-bold">Our team</h1>
         <DeveloperInfoCard
           name={"Siriwudhi Sawaidee"}
-          img={"/FamePicture.jpg"}
+          img={"/FamePicture.jpeg"}
           position={"Lead Developer, Full-stack Developer"}
           quote={"....."}
           email={"....."}

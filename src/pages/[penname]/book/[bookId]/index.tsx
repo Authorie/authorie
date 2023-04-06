@@ -1,19 +1,7 @@
-import ChapterCard from "@components/Chapter/ChapterCard";
-import { EditButton } from "@components/action/EditButton";
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
 import type { Category } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
-import { getServerAuthSession } from "@server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "@utils/api";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -30,8 +18,11 @@ import {
   HiPhoto,
   HiStar,
 } from "react-icons/hi2";
-import superjson from "superjson";
 import z from "zod";
+import ChapterCard from "~/components/Chapter/ChapterCard";
+import { EditButton } from "~/components/action/EditButton";
+import useImageUpload from "~/hooks/imageUpload";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   title: z
@@ -41,66 +32,21 @@ const validationSchema = z.object({
   description: z.string().max(500, { message: "Description is too long" }),
 });
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-  const penname = context.query.penname as string;
-  const bookId = context.query.bookId as string;
-
-  if (z.string().cuid().safeParse(bookId).success) {
-    await ssg.book.getData.prefetch({ id: bookId });
-  } else {
-    return {
-      props: {
-        session,
-        bookId,
-        penname,
-        invalidBookId: true,
-      },
-    };
-  }
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-      bookId,
-      penname,
-    },
-  };
-};
-
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
-
-const BookContent = ({ bookId, penname, invalidBookId }: props) => {
+const BookContent = () => {
   const router = useRouter();
+  const bookId = router.query.bookId as string;
+  const penname = router.query.penname as string;
   const utils = api.useContext();
   const [isEdit, setIsEdit] = useState(false);
-  const { data: categories } = api.category.getAll.useQuery(undefined, {
-    enabled: !invalidBookId,
+  const { data: categories } = api.category.getAll.useQuery(undefined);
+  const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery({
+    id: bookId,
   });
-  const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery(
-    {
-      id: bookId,
-    },
-    {
-      enabled: !invalidBookId,
-    }
-  );
   console.log(isBookFetched);
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
   );
-  const { data: isFavorite } = api.book.isFavorite.useQuery(
-    { id: bookId },
-    { enabled: !invalidBookId }
-  );
+  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
   const {
     imageData: bookCover,
     uploadHandler: setBookCover,
@@ -340,7 +286,7 @@ const BookContent = ({ bookId, penname, invalidBookId }: props) => {
     });
   });
 
-  if (invalidBookId || (isBookFetched && !book)) {
+  if (isBookFetched && !book) {
     return (
       <div className="flex h-full flex-col items-center justify-center">
         <h2 className="text-3xl font-bold">Book not found</h2>

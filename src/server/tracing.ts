@@ -1,8 +1,8 @@
-import { env } from "@env/server.mjs";
 import { trace } from "@opentelemetry/api";
 import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
 import { PrismaInstrumentation } from "@prisma/instrumentation";
 import { configureOpentelemetry } from "@uptrace/node";
+import { env } from "~/env.mjs";
 
 function initializeTracing(serviceName: string) {
   configureOpentelemetry({

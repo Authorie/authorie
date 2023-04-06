@@ -1,10 +1,11 @@
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
+import dayjs from "dayjs";
+import { useCallback, useMemo, useState } from "react";
 import {
   useFollowedCategories,
   useSetFollowedCategories,
-} from "@hooks/followedCategories";
-import type { RouterOutputs } from "@utils/api";
-import { api } from "@utils/api";
-import { useCallback, useMemo, useState } from "react";
+} from "~/hooks/followedCategories";
 import CategoryBar from "./CategoryBar/CategoryBar";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
 import ChapterRankCard from "./ChapterRankCard";
@@ -15,20 +16,6 @@ type props = {
 };
 
 const CategoryBoard = ({ isLogin }: props) => {
-  const month = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
   const { data: leaderboard } = api.chapter.getLeaderboard.useQuery({
     limit: 6,
   });
@@ -79,41 +66,41 @@ const CategoryBoard = ({ isLogin }: props) => {
                   <span className="text-4xl">Month</span>
                 </div>
                 <span className="text-xl font-semibold text-authGreen-400">
-                  {month[new Date().getMonth()]}
+                  {dayjs().format("MMMM")}
                 </span>
               </div>
               <div className="flex gap-10">
                 <div className="flex gap-4">
                   {topChapters && (
                     <>
-                      {topChapters[1] && (
+                      {topChapters[1] && topChapters[1].book && (
                         <ChapterRankCard
                           rank={2}
                           chapterTitle={topChapters[1].title}
                           authorPenname={topChapters[1].owner.penname as string}
-                          image={topChapters[1].book?.coverImage || ""}
+                          image={topChapters[1].book.coverImage}
                           chapterId={topChapters[1].id}
-                          read={topChapters[1]._count.views || 0}
+                          read={topChapters[1]._count.views}
                         />
                       )}
-                      {topChapters[0] && (
+                      {topChapters[0] && topChapters[0].book && (
                         <ChapterRankCard
                           rank={1}
                           chapterTitle={topChapters[0].title}
                           authorPenname={topChapters[0].owner.penname as string}
-                          image={topChapters[0].book?.coverImage || ""}
+                          image={topChapters[0].book?.coverImage}
                           chapterId={topChapters[0].id}
-                          read={topChapters[0]._count.views || 0}
+                          read={topChapters[0]._count.views}
                         />
                       )}
-                      {topChapters[2] && (
+                      {topChapters[2] && topChapters[2].book && (
                         <ChapterRankCard
                           rank={3}
                           chapterTitle={topChapters[2].title}
                           authorPenname={topChapters[2].owner.penname as string}
-                          image={topChapters[2].book?.coverImage || ""}
+                          image={topChapters[2].book?.coverImage}
                           chapterId={topChapters[2].id}
-                          read={topChapters[2]._count.views || 0}
+                          read={topChapters[2]._count.views}
                         />
                       )}
                     </>
@@ -121,6 +108,7 @@ const CategoryBoard = ({ isLogin }: props) => {
                 </div>
                 <div className="flex flex-col gap-5 self-center">
                   {topChapters &&
+                    topChapters.length > 3 &&
                     topChapters
                       .slice(3)
                       .map((chapter, index) => (

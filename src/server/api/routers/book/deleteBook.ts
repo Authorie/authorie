@@ -1,5 +1,5 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { protectedProcedure } from "@server/api/trpc";
+import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 

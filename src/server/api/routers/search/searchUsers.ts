@@ -1,5 +1,5 @@
-import { publicProcedure } from "@server/api/trpc";
-import { makePagination } from "@server/utils";
+import { publicProcedure } from "~/server/api/trpc";
+import { makePagination } from "~/server/utils";
 import { z } from "zod";
 
 interface withFollowingFollower {

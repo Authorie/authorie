@@ -1,12 +1,6 @@
-import { AddAuthorModal } from "@components/action/AddAuthorModal";
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import useImageUpload from "@hooks/imageUpload";
 import type { Category, User } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
-import { api } from "@utils/api";
-import type { GetServerSidePropsContext } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -14,6 +8,9 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
 import z from "zod";
+import { AddAuthorModal } from "~/components/action/AddAuthorModal";
+import useImageUpload from "~/hooks/imageUpload";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   title: z
@@ -24,31 +21,6 @@ const validationSchema = z.object({
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/auth/signin",
-        permanent: false,
-      },
-    };
-  }
-
-  const ssg = generateSSGHelper(session);
-  const promise = [ssg.category.getAll.prefetch(), ssg.user.getData.prefetch()];
-  await Promise.all(promise);
-
-  return {
-    props: {
-      session,
-      trpcState: ssg.dehydrate(),
-    },
-  };
-};
 
 const CreateBook = () => {
   const router = useRouter();

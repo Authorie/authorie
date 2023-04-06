@@ -1,67 +1,61 @@
-import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
-import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
-import Comment from "@components/Comment/Comment";
-import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
-import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
 import { BookStatus } from "@prisma/client";
-import { getServerAuthSession } from "@server/auth";
-import { generateSSGHelper } from "@server/utils";
-import CharacterCount from "@tiptap/extension-character-count";
-import Color from "@tiptap/extension-color";
-import FontFamily from "@tiptap/extension-font-family";
-import Highlight from "@tiptap/extension-highlight";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
-import TextStyle from "@tiptap/extension-text-style";
-import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { api } from "@utils/api";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
+import { EditorContent } from "@tiptap/react";
+import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
+import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapterPopover";
+import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
+import Comment from "~/components/Comment/Comment";
+import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
+import { useReader } from "~/hooks/reader";
+import { generateSSGHelper } from "~/server/utils";
+import { api } from "~/utils/api";
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = generateSSGHelper(session);
-  const chapterId = context.query.chapterId as string;
-  await Promise.all([
-    ssg.chapter.getData.prefetch({ id: chapterId }),
-    ssg.comment.getAll.prefetch({ chapterId: chapterId }),
-    ssg.chapter.isLike.prefetch({ id: chapterId }),
-  ]);
+export async function getStaticPaths() {
+  const ssg = generateSSGHelper(null);
+  const chapterIds = await ssg.chapter.getAllIds.fetch();
   return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-      chapterId,
-    },
+    paths: chapterIds.map(({ id }) => ({
+      params: { chapterId: id },
+    })),
+    fallback: false,
   };
-};
+}
 
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
+export async function getStaticProps({ params }: GetStaticPropsContext) {
+  if (!params) return { props: {} };
+  const ssg = generateSSGHelper(null);
+  const chapterId = params.chapterId as string;
+  try {
+    const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+    return {
+      props: {
+        chapter,
+      },
+      revalidate: 60,
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      notFound: true,
+    };
+  }
+}
 
-const ChapterPage = ({ chapterId }: props) => {
+type props = InferGetStaticPropsType<typeof getStaticProps>;
+
+const ChapterPage = ({ chapter }: props) => {
+  const router = useRouter();
+  const chapterId = router.query.chapterId as string;
   const { status } = useSession();
   const utils = api.useContext();
-  const { data: chapter } = api.chapter.getData.useQuery({
-    id: chapterId,
-  });
   const { data: isLiked } = api.chapter.isLike.useQuery({
     id: chapterId,
   });
@@ -73,77 +67,7 @@ const ChapterPage = ({ chapterId }: props) => {
   } = api.comment.getAll.useQuery({
     chapterId: chapterId,
   });
-  const editor = useEditor({
-    content: "",
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        paragraph: {
-          HTMLAttributes: {
-            class: "text-[length:var(--editor-h2)]",
-          },
-        },
-        bulletList: {
-          HTMLAttributes: {
-            class: "list-disc px-4",
-          },
-        },
-        orderedList: {
-          HTMLAttributes: {
-            class: "list-decimal px-4",
-          },
-        },
-      }),
-      Underline,
-      Heading,
-      Highlight,
-      TextStyle,
-      FontFamily,
-      Color,
-      Link.configure({
-        HTMLAttributes: {
-          class:
-            "rounded shadow-md bg-white p-1 hover:underline hover:bg-slate-100 text-blue-500",
-        },
-      }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class:
-            "border-collapse m-0 select-all overflow-hidden w-full table-auto",
-        },
-      }),
-      TableRow.configure({
-        HTMLAttributes: {
-          class: "select-all",
-        },
-      }),
-      TableHeader.configure({
-        HTMLAttributes: {
-          class:
-            "border-slate-500 border-2 border-solid bg-slate-200 relative text-left select-all",
-        },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class:
-            "border-slate-500 border-2 border-solid w-20 text-left select-all",
-        },
-      }),
-      Image,
-      CharacterCount,
-    ],
-    editorProps: {
-      attributes: {
-        class: "px-4",
-      },
-    },
-    editable: false,
-    autofocus: false,
-    onUpdate: ({ editor }) => {
-      localStorage.setItem(chapterId, JSON.stringify(editor.getJSON()));
-    },
-  });
+  const editor = useReader("");
 
   useEffect(() => {
     if (!editor) return;
@@ -155,10 +79,15 @@ const ChapterPage = ({ chapterId }: props) => {
     } else {
       editor.commands.setContent(chapter.content as JSONContent);
     }
+    return () => {
+      if (localStorage)
+        localStorage.setItem(chapterId, JSON.stringify(editor.getJSON()));
+    };
   }, [editor, chapter, chapterId]);
 
   useEffect(() => {
     readChapter.mutate({ id: chapterId });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const likeMutation = api.chapter.like.useMutation({

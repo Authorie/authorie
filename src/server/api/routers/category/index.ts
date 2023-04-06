@@ -1,4 +1,4 @@
-import { createTRPCRouter } from "@server/api/trpc";
+import { createTRPCRouter } from "~/server/api/trpc";
 import followCategory from "./followCategory";
 import getAllCategories from "./getAllCategories";
 import unfollowCategory from "./unfollowCategory";

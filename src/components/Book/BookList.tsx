@@ -1,4 +1,4 @@
-import type { RouterOutputs } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import Link from "next/link";
 import Book from "./Book";
 

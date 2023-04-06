@@ -1,11 +1,11 @@
-import { CommentButton, LikeButton } from "@components/action";
+import { CommentButton, LikeButton } from "~/components/action";
 import type { Content } from "@tiptap/react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { api, type RouterOutputs } from "@utils/api";
+import { EditorContent } from "@tiptap/react";
+import { api, type RouterOutputs } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useReader } from "~/hooks/reader";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];
@@ -14,11 +14,7 @@ type props = {
 const ChapterFeed = ({ chapter }: props) => {
   const router = useRouter();
   const { status } = useSession();
-  const editor = useEditor({
-    editable: false,
-    content: chapter.content as Content,
-    extensions: [StarterKit],
-  });
+  const editor = useReader(chapter.content as Content);
   const { data: isLike } = api.comment.isLike.useQuery({ id: chapter.id });
 
   return (
@@ -30,7 +26,11 @@ const ChapterFeed = ({ chapter }: props) => {
       <div className="relative flex flex-col gap-1 px-8 py-4">
         <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/60 to-transparent" />
         <div className="absolute inset-0">
-          <Image src="/mockWallpaper.jpeg" alt="wallpaper" fill />
+          {chapter.book?.wallpaperImage ? (
+            <Image src={chapter.book.wallpaperImage} alt="wallpaper" fill />
+          ) : (
+            <div className="h-full w-full bg-authGreen-500"></div>
+          )}
         </div>
         <div className="z-10">
           <h2 className="my-1 text-2xl font-bold">{chapter.title}</h2>

@@ -1,4 +1,4 @@
-import { createTRPCRouter } from "@server/api/trpc";
+import { createTRPCRouter } from "~/server/api/trpc";
 import followUser from "./followUser";
 import getBookCollaborators from "./getBookCollaborators";
 import getFollowers from "./getFollowers";

@@ -1,4 +1,4 @@
-import type { RouterOutputs } from "@utils/api";
+import type { RouterOutputs } from "~/utils/api";
 import { useRouter } from "next/router";
 import { HiEye, HiHeart, HiPencil } from "react-icons/hi2";
 import type { MouseEvent } from "react";

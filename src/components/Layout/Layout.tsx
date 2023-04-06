@@ -1,4 +1,4 @@
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
@@ -39,7 +39,10 @@ const Layout = ({ children }: PropsWithChildren) => {
     );
   }
 
-  if (router.pathname.includes("/home")) {
+  if (
+    router.pathname.includes("/main/home") ||
+    router.pathname.includes("/main/report")
+  ) {
     return (
       <>
         <Head>

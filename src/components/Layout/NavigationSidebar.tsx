@@ -1,6 +1,3 @@
-import { Button, Link } from "@components/ui/NavigationItems";
-import { useSelectCategory } from "@hooks/selectedCategory";
-import type { RouterOutputs } from "@utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -15,7 +12,10 @@ import {
   HiOutlineMagnifyingGlass,
   HiPencil,
 } from "react-icons/hi2";
-const SearchModal = dynamic(() => import("@components/Search/SearchModal"));
+import { Button, Link } from "~/components/ui/NavigationItems";
+import { useSelectCategory } from "~/hooks/selectedCategory";
+import type { RouterOutputs } from "~/utils/api";
+const SearchModal = dynamic(() => import("~/components/Search/SearchModal"));
 
 type props = {
   user: RouterOutputs["user"]["getData"] | undefined;
@@ -73,11 +73,11 @@ const NavigationSidebar = ({ user }: props) => {
         </Link>
         {session && (
           <>
-            <Link href="/notifications">
+            <Link aria-label="/notifications" href="/404">
               <HiOutlineBell className="h-7 w-7" />
               <span className="hidden sm:inline-block">Notification</span>
             </Link>
-            <Link href="/messages">
+            <Link aria-label="/messages" href="/404">
               <HiOutlineChatBubbleOvalLeftEllipsis className="h-7 w-7" />
               <span className="hidden sm:inline-block">Messages</span>
             </Link>
@@ -139,14 +139,21 @@ const NavigationSidebar = ({ user }: props) => {
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1">
           <NextLink
-            className="text-xs font-light text-gray-500 hover:underline"
-            href="/home"
+            className="mt-2 text-xs font-light text-gray-500 hover:underline"
+            href="/main/home"
           >
-            About us
+            c About us
           </NextLink>
-          <div className="mb-2 text-gray-500">.</div>
+          <div className="text-sm text-gray-500">.</div>
+          <NextLink
+            className="mt-2 text-xs font-light text-gray-500 hover:underline"
+            href="/main/report"
+          >
+            Report
+          </NextLink>
+          <div className="text-sm text-gray-500">.</div>
           <p className="text-xs font-light text-gray-500">Authorie 2023</p>
         </div>
       </div>

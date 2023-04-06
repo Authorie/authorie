@@ -1,9 +1,9 @@
 import { Dialog } from "@headlessui/react";
-import useSearch from "@hooks/search";
-import { api } from "@utils/api";
+import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
+import useSearch from "~/hooks/search";
 import SearchBookResult from "./SearchBookResult";
 import SearchChapterResult from "./SearchChapterResult";
 import SearchUserResult from "./SearchUserResult";
