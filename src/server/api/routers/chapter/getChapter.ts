@@ -1,5 +1,5 @@
-import { publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { publicProcedure } from "~/server/api/trpc";
 
 const getChapter = publicProcedure
   .input(z.object({ id: z.string().cuid() }))
@@ -27,6 +27,11 @@ const getChapter = publicProcedure
             views: true,
             likes: true,
             comments: true,
+          },
+        },
+        chapterMarketHistories: {
+          where: {
+            userId: ctx.session?.user.id,
           },
         },
       },
