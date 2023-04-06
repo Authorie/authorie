@@ -1,49 +1,24 @@
-import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapterPopover";
-import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
-import Comment from "~/components/Comment/Comment";
-import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { BookStatus } from "@prisma/client";
-import { getServerAuthSession } from "~/server/auth";
-import { generateSSGHelper } from "~/server/utils";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api } from "~/utils/api";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
+import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapterPopover";
+import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
+import Comment from "~/components/Comment/Comment";
+import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { useReader } from "~/hooks/reader";
+import { api } from "~/utils/api";
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = generateSSGHelper(session);
-  const chapterId = context.query.chapterId as string;
-  await Promise.all([
-    ssg.chapter.getData.prefetch({ id: chapterId }),
-    ssg.comment.getAll.prefetch({ chapterId: chapterId }),
-    ssg.chapter.isLike.prefetch({ id: chapterId }),
-  ]);
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-      chapterId,
-    },
-  };
-};
-
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
-
-const ChapterPage = ({ chapterId }: props) => {
+const ChapterPage = () => {
+  const router = useRouter();
+  const chapterId = router.query.chapterId as string;
   const { status } = useSession();
   const utils = api.useContext();
   const { data: chapter } = api.chapter.getData.useQuery({
