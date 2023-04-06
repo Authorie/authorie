@@ -23,7 +23,7 @@ const CreateChapter = () => {
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
   >(null);
-  const editor = useEditor("");
+  const editor = useEditor("", true);
 
   const { data: user } = api.user.getData.useQuery(undefined);
   const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);

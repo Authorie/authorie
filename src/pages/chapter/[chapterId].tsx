@@ -14,7 +14,7 @@ import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapter
 import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
 import Comment from "~/components/Comment/Comment";
 import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
-import { useReader } from "~/hooks/reader";
+import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
 
@@ -33,20 +33,13 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   if (!params) return { props: {} };
   const ssg = generateSSGHelper(null);
   const chapterId = params.chapterId as string;
-  try {
-    const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
-    return {
-      props: {
-        chapter,
-      },
-      revalidate: 60,
-    };
-  } catch (err) {
-    console.error(err);
-    return {
-      notFound: true,
-    };
-  }
+  const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+  return {
+    props: {
+      chapter,
+    },
+    revalidate: 10,
+  };
 }
 
 type props = InferGetStaticPropsType<typeof getStaticProps>;
@@ -70,22 +63,12 @@ const ChapterPage = ({ chapter }: props) => {
   } = api.comment.getAll.useQuery({
     chapterId: chapterId,
   });
-  const editor = useReader("");
+  const editor = useEditor(chapter?.content as JSONContent, false);
 
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
-    if (!localStorage) return;
-    const localData = localStorage.getItem(chapterId);
-    if (localData) {
-      editor.commands.setContent(JSON.parse(localData) as JSONContent);
-    } else {
-      editor.commands.setContent(chapter.content as JSONContent);
-    }
-    return () => {
-      if (localStorage)
-        localStorage.setItem(chapterId, JSON.stringify(editor.getJSON()));
-    };
+    editor.commands.setContent(chapter.content as JSONContent);
   }, [editor, chapter, chapterId]);
 
   useEffect(() => {

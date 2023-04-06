@@ -52,7 +52,7 @@ export const Heading = BaseHeading.configure({ levels: [1, 2] }).extend({
   },
 });
 
-const extensions = [
+export const extensions = [
   Document,
   HardBreak,
   ListItem,
@@ -117,12 +117,12 @@ const extensions = [
   CharacterCount,
 ] as Extensions;
 
-export const useEditor = (content: Content) => {
+export const useEditor = (content: Content, editable: boolean) => {
   const editor = useTiptapEditor({
-    editable: true,
-    content: content,
+    editable,
+    content,
     extensions: extensions,
-    autofocus: "start",
+    autofocus: editable ? "start" : false,
     editorProps: {
       attributes: {
         class: "focus:outline-none",
