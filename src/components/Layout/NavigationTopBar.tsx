@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 
 const NavigationTopBar = () => {
   const router = useRouter();
-  console.log(router.pathname);
   return (
     <nav className="fixed top-0 z-20 w-full bg-white px-36 py-5">
       <div className="flex items-center gap-4 text-lg font-semibold">
@@ -28,14 +27,13 @@ const NavigationTopBar = () => {
         </NextLink>
         <div className="ml-16 flex items-center gap-2">
           <button
-            onClick={() => void router.push("/main/home")}
             className={`${
               router.pathname === "/main/home"
                 ? "bg-authGreen-500 text-white"
                 : ""
             } h-8 w-20 rounded-full hover:bg-gray-200`}
           >
-            Home
+            <NextLink href="/main/home">Home</NextLink>
           </button>
           <button
             onClick={() => void router.push("/main/report")}
@@ -45,7 +43,7 @@ const NavigationTopBar = () => {
                 : ""
             } h-8 w-20 rounded-full hover:bg-gray-200`}
           >
-            Report
+            <NextLink href="/main/report">Report</NextLink>
           </button>
         </div>
       </div>
