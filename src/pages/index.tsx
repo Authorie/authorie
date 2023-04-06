@@ -1,5 +1,4 @@
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
-import ChapterFeed from "@components/Chapter/ChapterFeed";
 import { useFollowedCategories } from "@hooks/followedCategories";
 import { useSelectedCategory } from "@hooks/selectedCategory";
 import { appRouter } from "@server/api/root";
@@ -9,7 +8,9 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import superjson from "superjson";
+const ChapterFeed = dynamic(() => import("@components/Chapter/ChapterFeed"));
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -36,9 +37,9 @@ export const getServerSideProps = async (
     },
   };
 };
-// TODO: Guard categories with auth
+
 const Home = () => {
-  const { data: session } = useSession();
+  const { status } = useSession();
   const { data: categories } = api.category.getAll.useQuery();
   const selectedCategories = useSelectedCategory();
   const followedCategories = useFollowedCategories();
@@ -60,7 +61,7 @@ const Home = () => {
 
   return (
     <div className="flex flex-col px-10 py-4">
-      <CategoryBoard isLogin={Boolean(session)} />
+      <CategoryBoard isLogin={status === "authenticated"} />
       <div className="flex flex-col gap-8">
         {data &&
           data.pages

@@ -1,39 +1,13 @@
 import ReadChapterPopover from "@components/Chapter/ReadChapterMenu/ReadChapterPopover";
 import ChapterCommentInput from "@components/Comment/ChapterCommentInput";
 import Comment from "@components/Comment/Comment";
-import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import { ChapterLikeButton } from "@components/action/ChapterLikeButton";
+import { useReader } from "@hooks/reader";
 import { BookStatus } from "@prisma/client";
 import { getServerAuthSession } from "@server/auth";
 import { generateSSGHelper } from "@server/utils";
-import CharacterCount from "@tiptap/extension-character-count";
-import Color from "@tiptap/extension-color";
-import FontFamily from "@tiptap/extension-font-family";
-import Highlight from "@tiptap/extension-highlight";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
-import TextStyle from "@tiptap/extension-text-style";
-import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import BulletList from "@tiptap/extension-bullet-list";
-import Document from "@tiptap/extension-document";
-import HardBreak from "@tiptap/extension-hard-break";
-import ListItem from "@tiptap/extension-list-item";
-import OrderedList from "@tiptap/extension-ordered-list";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-import Strike from "@tiptap/extension-strike";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import Gapcursor from "@tiptap/extension-gapcursor";
-import History from "@tiptap/extension-history";
-
+import { EditorContent } from "@tiptap/react";
 import { api } from "@utils/api";
 import type {
   GetServerSidePropsContext,
@@ -86,85 +60,7 @@ const ChapterPage = ({ chapterId }: props) => {
   } = api.comment.getAll.useQuery({
     chapterId: chapterId,
   });
-  const editor = useEditor({
-    content: "",
-    extensions: [
-      Document,
-      HardBreak,
-      ListItem,
-      Text,
-      Bold,
-      Italic,
-      Strike,
-      Dropcursor,
-      Gapcursor,
-      History,
-      Paragraph.configure({
-        HTMLAttributes: {
-          class: "text-[length:var(--editor-h2)]",
-        },
-      }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: "list-disc px-4",
-        },
-      }),
-
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: "list-decimal px-4",
-        },
-      }),
-      Underline,
-      Heading,
-      Highlight,
-      TextStyle,
-      FontFamily,
-      Color,
-      Link.configure({
-        HTMLAttributes: {
-          class:
-            "rounded shadow-md bg-white p-1 hover:underline hover:bg-slate-100 text-blue-500",
-        },
-      }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class:
-            "border-collapse m-0 select-all overflow-hidden w-full table-auto",
-        },
-      }),
-      TableRow.configure({
-        HTMLAttributes: {
-          class: "select-all",
-        },
-      }),
-      TableHeader.configure({
-        HTMLAttributes: {
-          class:
-            "border-slate-500 border-2 border-solid bg-slate-200 relative text-left select-all",
-        },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class:
-            "border-slate-500 border-2 border-solid w-20 text-left select-all",
-        },
-      }),
-      Image,
-      CharacterCount,
-    ],
-    editorProps: {
-      attributes: {
-        class: "px-4",
-      },
-    },
-    editable: false,
-    autofocus: false,
-    onUpdate: ({ editor }) => {
-      localStorage.setItem(chapterId, JSON.stringify(editor.getJSON()));
-    },
-  });
+  const editor = useReader("");
 
   useEffect(() => {
     if (!editor) return;
@@ -176,6 +72,10 @@ const ChapterPage = ({ chapterId }: props) => {
     } else {
       editor.commands.setContent(chapter.content as JSONContent);
     }
+    return () => {
+      if (localStorage)
+        localStorage.setItem(chapterId, JSON.stringify(editor.getJSON()));
+    };
   }, [editor, chapter, chapterId]);
 
   useEffect(() => {

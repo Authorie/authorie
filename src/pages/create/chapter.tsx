@@ -1,41 +1,16 @@
 import BookComboBox from "@components/Create/Chapter/BookComboBox";
 import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
-import { Heading } from "@components/Create/Chapter/TextEditorMenu/Heading";
 import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
 import DateTimeInputField from "@components/DateTimeInput/DateTimeInputField";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { Popover } from "@headlessui/react";
+import { useEditor } from "@hooks/editor";
 import { BookStatus, type Book, type Chapter } from "@prisma/client";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
-import CharacterCount from "@tiptap/extension-character-count";
-import Color from "@tiptap/extension-color";
-import Highlight from "@tiptap/extension-highlight";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
-import TextStyle from "@tiptap/extension-text-style";
-import Underline from "@tiptap/extension-underline";
 import type { JSONContent } from "@tiptap/react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import BulletList from "@tiptap/extension-bullet-list";
-import Document from "@tiptap/extension-document";
-import HardBreak from "@tiptap/extension-hard-break";
-import ListItem from "@tiptap/extension-list-item";
-import OrderedList from "@tiptap/extension-ordered-list";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-import Strike from "@tiptap/extension-strike";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import Gapcursor from "@tiptap/extension-gapcursor";
-import History from "@tiptap/extension-history";
-
+import { EditorContent } from "@tiptap/react";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
@@ -98,80 +73,8 @@ const CreateChapter = () => {
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
   >(null);
-  const editor = useEditor({
-    content: "",
-    extensions: [
-      Document,
-      HardBreak,
-      ListItem,
-      Text,
-      Bold,
-      Italic,
-      Strike,
-      Dropcursor,
-      Gapcursor,
-      History,
-      Paragraph.configure({
-        HTMLAttributes: {
-          class: "text-[length:var(--editor-h2)]",
-        },
-      }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: "list-disc px-4",
-        },
-      }),
+  const editor = useEditor("");
 
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: "list-decimal px-4",
-        },
-      }),
-      Underline,
-      Heading,
-      Highlight,
-      TextStyle,
-      Color,
-      Link.configure({
-        HTMLAttributes: {
-          class:
-            "rounded shadow-md bg-white p-1 hover:underline hover:bg-slate-100 text-blue-500",
-        },
-      }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class:
-            "border-collapse m-0 select-all overflow-hidden w-full table-auto",
-        },
-      }),
-      TableRow.configure({
-        HTMLAttributes: {
-          class: "select-all",
-        },
-      }),
-      TableHeader.configure({
-        HTMLAttributes: {
-          class:
-            "border-slate-500 border-2 border-solid bg-slate-200 relative text-left select-all",
-        },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class:
-            "border-slate-500 border-2 border-solid w-20 text-left select-all",
-        },
-      }),
-      Image,
-      CharacterCount,
-    ],
-    editorProps: {
-      attributes: {
-        class: "focus:outline-none px-4",
-      },
-    },
-    autofocus: "start",
-  });
   const { data: user } = api.user.getData.useQuery(undefined, {
     enabled: status === "authenticated",
   });
