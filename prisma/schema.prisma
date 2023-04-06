@@ -44,27 +44,28 @@ model Session {
 }
 
 model User {
-    id             String               @id @default(cuid())
-    penname        String?              @unique
-    name           String?
-    email          String?              @unique
-    emailVerified  DateTime?
-    image          String?
-    wallpaperImage String?
-    coin           Int                  @default(0)
-    bio            String               @default("")
-    accounts       Account[]
-    sessions       Session[]
-    categories     CategoriesOnUsers[]
-    following      FollowingFollower[]  @relation("following")
-    followers      FollowingFollower[]  @relation("followers")
-    ownedBooks     BookOwner[]
-    favorites      FavoriteBook[]
-    ownedChapters  Chapter[]
-    likedChapters  ChapterLike[]
-    comments       ChapterComment[]
-    likedComments  ChapterCommentLike[]
-    ChapterView    ChapterView[]
+    id                   String                 @id @default(cuid())
+    penname              String?                @unique
+    name                 String?
+    email                String?                @unique
+    emailVerified        DateTime?
+    image                String?
+    wallpaperImage       String?
+    coin                 BigInt                 @default(100000)
+    bio                  String                 @default("")
+    accounts             Account[]
+    sessions             Session[]
+    categories           CategoriesOnUsers[]
+    following            FollowingFollower[]    @relation("following")
+    followers            FollowingFollower[]    @relation("followers")
+    ownedBooks           BookOwner[]
+    favorites            FavoriteBook[]
+    ownedChapters        Chapter[]
+    likedChapters        ChapterLike[]
+    comments             ChapterComment[]
+    likedComments        ChapterCommentLike[]
+    ChapterView          ChapterView[]
+    ChapterMarketHistory ChapterMarketHistory[]
 
     @@map("users")
 }
@@ -185,20 +186,22 @@ model FavoriteBook {
 }
 
 model Chapter {
-    id          String           @id @default(cuid())
-    chapterNo   Int?
-    title       String
-    content     Json
-    publishedAt DateTime?
-    createdAt   DateTime         @default(now())
-    updatedAt   DateTime         @updatedAt
-    book        Book?            @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    bookId      String?
-    owner       User             @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    ownerId     String
-    views       ChapterView[]
-    likes       ChapterLike[]
-    comments    ChapterComment[]
+    id                   String                 @id @default(cuid())
+    chapterNo            Int?
+    title                String
+    content              Json
+    price                BigInt                 @default(0)
+    publishedAt          DateTime?
+    createdAt            DateTime               @default(now())
+    updatedAt            DateTime               @updatedAt
+    book                 Book?                  @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    bookId               String?
+    owner                User                   @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    ownerId              String
+    views                ChapterView[]
+    likes                ChapterLike[]
+    comments             ChapterComment[]
+    ChapterMarketHistory ChapterMarketHistory[]
 
     @@index([ownerId])
     @@index([bookId])
@@ -263,4 +266,18 @@ model ChapterCommentLike {
     @@index([userId])
     @@index([commentId])
     @@map("chapterCommentLikes")
+}
+
+model ChapterMarketHistory {
+    id        String   @id @default(cuid())
+    chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    chapterId String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId    String
+    price     BigInt
+    createdAt DateTime @default(now())
+
+    @@index([userId])
+    @@index([chapterId])
+    @@map("chapterMarketHistories")
 }
