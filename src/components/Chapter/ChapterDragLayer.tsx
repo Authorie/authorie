@@ -42,7 +42,7 @@ const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
     }));
 
   if (!isDragging) {
-    return;
+    return null;
   }
 
   return (
