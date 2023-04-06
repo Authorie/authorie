@@ -1,10 +1,10 @@
-import { CommentButton, LikeButton } from "~/components/action";
-import type { RouterOutputs } from "~/utils/api";
-import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { HiEllipsisHorizontal } from "react-icons/hi2";
+import { CommentButton, LikeButton } from "~/components/action";
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 import ReplyCommentInput from "./ReplyCommentInput";
 
 type props = {
@@ -17,7 +17,10 @@ const Comment = ({ comment }: props) => {
   const { status } = useSession();
   const utils = api.useContext();
   const [openReplies, setOpenReplies] = useState(false);
-  const { data: isLike } = api.comment.isLike.useQuery({ id: comment.id });
+  const { data: isLike } = api.comment.isLike.useQuery(
+    { id: comment.id },
+    { enabled: status === "authenticated" }
+  );
   const [isLiked, setIsLiked] = useState(isLike);
   const likeMutation = api.comment.like.useMutation({
     onMutate: async () => {

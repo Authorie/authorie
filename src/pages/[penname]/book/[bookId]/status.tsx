@@ -237,6 +237,8 @@ const StatusPage = () => {
         type: "draftWarning",
         action: () => void confirmDraftBookHandler(),
       });
+    } else {
+      void confirmDraftBookHandler();
     }
   };
 

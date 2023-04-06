@@ -1,5 +1,5 @@
 import { BookStatus } from "@prisma/client";
-import { api } from "~/utils/api";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
@@ -10,6 +10,7 @@ import {
   HiOutlineStar,
   HiStar,
 } from "react-icons/hi2";
+import { api } from "~/utils/api";
 
 type props = {
   id: string;
@@ -33,8 +34,12 @@ const Book = ({
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
+  const { status: authStatus } = useSession();
   const penname = router.query.penname as string;
-  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: id });
+  const { data: isFavorite } = api.book.isFavorite.useQuery(
+    { id: id },
+    { enabled: authStatus === "authenticated" }
+  );
   const moveState = api.book.moveState.useMutation({
     async onMutate(newBook) {
       await utils.book.getData.cancel();
@@ -135,7 +140,7 @@ const Book = ({
             {status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}
-                className="absolute right-2 top-2 z-10 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
+                className="absolute right-2 top-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
               >
                 Publish now
               </button>
@@ -147,7 +152,7 @@ const Book = ({
             )}
           </>
         )}
-        {!isOwner && (
+        {!isOwner && authStatus === "authenticated" && (
           <button onClick={toggleFavoriteHandler}>
             {isFavorite ? (
               <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />

@@ -27,5 +27,6 @@ export const useReader = (content: Content) => {
       TextStyle,
     ],
     autofocus: false,
+    editable: false,
   });
 };

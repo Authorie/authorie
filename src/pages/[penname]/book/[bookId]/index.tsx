@@ -2,6 +2,7 @@ import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -34,6 +35,7 @@ const validationSchema = z.object({
 
 const BookContent = () => {
   const router = useRouter();
+  const { status } = useSession();
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
   const utils = api.useContext();
@@ -354,7 +356,7 @@ const BookContent = () => {
                     ) : (
                       <div className="h-full w-full bg-authGreen-400" />
                     )}
-                    {!book.isOwner && (
+                    {!book.isOwner && status === "authenticated" && (
                       <button type="button" onClick={toggleFavoriteHandler}>
                         {isFavorite ? (
                           <HiOutlineStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />

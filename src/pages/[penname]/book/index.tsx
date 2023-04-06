@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
 import BookList from "~/components/Book/BookList";
+import BookLoading from "~/components/Book/BookLoading";
 import { api } from "~/utils/api";
 
 const BookPage = () => {
@@ -51,7 +52,7 @@ const BookPage = () => {
             penname={penname}
           />
         )}
-        {bookIsLoading && <p>Loading...</p>}
+        {bookIsLoading && <BookLoading />}
       </div>
       {openArchive && (
         <p className="mt-4 text-sm text-gray-600">

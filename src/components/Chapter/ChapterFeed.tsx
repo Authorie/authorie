@@ -1,11 +1,11 @@
-import { CommentButton, LikeButton } from "~/components/action";
 import type { Content } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api, type RouterOutputs } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { CommentButton, LikeButton } from "~/components/action";
 import { useReader } from "~/hooks/reader";
+import { api, type RouterOutputs } from "~/utils/api";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];
@@ -15,13 +15,17 @@ const ChapterFeed = ({ chapter }: props) => {
   const router = useRouter();
   const { status } = useSession();
   const editor = useReader(chapter.content as Content);
-  const { data: isLike } = api.comment.isLike.useQuery({ id: chapter.id });
+  const { data: isLike } = api.comment.isLike.useQuery(
+    { id: chapter.id },
+    { enabled: status === "authenticated" }
+  );
 
   return (
     <div
       onClick={() => void router.push(`/chapter/${chapter.id}`)}
-      className="max-w-5xl cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition duration-100 ease-in-out hover:bg-gray-100"
+      className="group/items relative max-w-5xl cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition duration-100 ease-in-out"
     >
+      <div className="invisible absolute z-20 h-full w-full bg-gray-500/20 group-hover/items:visible" />
       <div className="relative flex flex-col gap-1 px-8 py-4">
         <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/60 to-transparent" />
         <div className="absolute inset-0">
