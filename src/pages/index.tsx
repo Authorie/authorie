@@ -1,6 +1,7 @@
 import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
 import { useFollowedCategories } from "@hooks/followedCategories";
 import { useSelectedCategory } from "@hooks/selectedCategory";
+import { useSelectedDate } from "@hooks/selectedDate";
 import { appRouter } from "@server/api/root";
 import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
@@ -39,6 +40,7 @@ export const getServerSideProps = async (
 };
 
 const Home = () => {
+  const selectedDate = useSelectedDate();
   const { status } = useSession();
   const { data: categories } = api.category.getAll.useQuery();
   const selectedCategories = useSelectedCategory();
@@ -53,6 +55,7 @@ const Home = () => {
     {
       limit: 10,
       categoryIds: categoryIds,
+      publishedAt: selectedDate,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,
