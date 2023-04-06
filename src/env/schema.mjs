@@ -23,6 +23,14 @@ export const serverSchema = z.object({
   FACEBOOK_CLIENT_SECRET: z.string(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
+  R2_ACCOUNT_ID: z.string(),
+  R2_BUCKET_NAME: z.string(),
+  R2_ACCESS_KEY_ID: z.string(),
+  R2_SECRET_ACCESS_KEY: z.string(),
+  R2_OBJECT_URL: z.string(),
+  UPSTASH_REDIS_REST_URL: z.string().url(),
+  UPSTASH_REDIS_REST_TOKEN: z.string(),
+  UPTRACE_DSN: z.string().url(),
 });
 
 /**
@@ -31,7 +39,7 @@ export const serverSchema = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 export const clientSchema = z.object({
-  // NEXT_PUBLIC_CLIENTVAR: z.string(),
+  NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS: z.number(),
 });
 
 /**
@@ -41,5 +49,5 @@ export const clientSchema = z.object({
  * @type {{ [k in keyof z.infer<typeof clientSchema>]: z.infer<typeof clientSchema>[k] | undefined }}
  */
 export const clientEnv = {
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS: 1000,
 };

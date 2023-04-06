@@ -1,38 +1,79 @@
-import type { GetServerSideProps, NextPage } from "next";
-import Head from "next/head";
-import { useSession } from "next-auth/react";
-
-import user from "../mocks/user";
+import CategoryBoard from "@components/CategoryBoard/CategoryBoard";
+import { useFollowedCategories } from "@hooks/followedCategories";
+import { useSelectedCategory } from "@hooks/selectedCategory";
+import { useSelectedDate } from "@hooks/selectedDate";
+import { appRouter } from "@server/api/root";
+import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
-import NavigationSidebar from "@components/Navigation/NavigationSidebar";
+import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { api } from "@utils/api";
+import type { GetServerSidePropsContext } from "next";
+import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import superjson from "superjson";
+const ChapterFeed = dynamic(() => import("@components/Chapter/ChapterFeed"));
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
   const session = await getServerAuthSession(context);
+  const ssg = createProxySSGHelpers({
+    router: appRouter,
+    ctx: createInnerTRPCContext({ session }),
+    transformer: superjson,
+  });
+
+  const promises = [
+    ssg.category.getAll.prefetch(),
+    ssg.chapter.getFeeds.prefetchInfinite({
+      limit: 10,
+    }),
+  ];
+
+  await Promise.allSettled(promises);
   return {
-    props: { session },
+    props: {
+      trpcState: ssg.dehydrate(),
+      session,
+    },
   };
 };
 
-const Home: NextPage = () => {
-  const { data: session } = useSession();
+const Home = () => {
+  const selectedDate = useSelectedDate();
+  const { status } = useSession();
+  const { data: categories } = api.category.getAll.useQuery();
+  const selectedCategories = useSelectedCategory();
+  const followedCategories = useFollowedCategories();
+  const categoryIds =
+    selectedCategories === "all"
+      ? categories?.map((c) => c.id)
+      : selectedCategories === "following"
+      ? followedCategories.map((c) => c.id)
+      : [selectedCategories.id];
+  const { data } = api.chapter.getFeeds.useInfiniteQuery(
+    {
+      limit: 10,
+      categoryIds: categoryIds,
+      publishedAt: selectedDate,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
 
   return (
-    <>
-      <Head>
-        <title>Authorie</title>
-      </Head>
-      <main>
-        <NavigationSidebar
-          user={
-            session?.user && {
-              username: user.username,
-              coin: session.user.coin,
-              profileImage: user.profileImage,
-            }
-          }
-        />
-      </main>
-    </>
+    <div className="flex flex-col px-10 py-4">
+      <CategoryBoard isLogin={status === "authenticated"} />
+      <div className="flex flex-col gap-8">
+        {data &&
+          data.pages
+            .flatMap((page) => page.items)
+            .map((chapter) => (
+              <ChapterFeed key={chapter.id} chapter={chapter} />
+            ))}
+      </div>
+    </div>
   );
 };
 
