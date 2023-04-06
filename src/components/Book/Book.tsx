@@ -135,7 +135,7 @@ const Book = ({
             {status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}
-                className="absolute right-2 top-2 z-10 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
+                className="absolute right-2 top-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
               >
                 Publish now
               </button>
