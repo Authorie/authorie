@@ -139,14 +139,21 @@ const NavigationSidebar = ({ user }: props) => {
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1">
           <NextLink
-            className="text-xs font-light text-gray-500 hover:underline"
-            href="/home"
+            className="mt-2 text-xs font-light text-gray-500 hover:underline"
+            href="/main/home"
           >
-            About us
+            c About us
           </NextLink>
-          <div className="mb-2 text-gray-500">.</div>
+          <div className="text-sm text-gray-500">.</div>
+          <NextLink
+            className="mt-2 text-xs font-light text-gray-500 hover:underline"
+            href="/main/report"
+          >
+            Report
+          </NextLink>
+          <div className="text-sm text-gray-500">.</div>
           <p className="text-xs font-light text-gray-500">Authorie 2023</p>
         </div>
       </div>

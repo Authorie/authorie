@@ -4,6 +4,7 @@ import {
 } from "@hooks/followedCategories";
 import type { RouterOutputs } from "@utils/api";
 import { api } from "@utils/api";
+import dayjs from "dayjs";
 import { useCallback, useMemo, useState } from "react";
 import CategoryBar from "./CategoryBar/CategoryBar";
 import CategorySelectionBoard from "./CategorySelectionBoard/CategorySelectionBoard";
@@ -16,20 +17,6 @@ type props = {
 };
 
 const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
-  const month = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
   const { data: leaderboard } = api.chapter.getLeaderboard.useQuery({
     limit: 6,
   });
@@ -80,7 +67,7 @@ const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
                   <span className="text-4xl">Month</span>
                 </div>
                 <span className="text-xl font-semibold text-authGreen-400">
-                  {month[new Date().getMonth()]}
+                  {dayjs().format("MMMM")}
                 </span>
               </div>
               <div className="flex gap-10">
@@ -122,6 +109,7 @@ const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
                 </div>
                 <div className="flex flex-col gap-5 self-center">
                   {topChapters &&
+                    topChapters.length > 3 &&
                     topChapters
                       .slice(3)
                       .map((chapter, index) => (
@@ -145,7 +133,7 @@ const CategoryBoard = ({ isLogin, refetchFeed }: props) => {
         categories={followedCategories}
         openCategories={showCategories}
         onOpenCategories={onOpenCategoriesHandler}
-        refetchFeed={(date: Date) => void refetchFeed(date)}
+        refetchFeed={refetchFeed}
       />
     </>
   );
