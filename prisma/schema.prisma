@@ -51,7 +51,7 @@ model User {
     emailVerified          DateTime?
     image                  String?
     wallpaperImage         String?
-    coin                   BigInt                 @default(100000)
+    coin                   Int                    @default(100000)
     bio                    String                 @default("")
     accounts               Account[]
     sessions               Session[]
@@ -190,7 +190,7 @@ model Chapter {
     chapterNo              Int?
     title                  String
     content                Json
-    price                  BigInt                 @default(0)
+    price                  Int                    @default(0)
     publishedAt            DateTime?
     createdAt              DateTime               @default(now())
     updatedAt              DateTime               @updatedAt
@@ -274,7 +274,7 @@ model ChapterMarketHistory {
     chapterId String
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId    String
-    price     BigInt
+    price     Int
     createdAt DateTime @default(now())
 
     @@index([userId])
