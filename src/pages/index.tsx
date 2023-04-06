@@ -1,43 +1,11 @@
-import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
-import { appRouter } from "~/server/api/root";
-import { createInnerTRPCContext } from "~/server/api/trpc";
-import { getServerAuthSession } from "~/server/auth";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "~/utils/api";
-import type { GetServerSidePropsContext } from "next";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import superjson from "superjson";
+import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
 import { useFollowedCategories } from "~/hooks/followedCategories";
 import { useSelectedCategory } from "~/hooks/selectedCategory";
 import { useSelectedDate } from "~/hooks/selectedDate";
+import { api } from "~/utils/api";
 const ChapterFeed = dynamic(() => import("~/components/Chapter/ChapterFeed"));
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-
-  const promises = [
-    ssg.category.getAll.prefetch(),
-    ssg.chapter.getFeeds.prefetchInfinite({
-      limit: 10,
-    }),
-  ];
-
-  await Promise.allSettled(promises);
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-    },
-  };
-};
 
 const Home = () => {
   const selectedDate = useSelectedDate();

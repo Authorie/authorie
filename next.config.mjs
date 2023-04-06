@@ -6,6 +6,7 @@
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env.mjs"));
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withAxiom } from "next-axiom";
+import { withSuperjson } from "next-superjson";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -31,7 +32,21 @@ const config = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/messages",
+        destination: "/404",
+        permanent: true,
+      },
+      {
+        source: "/notifications",
+        destination: "/404",
+        permanent: true,
+      },
+    ];
+  },
 };
 export default withBundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(
-  withAxiom(config)
+  withAxiom(withSuperjson()(config))
 );

@@ -1,53 +1,15 @@
-import BookComboBox from "~/components/Create/Chapter/BookComboBox";
-import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
-import { BookStatus, type Book, type Chapter } from "@prisma/client";
-import { getServerAuthSession } from "~/server/auth";
-import { generateSSGHelper } from "~/server/utils";
+import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
-import { api } from "~/utils/api";
-import type { GetServerSidePropsContext } from "next";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useState } from "react";
+import BookComboBox from "~/components/Create/Chapter/BookComboBox";
+import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
+import { api } from "~/utils/api";
 const CreateChapterBoard = dynamic(
   () => import("~/components/Create/Chapter/CreateChapterBoard")
 );
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/auth/signin",
-        permanent: false,
-      },
-    };
-  }
-
-  const ssg = generateSSGHelper(session);
-  const promises = [
-    ssg.user.getData.prefetch(),
-    ssg.chapter.getDrafts.prefetch(),
-    ssg.search.searchBooks.prefetch({
-      search: {
-        userId: session.user.id,
-        status: [BookStatus.DRAFT, BookStatus.PUBLISHED],
-      },
-      limit: 5,
-    }),
-  ];
-  await Promise.allSettled(promises);
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-    },
-  };
-};
 
 const CreateChapter = () => {
   const [title, setTitle] = useState("");

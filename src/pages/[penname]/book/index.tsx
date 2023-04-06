@@ -1,38 +1,14 @@
-import BookList from "~/components/Book/BookList";
 import { BookStatus } from "@prisma/client";
-import { getServerAuthSession } from "~/server/auth";
-import { generateSSGHelper } from "~/server/utils";
-import { api } from "~/utils/api";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-} from "next";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
+import BookList from "~/components/Book/BookList";
+import { api } from "~/utils/api";
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = generateSSGHelper(session);
-  const penname = context.query.penname as string;
-  const promises = [ssg.user.getData.prefetch(penname)];
-  if (session) promises.push(ssg.user.getData.prefetch(undefined));
-  await Promise.allSettled(promises);
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-      penname,
-    },
-  };
-};
-
-type props = InferGetServerSidePropsType<typeof getServerSideProps>;
-
-const BookPage = ({ penname }: props) => {
+const BookPage = () => {
+  const router = useRouter();
+  const penname = router.query.penname as string;
   const { data: session } = useSession();
   const [openArchive, setOpenArchive] = useState(false);
   const { data: user } = api.user.getData.useQuery(penname);
