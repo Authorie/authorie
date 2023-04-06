@@ -11,7 +11,7 @@ const createChapter = protectedProcedure
       title: z.string(),
       content: z.unknown().transform((v) => v as Prisma.JsonObject),
       bookId: z.string().cuid().optional(),
-      price: z.number().int().min(0).nullish().default(null),
+      price: z.number().int().min(0).optional(),
       publishedAt: z
         .union([
           z.date().refine((date) => date.getTime() > Date.now()),
