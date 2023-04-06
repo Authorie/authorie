@@ -1,7 +1,7 @@
 import { CommentButton, LikeButton } from "@components/action";
+import { useReader } from "@hooks/reader";
 import type { Content } from "@tiptap/react";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { EditorContent } from "@tiptap/react";
 import { api, type RouterOutputs } from "@utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -14,11 +14,7 @@ type props = {
 const ChapterFeed = ({ chapter }: props) => {
   const router = useRouter();
   const { status } = useSession();
-  const editor = useEditor({
-    editable: false,
-    content: chapter.content as Content,
-    extensions: [StarterKit],
-  });
+  const editor = useReader(chapter.content as Content);
   const { data: isLike } = api.comment.isLike.useQuery({ id: chapter.id });
 
   return (
