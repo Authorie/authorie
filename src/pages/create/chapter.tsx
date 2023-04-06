@@ -77,6 +77,7 @@ const CreateChapter = () => {
   const { status } = useSession();
   const context = api.useContext();
   const [title, setTitle] = useState("");
+  const [publishedAt, setPublishedAt] = useState<Date | null>(null);
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
@@ -261,12 +262,14 @@ const CreateChapter = () => {
       setTitle(chapter.title);
       editor.commands.setContent(chapter.content as JSONContent);
       setBook(chapter.book as Book);
+      setPublishedAt(chapter.publishedAt);
       return;
     } else {
       setChapter(null);
       setTitle("");
       editor?.commands.setContent("");
       setBook(null);
+      setPublishedAt(null);
     }
   };
   const toggleBookHandler = (book: Book) => {
@@ -298,14 +301,20 @@ const CreateChapter = () => {
             onClickHandler={() => selectDraftHandler(undefined)}
           />
           {draftChapters &&
-            draftChapters.map((draftChapter) => (
-              <ChapterDraftCard
-                key={draftChapter.id}
-                title={draftChapter.title}
-                selected={chapter ? chapter.id === draftChapter.id : false}
-                onClickHandler={() => selectDraftHandler(draftChapter.id)}
-              />
-            ))}
+            draftChapters.map(
+              (draftChapter) =>
+                (!draftChapter.publishedAt ||
+                  new Date(new Date().getTime() + 60 * 60 * 1000) <
+                    draftChapter.publishedAt) && (
+                  <ChapterDraftCard
+                    key={draftChapter.id}
+                    title={draftChapter.title}
+                    selected={chapter ? chapter.id === draftChapter.id : false}
+                    onClickHandler={() => selectDraftHandler(draftChapter.id)}
+                    publishedAt={draftChapter.publishedAt}
+                  />
+                )
+            )}
         </ul>
       </div>
       <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow">
@@ -371,22 +380,35 @@ const CreateChapter = () => {
               />
             </div>
             <div className="flex justify-between bg-white px-4 py-4">
-              <button
-                type="button"
-                className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
-                disabled={chapter === null}
-                onClick={() => void deleteDraftChapterHandler()}
-              >
-                Delete
-              </button>
-              <div className="flex gap-3">
+              {(!publishedAt ||
+                new Date(new Date().getTime() + 60 * 60 * 1000) <
+                  publishedAt) && (
                 <button
                   type="button"
-                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
-                  onClick={() => void saveDraftChapterHandler()}
+                  className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white hover:bg-red-700 disabled:bg-gray-400"
+                  disabled={chapter === null}
+                  onClick={() => void deleteDraftChapterHandler()}
                 >
-                  Save
+                  Delete
                 </button>
+              )}
+              <div className="flex items-end gap-3">
+                {publishedAt && (
+                  <p className="text-xs font-semibold text-green-500">
+                    publish soon on: {publishedAt.toLocaleDateString()}
+                    {", "}
+                    {publishedAt.toLocaleTimeString()}
+                  </p>
+                )}
+                {!publishedAt && (
+                  <button
+                    type="button"
+                    className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
+                    onClick={() => void saveDraftChapterHandler()}
+                  >
+                    Save
+                  </button>
+                )}
                 <Popover>
                   <Popover.Panel className="relative">
                     <div className="absolute -right-32 bottom-2 z-10">

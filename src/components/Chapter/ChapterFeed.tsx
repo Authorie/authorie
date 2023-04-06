@@ -24,8 +24,9 @@ const ChapterFeed = ({ chapter }: props) => {
   return (
     <div
       onClick={() => void router.push(`/chapter/${chapter.id}`)}
-      className="max-w-5xl cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition duration-100 ease-in-out hover:bg-gray-100"
+      className="group/items relative max-w-5xl cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition duration-100 ease-in-out"
     >
+      <div className="invisible absolute z-20 h-full w-full bg-gray-500/20 group-hover/items:visible" />
       <div className="relative flex flex-col gap-1 px-8 py-4">
         <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/60 to-transparent" />
         <div className="absolute inset-0">
