@@ -31,6 +31,20 @@ const config = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/messages",
+        destination: "/404",
+        permanent: true,
+      },
+      {
+        source: "/notifications",
+        destination: "/404",
+        permanent: true,
+      },
+    ];
+  },
 };
 export default withBundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(
   withAxiom(config)
