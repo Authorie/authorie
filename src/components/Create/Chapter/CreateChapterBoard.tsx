@@ -137,7 +137,7 @@ const CreateChapterBoard = ({
         >
           Delete
         </button>
-        <div className="flex gap-3">
+        <div className="flex items-end gap-3">
           {selectedChapter?.publishedAt && (
             <p className="text-xs font-semibold text-green-500">
               publish soon on:{" "}
