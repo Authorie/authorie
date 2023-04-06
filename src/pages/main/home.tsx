@@ -27,7 +27,7 @@ const HomePage = () => {
         <h1 className="text-3xl font-bold">Our team</h1>
         <DeveloperInfoCard
           name={"Siriwudhi Sawaidee"}
-          img={"/FamePicture.jpg"}
+          img={"/FamePicture.jpeg"}
           position={"Lead Developer, Full-stack Developer"}
           quote={"....."}
           email={"....."}

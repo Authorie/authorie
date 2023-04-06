@@ -73,34 +73,34 @@ const CategoryBoard = ({ isLogin }: props) => {
                 <div className="flex gap-4">
                   {topChapters && (
                     <>
-                      {topChapters[1] && (
+                      {topChapters[1] && topChapters[1].book && (
                         <ChapterRankCard
                           rank={2}
                           chapterTitle={topChapters[1].title}
                           authorPenname={topChapters[1].owner.penname as string}
-                          image={topChapters[1].book?.coverImage || ""}
+                          image={topChapters[1].book.coverImage}
                           chapterId={topChapters[1].id}
-                          read={topChapters[1]._count.views || 0}
+                          read={topChapters[1]._count.views}
                         />
                       )}
-                      {topChapters[0] && (
+                      {topChapters[0] && topChapters[0].book && (
                         <ChapterRankCard
                           rank={1}
                           chapterTitle={topChapters[0].title}
                           authorPenname={topChapters[0].owner.penname as string}
-                          image={topChapters[0].book?.coverImage || ""}
+                          image={topChapters[0].book?.coverImage}
                           chapterId={topChapters[0].id}
-                          read={topChapters[0]._count.views || 0}
+                          read={topChapters[0]._count.views}
                         />
                       )}
-                      {topChapters[2] && (
+                      {topChapters[2] && topChapters[2].book && (
                         <ChapterRankCard
                           rank={3}
                           chapterTitle={topChapters[2].title}
                           authorPenname={topChapters[2].owner.penname as string}
-                          image={topChapters[2].book?.coverImage || ""}
+                          image={topChapters[2].book?.coverImage}
                           chapterId={topChapters[2].id}
-                          read={topChapters[2]._count.views || 0}
+                          read={topChapters[2]._count.views}
                         />
                       )}
                     </>

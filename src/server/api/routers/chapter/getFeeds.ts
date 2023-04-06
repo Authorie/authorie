@@ -37,7 +37,7 @@ const getFeeds = publicProcedure
           select: {
             id: true,
             title: true,
-            coverImage: true,
+            wallpaperImage: true,
           },
         },
         owner: {

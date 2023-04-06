@@ -4,7 +4,7 @@ import { HiEye } from "react-icons/hi2";
 
 type props = {
   chapterTitle: string;
-  image: string;
+  image: string | null;
   authorPenname: string;
   rank: number;
   chapterId: string;
