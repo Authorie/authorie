@@ -169,7 +169,10 @@ const StatusPage = ({ bookId, penname }: props) => {
   });
   const deleteBook = api.book.delete.useMutation({
     onSettled: () => {
-      void utils.book.invalidate();
+      void Promise.allSettled([
+        utils.book.getAll.invalidate({ penname }),
+        utils.book.getData.invalidate({ id: bookId }),
+      ]);
     },
   });
   const removeCollaborator = api.user.removeCollaborationInvite.useMutation({
@@ -196,7 +199,7 @@ const StatusPage = ({ bookId, penname }: props) => {
       return { prevData };
     },
     onSettled: () => {
-      void utils.book.invalidate();
+      void utils.book.getData.invalidate({ id: bookId });
     },
   });
 
@@ -233,7 +236,10 @@ const StatusPage = ({ bookId, penname }: props) => {
       resetHandler();
     },
     onSettled: () => {
-      void utils.book.invalidate();
+      void Promise.allSettled([
+        utils.book.getAll.invalidate({ penname }),
+        utils.book.getData.invalidate({ id: bookId }),
+      ]);
     },
   });
 
@@ -250,7 +256,6 @@ const StatusPage = ({ bookId, penname }: props) => {
       success: "Your book is in draft state now!",
       error: "Error occured during move state",
     });
-    router.reload();
   };
 
   const draftBookHandler = () => {
