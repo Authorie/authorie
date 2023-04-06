@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const createChapter = protectedProcedure
   .input(
@@ -11,6 +11,7 @@ const createChapter = protectedProcedure
       title: z.string(),
       content: z.unknown().transform((v) => v as Prisma.JsonObject),
       bookId: z.string().cuid().optional(),
+      price: z.number().int().min(0).nullish().default(null),
       publishedAt: z
         .union([
           z.date().refine((date) => date.getTime() > Date.now()),
@@ -21,7 +22,7 @@ const createChapter = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { chapterId, title, content, bookId, publishedAt } = input;
+    const { chapterId, title, content, bookId, price, publishedAt } = input;
     if (bookId) {
       const book = await ctx.prisma.book.findFirst({
         where: {
@@ -95,27 +96,33 @@ const createChapter = protectedProcedure
       await ctx.prisma.chapter.update({
         where: { id: chapterId },
         data: {
-          title: title,
-          content: content,
+          title,
+          content,
+          bookId,
+          price,
+          ownerId: ctx.session.user.id,
           publishedAt:
             publishedAt === null
               ? typeof publishedAt === "boolean"
                 ? new Date()
                 : publishedAt
               : null,
-          bookId,
-          ownerId: ctx.session.user.id,
         },
       });
     } else {
       await ctx.prisma.chapter.create({
         data: {
-          title: title,
-          content: content,
-          publishedAt:
-            typeof publishedAt === "boolean" ? new Date() : publishedAt,
+          title,
+          content,
           bookId,
+          price,
           ownerId: ctx.session.user.id,
+          publishedAt:
+            publishedAt === null
+              ? typeof publishedAt === "boolean"
+                ? new Date()
+                : publishedAt
+              : null,
         },
       });
     }
