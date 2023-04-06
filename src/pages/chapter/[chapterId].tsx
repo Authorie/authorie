@@ -56,9 +56,12 @@ const ChapterPage = ({ chapter }: props) => {
   const chapterId = router.query.chapterId as string;
   const { status } = useSession();
   const utils = api.useContext();
-  const { data: isLiked } = api.chapter.isLike.useQuery({
-    id: chapterId,
-  });
+  const { data: isLiked } = api.chapter.isLike.useQuery(
+    {
+      id: chapterId,
+    },
+    { enabled: status === "authenticated" }
+  );
   const readChapter = api.chapter.read.useMutation();
   const {
     data: comments,
