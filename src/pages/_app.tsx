@@ -1,9 +1,4 @@
-import Layout from "~/components/Layout/Layout";
-import { appRouter } from "~/server/api/root";
-import { createInnerTRPCContext } from "~/server/api/trpc";
-import { getServerAuthSession } from "~/server/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-import { api } from "~/utils/api";
 import { Analytics } from "@vercel/analytics/react";
 import type {
   GetServerSidePropsContext,
@@ -15,8 +10,13 @@ import type { AppProps } from "next/app";
 import type { ReactElement, ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 import superjson from "superjson";
+import Layout from "~/components/Layout/Layout";
+import { appRouter } from "~/server/api/root";
+import { createInnerTRPCContext } from "~/server/api/trpc";
+import { getServerAuthSession } from "~/server/auth";
+import { api } from "~/utils/api";
 
-import "../styles/globals.css";
+import "~/styles/globals.css";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
