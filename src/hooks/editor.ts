@@ -123,6 +123,11 @@ export const useEditor = (content: Content) => {
     content: content,
     extensions: extensions,
     autofocus: "start",
+    editorProps: {
+      attributes: {
+        class: "focus:outline-none",
+      },
+    },
   });
 
   return editor;

@@ -32,14 +32,20 @@ const DraftChapterBoard = ({
           onClickHandler={() => selectDraftHandler(null)}
         />
         {draftChapters &&
-          draftChapters.map((draftChapter) => (
-            <ChapterDraftCard
-              key={draftChapter.id}
-              title={draftChapter.title}
-              selected={draftChapter.id === selectedChapterId}
-              onClickHandler={() => selectDraftHandler(draftChapter)}
-            />
-          ))}
+          draftChapters.map(
+            (draftChapter) =>
+              (!draftChapter.publishedAt ||
+                new Date(new Date().getTime() + 60 * 60 * 1000) <
+                  draftChapter.publishedAt) && (
+                <ChapterDraftCard
+                  key={draftChapter.id}
+                  title={draftChapter.title}
+                  selected={draftChapter.id === selectedChapterId}
+                  onClickHandler={() => selectDraftHandler(draftChapter)}
+                  publishedAt={draftChapter.publishedAt}
+                />
+              )
+          )}
       </ul>
     </div>
   );
