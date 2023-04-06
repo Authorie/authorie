@@ -1,59 +1,20 @@
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { Analytics } from "@vercel/analytics/react";
-import type {
-  GetServerSidePropsContext,
-  InferGetServerSidePropsType,
-  NextPage,
-} from "next";
+import type { NextPage } from "next";
+import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import type { ReactElement, ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
-import superjson from "superjson";
 import Layout from "~/components/Layout/Layout";
-import { appRouter } from "~/server/api/root";
-import { createInnerTRPCContext } from "~/server/api/trpc";
-import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-  if (session) {
-    await ssg.user.getData.prefetch();
-    if (!session.user.penname) {
-      return {
-        redirect: {
-          destination: "/auth/new-user",
-          permanent: false,
-        },
-      };
-    }
-  }
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-      session,
-    },
-  };
-};
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
 
-type AppPropsWithLayout = AppProps<
-  InferGetServerSidePropsType<typeof getServerSideProps>
-> & {
+type AppPropsWithLayout = AppProps<{ session: Session | null }> & {
   Component: NextPageWithLayout;
 };
 
