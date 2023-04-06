@@ -1,57 +1,45 @@
 import BookComboBox from "@components/Create/Chapter/BookComboBox";
-import ChapterDraftCard from "@components/Create/Chapter/ChapterDraftCard";
-import TextEditorMenuBar from "@components/Create/Chapter/TextEditorMenu/TextEditorMenuBar";
-import DateTimeInputField from "@components/DateTimeInput/DateTimeInputField";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { Popover } from "@headlessui/react";
+import DraftChapterBoard from "@components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "@hooks/editor";
 import { BookStatus, type Book, type Chapter } from "@prisma/client";
-import { appRouter } from "@server/api/root";
-import { createInnerTRPCContext } from "@server/api/trpc";
 import { getServerAuthSession } from "@server/auth";
+import { generateSSGHelper } from "@server/utils";
 import type { JSONContent } from "@tiptap/react";
-import { EditorContent } from "@tiptap/react";
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@utils/api";
 import type { GetServerSidePropsContext } from "next";
-import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useState } from "react";
-import toast from "react-hot-toast";
-import superjson from "superjson";
-import z from "zod";
-
-const validationSchema = z.object({
-  title: z
-    .string()
-    .max(80, { message: "Your title is too long" })
-    .min(1, { message: "Your title is required" }),
-});
+const CreateChapterBoard = dynamic(
+  () => import("@components/Create/Chapter/CreateChapterBoard")
+);
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerAuthSession(context);
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: createInnerTRPCContext({ session }),
-    transformer: superjson,
-  });
-
-  if (session && session.user) {
-    const promises = [
-      ssg.user.getData.prefetch(),
-      ssg.chapter.getDrafts.prefetch(),
-      ssg.search.searchBooks.prefetch({
-        search: {
-          userId: session.user.id,
-          status: [BookStatus.DRAFT, BookStatus.PUBLISHED],
-        },
-        limit: 5,
-      }),
-    ];
-    await Promise.allSettled(promises);
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/auth/signin",
+        permanent: false,
+      },
+    };
   }
+
+  const ssg = generateSSGHelper(session);
+  const promises = [
+    ssg.user.getData.prefetch(),
+    ssg.chapter.getDrafts.prefetch(),
+    ssg.search.searchBooks.prefetch({
+      search: {
+        userId: session.user.id,
+        status: [BookStatus.DRAFT, BookStatus.PUBLISHED],
+      },
+      limit: 5,
+    }),
+  ];
+  await Promise.allSettled(promises);
 
   return {
     props: {
@@ -62,136 +50,30 @@ export const getServerSideProps = async (
 };
 
 const CreateChapter = () => {
-  const { status } = useSession();
-  const context = api.useContext();
   const [title, setTitle] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
-  const [animationParent] = useAutoAnimate();
   const [book, setBook] = useState<Book | null>(null);
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
   >(null);
   const editor = useEditor("");
 
-  const { data: user } = api.user.getData.useQuery(undefined, {
-    enabled: status === "authenticated",
-  });
-  const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined, {
-    enabled: status === "authenticated",
-  });
-  const createChapterMutation = api.chapter.create.useMutation();
-  const deleteChapterMutation = api.chapter.deleteDraft.useMutation();
-  const validateInput = () => {
-    const validationResult = validationSchema.safeParse({ title });
-    return validationResult.success ? undefined : validationResult.error;
-  };
-  const deleteDraftChapterHandler = async () => {
-    if (chapter) {
-      const promise = deleteChapterMutation.mutateAsync(
-        {
-          id: chapter.id,
-        },
-        {
-          async onSettled(data) {
-            await context.chapter.getDrafts.invalidate();
-            if (data) selectDraftHandler(undefined);
-          },
-        }
-      );
-      await toast.promise(promise, {
-        loading: "Deleting...",
-        success: "Deleted!",
-        error: "Error deleting",
-      });
-    } else {
-      toast.error("Chapter not saved yet");
-    }
-  };
-  const saveDraftChapterHandler = async () => {
-    if (!editor) return;
-    const validationError = validateInput();
-    if (validationError) {
-      setErrors({
-        title: validationError.formErrors.fieldErrors.title?.toString(),
-      });
-    } else {
-      const promise = createChapterMutation.mutateAsync(
-        {
-          chapterId: chapter ? chapter.id : undefined,
-          title,
-          content: editor.getJSON(),
-          bookId: book ? book.id : undefined,
-          publishedAt: null,
-        },
-        {
-          async onSettled(data) {
-            await context.chapter.getDrafts.invalidate();
-            if (data) selectDraftHandler(undefined, data);
-          },
-        }
-      );
-      await toast.promise(promise, {
-        loading: "Saving...",
-        success: "Saved!",
-        error: "Error saving",
-      });
-    }
-  };
-  const publishDraftChapterHandler = async (date?: Date) => {
-    if (!editor) return;
-    const validationError = validateInput();
-    if (!book) return;
-    if (validationError) {
-      setErrors({
-        title: validationError.formErrors.fieldErrors.title?.toString(),
-      });
-    } else {
-      const promise = createChapterMutation.mutateAsync(
-        {
-          chapterId: chapter ? chapter.id : undefined,
-          title: title,
-          content: editor.getJSON(),
-          bookId: book ? book.id : undefined,
-          publishedAt: date || true,
-        },
-        {
-          async onSettled(data) {
-            await context.chapter.getDrafts.invalidate();
-            if (data) selectDraftHandler(undefined, data);
-          },
-        }
-      );
-      // void router.push(`/${user?.penname as string}/book /${book.id}`);
-      await toast.promise(promise, {
-        loading: "Publishing...",
-        success: "Published!",
-        error: "Error publishing",
-      });
-    }
-  };
+  const { data: user } = api.user.getData.useQuery(undefined);
+  const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
+
   const selectDraftHandler = (
-    id: string | undefined,
-    chapter?: Chapter & { book: Book | null }
+    chapter: (Chapter & { book: Book | null }) | null
   ) => {
     if (!editor) return;
-    if (!chapter) chapter = draftChapters?.find((chapter) => chapter.id === id);
-    if (chapter !== undefined) {
-      setErrors({
-        title: undefined,
-      });
-      setChapter(chapter);
-      setTitle(chapter.title);
-      editor.commands.setContent(chapter.content as JSONContent);
-      setBook(chapter.book as Book);
-      return;
-    } else {
-      setChapter(null);
-      setTitle("");
-      editor?.commands.setContent("");
-      setBook(null);
-    }
+    setErrors({
+      title: undefined,
+    });
+    setChapter(chapter);
+    setTitle(chapter?.title || "");
+    editor.commands.setContent(chapter ? (chapter.content as JSONContent) : "");
+    setBook(chapter ? chapter.book : null);
   };
   const toggleBookHandler = (book: Book) => {
     setBook((prev) => {
@@ -201,37 +83,14 @@ const CreateChapter = () => {
       return book;
     });
   };
-  const editorFocusHandler = () => {
-    if (!editor) return;
-    editor.commands.focus();
-  };
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
-      <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-xl font-bold">Draft Chapters</h1>
-          <p className="text-xs">
-            Select one of previous drafts, or you can create a new one.
-          </p>
-        </div>
-        <ul ref={animationParent} className="flex flex-col gap-3">
-          <ChapterDraftCard
-            title="Create a new chapter"
-            selected={chapter === null}
-            onClickHandler={() => selectDraftHandler(undefined)}
-          />
-          {draftChapters &&
-            draftChapters.map((draftChapter) => (
-              <ChapterDraftCard
-                key={draftChapter.id}
-                title={draftChapter.title}
-                selected={chapter ? chapter.id === draftChapter.id : false}
-                onClickHandler={() => selectDraftHandler(draftChapter.id)}
-              />
-            ))}
-        </ul>
-      </div>
+      <DraftChapterBoard
+        draftChapters={draftChapters}
+        selectedChapterId={chapter?.id}
+        selectDraftHandler={selectDraftHandler}
+      />
       <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow">
         <div className="relative flex flex-col bg-gray-200 px-4 py-3">
           <div className="absolute inset-0 cursor-pointer">
@@ -283,60 +142,13 @@ const CreateChapter = () => {
           </div>
         </div>
         {editor && (
-          <>
-            <div className="flex h-1 grow flex-col overflow-y-auto bg-white px-4">
-              <div className="sticky top-0 z-10 my-2 flex items-center justify-center">
-                <TextEditorMenuBar editor={editor} />
-              </div>
-              <EditorContent
-                editor={editor}
-                className="my-3 w-[800px] grow cursor-text"
-                onClick={editorFocusHandler}
-              />
-            </div>
-            <div className="flex justify-between bg-white px-4 py-4">
-              <button
-                type="button"
-                className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
-                disabled={chapter === null}
-                onClick={() => void deleteDraftChapterHandler()}
-              >
-                Delete
-              </button>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
-                  onClick={() => void saveDraftChapterHandler()}
-                >
-                  Save
-                </button>
-                <Popover>
-                  <Popover.Panel className="relative">
-                    <div className="absolute -right-32 bottom-2 z-10">
-                      <DateTimeInputField
-                        initialDate={chapter ? chapter.publishedAt : null}
-                        label={"Confirm Publish"}
-                        onSubmit={(date: Date) =>
-                          void publishDraftChapterHandler(date)
-                        }
-                      />
-                    </div>
-                  </Popover.Panel>
-                  <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
-                    Set Publish Date
-                  </Popover.Button>
-                </Popover>
-                <button
-                  type="button"
-                  onClick={() => void publishDraftChapterHandler()}
-                  className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
-                >
-                  Publish Now
-                </button>
-              </div>
-            </div>
-          </>
+          <CreateChapterBoard
+            editor={editor}
+            title={title}
+            bookId={book?.id}
+            selectedChapter={chapter}
+            setErrors={setErrors}
+          />
         )}
       </div>
     </div>
