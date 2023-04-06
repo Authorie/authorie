@@ -3,7 +3,7 @@ import type { JSONContent } from "@tiptap/react";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
@@ -31,18 +31,21 @@ const CreateChapter = () => {
   const { data: user } = api.user.getData.useQuery(undefined);
   const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
 
-  const selectDraftHandler = (
-    chapter: (Chapter & { book: Book | null }) | null
-  ) => {
-    if (!editor) return;
-    setErrors({
-      title: undefined,
-    });
-    setChapter(chapter);
-    setTitle(chapter?.title || "");
-    editor.commands.setContent(chapter ? (chapter.content as JSONContent) : "");
-    setBook(chapter ? chapter.book : null);
-  };
+  const selectDraftHandler = useCallback(
+    (chapter: (Chapter & { book: Book | null }) | null) => {
+      if (!editor) return;
+      setErrors({
+        title: undefined,
+      });
+      setChapter(chapter);
+      setTitle(chapter?.title || "");
+      editor.commands.setContent(
+        chapter ? (chapter.content as JSONContent) : ""
+      );
+      setBook(chapter ? chapter.book : null);
+    },
+    [editor]
+  );
   const toggleBookHandler = (book: Book) => {
     setBook((prev) => {
       if (prev === book) {
@@ -53,20 +56,14 @@ const CreateChapter = () => {
   };
 
   useEffect(() => {
-    if (!editor) return;
-    setErrors({
-      title: undefined,
-    });
-    void refetch();
     if (selectedChapter) {
-      setChapter(selectedChapter);
-      setTitle(selectedChapter?.title || "");
-      editor.commands.setContent(
-        selectedChapter ? (selectedChapter.content as JSONContent) : ""
+      const schapter = draftChapters?.find(
+        (data) => data.id === selectedChapter.id
       );
-      setBook(selectedChapter ? selectedChapter.book : null);
+      if (!schapter) return;
+      selectDraftHandler(schapter);
     }
-  }, [editor]);
+  }, [selectDraftHandler, draftChapters, selectedChapter]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
