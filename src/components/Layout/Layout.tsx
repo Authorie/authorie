@@ -39,7 +39,10 @@ const Layout = ({ children }: PropsWithChildren) => {
     );
   }
 
-  if (router.pathname.includes("/home")) {
+  if (
+    router.pathname.includes("/main/home") ||
+    router.pathname.includes("/main/report")
+  ) {
     return (
       <>
         <Head>

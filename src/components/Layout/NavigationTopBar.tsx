@@ -1,13 +1,13 @@
 import Image from "next/image";
 import NextLink from "next/link";
-// import { useRouter } from "next/router";
+import { useRouter } from "next/router";
 
 const NavigationTopBar = () => {
-  //   const router = useRouter();
+  const router = useRouter();
   return (
     <nav className="fixed top-0 z-20 w-full bg-white px-36 py-5">
       <div className="flex items-center gap-4 text-lg font-semibold">
-        <NextLink href="/home">
+        <NextLink href="/main/home">
           <Image
             src="/authorie_logo.svg"
             alt="Authorie Logo"
@@ -26,18 +26,25 @@ const NavigationTopBar = () => {
           />
         </NextLink>
         <div className="ml-16 flex items-center gap-2">
-          {/* <button
-            onClick={() => void router.push("/home")}
-            className="h-8 w-20 rounded-full hover:bg-authGreen-200"
+          <button
+            className={`${
+              router.pathname === "/main/home"
+                ? "bg-authGreen-500 text-white"
+                : ""
+            } h-8 w-20 rounded-full hover:bg-gray-200`}
           >
-            Home
+            <NextLink href="/main/home">Home</NextLink>
           </button>
           <button
-            onClick={() => void router.push("/report")}
-            className="h-8 w-20 rounded-full hover:bg-authGreen-200"
+            onClick={() => void router.push("/main/report")}
+            className={`${
+              router.pathname === "/main/report"
+                ? "bg-authGreen-500 text-white"
+                : ""
+            } h-8 w-20 rounded-full hover:bg-gray-200`}
           >
-            Report
-          </button> */}
+            <NextLink href="/main/report">Report</NextLink>
+          </button>
         </div>
       </div>
     </nav>
