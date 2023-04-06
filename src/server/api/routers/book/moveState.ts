@@ -1,7 +1,7 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const moveState = protectedProcedure
   .input(
@@ -13,11 +13,10 @@ const moveState = protectedProcedure
         BookStatus.COMPLETED,
         BookStatus.ARCHIVED,
       ]),
-      force: z.boolean().default(false),
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { id, status, force } = input;
+    const { id, status } = input;
     const book = await ctx.prisma.book.findFirst({
       where: {
         id,
@@ -43,16 +42,6 @@ const moveState = protectedProcedure
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "initial status can only be changed to draft status",
-          });
-        }
-        if (
-          !force &&
-          book.owners.some((owner) => owner.status === BookOwnerStatus.INVITEE)
-        ) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `there are still invite(s) to collaborate in this book. 
-            please wait for their response or remove them first`,
           });
         }
         break;
