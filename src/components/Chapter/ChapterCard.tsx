@@ -1,7 +1,8 @@
-import type { RouterOutputs } from "~/utils/api";
+import dayjs from "dayjs";
 import { useRouter } from "next/router";
-import { HiEye, HiHeart, HiPencil } from "react-icons/hi2";
 import type { MouseEvent } from "react";
+import { HiEye, HiHeart, HiPencil } from "react-icons/hi2";
+import type { RouterOutputs } from "~/utils/api";
 
 type props = {
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
@@ -36,14 +37,13 @@ const ChapterCard = ({ chapter }: props) => {
           ))}
       </div>
       <div className="flex h-full flex-col items-end justify-end gap-1 py-2">
-        {chapter.publishedAt &&
-          new Date(new Date().getTime() + 60 * 60 * 1000) <
-            chapter.publishedAt && (
-            <HiPencil
-              onClick={onEditHandler}
-              className="h-8 w-8 rounded-xl border p-1 hover:bg-gray-200"
-            />
-          )}
+        {(chapter.publishedAt === null ||
+          dayjs().subtract(1, "hour").isBefore(chapter.publishedAt)) && (
+          <HiPencil
+            onClick={onEditHandler}
+            className="h-8 w-8 rounded-xl border p-1 hover:bg-gray-200"
+          />
+        )}
         <div className="flex gap-2">
           <div className="flex items-center gap-1 text-red-400">
             <HiHeart className="h-3 w-3" />

@@ -3,7 +3,7 @@ import type { JSONContent } from "@tiptap/react";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
@@ -14,12 +14,9 @@ const CreateChapterBoard = dynamic(
 
 const CreateChapter = () => {
   const router = useRouter();
+  const chapterId = router.query.chapterId as string | undefined;
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
-  });
-  const editChapterSelected = router.query.chapterId;
-  const { data: selectedChapter, refetch } = api.chapter.getData.useQuery({
-    id: editChapterSelected ? (editChapterSelected as string) : "",
   });
   const [title, setTitle] = useState("");
   const [book, setBook] = useState<Book | null>(null);
@@ -56,14 +53,14 @@ const CreateChapter = () => {
   };
 
   useEffect(() => {
-    if (selectedChapter) {
-      const schapter = draftChapters?.find(
-        (data) => data.id === selectedChapter.id
+    if (chapterId) {
+      const chapter = draftChapters?.find(
+        (chapter) => chapter.id === chapterId
       );
-      if (!schapter) return;
-      selectDraftHandler(schapter);
+      if (chapter) selectDraftHandler(chapter);
+      else void router.push("/create/chapter");
     }
-  }, [selectDraftHandler, draftChapters, selectedChapter]);
+  }, [router, chapterId, draftChapters, selectDraftHandler]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
