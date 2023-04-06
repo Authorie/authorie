@@ -14,16 +14,17 @@ import {
   HiHeart,
   HiOutlineChevronLeft,
   HiOutlineMagnifyingGlass,
-  HiOutlinePlusCircle,
   HiOutlineStar,
   HiPhoto,
   HiStar,
 } from "react-icons/hi2";
 import z from "zod";
-import ChapterCard from "~/components/Chapter/ChapterCard";
+import ChapterCardList from "~/components/Chapter/ChapterCardList";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DndProvider } from "react-dnd";
 
 const validationSchema = z.object({
   title: z
