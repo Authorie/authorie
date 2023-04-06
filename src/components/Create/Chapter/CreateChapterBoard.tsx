@@ -138,6 +138,14 @@ const CreateChapterBoard = ({
           Delete
         </button>
         <div className="flex gap-3">
+          {selectedChapter?.publishedAt && (
+            <p className="text-xs font-semibold text-green-500">
+              publish soon on:{" "}
+              {selectedChapter.publishedAt.toLocaleDateString()}
+              {", "}
+              {selectedChapter.publishedAt.toLocaleTimeString()}
+            </p>
+          )}
           <button
             type="button"
             className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
