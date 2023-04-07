@@ -18,6 +18,7 @@ const validationSchema = z.object({
 type props = {
   editor: Editor;
   title: string;
+  price: number | undefined;
   bookId: string | undefined;
   selectedChapter: Chapter | null;
   setErrors: (errors: { title: string | undefined }) => void;
@@ -27,6 +28,7 @@ const CreateChapterBoard = ({
   editor,
   selectedChapter,
   title,
+  price,
   bookId,
   setErrors,
 }: props) => {
@@ -102,6 +104,7 @@ const CreateChapterBoard = ({
         content: editor.getJSON(),
         bookId,
         publishedAt: date || true,
+        price: price,
       },
       {
         onSettled() {

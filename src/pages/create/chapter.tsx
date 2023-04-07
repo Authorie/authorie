@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
@@ -16,11 +17,12 @@ const CreateChapterBoard = dynamic(
 const CreateChapter = () => {
   const router = useRouter();
   const chapterId = router.query.chapterId as string | undefined;
+  const [priceError, setPriceError] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
   const [title, setTitle] = useState("");
-  const [price, setPrice] = useState();
+  const [price, setPrice] = useState<number>();
   const [book, setBook] = useState<Book | null>(null);
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
@@ -52,6 +54,25 @@ const CreateChapter = () => {
       }
       return book;
     });
+  };
+
+  const changePriceHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.trim();
+
+    if (input === "") {
+      setPriceError("");
+      setPrice(undefined);
+    } else {
+      const parsed = parseInt(input);
+
+      if (isNaN(parsed) || parsed < 0 || parsed.toString() !== input) {
+        setPriceError("Please enter a positive integer.");
+        setPrice(undefined);
+      } else {
+        setPriceError("");
+        setPrice(parsed);
+      }
+    }
   };
 
   useEffect(() => {
@@ -124,6 +145,8 @@ const CreateChapter = () => {
                   <input
                     className="selection: h-5 w-24 rounded-lg pl-3 pr-5 text-xs shadow-md outline-none focus:outline-none"
                     placeholder="0"
+                    onChange={changePriceHandler}
+                    value={price}
                   />
                   <Image
                     src="/authorie_coin_logo.svg"
@@ -132,6 +155,9 @@ const CreateChapter = () => {
                     height={30}
                     className="h-5 w-5"
                   />
+                  {priceError && (
+                    <p className="text-xs text-red-500">{priceError}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -144,6 +170,7 @@ const CreateChapter = () => {
             bookId={book?.id}
             selectedChapter={chapter}
             setErrors={setErrors}
+            price={price}
           />
         )}
       </div>
