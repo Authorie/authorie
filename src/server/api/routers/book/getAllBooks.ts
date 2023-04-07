@@ -47,9 +47,9 @@ const getAllBooks = publicProcedure
           },
         },
       },
-    } satisfies Prisma.BookFindManyArgs;
+    };
     if (!ctx.session?.user.id) {
-      bookFindManyArgs.where = {
+      const where = {
         status: {
           in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
         },
@@ -60,9 +60,10 @@ const getAllBooks = publicProcedure
             },
           },
         },
-      };
+      } satisfies Prisma.BookWhereInput;
+      bookFindManyArgs.where = where;
     } else {
-      bookFindManyArgs.where = {
+      const where = {
         OR: [
           {
             status: {
@@ -114,7 +115,8 @@ const getAllBooks = publicProcedure
             },
           },
         ],
-      };
+      } satisfies Prisma.BookWhereInput;
+      bookFindManyArgs.where = where;
     }
     return (await ctx.prisma.book.findMany(bookFindManyArgs)).map((book) =>
       computeIsOwner(ctx.session?.user.id, book)
