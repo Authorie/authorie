@@ -13,32 +13,43 @@ type WithIsOwner<T> = T & {
   isOwner: boolean;
   isInvited: boolean;
   isCollborator: boolean;
+  isRejected: boolean;
 };
 
 export function computeIsOwner<User extends withOwners>(
   userId: string | undefined,
   user: User
 ): WithIsOwner<User> {
+  let isOwner = false;
+  let isInvited = false;
+  let isCollborator = false;
+  let isRejected = false;
+  if (userId) {
+    for (const owner of user.owners) {
+      if (owner.user.id === userId) {
+        switch (owner.status) {
+          case BookOwnerStatus.OWNER:
+            isOwner = true;
+            break;
+          case BookOwnerStatus.INVITEE:
+            isInvited = true;
+            break;
+          case BookOwnerStatus.COLLABORATOR:
+            isCollborator = true;
+            break;
+          case BookOwnerStatus.REJECTED:
+            isRejected = true;
+            break;
+        }
+      }
+    }
+  }
+
   return {
     ...user,
-    isOwner: userId
-      ? user.owners.some(
-          (owner) =>
-            owner.status === BookOwnerStatus.OWNER && owner.user.id === userId
-        )
-      : false,
-    isInvited: userId
-      ? user.owners.some(
-          (owner) =>
-            owner.status === BookOwnerStatus.INVITEE && owner.user.id === userId
-        )
-      : false,
-    isCollborator: userId
-      ? user.owners.some(
-          (owner) =>
-            owner.status === BookOwnerStatus.COLLABORATOR &&
-            owner.user.id === userId
-        )
-      : false,
+    isOwner,
+    isInvited,
+    isCollborator,
+    isRejected,
   };
 }
