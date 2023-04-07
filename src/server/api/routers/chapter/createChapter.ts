@@ -102,11 +102,11 @@ const createChapter = protectedProcedure
           price,
           ownerId: ctx.session.user.id,
           publishedAt:
-            publishedAt === null
-              ? typeof publishedAt === "boolean"
-                ? new Date()
-                : publishedAt
-              : null,
+            publishedAt === null || publishedAt === false
+              ? null
+              : publishedAt === true
+              ? new Date()
+              : publishedAt,
         },
       });
     } else {
@@ -118,11 +118,11 @@ const createChapter = protectedProcedure
           price,
           ownerId: ctx.session.user.id,
           publishedAt:
-            publishedAt === null
-              ? typeof publishedAt === "boolean"
-                ? new Date()
-                : publishedAt
-              : null,
+            publishedAt === null || publishedAt === false
+              ? null
+              : publishedAt === true
+              ? new Date()
+              : publishedAt,
         },
       });
     }
