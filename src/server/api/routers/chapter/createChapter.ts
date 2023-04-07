@@ -18,7 +18,7 @@ const createChapter = protectedProcedure
           z.boolean(),
         ])
         .nullish()
-        .optional(),
+        .default(null),
     })
   )
   .mutation(async ({ ctx, input }) => {
