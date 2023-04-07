@@ -48,7 +48,7 @@ const getAllBooks = publicProcedure
         },
       },
     };
-    if (!ctx.session?.user.id) {
+    if (!ctx.session) {
       const where = {
         status: {
           in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
@@ -62,7 +62,7 @@ const getAllBooks = publicProcedure
         },
       } satisfies Prisma.BookWhereInput;
       bookFindManyArgs.where = where;
-    } else {
+    } else if (ctx.session.user.penname !== penname) {
       const where = {
         OR: [
           {
@@ -83,7 +83,11 @@ const getAllBooks = publicProcedure
                   {
                     userId: ctx.session?.user.id,
                     status: {
-                      in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+                      in: [
+                        BookOwnerStatus.OWNER,
+                        BookOwnerStatus.COLLABORATOR,
+                        BookOwnerStatus.INVITEE,
+                      ],
                     },
                   },
                 ],
@@ -117,7 +121,17 @@ const getAllBooks = publicProcedure
         ],
       } satisfies Prisma.BookWhereInput;
       bookFindManyArgs.where = where;
+    } else {
+      const where = {
+        owners: {
+          some: {
+            userId: ctx.session?.user.id,
+          },
+        },
+      } satisfies Prisma.BookWhereInput;
+      bookFindManyArgs.where = where;
     }
+
     return (await ctx.prisma.book.findMany(bookFindManyArgs)).map((book) =>
       computeIsOwner(ctx.session?.user.id, book)
     );
