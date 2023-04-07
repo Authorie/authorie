@@ -1,6 +1,6 @@
-import { BookStatus } from "@prisma/client";
-import { publicProcedure } from "~/server/api/trpc";
+import { BookOwnerStatus, BookStatus, type Prisma } from "@prisma/client";
 import { z } from "zod";
+import { publicProcedure } from "~/server/api/trpc";
 import { computeIsOwner } from "./utils";
 
 const getAllBooks = publicProcedure
@@ -49,7 +49,7 @@ const getAllBooks = publicProcedure
       },
     };
     if (!ctx.session?.user.id) {
-      bookFindManyArgs.where = {
+      const where = {
         status: {
           in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
         },
@@ -60,9 +60,10 @@ const getAllBooks = publicProcedure
             },
           },
         },
-      };
+      } satisfies Prisma.BookWhereInput;
+      bookFindManyArgs.where = where;
     } else {
-      bookFindManyArgs.where = {
+      const where = {
         OR: [
           {
             status: {
@@ -70,16 +71,22 @@ const getAllBooks = publicProcedure
             },
             owners: {
               some: {
-                user: {
-                  AND: [
-                    {
-                      penname: penname,
+                AND: [
+                  {
+                    status: {
+                      in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
                     },
-                    {
-                      id: ctx.session.user.id,
+                    user: {
+                      penname,
                     },
-                  ],
-                },
+                  },
+                  {
+                    userId: ctx.session?.user.id,
+                    status: {
+                      in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+                    },
+                  },
+                ],
               },
             },
           },
@@ -90,7 +97,7 @@ const getAllBooks = publicProcedure
             owners: {
               some: {
                 user: {
-                  penname: penname,
+                  penname,
                 },
               },
             },
@@ -102,13 +109,14 @@ const getAllBooks = publicProcedure
             owners: {
               some: {
                 user: {
-                  penname: penname,
+                  penname,
                 },
               },
             },
           },
         ],
-      };
+      } satisfies Prisma.BookWhereInput;
+      bookFindManyArgs.where = where;
     }
     return (await ctx.prisma.book.findMany(bookFindManyArgs)).map((book) =>
       computeIsOwner(ctx.session?.user.id, book)
