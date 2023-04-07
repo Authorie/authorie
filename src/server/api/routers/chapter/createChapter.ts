@@ -30,7 +30,9 @@ const createChapter = protectedProcedure
           owners: {
             some: {
               userId: ctx.session.user.id,
-              status: BookOwnerStatus.OWNER,
+              status: {
+                in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+              },
             },
           },
         },
