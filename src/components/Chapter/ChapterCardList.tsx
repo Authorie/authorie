@@ -5,6 +5,8 @@ import { HiPlusCircle } from "react-icons/hi2";
 import { type RouterOutputs } from "~/utils/api";
 import ChapterCard from "./ChapterCard";
 import ChapterDragLayer from "./ChapterDragLayer";
+import { router } from "@trpc/server";
+import { useRouter } from "next/router";
 
 type props = {
   isEdit: boolean;
@@ -29,6 +31,7 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
   const [arrangedChapters, setArrangedChapters] = useState(
     chapters.sort(sortChapters)
   );
+  const router = useRouter();
 
   const findChapter = useCallback(
     (id: string) => {
@@ -64,11 +67,14 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
   const [, drop] = useDrop(() => ({ accept: "chapter" }));
 
   return (
-    <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
+    <div className="min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
       <div ref={drop} className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
         {isChapterCreatable && (
-          <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
-            <HiPlusCircle className="w-8" />
+          <div
+            onClick={() => void router.push("/create/chapter")}
+            className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01] hover:bg-gray-200"
+          >
+            <HiPlusCircle className="h-6 w-6" />
             <span className="text-lg font-semibold">Create new chapter</span>
           </div>
         )}

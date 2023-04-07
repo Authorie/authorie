@@ -143,10 +143,9 @@ const CreateChapter = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-600">Price: </span>
                   <input
-                    className="selection: h-5 w-24 rounded-lg pl-3 pr-5 text-xs shadow-md outline-none focus:outline-none"
+                    className="selection: h-5 w-16 rounded-lg pl-3 pr-5 text-xs shadow-md outline-none focus:outline-none"
                     placeholder="0"
                     onChange={changePriceHandler}
-                    value={price}
                   />
                   <Image
                     src="/authorie_coin_logo.svg"
