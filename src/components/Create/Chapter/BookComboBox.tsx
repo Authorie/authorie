@@ -34,7 +34,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
       <div className="relative">
         <div className="flex w-full items-center overflow-hidden rounded-lg shadow-md outline outline-gray-600">
           <Combobox.Input
-            className="w-full border-none bg-white pl-3 pr-10 text-xs leading-5 text-gray-900 focus:outline-none"
+            className="w-72 border-none bg-white pl-3 pr-5 text-xs leading-5 text-gray-900 focus:outline-none"
             onChange={searchTermChangeHandler}
             displayValue={(book) =>
               book
@@ -70,7 +70,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
                       <Combobox.Option
                         key={book.id}
                         className={({ active }) =>
-                          `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                          `relative cursor-pointer select-none py-2 pl-10 pr-4 text-xs ${
                             active
                               ? "bg-authGreen-600 text-white"
                               : "text-gray-900"
@@ -81,7 +81,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
                         {({ selected, active }) => (
                           <>
                             <span
-                              className={`block truncate ${
+                              className={`block truncate${
                                 selected ? "font-medium" : "font-normal"
                               }`}
                             >
@@ -94,7 +94,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
                                 }`}
                               >
                                 <HiCheck
-                                  className="h-5 w-5"
+                                  className="h-4 w-4"
                                   aria-hidden="true"
                                 />
                               </span>

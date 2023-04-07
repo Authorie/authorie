@@ -8,6 +8,7 @@ import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
 import { api } from "~/utils/api";
+import Image from "next/image";
 const CreateChapterBoard = dynamic(
   () => import("~/components/Create/Chapter/CreateChapterBoard")
 );
@@ -19,6 +20,7 @@ const CreateChapter = () => {
     title: undefined,
   });
   const [title, setTitle] = useState("");
+  const [price, setPrice] = useState();
   const [book, setBook] = useState<Book | null>(null);
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
@@ -108,13 +110,29 @@ const CreateChapter = () => {
               )}
             </div>
             {user && (
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-600">Book </span>
-                <BookComboBox
-                  user={user}
-                  selectedBook={book}
-                  onToggleBook={toggleBookHandler}
-                />
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-gray-600">Book: </span>
+                  <BookComboBox
+                    user={user}
+                    selectedBook={book}
+                    onToggleBook={toggleBookHandler}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600">Price: </span>
+                  <input
+                    className="selection: h-5 w-24 rounded-lg pl-3 pr-5 text-xs shadow-md outline-none focus:outline-none"
+                    placeholder="0"
+                  />
+                  <Image
+                    src="/authorie_coin_logo.svg"
+                    alt="Authorie coin logo"
+                    width={30}
+                    height={30}
+                    className="h-5 w-5"
+                  />
+                </div>
               </div>
             )}
           </div>
