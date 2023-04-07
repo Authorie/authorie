@@ -20,6 +20,8 @@ import {
 } from "react-icons/hi2";
 import z from "zod";
 import ChapterCardList from "~/components/Chapter/ChapterCardList";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
@@ -661,11 +663,13 @@ const BookContent = () => {
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 {book.chapters && (
-                  <ChapterCardList
-                    isEdit={isEdit}
-                    isChapterCreatable={isChapterCreatable}
-                    chapters={book.chapters}
-                  />
+                  <DndProvider backend={HTML5Backend}>
+                    <ChapterCardList
+                      isEdit={isEdit}
+                      isChapterCreatable={isChapterCreatable}
+                      chapters={book.chapters}
+                    />
+                  </DndProvider>
                 )}
               </div>
             </div>

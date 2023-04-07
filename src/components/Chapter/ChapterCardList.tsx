@@ -1,7 +1,6 @@
 import update from "immutability-helper";
 import { useCallback, useState } from "react";
-import { DndProvider, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { useDrop } from "react-dnd";
 import { HiPlusCircle } from "react-icons/hi2";
 import { type RouterOutputs } from "~/utils/api";
 import ChapterCard from "./ChapterCard";
@@ -65,41 +64,39 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
   const [, drop] = useDrop(() => ({ accept: "chapter" }));
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
-        <div ref={drop} className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
-          {isChapterCreatable && (
-            <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
-              <HiPlusCircle className="w-8" />
-              <span className="text-lg font-semibold">Create new chapter</span>
-            </div>
-          )}
-          {chapters.length === 0 && !isChapterCreatable && (
-            <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
-              <span className="text-lg font-semibold">
-                This book has no chapters yet
-              </span>
-            </div>
-          )}
+    <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
+      <div ref={drop} className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
+        {isChapterCreatable && (
+          <div className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-gray-200 p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]">
+            <HiPlusCircle className="w-8" />
+            <span className="text-lg font-semibold">Create new chapter</span>
+          </div>
+        )}
+        {chapters.length === 0 && !isChapterCreatable && (
+          <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
+            <span className="text-lg font-semibold">
+              This book has no chapters yet
+            </span>
+          </div>
+        )}
 
-          {arrangedChapters.map((chapter, index) => (
-            <ChapterCard
-              key={chapter.id}
-              chapterNo={index + 1}
-              isEdit={isEdit}
-              chapter={chapter}
-              moveChapter={moveChapter}
-              findChapter={findChapter}
-            />
-          ))}
-        </div>{" "}
-        <ChapterDragLayer
-          moveChapter={moveChapter}
-          findChapter={findChapter}
-          chapters={arrangedChapters}
-        />
-      </div>
-    </DndProvider>
+        {arrangedChapters.map((chapter, index) => (
+          <ChapterCard
+            key={chapter.id}
+            chapterNo={index + 1}
+            isEdit={isEdit}
+            chapter={chapter}
+            moveChapter={moveChapter}
+            findChapter={findChapter}
+          />
+        ))}
+      </div>{" "}
+      <ChapterDragLayer
+        moveChapter={moveChapter}
+        findChapter={findChapter}
+        chapters={arrangedChapters}
+      />
+    </div>
   );
 };
 
