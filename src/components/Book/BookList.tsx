@@ -45,7 +45,7 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
     <div className="grid grid-cols-4 gap-x-8 gap-y-6">
       {books.map(
         (book) =>
-          (isOwner ||
+          ((isOwner && !book.isRejected) ||
             (!isOwner &&
               (book.status === BookStatus.PUBLISHED ||
                 book.status === BookStatus.COMPLETED))) && (
