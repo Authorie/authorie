@@ -21,6 +21,9 @@ type props = {
   isOwner: boolean;
   coverImage: string | null;
   status: BookStatus;
+  ownerPenname: string | null;
+  isCollaborator: boolean;
+  isInvitee: boolean;
 };
 
 const Book = ({
@@ -31,6 +34,9 @@ const Book = ({
   isOwner,
   coverImage,
   status,
+  ownerPenname,
+  isCollaborator,
+  isInvitee,
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
@@ -40,6 +46,14 @@ const Book = ({
     { id: id },
     { enabled: authStatus === "authenticated" }
   );
+  const responseInvitation = api.user.responseCollaborationInvite.useMutation({
+    onSuccess: () => {
+      void utils.book.invalidate();
+    },
+    onSettled: () => {
+      void utils.book.invalidate();
+    },
+  });
   const moveState = api.book.moveState.useMutation({
     async onMutate(newBook) {
       await utils.book.getData.cancel();
@@ -107,6 +121,17 @@ const Book = ({
     });
   };
 
+  const responseInvaitationHandler = (
+    e: MouseEvent<HTMLButtonElement>,
+    response: boolean
+  ) => {
+    e.stopPropagation();
+    responseInvitation.mutate({
+      bookId: id,
+      accept: response,
+    });
+  };
+
   return (
     <div
       onClick={onClickHandler}
@@ -118,13 +143,35 @@ const Book = ({
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">
-        {isOwner && (
+        {isInvitee && status === BookStatus.INITIAL && (
+          <div className="absolute bottom-4 right-2 z-20 flex h-fit w-fit flex-col items-center justify-center gap-2 rounded bg-gray-800/70 p-2">
+            <h1 className="w-40 text-sm text-white">
+              <span className="font-semibold">{ownerPenname}</span> has invited
+              you to write a book!
+            </h1>
+            <div className="flex w-full items-center justify-center gap-4">
+              <button
+                onClick={(e) => responseInvaitationHandler(e, true)}
+                className="h-6 w-20 rounded-full bg-green-500 text-xs font-semibold text-white hover:bg-green-600"
+              >
+                Accept
+              </button>
+              <button
+                onClick={(e) => responseInvaitationHandler(e, false)}
+                className="h-6 w-20 rounded-full bg-red-500 text-xs font-semibold text-white hover:bg-red-600"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        )}
+        {coverImage ? (
+          <Image src={coverImage} alt="book picture" fill />
+        ) : (
+          <div className="absolute h-full w-full bg-authGreen-400" />
+        )}
+        {(isOwner || isCollaborator) && (
           <>
-            {coverImage ? (
-              <Image src={coverImage} alt="book picture" fill />
-            ) : (
-              <div className="absolute h-full w-full bg-authGreen-400" />
-            )}
             <div
               className={`
               ${status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
@@ -152,29 +199,34 @@ const Book = ({
             )}
           </>
         )}
-        {!isOwner && authStatus === "authenticated" && (
-          <button onClick={toggleFavoriteHandler}>
-            {isFavorite ? (
-              <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
-            ) : (
-              <HiStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
-            )}
-          </button>
-        )}
+        {!isOwner &&
+          (status === BookStatus.PUBLISHED ||
+            status === BookStatus.COMPLETED) &&
+          authStatus === "authenticated" && (
+            <button onClick={toggleFavoriteHandler}>
+              {isFavorite ? (
+                <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+              ) : (
+                <HiStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+              )}
+            </button>
+          )}
         <div className="z-10 flex grow flex-col justify-between">
           <div className="mt-10 flex w-full flex-col items-center justify-center gap-2 px-3">
-            <h1 className="rounded-full bg-white/80 px-2 font-bold">{title}</h1>
+            <h1 className="rounded-full bg-white/60 px-2 font-bold">{title}</h1>
           </div>
-          <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
-            <div className="flex items-center gap-1">
-              <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
-              <p className="text-xs font-medium text-authGreen-600">{read}</p>
+          {status !== BookStatus.DRAFT && status !== BookStatus.INITIAL && (
+            <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
+              <div className="flex items-center gap-1">
+                <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
+                <p className="text-xs font-medium text-authGreen-600">{read}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <HiOutlineHeart className="h-5 w-5 text-red-400" />
+                <p className="text-xs font-medium text-red-400">{like}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <HiOutlineHeart className="h-5 w-5 text-red-400" />
-              <p className="text-xs font-medium text-red-400">{like}</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
