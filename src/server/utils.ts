@@ -1,4 +1,4 @@
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
+import { createServerSideHelpers } from "@trpc/react-query/server";
 import type { Session } from "next-auth";
 import superjson from "superjson";
 import { appRouter } from "./api/root";
@@ -28,7 +28,7 @@ export function makePagination<T extends paginationItem>(
 }
 
 export const generateSSGHelper = (session: Session | null) =>
-  createProxySSGHelpers({
+  createServerSideHelpers({
     router: appRouter,
     ctx: createInnerTRPCContext({ session }),
     transformer: superjson, // optional - adds superjson serialization
