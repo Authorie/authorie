@@ -80,7 +80,7 @@ const getAllBooks = publicProcedure
                     },
                   },
                   {
-                    ownerId: ctx.session?.user.id,
+                    userId: ctx.session?.user.id,
                     status: {
                       in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
                     },
