@@ -83,7 +83,11 @@ const getAllBooks = publicProcedure
                   {
                     userId: ctx.session?.user.id,
                     status: {
-                      in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+                      in: [
+                        BookOwnerStatus.OWNER,
+                        BookOwnerStatus.COLLABORATOR,
+                        BookOwnerStatus.INVITEE,
+                      ],
                     },
                   },
                 ],
