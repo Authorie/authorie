@@ -10,12 +10,11 @@ const ChapterFeed = dynamic(() => import("~/components/Chapter/ChapterFeed"));
 const Home = () => {
   const selectedDate = useSelectedDate();
   const { status } = useSession();
-  const { data: categories } = api.category.getAll.useQuery();
   const selectedCategories = useSelectedCategory();
   const followedCategories = useFollowedCategories();
   const categoryIds =
     selectedCategories === "all"
-      ? categories?.map((c) => c.id)
+      ? undefined
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
