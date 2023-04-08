@@ -30,7 +30,7 @@ const validationSchema = z.object({
 });
 
 const parseUserTab = (pathname: string | undefined) => {
-  const tab = AuthorTab.find((t) => pathname?.includes(t.url));
+  const tab = AuthorTab.find((t) => t.url === pathname?.toLowerCase());
   return tab || AuthorTab[0];
 };
 
@@ -175,13 +175,13 @@ const AuthorBanner = ({
   const onSubmitHandler = handleSubmit(async ({ penname, bio }) => {
     let profileImageUrl;
     let wallpaperImageUrl;
-    const urlParser = z.string().url();
-    if (profileImage && !urlParser.safeParse(profileImage).success) {
+    const urlParser = z.string().startsWith("data:image");
+    if (profileImage && urlParser.safeParse(profileImage).success) {
       profileImageUrl = await uploadImage.mutateAsync({
         image: profileImage,
       });
     }
-    if (wallpaperImage && !urlParser.safeParse(wallpaperImage).success) {
+    if (wallpaperImage && urlParser.safeParse(wallpaperImage).success) {
       wallpaperImageUrl = await uploadImage.mutateAsync({
         image: wallpaperImage,
       });
@@ -196,7 +196,7 @@ const AuthorBanner = ({
       },
       {
         onSuccess(data) {
-          if (data.penname) {
+          if (data.penname && data.penname !== user.penname) {
             void router.replace(`/${data.penname}/${tab.url}`);
           }
           setIsEditing(false);

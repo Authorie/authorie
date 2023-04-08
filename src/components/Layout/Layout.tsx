@@ -5,6 +5,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import NavigationTopBar from "./NavigationTopBar";
+import Custom404 from "~/pages/404";
 const AuthorBanner = dynamic(() => import("./AuthorBanner"));
 const CreateLayout = dynamic(() => import("./CreateLayout"));
 const NavigationSidebar = dynamic(() => import("./NavigationSidebar"));
@@ -88,7 +89,13 @@ const Layout = ({ children }: PropsWithChildren) => {
               />
             )}
             {router.pathname.includes("create") ? (
-              <CreateLayout>{children}</CreateLayout>
+              status === "authenticated" ? (
+                <CreateLayout>{children}</CreateLayout>
+              ) : (
+                <div>
+                  <Custom404 />
+                </div>
+              )
             ) : (
               children
             )}
