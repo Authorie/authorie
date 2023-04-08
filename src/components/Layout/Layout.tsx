@@ -1,11 +1,11 @@
-import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
-import NavigationTopBar from "./NavigationTopBar";
 import Custom404 from "~/pages/404";
+import { api } from "~/utils/api";
+import NavigationTopBar from "./NavigationTopBar";
 const AuthorBanner = dynamic(() => import("./AuthorBanner"));
 const CreateLayout = dynamic(() => import("./CreateLayout"));
 const NavigationSidebar = dynamic(() => import("./NavigationSidebar"));
@@ -54,7 +54,7 @@ const Layout = ({ children }: PropsWithChildren) => {
           />
         </Head>
         <div className="h-screen">
-          <NavigationTopBar />
+          <NavigationTopBar pathname={router.pathname} />
           {children}
         </div>
       </>
