@@ -1,11 +1,13 @@
 import dayjs from "dayjs";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
-import { HiEye, HiHeart, HiPencil } from "react-icons/hi2";
+import { HiEye, HiHeart, HiPencil, HiLockClosed } from "react-icons/hi2";
 import type { RouterOutputs } from "~/utils/api";
+import Image from "next/image";
+import DialogLayout from "../Dialog/DialogLayout";
 
 type props = {
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
@@ -26,6 +28,7 @@ const ChapterCard = ({
   isEdit,
 }: props) => {
   const router = useRouter();
+  const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const onEditHandler = (e: MouseEvent) => {
     e.stopPropagation();
     void router.push({
@@ -69,16 +72,56 @@ const ChapterCard = ({
     preview(getEmptyImage(), { captureDraggingState: true });
   }, [preview]);
 
+  const clickCardHandler = () => {
+    //also check if buy yet
+    if (chapter.price) {
+      setOpenBuyChapter(true);
+    } else {
+      confirmHandler();
+    }
+  };
+
+  const confirmHandler = () => {
+    void router.push(`/chapter/${chapter.id}`);
+  };
+
   return (
     <div
       ref={(node) => drag(drop(node))}
-      onClick={() => void router.push(`/chapter/${chapter.id}`)}
-      className={`z-10 flex h-16 w-full cursor-pointer items-center justify-between rounded-lg bg-white 
-      px-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]
+      onClick={clickCardHandler}
+      className={`relative z-10 flex h-16 w-full cursor-pointer items-center justify-between overflow-hidden rounded-lg 
+      bg-white px-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]
       ${isDragging ? "opacity-0" : "opacity-100"} ${
         isEdit ? "cursor-move" : "cursor-default"
       }`}
     >
+      {chapter.price && (
+        <>
+          <div className="absolute left-0 top-0 h-full w-full bg-black/70">
+            <div className="flex h-full w-full items-center justify-center gap-4 text-white">
+              <HiLockClosed className="h-5 w-5" />
+              <div className="flex items-center gap-2">
+                <p className="font-semibold">{chapter.price}</p>
+                <Image
+                  src="/authorie_coin_logo.svg"
+                  alt="Authorie coin logo"
+                  width={30}
+                  height={30}
+                  className="h-5 w-5"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogLayout
+            isOpen={openBuyChapter}
+            closeModal={() => setOpenBuyChapter(false)}
+            title="Buy chapter"
+            description={`Do you want to buy the chapter called "${chapter.title}"`}
+            button
+            onClick={() => confirmHandler()}
+          />
+        </>
+      )}
       <h1 className="mr-3 w-20 text-3xl font-bold text-authGreen-600">
         # {chapterNo}
       </h1>
@@ -92,7 +135,7 @@ const ChapterCard = ({
               {chapter.publishedAt.toLocaleTimeString()}
             </p>
           ) : (
-            <p className="text-xs font-extralight">{`Last update : ${chapter.publishedAt.toLocaleDateString(
+            <p className="text-xs font-extralight">{`publish at : ${chapter.publishedAt.toLocaleDateString(
               "en-US"
             )}`}</p>
           ))}
