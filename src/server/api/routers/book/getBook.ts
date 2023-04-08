@@ -62,6 +62,11 @@ const getBook = publicProcedure
               price: true,
               chapterNo: true,
               publishedAt: true,
+              chapterMarketHistories: {
+                where: {
+                  userId: ctx.session?.user?.id,
+                },
+              },
               _count: {
                 select: {
                   views: true,

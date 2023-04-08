@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import {
@@ -20,8 +22,6 @@ import {
 } from "react-icons/hi2";
 import z from "zod";
 import ChapterCardList from "~/components/Chapter/ChapterCardList";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
@@ -45,7 +45,6 @@ const BookContent = () => {
   const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery({
     id: bookId,
   });
-  console.log(isBookFetched);
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
   );
