@@ -49,9 +49,7 @@ const Book = ({
   const responseInvitation = api.user.responseCollaborationInvite.useMutation({
     onSuccess: () => {
       void utils.book.invalidate();
-    },
-    onSettled: () => {
-      void utils.book.invalidate();
+      void utils.user.getBookCollaborators.invalidate();
     },
   });
   const moveState = api.book.moveState.useMutation({
