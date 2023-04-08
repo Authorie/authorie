@@ -30,7 +30,7 @@ const validationSchema = z.object({
 });
 
 const parseUserTab = (pathname: string | undefined) => {
-  const tab = AuthorTab.find((t) => pathname?.includes(t.url));
+  const tab = AuthorTab.find((t) => t.url === pathname?.toLowerCase());
   return tab || AuthorTab[0];
 };
 
