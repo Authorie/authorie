@@ -1,7 +1,7 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 import { makePagination } from "~/server/utils";
-import { z } from "zod";
 
 const searchBooks = publicProcedure
   .input(
@@ -39,7 +39,7 @@ const searchBooks = publicProcedure
             },
           },
         },
-        OR: [
+        AND: [
           {
             title: {
               contains: search.title,

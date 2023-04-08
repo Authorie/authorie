@@ -1,7 +1,7 @@
 import { BookStatus } from "@prisma/client";
+import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 import { makePagination } from "~/server/utils";
-import { z } from "zod";
 
 const getFeeds = publicProcedure
   .input(
@@ -23,13 +23,15 @@ const getFeeds = publicProcedure
           status: {
             in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
           },
-          categories: {
-            some: {
-              categoryId: {
-                in: categoryIds,
-              },
-            },
-          },
+          categories: categoryIds
+            ? {
+                some: {
+                  categoryId: {
+                    in: categoryIds,
+                  },
+                },
+              }
+            : undefined,
         },
       },
       include: {

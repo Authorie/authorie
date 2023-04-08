@@ -1,6 +1,6 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { publicProcedure } from "~/server/api/trpc";
 import { computeIsOwner } from "./utils";
 
 const getBook = publicProcedure
@@ -59,8 +59,14 @@ const getBook = publicProcedure
               id: true,
               title: true,
               views: true,
+              price: true,
               chapterNo: true,
               publishedAt: true,
+              chapterMarketHistories: {
+                where: {
+                  userId: ctx.session?.user?.id,
+                },
+              },
               _count: {
                 select: {
                   views: true,

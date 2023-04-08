@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import {
@@ -14,13 +16,12 @@ import {
   HiHeart,
   HiOutlineChevronLeft,
   HiOutlineMagnifyingGlass,
-  HiOutlinePlusCircle,
   HiOutlineStar,
   HiPhoto,
   HiStar,
 } from "react-icons/hi2";
 import z from "zod";
-import ChapterCard from "~/components/Chapter/ChapterCard";
+import ChapterCardList from "~/components/Chapter/ChapterCardList";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
@@ -44,9 +45,19 @@ const BookContent = () => {
   const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery({
     id: bookId,
   });
-  console.log(isBookFetched);
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
+  );
+  const [arrangedChapters, setArrangedChapters] = useState(
+    book?.chapters.sort((x, y) => {
+      if (x.chapterNo || y.chapterNo)
+        return (x.chapterNo ?? 0) - (y.chapterNo ?? 0);
+      if (x.publishedAt || y.publishedAt)
+        return (
+          (x.publishedAt?.getTime() ?? 0) - (y.publishedAt?.getTime() ?? 0)
+        );
+      return 0;
+    }) || []
   );
   const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
   const {
@@ -255,6 +266,15 @@ const BookContent = () => {
     resetBookCover();
     resetBookWallpaper();
     setAddedCategories(book?.categories.map((data) => data.category) || []);
+    setArrangedChapters(
+      book?.chapters.sort((x, y) => {
+        if (!x.chapterNo || !y.chapterNo) {
+          if (!x.publishedAt || !y.publishedAt) return 0;
+          return x.publishedAt?.getTime() - y.publishedAt?.getTime();
+        }
+        return x.chapterNo - y.chapterNo;
+      }) || []
+    );
   };
 
   const onSaveHandler = handleSubmit(async (data) => {
@@ -280,6 +300,7 @@ const BookContent = () => {
       category: addedCategories.map((category) => category.id),
       coverImageUrl,
       wallpaperImageUrl,
+      chaptersArrangement: arrangedChapters.map((chapter) => chapter.id),
     });
     await toast.promise(promiseUpdateBook, {
       loading: "Updating book...",
@@ -427,7 +448,7 @@ const BookContent = () => {
                                     onClick={() =>
                                       toggleCategoryHandler(category)
                                     }
-                                    className="flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
+                                    className="justify-ceisEditnter flex w-36 items-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
                                   >
                                     {category.title}
                                   </button>
@@ -640,29 +661,15 @@ const BookContent = () => {
                 <HiOutlineMagnifyingGlass className="h-7 w-7 rounded-lg bg-gray-200" />
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
-                  {isChapterCreatable && (
-                    <div
-                      onClick={() => void router.push("/create/chapter")}
-                      className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01] hover:bg-gray-300"
-                    >
-                      <HiOutlinePlusCircle className="h-8 w-8" />
-                      <span className="text-lg font-semibold">
-                        Create new chapter
-                      </span>
-                    </div>
-                  )}
-                  {book.chapters.length === 0 && !isChapterCreatable && (
-                    <div className="flex h-16 w-full items-center justify-center rounded-lg bg-white p-3 shadow-lg">
-                      <span className="text-lg font-semibold">
-                        Move book state to create chapter
-                      </span>
-                    </div>
-                  )}
-                  {book.chapters.map((chapter) => (
-                    <ChapterCard key={chapter.id} chapter={chapter} />
-                  ))}
-                </div>
+                {book.chapters && (
+                  <DndProvider backend={HTML5Backend}>
+                    <ChapterCardList
+                      isEdit={isEdit}
+                      isChapterCreatable={isChapterCreatable}
+                      chapters={book.chapters}
+                    />
+                  </DndProvider>
+                )}
               </div>
             </div>
           </div>

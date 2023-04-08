@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const createChapter = protectedProcedure
   .input(
@@ -11,17 +11,18 @@ const createChapter = protectedProcedure
       title: z.string(),
       content: z.unknown().transform((v) => v as Prisma.JsonObject),
       bookId: z.string().cuid().optional(),
+      price: z.number().int().min(0).optional(),
       publishedAt: z
         .union([
           z.date().refine((date) => date.getTime() > Date.now()),
           z.boolean(),
         ])
         .nullish()
-        .optional(),
+        .default(null),
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { chapterId, title, content, bookId, publishedAt } = input;
+    const { chapterId, title, content, bookId, price, publishedAt } = input;
     if (bookId) {
       const book = await ctx.prisma.book.findFirst({
         where: {
@@ -29,7 +30,9 @@ const createChapter = protectedProcedure
           owners: {
             some: {
               userId: ctx.session.user.id,
-              status: BookOwnerStatus.OWNER,
+              status: {
+                in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+              },
             },
           },
         },
@@ -95,27 +98,33 @@ const createChapter = protectedProcedure
       await ctx.prisma.chapter.update({
         where: { id: chapterId },
         data: {
-          title: title,
-          content: content,
-          publishedAt:
-            publishedAt === null
-              ? typeof publishedAt === "boolean"
-                ? new Date()
-                : publishedAt
-              : null,
+          title,
+          content,
           bookId,
+          price,
           ownerId: ctx.session.user.id,
+          publishedAt:
+            publishedAt === null || publishedAt === false
+              ? null
+              : publishedAt === true
+              ? new Date()
+              : publishedAt,
         },
       });
     } else {
       await ctx.prisma.chapter.create({
         data: {
-          title: title,
-          content: content,
-          publishedAt:
-            typeof publishedAt === "boolean" ? new Date() : publishedAt,
+          title,
+          content,
           bookId,
+          price,
           ownerId: ctx.session.user.id,
+          publishedAt:
+            publishedAt === null || publishedAt === false
+              ? null
+              : publishedAt === true
+              ? new Date()
+              : publishedAt,
         },
       });
     }

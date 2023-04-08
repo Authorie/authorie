@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import Layout from "~/components/Layout/Layout";
 import { api } from "~/utils/api";
 
+import { useRouter } from "next/router";
 import "~/styles/globals.css";
 
 export type NextPageWithLayout<P = object, IP = P> = NextPage<P, IP> & {
@@ -18,15 +19,17 @@ type AppPropsWithLayout = AppProps<{ session: Session | null }> & {
   Component: NextPageWithLayout;
 };
 
-const commonLayout = (page: ReactNode) => {
-  return <Layout>{page}</Layout>;
+const commonLayout = (pathname: string, page: ReactNode) => {
+  return <Layout pathname={pathname}>{page}</Layout>;
 };
 
 const MyApp = ({
   Component,
   pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) => {
-  const getLayout = Component.getLayout || ((page) => commonLayout(page));
+  const router = useRouter();
+  const getLayout =
+    Component.getLayout || ((page) => commonLayout(router.pathname, page));
 
   return (
     <SessionProvider session={session}>

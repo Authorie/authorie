@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { CommentButton, LikeButton } from "~/components/action";
-import { useReader } from "~/hooks/reader";
+import { useEditor } from "~/hooks/editor";
 import { api, type RouterOutputs } from "~/utils/api";
 
 type props = {
@@ -14,7 +14,7 @@ type props = {
 const ChapterFeed = ({ chapter }: props) => {
   const router = useRouter();
   const { status } = useSession();
-  const editor = useReader(chapter.content as Content);
+  const editor = useEditor(chapter.content as Content, false);
   const { data: isLike } = api.comment.isLike.useQuery(
     { id: chapter.id },
     { enabled: status === "authenticated" }
