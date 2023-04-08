@@ -57,7 +57,14 @@ const BookPage = () => {
             penname={penname}
           />
         )}
-        {bookIsLoading && <BookLoading />}
+        {bookIsLoading && (
+          <div className="grid grid-cols-4 gap-x-8 gap-y-6">
+            <BookLoading />
+            <BookLoading />
+            <BookLoading />
+            <BookLoading />
+          </div>
+        )}
       </div>
       {openArchive && (
         <p className="mt-4 text-sm text-gray-600">

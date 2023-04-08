@@ -1,9 +1,4 @@
-import UserCard from "~/components/Card/UserCard";
-import DialogLayout from "~/components/Dialog/DialogLayout";
-import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { RouterOutputs } from "~/utils/api";
-import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -12,14 +7,12 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
 import z from "zod";
+import UserCard from "~/components/Card/UserCard";
+import DialogLayout from "~/components/Dialog/DialogLayout";
 import useImageUpload from "~/hooks/imageUpload";
-
-const AuthorTab = [
-  { title: "HOME", url: "" },
-  { title: "COMMUNITY", url: "community" },
-  { title: "BOOK", url: "book" },
-  { title: "ABOUT", url: "about" },
-] as const;
+import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
+import { type AuthorTab } from "./AuthorBannerContainer";
 
 const validationSchema = z.object({
   penname: z
@@ -29,11 +22,6 @@ const validationSchema = z.object({
   bio: z.string().max(150, { message: "Your bio is too long" }),
 });
 
-const parseUserTab = (pathname: string | undefined) => {
-  const tab = AuthorTab.find((t) => t.url === pathname?.toLowerCase());
-  return tab || AuthorTab[0];
-};
-
 const getFollowedButtonClassName = (followed: boolean) => {
   if (followed) {
     return "w-24 h-7 rounded text-sm bg-blue-300 hover:bg-blue-400";
@@ -42,16 +30,11 @@ const getFollowedButtonClassName = (followed: boolean) => {
   }
 };
 
-type props = {
-  user: RouterOutputs["user"]["getData"] | undefined;
-  penname: string;
-};
-
 const AuthorBanner = ({
   tab,
   user,
 }: {
-  tab: (typeof AuthorTab)[number];
+  tab: AuthorTab;
   user: RouterOutputs["user"]["getData"];
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -251,14 +234,14 @@ const AuthorBanner = ({
       </label>
       <form
         onSubmit={(e) => void onSubmitHandler(e)}
-        className="ml-40 h-full max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg"
+        className="ml-40 h-[300px] max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg"
       >
-        <div className="flex justify-between">
+        <div className="mb-3 flex justify-between ">
           <label
             htmlFor="upload-profile"
             className={`${
               isEditing ? "cursor-pointer" : ""
-            } relative mb-3 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
+            } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
           >
             {isEditing && (
               <div>
@@ -482,46 +465,4 @@ const AuthorBanner = ({
   );
 };
 
-const AuthorBannerContainer = ({ user, penname }: props) => {
-  const router = useRouter();
-  const tab = useMemo(
-    () => parseUserTab(router.pathname.split("/")[2]),
-    [router.pathname]
-  );
-
-  return (
-    <>
-      <div className="relative h-fit min-w-full">
-        {user ? (
-          <AuthorBanner tab={tab} user={user} />
-        ) : (
-          <div className="ml-40 grid h-full max-w-xl items-center justify-center bg-black/60 px-7 pt-7 backdrop-blur-lg">
-            <LoadingSpinner />
-          </div>
-        )}
-      </div>
-      <div className="sticky top-0 z-20 ml-40 w-fit self-start">
-        <div className="flex max-w-xl items-center justify-between bg-black/60 px-1 shadow-lg backdrop-blur-lg">
-          {AuthorTab.map((data) => (
-            <button
-              key={data.title}
-              onClick={() => void router.push(`/${penname}/${data.url}`)}
-              className={`
-                ${
-                  router.pathname.includes(data.title.toLocaleLowerCase()) ||
-                  (data.title === "HOME" &&
-                    router.pathname.split("/")[2] == null)
-                    ? "text-green-500 underline decoration-green-500 underline-offset-2"
-                    : "cursor-pointer text-white"
-                } ${"select-none px-11 py-3 text-sm hover:bg-black/30"}`}
-            >
-              {data.title}
-            </button>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-};
-
-export default AuthorBannerContainer;
+export default AuthorBanner;
