@@ -144,7 +144,7 @@ const NavigationSidebar = ({ user }: props) => {
             className="mt-2 text-xs font-light text-gray-500 hover:underline"
             href="/main/home"
           >
-            c About us
+            About us
           </NextLink>
           <div className="text-sm text-gray-500">.</div>
           <NextLink
