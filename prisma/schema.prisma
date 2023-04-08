@@ -277,6 +277,7 @@ model ChapterMarketHistory {
     price     Int
     createdAt DateTime @default(now())
 
+    @@unique([chapterId, userId])
     @@index([userId])
     @@index([chapterId])
     @@map("chapterMarketHistories")
