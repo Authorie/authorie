@@ -56,7 +56,7 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
               ownerPenname={
                 book.owners.find(
                   (data) => data.status === BookOwnerStatus.OWNER
-                )?.user.penname || null
+                )?.user.penname as string
               }
               coverImage={book.coverImage}
               description={book.description}

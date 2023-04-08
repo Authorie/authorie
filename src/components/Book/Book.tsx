@@ -21,7 +21,7 @@ type props = {
   isOwner: boolean;
   coverImage: string | null;
   status: BookStatus;
-  ownerPenname: string | null;
+  ownerPenname: string;
   isCollaborator: boolean;
   isInvitee: boolean;
 };
@@ -48,8 +48,10 @@ const Book = ({
   );
   const responseInvitation = api.user.responseCollaborationInvite.useMutation({
     onSuccess: () => {
-      void utils.book.invalidate();
-      void utils.user.getBookCollaborators.invalidate();
+      void Promise.all([
+        utils.book.invalidate(),
+        utils.user.getBookCollaborators.invalidate(),
+      ]);
     },
   });
   const moveState = api.book.moveState.useMutation({
