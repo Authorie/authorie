@@ -36,7 +36,14 @@ const AuthorBannerContainer = () => {
     () => parseUserTab(router.pathname.split("/")[2]),
     [router.pathname]
   );
-  const { data: userInBanner } = api.user.getData.useQuery(penname);
+  const { data: user } = api.user.getData.useQuery(undefined);
+  const isOwner = router.isReady && user?.penname === penname;
+  const { data: userInBanner } = api.user.getData.useQuery(
+    isOwner ? undefined : penname,
+    {
+      enabled: router.isReady,
+    }
+  );
 
   return (
     <>
