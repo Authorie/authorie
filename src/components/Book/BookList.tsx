@@ -1,7 +1,8 @@
-import type { RouterOutputs } from "~/utils/api";
-import Link from "next/link";
-import Book from "./Book";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import Link from "next/link";
+import { useMemo } from "react";
+import type { RouterOutputs } from "~/utils/api";
+import Book from "./Book";
 
 type props = {
   books: RouterOutputs["book"]["getAll"];
@@ -11,6 +12,17 @@ type props = {
 };
 
 const BookList = ({ books, penname, isOwner, isArchived }: props) => {
+  const filteredBooks = useMemo(() => {
+    if (!isOwner) {
+      return books.filter(
+        (book) =>
+          book.status === BookStatus.PUBLISHED ||
+          book.status === BookStatus.COMPLETED
+      );
+    }
+    return books.filter((book) => !book.isRejected);
+  }, [books, isOwner]);
+
   if (books.length === 0 && isOwner && !isArchived) {
     return (
       <div className="flex flex-col items-center gap-4">
@@ -43,38 +55,25 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
 
   return (
     <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-      {books.map(
-        (book) =>
-          ((isOwner && !book.isRejected) ||
-            (!isOwner &&
-              (book.status === BookStatus.PUBLISHED ||
-                book.status === BookStatus.COMPLETED))) && (
-            <Book
-              key={book.id}
-              id={book.id}
-              title={book.title}
-              ownerPenname={
-                book.owners.find(
-                  (data) => data.status === BookOwnerStatus.OWNER
-                )?.user.penname as string
-              }
-              coverImage={book.coverImage}
-              description={book.description}
-              isOwner={book.isOwner}
-              isCollaborator={book.isCollborator}
-              isInvitee={book.isInvited}
-              status={book.status}
-              like={book.chapters.reduce(
-                (acc, curr) => acc + curr._count.likes,
-                0
-              )}
-              read={book.chapters.reduce(
-                (acc, curr) => acc + curr._count.views,
-                0
-              )}
-            />
-          )
-      )}
+      {filteredBooks.map((book) => (
+        <Book
+          key={book.id}
+          id={book.id}
+          title={book.title}
+          ownerPenname={
+            book.owners.find((data) => data.status === BookOwnerStatus.OWNER)
+              ?.user.penname as string
+          }
+          coverImage={book.coverImage}
+          description={book.description}
+          isOwner={book.isOwner}
+          isCollaborator={book.isCollborator}
+          isInvitee={book.isInvited}
+          status={book.status}
+          like={book.chapters.reduce((acc, curr) => acc + curr._count.likes, 0)}
+          read={book.chapters.reduce((acc, curr) => acc + curr._count.views, 0)}
+        />
+      ))}
     </div>
   );
 };
