@@ -1,9 +1,10 @@
 import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
+import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
@@ -14,7 +15,7 @@ const CreateChapterBoard = dynamic(
 
 const CreateChapter = () => {
   const router = useRouter();
-  const chapterId = router.query.chapterId as string | undefined;
+
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
@@ -27,6 +28,13 @@ const CreateChapter = () => {
 
   const { data: user } = api.user.getData.useQuery(undefined);
   const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
+  const filteredDrafts = useMemo(() => {
+    return draftChapters?.filter(
+      (draft) =>
+        !draft.publishedAt ||
+        dayjs().subtract(1, "hour").isAfter(draft.publishedAt)
+    );
+  }, [draftChapters]);
 
   const selectDraftHandler = useCallback(
     (chapter: (Chapter & { book: Book | null }) | null) => {
@@ -53,19 +61,20 @@ const CreateChapter = () => {
   };
 
   useEffect(() => {
+    const chapterId = router.query.chapterId as string | undefined;
     if (chapterId) {
-      const chapter = draftChapters?.find(
+      const chapter = filteredDrafts?.find(
         (chapter) => chapter.id === chapterId
       );
       if (chapter) selectDraftHandler(chapter);
       else void router.push("/create/chapter");
     }
-  }, [router, chapterId, draftChapters, selectDraftHandler]);
+  }, [router, filteredDrafts, selectDraftHandler]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
       <DraftChapterBoard
-        draftChapters={draftChapters}
+        draftChapters={filteredDrafts}
         selectedChapterId={chapter?.id}
         selectDraftHandler={selectDraftHandler}
       />

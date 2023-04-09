@@ -1,11 +1,12 @@
-import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
 import { Popover } from "@headlessui/react";
 import type { Chapter } from "@prisma/client";
 import type { Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { api } from "~/utils/api";
+import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import z from "zod";
+import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
+import { api } from "~/utils/api";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";
 
 const validationSchema = z.object({
@@ -30,6 +31,7 @@ const CreateChapterBoard = ({
   bookId,
   setErrors,
 }: props) => {
+  const router = useRouter();
   const context = api.useContext();
   const createChapterMutation = api.chapter.create.useMutation();
   const deleteChapterMutation = api.chapter.deleteDraft.useMutation();
@@ -71,8 +73,9 @@ const CreateChapterBoard = ({
         publishedAt: null,
       },
       {
-        onSettled() {
-          void context.chapter.getDrafts.invalidate();
+        async onSuccess(data) {
+          await context.chapter.getDrafts.invalidate();
+          await router.replace(`/create/chapter?chapterId=${data.id}`);
         },
       }
     );

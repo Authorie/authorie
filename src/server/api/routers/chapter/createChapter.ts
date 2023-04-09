@@ -95,7 +95,7 @@ const createChapter = protectedProcedure
         });
       }
 
-      await ctx.prisma.chapter.update({
+      return await ctx.prisma.chapter.update({
         where: { id: chapterId },
         data: {
           title,
@@ -112,7 +112,7 @@ const createChapter = protectedProcedure
         },
       });
     } else {
-      await ctx.prisma.chapter.create({
+      return await ctx.prisma.chapter.create({
         data: {
           title,
           content,
