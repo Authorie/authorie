@@ -1,25 +1,19 @@
-import { publicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { publicProcedure } from "~/server/api/trpc";
 
 const getUser = publicProcedure
   .input(z.string().optional())
   .query(async ({ ctx, input }) => {
-    if (input == undefined && ctx.session?.user.penname == undefined) {
+    if (input === undefined && !ctx.session) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "user does not exist",
       });
     }
 
-    if (input == undefined && ctx.session?.user.penname != undefined) {
-      input = ctx.session.user.penname;
-    }
-
     return await ctx.prisma.user.findUniqueOrThrow({
-      where: {
-        penname: input,
-      },
+      where: input ? { penname: input } : { id: ctx.session?.user.id },
       select: {
         id: true,
         penname: true,

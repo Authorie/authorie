@@ -14,18 +14,16 @@ import {
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";
-import type { RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 const SearchModal = dynamic(() => import("~/components/Search/SearchModal"));
 
-type props = {
-  user: RouterOutputs["user"]["getData"] | undefined;
-};
-
-const NavigationSidebar = ({ user }: props) => {
+const NavigationSidebar = () => {
   const { data: session } = useSession();
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
-
+  const { data: user } = api.user.getData.useQuery(undefined, {
+    enabled: Boolean(session),
+  });
   const onOpenDialogHandler = useCallback(() => setOpenSearchDialog(true), []);
   const onCloseDialogHandler = useCallback(
     () => setOpenSearchDialog(false),
@@ -53,20 +51,25 @@ const NavigationSidebar = ({ user }: props) => {
         />
       </NextLink>
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
-        {session && user?.penname && (
-          <Link href={`/${user.penname}`}>
-            <Image
-              src={user.image || "/placeholder_profile.png"}
-              alt="profile picture"
-              width={30}
-              height={30}
-              className="h-7 w-7 rounded-full"
-            />
-            <span className="hidden truncate sm:inline-block ">
-              {user.penname}
-            </span>
-          </Link>
-        )}
+        {session &&
+          (user ? (
+            <Link href={user.penname ? `/${user.penname}` : "/auth/new-user"}>
+              <Image
+                src={user.image || "/placeholder_profile.png"}
+                alt="profile picture"
+                width={30}
+                height={30}
+                className="h-7 w-7 rounded-full"
+              />
+              <span className="hidden truncate sm:inline-block">
+                {user.penname}
+              </span>
+            </Link>
+          ) : (
+            <Link href="/">
+              <div className="h-7 w-7 animate-pulse rounded-full bg-black/60" />
+            </Link>
+          ))}
         <Link href="/">
           <HiOutlineHome className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>

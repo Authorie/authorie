@@ -1,5 +1,6 @@
-import type { RouterOutputs } from "~/utils/api";
 import { HiDocument } from "react-icons/hi2";
+import type { RouterOutputs } from "~/utils/api";
+import SearchResultCard from "./SearchResultCard";
 
 type props = {
   chapter: RouterOutputs["search"]["searchChapters"]["items"][number];
@@ -8,10 +9,7 @@ type props = {
 
 const SearchChapterResult = ({ chapter, onClickCard }: props) => {
   return (
-    <div
-      onClick={onClickCard}
-      className="mb-3 flex h-44 cursor-pointer gap-4 rounded shadow-lg transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-    >
+    <SearchResultCard onClick={onClickCard}>
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
         <HiDocument className="h-12 w-12 fill-white" />
       </div>
@@ -28,7 +26,7 @@ const SearchChapterResult = ({ chapter, onClickCard }: props) => {
           <p>{`book : ${chapter.book?.title as string}`}</p>
         </div>
       </div>
-    </div>
+    </SearchResultCard>
   );
 };
 

@@ -1,6 +1,7 @@
-import type { RouterOutputs } from "~/utils/api";
 import Image from "next/image";
 import { HiUser } from "react-icons/hi2";
+import type { RouterOutputs } from "~/utils/api";
+import SearchResultCard from "./SearchResultCard";
 
 type props = {
   user: RouterOutputs["search"]["searchUsers"]["items"][number];
@@ -9,10 +10,7 @@ type props = {
 
 const SearchUserResult = ({ user, onClickCard }: props) => {
   return (
-    <div
-      onClick={onClickCard}
-      className="flex cursor-pointer gap-4 rounded shadow-md drop-shadow-xl transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-    >
+    <SearchResultCard onClick={onClickCard}>
       <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
         <HiUser className="h-12 w-12 fill-white" />
       </div>
@@ -36,7 +34,7 @@ const SearchUserResult = ({ user, onClickCard }: props) => {
         <p className="my-4 text-xs text-dark-600">{user.bio}</p>
       </div>
       <div className="flex w-2/12 items-center">
-        <div className="drop-shadow-l overflow-hidden rounded-full">
+        <div className="overflow-hidden rounded-full drop-shadow">
           <Image
             src={user.image || "/placeholder_profile.png"}
             width={100}
@@ -45,7 +43,7 @@ const SearchUserResult = ({ user, onClickCard }: props) => {
           />
         </div>
       </div>
-    </div>
+    </SearchResultCard>
   );
 };
 
