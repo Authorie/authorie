@@ -94,11 +94,7 @@ const AuthorBanner = ({
     },
   });
 
-  const updateProfile = api.user.update.useMutation({
-    onSuccess: () => {
-      void context.user.getData.invalidate(undefined);
-    },
-  });
+  const updateProfile = api.user.update.useMutation();
   const followUserMutation = api.user.followUser.useMutation({
     onMutate: async () => {
       await context.user.isFollowUser.cancel();
@@ -107,7 +103,11 @@ const AuthorBanner = ({
       return { previousFollow };
     },
     onSettled: () => {
-      void context.user.invalidate();
+      void context.user.isFollowUser.invalidate(user.penname as string);
+      void context.user.getFollowers.invalidate({
+        penname: user.penname as string,
+      });
+      void context.user.getData.invalidate(user.penname as string);
     },
   });
   const unfollowUserMutation = api.user.unfollowUser.useMutation({
@@ -118,7 +118,11 @@ const AuthorBanner = ({
       return { previousFollow };
     },
     onSettled: () => {
-      void context.user.invalidate();
+      void context.user.isFollowUser.invalidate(user.penname as string);
+      void context.user.getFollowers.invalidate({
+        penname: user.penname as string,
+      });
+      void context.user.getData.invalidate(user.penname as string);
     },
   });
 
@@ -178,11 +182,12 @@ const AuthorBanner = ({
         wallpaperImageUrl,
       },
       {
-        onSuccess(data) {
-          if (data.penname && data.penname !== user.penname) {
-            void router.replace(`/${data.penname}/${tab.url}`);
-          }
+        async onSuccess(data) {
           setIsEditing(false);
+          void context.user.getData.invalidate(undefined);
+          if (data.penname && data.penname !== user.penname) {
+            await router.replace(`/${data.penname}/${tab.url}`);
+          }
         },
       }
     );

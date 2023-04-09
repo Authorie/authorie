@@ -44,6 +44,11 @@ const getAllBooks = publicProcedure
                 likes: true,
               },
             },
+            chapterMarketHistories: {
+              where: {
+                userId: ctx.session?.user.id,
+              },
+            },
           },
         },
       },

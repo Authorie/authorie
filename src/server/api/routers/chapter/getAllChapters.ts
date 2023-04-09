@@ -1,19 +1,19 @@
-import { BookStatus } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 import { makePagination } from "~/server/utils";
 
-const getFeeds = publicProcedure
+const getAllChapters = publicProcedure
   .input(
     z.object({
-      categoryIds: z.string().cuid().array().optional(),
+      penname: z.string(),
       publishedAt: z.date().default(new Date()),
       cursor: z.string().cuid().optional(),
       limit: z.number().int().default(20),
     })
   )
   .query(async ({ ctx, input }) => {
-    const { categoryIds, publishedAt, cursor, limit } = input;
+    const { penname, publishedAt, cursor, limit } = input;
     const chapters = await ctx.prisma.chapter.findMany({
       where: {
         publishedAt: {
@@ -23,15 +23,16 @@ const getFeeds = publicProcedure
           status: {
             in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
           },
-          categories: categoryIds
-            ? {
-                some: {
-                  categoryId: {
-                    in: categoryIds,
-                  },
-                },
-              }
-            : undefined,
+          owners: {
+            some: {
+              status: {
+                in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
+              },
+              user: {
+                penname,
+              },
+            },
+          },
         },
       },
       include: {
@@ -71,4 +72,4 @@ const getFeeds = publicProcedure
     return makePagination(chapters, limit);
   });
 
-export default getFeeds;
+export default getAllChapters;
