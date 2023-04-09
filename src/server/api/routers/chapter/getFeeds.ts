@@ -49,6 +49,11 @@ const getFeeds = publicProcedure
             image: true,
           },
         },
+        chapterMarketHistories: {
+          where: {
+            userId: ctx.session?.user.id,
+          },
+        },
         _count: {
           select: {
             views: true,

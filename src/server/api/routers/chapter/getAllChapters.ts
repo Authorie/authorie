@@ -1,4 +1,4 @@
-import { BookStatus, BookOwnerStatus } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 import { makePagination } from "~/server/utils";
@@ -48,6 +48,11 @@ const getAllChapters = publicProcedure
             id: true,
             penname: true,
             image: true,
+          },
+        },
+        chapterMarketHistories: {
+          where: {
+            userId: ctx.session?.user.id,
           },
         },
         _count: {
