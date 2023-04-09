@@ -1,8 +1,16 @@
+import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 
 const SignInPage = () => {
+  const { status } = useSession();
+  const signInHandler = async (provider: "google" | "facebook") => {
+    if (status === "authenticated") {
+      await signOut({ redirect: false });
+    }
+    void signIn(provider, { callbackUrl: "/" });
+  };
+
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-authGreen-600">
       <div className="flex h-3/4 w-3/5 rounded-xl bg-slate-50 ">
@@ -22,9 +30,9 @@ const SignInPage = () => {
           </h1>
           <div className="flex w-3/4 flex-col gap-3">
             <button
-              onClick={() => void signIn("google", { callbackUrl: "/" })}
+              onClick={() => void signInHandler("google")}
               type="button"
-              className="flex items-center justify-center rounded-lg bg-slate-200 py-3 px-4 font-semibold text-black shadow-md hover:bg-slate-300"
+              className="flex items-center justify-center rounded-lg bg-slate-200 px-4 py-3 font-semibold text-black shadow-md hover:bg-slate-300"
             >
               <Image
                 src="/GoogleLogo.svg"
@@ -35,9 +43,9 @@ const SignInPage = () => {
               <div className="grow">Sign In with Google</div>
             </button>
             <button
-              onClick={() => void signIn("facebook", { callbackUrl: "/" })}
+              onClick={() => void signInHandler("facebook")}
               type="button"
-              className="flex items-center justify-center rounded-lg bg-[#3b5997] py-3 px-4 font-semibold text-white shadow-md hover:bg-blue-600"
+              className="flex items-center justify-center rounded-lg bg-[#3b5997] px-4 py-3 font-semibold text-white shadow-md hover:bg-blue-600"
             >
               <Image
                 src="/FacebookLogo.svg"
