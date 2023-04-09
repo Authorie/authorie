@@ -60,6 +60,7 @@ const getBook = publicProcedure
               title: true,
               views: true,
               price: true,
+              ownerId: true,
               chapterNo: true,
               publishedAt: true,
               chapterMarketHistories: {
