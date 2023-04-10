@@ -13,7 +13,7 @@ import useImageUpload from "~/hooks/imageUpload";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { type AuthorTab } from "./AuthorBannerContainer";
-import useInfiniteScroll from "~/hooks/infiniteScroll";
+import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
 
 const validationSchema = z.object({
   penname: z
@@ -38,6 +38,7 @@ const AuthorBanner = ({
   tab: AuthorTab;
   user: RouterOutputs["user"]["getData"];
 }) => {
+  const scrollableId = "dialog-body";
   const [isEditing, setIsEditing] = useState(false);
   const [openFollowers, setOpenFollowers] = useState(false);
   const [openFollowing, setOpenFollowing] = useState(false);
@@ -209,8 +210,16 @@ const AuthorBanner = ({
     });
   });
 
-  useInfiniteScroll(fetchFollowerNextPage, hasFollowerNextPage);
-  useInfiniteScroll(fetchFollowingNextPage, hasFollowingNextPage);
+  useInfiniteScrollDialog({
+    fetchNextPage: fetchFollowerNextPage,
+    hasNextPage: hasFollowerNextPage,
+    scrollableId,
+  });
+  useInfiniteScrollDialog({
+    fetchNextPage: fetchFollowingNextPage,
+    hasNextPage: hasFollowingNextPage,
+    scrollableId,
+  });
 
   return (
     <>
@@ -376,7 +385,7 @@ const AuthorBanner = ({
             title={"Followers"}
           >
             {
-              <div>
+              <div id={scrollableId} className="h-full overflow-y-scroll">
                 {userFollowers && !loadingFollowers ? (
                   userFollowers?.pages
                     .flatMap((page) => page.items)
@@ -418,36 +427,34 @@ const AuthorBanner = ({
             closeModal={() => setOpenFollowing(false)}
             title={"Following"}
           >
-            <div className="w-fit">
-              {
-                <div>
-                  {userFollowing && !loadingFollowing ? (
-                    userFollowing?.pages
-                      .flatMap((page) => page.items)
-                      .map((user) => (
-                        <UserCard
-                          key={user.id}
-                          penname={user.penname as string}
-                          image={user.image || undefined}
-                          followersNumber={user._count.followers}
-                          followingNumber={user._count.following}
-                          userId={user.id}
-                          followUser={(userId) => onFollowHandler(userId)}
-                          unfollowUser={(userId) => onUnfollowHandler(userId)}
-                        />
-                      ))
-                  ) : (
-                    <div>loading following...</div>
-                  )}
-                  {userFollowing?.pages.flatMap((page) => page.items).length ===
-                    0 && (
-                    <div className="flex w-96 items-center justify-center">
-                      <p className="text-lg">No following</p>
-                    </div>
-                  )}
-                </div>
-              }
-            </div>
+            {
+              <div id={scrollableId} className="h-full overflow-y-scroll">
+                {userFollowing && !loadingFollowing ? (
+                  userFollowing?.pages
+                    .flatMap((page) => page.items)
+                    .map((user) => (
+                      <UserCard
+                        key={user.id}
+                        penname={user.penname as string}
+                        image={user.image || undefined}
+                        followersNumber={user._count.followers}
+                        followingNumber={user._count.following}
+                        userId={user.id}
+                        followUser={(userId) => onFollowHandler(userId)}
+                        unfollowUser={(userId) => onUnfollowHandler(userId)}
+                      />
+                    ))
+                ) : (
+                  <div>loading following...</div>
+                )}
+                {userFollowing?.pages.flatMap((page) => page.items).length ===
+                  0 && (
+                  <div className="flex w-96 items-center justify-center">
+                    <p className="text-lg">No following</p>
+                  </div>
+                )}
+              </div>
+            }
           </DialogLayout>
         </div>
         <div className="h-fit w-4/5 pb-2 text-sm text-white">
