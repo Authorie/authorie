@@ -7,6 +7,7 @@ import useSearch from "~/hooks/search";
 import SearchBookResult from "./SearchBookResult";
 import SearchChapterResult from "./SearchChapterResult";
 import SearchUserResult from "./SearchUserResult";
+import useInfiniteScroll from "~/hooks/infiniteScroll";
 
 const allCategory = ["Users", "Books", "Chapters"] as const;
 
@@ -33,7 +34,12 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
-  const { data: users } = api.search.searchUsers.useInfiniteQuery(
+  const {
+    data: users,
+    fetchNextPage: fetchUserNextPage,
+    isFetchingNextPage: isFetchingUserNextPage,
+    hasNextPage: hasUserNextPage,
+  } = api.search.searchUsers.useInfiniteQuery(
     {
       search: searchTerm,
       limit: 3,
@@ -43,7 +49,12 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
-  const { data: books } = api.search.searchBooks.useInfiniteQuery(
+  const {
+    data: books,
+    fetchNextPage: fetchBookNextPage,
+    isFetchingNextPage: isFetchingBookNextPage,
+    hasNextPage: hasBookNextPage,
+  } = api.search.searchBooks.useInfiniteQuery(
     {
       search: {
         title: searchTerm,
@@ -56,7 +67,12 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
-  const { data: chapters } = api.search.searchChapters.useInfiniteQuery(
+  const {
+    data: chapters,
+    fetchNextPage: fetchChapterNextPage,
+    isFetchingNextPage: isFetchingChapterNextPage,
+    hasNextPage: hasChapterNextPage,
+  } = api.search.searchChapters.useInfiniteQuery(
     {
       search: searchTerm,
       limit: 3,
@@ -66,6 +82,10 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }
   );
+
+  useInfiniteScroll(fetchUserNextPage, hasUserNextPage);
+  useInfiniteScroll(fetchBookNextPage, hasBookNextPage);
+  useInfiniteScroll(fetchChapterNextPage, hasChapterNextPage);
 
   const redirectUserHandler = (penname: string) => () => {
     void router.push(`/${penname}`);
@@ -158,6 +178,13 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
           </div>
           <div className="grid-flow-rol grid max-h-full gap-3">
             {searchResults(selectedCategory)}
+            {(isFetchingUserNextPage ||
+              isFetchingBookNextPage ||
+              isFetchingChapterNextPage) && (
+              <div className="mt-3">
+                <div>loading</div>
+              </div>
+            )}
           </div>
         </Dialog.Panel>
       </div>

@@ -13,6 +13,7 @@ import useImageUpload from "~/hooks/imageUpload";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { type AuthorTab } from "./AuthorBannerContainer";
+import useInfiniteScroll from "~/hooks/infiniteScroll";
 
 const validationSchema = z.object({
   penname: z
@@ -50,26 +51,36 @@ const AuthorBanner = ({
     api.user.isFollowUser.useQuery(user.penname as string, {
       enabled: !isOwner && user.penname != null,
     });
-  const { data: userFollowers, isLoading: loadingFollowers } =
-    api.user.getFollowers.useInfiniteQuery(
-      {
-        limit: 7,
-        penname: user.penname as string,
-      },
-      {
-        getNextPageParam: (lastpage) => lastpage.nextCursor,
-      }
-    );
-  const { data: userFollowing, isLoading: loadingFollowing } =
-    api.user.getFollowing.useInfiniteQuery(
-      {
-        limit: 7,
-        penname: user.penname as string,
-      },
-      {
-        getNextPageParam: (lastpage) => lastpage.nextCursor,
-      }
-    );
+  const {
+    data: userFollowers,
+    isLoading: loadingFollowers,
+    fetchNextPage: fetchFollowerNextPage,
+    isFetchingNextPage: isFetchingFollowerNextPage,
+    hasNextPage: hasFollowerNextPage,
+  } = api.user.getFollowers.useInfiniteQuery(
+    {
+      limit: 7,
+      penname: user.penname as string,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
+  const {
+    data: userFollowing,
+    isLoading: loadingFollowing,
+    fetchNextPage: fetchFollowingNextPage,
+    isFetchingNextPage: isFetchingFollowingNextPage,
+    hasNextPage: hasFollowingNextPage,
+  } = api.user.getFollowing.useInfiniteQuery(
+    {
+      limit: 7,
+      penname: user.penname as string,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
   const {
     imageData: profileImage,
     uploadHandler: uploadProfileImageHandler,
@@ -197,6 +208,9 @@ const AuthorBanner = ({
       error: "Failed to update profile",
     });
   });
+
+  useInfiniteScroll(fetchFollowerNextPage, hasFollowerNextPage);
+  useInfiniteScroll(fetchFollowingNextPage, hasFollowingNextPage);
 
   return (
     <>
@@ -381,6 +395,8 @@ const AuthorBanner = ({
                 ) : (
                   <div>loading follower...</div>
                 )}
+                {isFetchingFollowerNextPage ||
+                  (isFetchingFollowingNextPage && <div>fetching</div>)}
                 {userFollowers?.pages.flatMap((page) => page.items).length ===
                   0 && (
                   <div className="flex w-96 items-center justify-center">
