@@ -11,6 +11,7 @@ import isLike from "./isLike";
 import like from "./like";
 import readChapter from "./readChapter";
 import unlike from "./unlike";
+import buyChapter from "./buyChapter";
 
 export const chapterRouter = createTRPCRouter({
   getAllChapters: getAllChapters,
@@ -25,4 +26,5 @@ export const chapterRouter = createTRPCRouter({
   isLike: isLike,
   like: like,
   unlike: unlike,
+  buyChapter: buyChapter,
 });

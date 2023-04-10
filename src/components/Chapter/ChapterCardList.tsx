@@ -1,11 +1,10 @@
 import update from "immutability-helper";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 import { HiPlusCircle } from "react-icons/hi2";
 import { type RouterOutputs } from "~/utils/api";
 import ChapterCard from "./ChapterCard";
 import ChapterDragLayer from "./ChapterDragLayer";
-import { router } from "@trpc/server";
 import { useRouter } from "next/router";
 
 type props = {
@@ -32,6 +31,10 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
     chapters.sort(sortChapters)
   );
   const router = useRouter();
+
+  useEffect(() => {
+    setArrangedChapters(chapters.sort(sortChapters));
+  }, [chapters]);
 
   const findChapter = useCallback(
     (id: string) => {

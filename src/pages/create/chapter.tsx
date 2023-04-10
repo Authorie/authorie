@@ -28,7 +28,6 @@ const CreateChapter = () => {
     (Chapter & { book: Book | null }) | null
   >(null);
   const editor = useEditor("", true);
-
   const { data: user } = api.user.getData.useQuery(undefined);
   const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
   const filteredDrafts = useMemo(() => {
@@ -178,6 +177,7 @@ const CreateChapter = () => {
             selectedChapter={chapter}
             setErrors={setErrors}
             price={price}
+            selectDraftHandler={selectDraftHandler}
           />
         )}
       </div>

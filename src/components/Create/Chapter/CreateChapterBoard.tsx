@@ -23,6 +23,9 @@ type props = {
   bookId: string | undefined;
   selectedChapter: Chapter | null;
   setErrors: (errors: { title: string | undefined }) => void;
+  selectDraftHandler: (
+    chapter: (Chapter & { book: Book | null }) | null
+  ) => void;
 };
 
 const CreateChapterBoard = ({
@@ -32,6 +35,7 @@ const CreateChapterBoard = ({
   price,
   bookId,
   setErrors,
+  selectDraftHandler,
 }: props) => {
   const router = useRouter();
   const context = api.useContext();
@@ -77,6 +81,9 @@ const CreateChapterBoard = ({
       {
         async onSuccess(data) {
           await context.chapter.getDrafts.invalidate();
+          if (bookId) {
+            await context.book.getData.invalidate({ id: bookId });
+          }
           await router.replace(`/create/chapter?chapterId=${data.id}`);
         },
       }
@@ -112,6 +119,8 @@ const CreateChapterBoard = ({
       {
         onSettled() {
           void context.chapter.getDrafts.invalidate();
+          void context.book.getData.invalidate({ id: bookId });
+          selectDraftHandler(null);
         },
       }
     );
