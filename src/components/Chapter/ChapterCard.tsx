@@ -92,7 +92,17 @@ const ChapterCard = ({
   };
 
   return (
-    <div className="relative">
+    <div
+      onClick={clickCardHandler}
+      className={`relative z-10 h-fit w-full ${
+        editable
+          ? ""
+          : "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      }
+    ${isDragging ? "opacity-0" : "opacity-100"} ${
+        isEdit ? "cursor-move" : "cursor-default"
+      }`}
+    >
       {chapter.price > 0 && (
         <div className="absolute -left-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
           <Image
@@ -114,16 +124,8 @@ const ChapterCard = ({
       />
       <div
         ref={(node) => drag(drop(node))}
-        onClick={clickCardHandler}
-        className={`relative z-10 flex h-16 w-full cursor-pointer items-center justify-between overflow-hidden rounded-lg 
-      bg-white px-3 shadow-lg ${
-        editable
-          ? ""
-          : "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-      }
-      ${isDragging ? "opacity-0" : "opacity-100"} ${
-          isEdit ? "cursor-move" : "cursor-default"
-        }`}
+        className={`relative flex h-16 w-full cursor-pointer items-center justify-between overflow-hidden rounded-lg 
+      bg-white px-3 shadow-lg`}
       >
         {((status !== "authenticated" && chapter.price > 0) ||
           (!isOwner && !isChapterBought)) && (
