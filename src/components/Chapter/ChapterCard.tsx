@@ -103,7 +103,7 @@ const ChapterCard = ({
         isEdit ? "cursor-move" : "cursor-default"
       }`}
     >
-      {chapter.price > 0 && (
+      {isOwner && chapter.price > 0 && (
         <div className="absolute -left-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
           <Image
             src="/authorie_coin_logo.svg"
