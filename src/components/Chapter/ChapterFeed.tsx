@@ -61,7 +61,8 @@ const ChapterFeed = ({ chapter }: props) => {
             <p className="text-sm text-authYellow-500">{chapter.price}</p>
           </div>
         )}
-        {!isOwner && !isChapterBought && (
+        {((status !== "authenticated" && chapter.price > 0) ||
+          (!isOwner && !isChapterBought)) && (
           <>
             <div className="absolute left-0 top-0 z-20 h-full w-full bg-black/70">
               <div className="flex h-full w-full items-center justify-center gap-4 text-white">
@@ -82,7 +83,7 @@ const ChapterFeed = ({ chapter }: props) => {
             </div>
           </>
         )}
-        <div className="invisible absolute z-20 h-full w-full bg-gray-500/20 group-hover/items:visible" />
+        <div className="invisible absolute z-20 h-full w-full bg-black/20 group-hover/items:visible" />
         <div className="relative flex flex-col gap-1 px-8 py-4">
           <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/60 to-transparent" />
           <div className="absolute inset-0">

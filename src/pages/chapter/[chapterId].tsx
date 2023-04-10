@@ -2,7 +2,8 @@ import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
-import { useSession, signIn, SessionContext } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import DialogBuyChapter from "~/components/Dialog/DialogBuyChapter";
@@ -19,6 +20,7 @@ import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
 import DialogLayout from "~/components/Dialog/DialogLayout";
+import Link from "next/link";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -51,6 +53,10 @@ const ChapterPage = ({ chapter }: props) => {
   const chapterId = router.query.chapterId as string;
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
+  // const [dialogState, dispatchDialog] = useReducer(
+  //   dialogReducer,
+  //   dialogInitialState
+  // );
   const { data: session, status } = useSession();
   const utils = api.useContext();
   const { data: isLiked } = api.chapter.isLike.useQuery(
@@ -76,28 +82,32 @@ const ChapterPage = ({ chapter }: props) => {
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
-    if (!isOwner && !isChapterBought) {
-      if (!session && status !== "loading") {
-        setOpenBuyChapter(false);
+    console.log("status: ", status);
+    if (status === "loading") return;
+    if (!isChapterBought) {
+      if (status === "unauthenticated") {
         setOpenLogin(true);
+        console.log("not authen");
         return;
-      } else if (session) {
-        setOpenLogin(false);
+      }
+      if (!isOwner) {
         setOpenBuyChapter(true);
-        return;
-      } else {
         return;
       }
     }
+    console.log("open nothing", session, status);
     editor.commands.setContent(chapter.content as JSONContent);
   }, [editor, chapter, chapterId, isOwner, isChapterBought, status, session]);
 
   useEffect(() => {
-    if (!isOwner && !isChapterBought) {
-      if (!session) {
+    if (status === "loading") return;
+    if (!isChapterBought) {
+      if (status === "unauthenticated") {
         setOpenLogin(true);
+        console.log("not authen");
         return;
-      } else {
+      }
+      if (!isOwner) {
         setOpenBuyChapter(true);
         return;
       }
@@ -149,6 +159,20 @@ const ChapterPage = ({ chapter }: props) => {
     <div className="relative flex h-screen w-full flex-col">
       {chapter && chapter.book && chapter.book.status !== BookStatus.DRAFT ? (
         <div className="flex h-full flex-col overflow-y-scroll">
+          {chapter.price > 0 && (
+            <div className="absolute right-5 top-4 z-20 flex items-center gap-1 rounded-full bg-white px-2 py-1">
+              <Image
+                src="/authorie_coin_logo.svg"
+                alt="Authorie coin logo"
+                width={30}
+                height={30}
+                className="h-5 w-5"
+              />
+              <p className="text-sm font-semibold text-authYellow-500">
+                {chapter.price}
+              </p>
+            </div>
+          )}
           <DialogLayout
             isOpen={openLogin}
             closeModal={() => setOpenLogin(false)}
@@ -181,9 +205,12 @@ const ChapterPage = ({ chapter }: props) => {
               <h1 className="text-3xl font-semibold text-white">
                 #1 {chapter.title}
               </h1>
-              <h3 className="mt-2 text-sm text-white">
+              <Link
+                href={`/${chapter.owner.penname as string}`}
+                className="mt-2 cursor-pointer text-sm text-white hover:underline"
+              >
                 {chapter.owner.penname}
-              </h3>
+              </Link>
               <h4 className="mt-2 text-xs text-white">
                 {chapter.publishedAt?.toDateString()}
               </h4>

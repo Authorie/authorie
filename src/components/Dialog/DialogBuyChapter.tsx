@@ -3,6 +3,7 @@ import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import DialogLayout from "./DialogLayout";
+import Image from "next/image";
 
 type props = {
   isOpen: boolean;
@@ -70,13 +71,29 @@ const DialogBuyChapter = ({
         isOpen={isOpen}
         closeModal={closeModal}
         title="Buy chapter"
-        description={`I want to pay ${price.toLocaleString()} Au to read the chapter called "${title}"`}
         button
         onClick={() => void confirmHandler()}
         cancelClick={cancelClick}
         cancelTitle={cancelTitle}
         openLoop={openLoop}
-      />
+      >
+        <div className="-mb-2 mt-2 flex items-center">
+          I want to pay
+          <Image
+            src="/authorie_coin_logo.svg"
+            alt="Authorie coin logo"
+            width={30}
+            height={30}
+            className="mx-1 h-4 w-4"
+          />
+          <span className="mr-1 font-semibold text-authYellow-500">
+            {price.toLocaleString()} Au
+          </span>
+          to read the chapter called &quot;
+          <span className="font-semibold text-authGreen-600">{title}</span>
+          &quot;
+        </div>
+      </DialogLayout>
       {!user?.coin ||
         (user?.coin < price && (
           <DialogLayout

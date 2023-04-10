@@ -30,7 +30,7 @@ const ChapterCard = ({
 }: props) => {
   const router = useRouter();
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const isOwner = session?.user.id === chapter.ownerId;
   const editable =
     chapter.publishedAt === null ||
@@ -125,7 +125,8 @@ const ChapterCard = ({
           isEdit ? "cursor-move" : "cursor-default"
         }`}
       >
-        {!isOwner && !isChapterBought && (
+        {((status !== "authenticated" && chapter.price > 0) ||
+          (!isOwner && !isChapterBought)) && (
           <>
             <div className="absolute left-0 top-0 h-full w-full bg-black/70">
               <div className="flex h-full w-full items-center justify-center gap-4 text-white">
