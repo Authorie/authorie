@@ -1,14 +1,18 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const SignInPage = () => {
+  const router = useRouter();
   const { status } = useSession();
   const signInHandler = async (provider: "google" | "facebook") => {
     if (status === "authenticated") {
       await signOut({ redirect: false });
     }
-    void signIn(provider, { callbackUrl: "/" });
+    void signIn(provider, {
+      callbackUrl: (router.query.callbackUrl as string) || "/",
+    });
   };
 
   return (
