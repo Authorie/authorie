@@ -239,7 +239,7 @@ const AuthorBanner = ({
       </label>
       <form
         onSubmit={(e) => void onSubmitHandler(e)}
-        className="ml-40 h-[300px] max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg"
+        className="ml-40 max-w-xl bg-black/60 px-7 pt-7 backdrop-blur-lg"
       >
         <div className="mb-3 flex justify-between ">
           <label
@@ -356,40 +356,6 @@ const AuthorBanner = ({
             <span className="font-semibold">{user._count.followers}</span>{" "}
             followers
           </div>
-          <DialogLayout
-            isOpen={openFollowers}
-            closeModal={() => setOpenFollowers(false)}
-            title={"Followers"}
-          >
-            {
-              <div>
-                {userFollowers && !loadingFollowers ? (
-                  userFollowers?.pages
-                    .flatMap((page) => page.items)
-                    .map((user) => (
-                      <UserCard
-                        key={user.id}
-                        penname={user.penname as string}
-                        image={user.image || undefined}
-                        followersNumber={user._count.followers}
-                        followingNumber={user._count.following}
-                        userId={user.id}
-                        followUser={(userId) => onFollowHandler(userId)}
-                        unfollowUser={(userId) => onUnfollowHandler(userId)}
-                      />
-                    ))
-                ) : (
-                  <div>loading follower...</div>
-                )}
-                {userFollowers?.pages.flatMap((page) => page.items).length ===
-                  0 && (
-                  <div className="flex w-96 items-center justify-center">
-                    <p className="text-lg">No followers</p>
-                  </div>
-                )}
-              </div>
-            }
-          </DialogLayout>
           <div
             className="cursor-pointer"
             onClick={() => setOpenFollowing(true)}
@@ -397,42 +363,6 @@ const AuthorBanner = ({
             <span className="font-semibold">{user._count.following}</span>{" "}
             following
           </div>
-          <DialogLayout
-            isOpen={openFollowing}
-            closeModal={() => setOpenFollowing(false)}
-            title={"Following"}
-          >
-            <div className="w-fit">
-              {
-                <div>
-                  {userFollowing && !loadingFollowing ? (
-                    userFollowing?.pages
-                      .flatMap((page) => page.items)
-                      .map((user) => (
-                        <UserCard
-                          key={user.id}
-                          penname={user.penname as string}
-                          image={user.image || undefined}
-                          followersNumber={user._count.followers}
-                          followingNumber={user._count.following}
-                          userId={user.id}
-                          followUser={(userId) => onFollowHandler(userId)}
-                          unfollowUser={(userId) => onUnfollowHandler(userId)}
-                        />
-                      ))
-                  ) : (
-                    <div>loading following...</div>
-                  )}
-                  {userFollowing?.pages.flatMap((page) => page.items).length ===
-                    0 && (
-                    <div className="flex w-96 items-center justify-center">
-                      <p className="text-lg">No following</p>
-                    </div>
-                  )}
-                </div>
-              }
-            </div>
-          </DialogLayout>
         </div>
         <div className="h-fit w-4/5 pb-2 text-sm text-white">
           {isEditing ? (
@@ -466,6 +396,80 @@ const AuthorBanner = ({
           )}
         </div>
       </form>
+      <DialogLayout
+        isOpen={openFollowers}
+        closeModal={() => setOpenFollowers(false)}
+        title={"Followers"}
+      >
+        {
+          <div>
+            {userFollowers && !loadingFollowers ? (
+              userFollowers?.pages
+                .flatMap((page) => page.items)
+                .map((user) => (
+                  <UserCard
+                    key={user.id}
+                    penname={user.penname as string}
+                    image={user.image || undefined}
+                    followersNumber={user._count.followers}
+                    isOwner={user.id === session?.user.id}
+                    followingNumber={user._count.following}
+                    userId={user.id}
+                    closeModal={() => setOpenFollowers(false)}
+                    followUser={(userId) => onFollowHandler(userId)}
+                    unfollowUser={(userId) => onUnfollowHandler(userId)}
+                  />
+                ))
+            ) : (
+              <div>loading follower...</div>
+            )}
+            {userFollowers?.pages.flatMap((page) => page.items).length ===
+              0 && (
+              <div className="flex w-96 items-center justify-center">
+                <p className="text-lg">No followers</p>
+              </div>
+            )}
+          </div>
+        }
+      </DialogLayout>
+      <DialogLayout
+        isOpen={openFollowing}
+        closeModal={() => setOpenFollowing(false)}
+        title={"Following"}
+      >
+        <div className="w-fit">
+          {
+            <div>
+              {userFollowing && !loadingFollowing ? (
+                userFollowing?.pages
+                  .flatMap((page) => page.items)
+                  .map((user) => (
+                    <UserCard
+                      key={user.id}
+                      penname={user.penname as string}
+                      image={user.image || undefined}
+                      followersNumber={user._count.followers}
+                      followingNumber={user._count.following}
+                      userId={user.id}
+                      isOwner={user.id === session?.user.id}
+                      closeModal={() => setOpenFollowing(false)}
+                      followUser={(userId) => onFollowHandler(userId)}
+                      unfollowUser={(userId) => onUnfollowHandler(userId)}
+                    />
+                  ))
+              ) : (
+                <div>loading following...</div>
+              )}
+              {userFollowing?.pages.flatMap((page) => page.items).length ===
+                0 && (
+                <div className="flex w-96 items-center justify-center">
+                  <p className="text-lg">No following</p>
+                </div>
+              )}
+            </div>
+          }
+        </div>
+      </DialogLayout>
     </>
   );
 };

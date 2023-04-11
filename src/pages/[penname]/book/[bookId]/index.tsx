@@ -662,7 +662,10 @@ const BookContent = () => {
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 {book.chapters && (
-                  <DndProvider backend={HTML5Backend}>
+                  <DndProvider
+                    key={book.updatedAt.toString()}
+                    backend={HTML5Backend}
+                  >
                     <ChapterCardList
                       isEdit={isEdit}
                       isChapterCreatable={isChapterCreatable}

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { api } from "~/utils/api";
 import AuthorBanner from "./AuthorBanner";
 import AuthorBannerSkeleton from "./AuthorBannerSkeleton";
+import Custom404 from "~/pages/404";
 
 const authorTabs = [
   { title: "HOME", url: "" },
@@ -38,7 +39,7 @@ const AuthorBannerContainer = () => {
   );
   const { data: user } = api.user.getData.useQuery(undefined);
   const isOwner = router.isReady && user?.penname === penname;
-  const { data: userInBanner } = api.user.getData.useQuery(
+  const { data: userInBanner, isLoading } = api.user.getData.useQuery(
     isOwner ? undefined : penname,
     {
       enabled: router.isReady,
@@ -48,13 +49,14 @@ const AuthorBannerContainer = () => {
   return (
     <>
       <div className="relative h-fit min-w-full">
+        {!userInBanner && !isLoading && <Custom404 />}
         {userInBanner ? (
           <AuthorBanner tab={tab} user={userInBanner} />
         ) : (
           <AuthorBannerSkeleton />
         )}
       </div>
-      <div className="sticky top-0 z-20 ml-40 w-full self-start">
+      <div className="sticky top-0 z-30 ml-40 w-full self-start">
         <div className="flex max-w-xl items-center justify-between bg-black/60 shadow-lg backdrop-blur-lg">
           {authorTabs.map((data) => (
             <button
