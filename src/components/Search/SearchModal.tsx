@@ -8,6 +8,9 @@ import SearchBookResult from "./SearchBookResult";
 import SearchChapterResult from "./SearchChapterResult";
 import SearchUserResult from "./SearchUserResult";
 import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
+import UserResultSkeleton from "./SearchSkeleton/UserResultSkeleton";
+import BookResultSkeleton from "./SearchSkeleton/BookResultSkeleton";
+import ChapterResultSkeleton from "./SearchSkeleton/ChapterResultSkeleton";
 
 const allCategory = ["Users", "Books", "Chapters"] as const;
 
@@ -76,7 +79,7 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   } = api.search.searchChapters.useInfiniteQuery(
     {
       search: searchTerm,
-      limit: 8,
+      limit: 4,
     },
     {
       enabled: openDialog && selectedCategory === "Chapters" && enableSearch,
@@ -194,13 +197,11 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
             className="grid-flow-rol grid h-96 gap-3 overflow-y-scroll px-8 pb-6 pt-3 "
           >
             {searchResults(selectedCategory)}
-            {(isFetchingUserNextPage ||
-              isFetchingBookNextPage ||
-              isFetchingChapterNextPage) && (
-              <div className="mt-3">
-                <div>loading</div>
-              </div>
-            )}
+            <div className="mt-3">
+              {isFetchingUserNextPage && <UserResultSkeleton />}
+              {isFetchingBookNextPage && <BookResultSkeleton />}
+              {isFetchingChapterNextPage && <ChapterResultSkeleton />}
+            </div>
           </div>
         </Dialog.Panel>
       </div>

@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { HiBookOpen } from "react-icons/hi2";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
 

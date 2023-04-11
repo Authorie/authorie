@@ -1,4 +1,4 @@
-import { HiDocument, HiHeart, HiEye } from "react-icons/hi2";
+import { HiHeart, HiEye } from "react-icons/hi2";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
 
