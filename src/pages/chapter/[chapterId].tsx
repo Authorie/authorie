@@ -38,9 +38,13 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const ssg = generateSSGHelper(null);
   const chapterId = params.chapterId as string;
   const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+  const chapters = await ssg.book.getData.fetch({
+    id: chapter.bookId as string,
+  });
   return {
     props: {
       chapter,
+      chapters,
     },
     revalidate: 10,
   };
@@ -48,7 +52,18 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
 type props = InferGetStaticPropsType<typeof getStaticProps>;
 
-const ChapterPage = ({ chapter }: props) => {
+const ChapterPage = ({ chapter, chapters }: props) => {
+  const chapterIndex = chapters?.chapters.findIndex(
+    (data) => chapter.id === data.id
+  );
+  const previousChapterId =
+    chapterIndex &&
+    chapterIndex - 1 !== undefined &&
+    chapters?.chapters[chapterIndex - 1]?.id;
+  const nextChapterId =
+    chapterIndex &&
+    chapterIndex + 1 !== undefined &&
+    chapters?.chapters[chapterIndex + 1]?.id;
   const router = useRouter();
   const chapterId = router.query.chapterId as string;
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
@@ -203,7 +218,7 @@ const ChapterPage = ({ chapter }: props) => {
                 {chapter.book?.title}
               </h2>
               <h1 className="text-3xl font-semibold text-white">
-                #1 {chapter.title}
+                #{(chapterIndex as number) + 1} {chapter.title}
               </h1>
               <Link
                 href={`/${chapter.owner.penname as string}`}
@@ -217,9 +232,15 @@ const ChapterPage = ({ chapter }: props) => {
             </div>
           </div>
           <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between rounded-b-xl bg-authGreen-600 p-2">
-            <div className="mx-10">
+            <button
+              disabled={!previousChapterId}
+              onClick={() =>
+                void router.push(`/chapter/${previousChapterId as string}`)
+              }
+              className="mx-10"
+            >
               <HiOutlineChevronLeft className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
-            </div>
+            </button>
             {status === "authenticated" && (
               <div className="flex w-1/2 items-center justify-center">
                 <ChapterLikeButton
@@ -235,9 +256,15 @@ const ChapterPage = ({ chapter }: props) => {
             <div className="flex cursor-pointer items-center gap-2 rounded-full px-2 py-1 hover:bg-gray-500">
               <HiOutlineArrowTopRightOnSquare className="h-5 w-5 text-white" />
             </div>
-            <div className="mx-10">
+            <button
+              disabled={!nextChapterId}
+              onClick={() =>
+                void router.push(`/chapter/${nextChapterId as string}`)
+              }
+              className="mx-10"
+            >
               <HiOutlineChevronRight className="h-7 w-7 cursor-pointer rounded-full bg-gray-500 p-1 text-white hover:bg-gray-700" />
-            </div>
+            </button>
           </div>
           <div className="relative mt-0 flex h-full justify-between px-4">
             <div className="w-[800px] py-4">
