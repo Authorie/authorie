@@ -127,6 +127,7 @@ model Book {
     id             String         @id @default(cuid())
     title          String
     description    String?
+    previousStatus BookStatus?
     status         BookStatus     @default(INITIAL)
     createdAt      DateTime       @default(now())
     updatedAt      DateTime       @updatedAt
