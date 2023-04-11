@@ -20,7 +20,7 @@ const Home = () => {
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
-  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading } =
     api.chapter.getFeeds.useInfiniteQuery(
       {
         limit: 10,
@@ -44,12 +44,12 @@ const Home = () => {
             .map((chapter) => (
               <ChapterFeed key={chapter.id} chapter={chapter} />
             ))}
+        {(isFetchingNextPage || isLoading) && (
+          <div>
+            <ChapterFeedSkeleton />
+          </div>
+        )}
       </div>
-      {isFetchingNextPage && (
-        <div className="mt-8">
-          <ChapterFeedSkeleton />
-        </div>
-      )}
     </div>
   );
 };

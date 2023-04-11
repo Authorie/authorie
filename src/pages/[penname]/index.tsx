@@ -7,7 +7,7 @@ import useInfiniteScroll from "~/hooks/infiniteScroll";
 const HomePage = () => {
   const router = useRouter();
   const penname = router.query.penname as string;
-  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, fetchNextPage, isFetchingNextPage, isLoading, hasNextPage } =
     api.chapter.getAllChapters.useInfiniteQuery(
       {
         penname,
@@ -27,8 +27,8 @@ const HomePage = () => {
         data.pages
           .flatMap((page) => page.items)
           .map((chapter) => <ChapterFeed key={chapter.id} chapter={chapter} />)}
-      {isFetchingNextPage && (
-        <div className="mt-8">
+      {(isFetchingNextPage || isLoading) && (
+        <div>
           <ChapterFeedSkeleton />
         </div>
       )}

@@ -1,4 +1,4 @@
-const BookLoading = () => {
+const BookSkeleton = () => {
   return (
     <div className="flex animate-pulse">
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-400 shadow-lg" />
@@ -10,4 +10,4 @@ const BookLoading = () => {
   );
 };
 
-export default BookLoading;
+export default BookSkeleton;

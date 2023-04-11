@@ -34,7 +34,6 @@ const categoryButtonClassName = (
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   const router = useRouter();
-  const scrollableId = "dialog-body";
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");
@@ -43,10 +42,11 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
     fetchNextPage: fetchUserNextPage,
     isFetchingNextPage: isFetchingUserNextPage,
     hasNextPage: hasUserNextPage,
+    isLoading: isLoadingUser,
   } = api.search.searchUsers.useInfiniteQuery(
     {
       search: searchTerm,
-      limit: 4,
+      limit: 3,
     },
     {
       enabled: openDialog && selectedCategory === "Users" && enableSearch,
@@ -58,13 +58,14 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
     fetchNextPage: fetchBookNextPage,
     isFetchingNextPage: isFetchingBookNextPage,
     hasNextPage: hasBookNextPage,
+    isLoading: isLoadingBook,
   } = api.search.searchBooks.useInfiniteQuery(
     {
       search: {
         title: searchTerm,
         description: searchTerm,
       },
-      limit: 4,
+      limit: 3,
     },
     {
       enabled: openDialog && selectedCategory === "Books" && enableSearch,
@@ -76,10 +77,11 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
     fetchNextPage: fetchChapterNextPage,
     isFetchingNextPage: isFetchingChapterNextPage,
     hasNextPage: hasChapterNextPage,
+    isLoading: isLoadingChapter,
   } = api.search.searchChapters.useInfiniteQuery(
     {
       search: searchTerm,
-      limit: 4,
+      limit: 3,
     },
     {
       enabled: openDialog && selectedCategory === "Chapters" && enableSearch,
@@ -141,17 +143,17 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
   useInfiniteScrollDialog({
     fetchNextPage: fetchUserNextPage,
     hasNextPage: hasUserNextPage,
-    scrollableId,
+    scrollableId: selectedCategory === "Users" ? selectedCategory : null,
   });
   useInfiniteScrollDialog({
     fetchNextPage: fetchBookNextPage,
     hasNextPage: hasBookNextPage,
-    scrollableId,
+    scrollableId: selectedCategory === "Books" ? selectedCategory : null,
   });
   useInfiniteScrollDialog({
     fetchNextPage: fetchChapterNextPage,
     hasNextPage: hasChapterNextPage,
-    scrollableId,
+    scrollableId: selectedCategory === "Chapters" ? selectedCategory : null,
   });
 
   return (
@@ -193,15 +195,19 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
           </div>
           <hr className="mx-8 my-1 h-px border-t-0 bg-gray-200"></hr>
           <div
-            id={scrollableId}
+            id={selectedCategory}
             className="grid-flow-rol grid h-96 gap-3 overflow-y-scroll px-8 pb-6 pt-3 "
           >
             {searchResults(selectedCategory)}
-            <div className="mt-3">
-              {isFetchingUserNextPage && <UserResultSkeleton />}
-              {isFetchingBookNextPage && <BookResultSkeleton />}
-              {isFetchingChapterNextPage && <ChapterResultSkeleton />}
-            </div>
+            {(isFetchingUserNextPage || isLoadingUser) && (
+              <UserResultSkeleton />
+            )}
+            {(isFetchingBookNextPage || isLoadingBook) && (
+              <BookResultSkeleton />
+            )}
+            {(isFetchingChapterNextPage || isLoadingChapter) && (
+              <ChapterResultSkeleton />
+            )}
           </div>
         </Dialog.Panel>
       </div>

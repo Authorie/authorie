@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
 import BookList from "~/components/Book/BookList";
-import BookLoading from "~/components/Book/BookLoading";
+import BookSkeleton from "~/components/Book/BookSkeleton";
 import { api } from "~/utils/api";
 
 const BookPage = () => {
@@ -59,10 +59,10 @@ const BookPage = () => {
         )}
         {bookIsLoading && (
           <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-            <BookLoading />
-            <BookLoading />
-            <BookLoading />
-            <BookLoading />
+            <BookSkeleton />
+            <BookSkeleton />
+            <BookSkeleton />
+            <BookSkeleton />
           </div>
         )}
       </div>

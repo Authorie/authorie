@@ -4,7 +4,7 @@ import type { InfiniteQueryObserverResult } from "@tanstack/react-query";
 type Props = {
   fetchNextPage: () => Promise<InfiniteQueryObserverResult>;
   hasNextPage: boolean | undefined;
-  scrollableId: string;
+  scrollableId: string | null;
 };
 
 const useInfiniteScrollDialog = ({
@@ -23,6 +23,7 @@ const useInfiniteScrollDialog = ({
         });
       }
     };
+    if (!scrollableId) return;
     const scrollableElement = document.getElementById(scrollableId);
     if (scrollableElement) {
       scrollableElement.addEventListener("scroll", handleScroll);

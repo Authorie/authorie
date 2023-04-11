@@ -14,6 +14,7 @@ import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { type AuthorTab } from "./AuthorBannerContainer";
 import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
+import UserCardSkeleton from "../Card/UserCardSkeleton";
 
 const validationSchema = z.object({
   penname: z
@@ -385,7 +386,10 @@ const AuthorBanner = ({
             title={"Followers"}
           >
             {
-              <div id={scrollableId} className="h-full overflow-y-scroll">
+              <div
+                id={scrollableId}
+                className="flex h-full flex-col gap-4 overflow-y-scroll"
+              >
                 {userFollowers && !loadingFollowers ? (
                   userFollowers?.pages
                     .flatMap((page) => page.items)
@@ -402,10 +406,11 @@ const AuthorBanner = ({
                       />
                     ))
                 ) : (
-                  <div>loading follower...</div>
+                  <div>
+                    <UserCardSkeleton />
+                  </div>
                 )}
-                {isFetchingFollowerNextPage ||
-                  (isFetchingFollowingNextPage && <div>fetching</div>)}
+                {isFetchingFollowerNextPage && <UserCardSkeleton />}
                 {userFollowers?.pages.flatMap((page) => page.items).length ===
                   0 && (
                   <div className="flex w-96 items-center justify-center">
@@ -428,7 +433,10 @@ const AuthorBanner = ({
             title={"Following"}
           >
             {
-              <div id={scrollableId} className="h-full overflow-y-scroll">
+              <div
+                id={scrollableId}
+                className="flex h-full flex-col gap-4 overflow-y-scroll"
+              >
                 {userFollowing && !loadingFollowing ? (
                   userFollowing?.pages
                     .flatMap((page) => page.items)
@@ -445,8 +453,11 @@ const AuthorBanner = ({
                       />
                     ))
                 ) : (
-                  <div>loading following...</div>
+                  <div>
+                    <UserCardSkeleton />
+                  </div>
                 )}
+                {isFetchingFollowingNextPage && <UserCardSkeleton />}
                 {userFollowing?.pages.flatMap((page) => page.items).length ===
                   0 && (
                   <div className="flex w-96 items-center justify-center">
