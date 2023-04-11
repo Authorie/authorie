@@ -4,28 +4,30 @@ import dayjs from "dayjs";
 import dynamic from "next/dynamic";
 import NextImage from "next/image";
 import { useRouter } from "next/router";
+import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
 import { api } from "~/utils/api";
+import Image from "next/image";
 const CreateChapterBoard = dynamic(
   () => import("~/components/Create/Chapter/CreateChapterBoard")
 );
 
 const CreateChapter = () => {
   const router = useRouter();
-
+  const [priceError, setPriceError] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
   const [title, setTitle] = useState("");
+  const [price, setPrice] = useState<number>();
   const [book, setBook] = useState<Book | null>(null);
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
   >(null);
   const editor = useEditor("", true);
-
   const { data: user } = api.user.getData.useQuery(undefined);
   const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
   const filteredDrafts = useMemo(() => {
@@ -58,6 +60,25 @@ const CreateChapter = () => {
       }
       return book;
     });
+  };
+
+  const changePriceHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.trim();
+
+    if (input === "") {
+      setPriceError("");
+      setPrice(undefined);
+    } else {
+      const parsed = parseInt(input);
+
+      if (isNaN(parsed) || parsed < 0 || parsed.toString() !== input) {
+        setPriceError("Please enter a positive integer.");
+        setPrice(undefined);
+      } else {
+        setPriceError("");
+        setPrice(parsed);
+      }
+    }
   };
 
   useEffect(() => {
@@ -117,13 +138,33 @@ const CreateChapter = () => {
               )}
             </div>
             {user && (
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-600">Book </span>
-                <BookComboBox
-                  user={user}
-                  selectedBook={book}
-                  onToggleBook={toggleBookHandler}
-                />
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-xs text-gray-600">Book: </span>
+                  <BookComboBox
+                    user={user}
+                    selectedBook={book}
+                    onToggleBook={toggleBookHandler}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600">Price: </span>
+                  <input
+                    className="selection: h-5 w-16 rounded-lg pl-3 pr-5 text-xs shadow-md outline-none focus:outline-none"
+                    placeholder="0"
+                    onChange={changePriceHandler}
+                  />
+                  <Image
+                    src="/authorie_coin_logo.svg"
+                    alt="Authorie coin logo"
+                    width={30}
+                    height={30}
+                    className="h-5 w-5"
+                  />
+                  {priceError && (
+                    <p className="text-xs text-red-500">{priceError}</p>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -135,6 +176,8 @@ const CreateChapter = () => {
             bookId={book?.id}
             selectedChapter={chapter}
             setErrors={setErrors}
+            price={price}
+            selectDraftHandler={selectDraftHandler}
           />
         )}
       </div>

@@ -2,9 +2,11 @@ import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
+import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import DialogBuyChapter from "~/components/Dialog/DialogBuyChapter";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
@@ -17,6 +19,8 @@ import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
+import DialogLayout from "~/components/Dialog/DialogLayout";
+import Link from "next/link";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -47,7 +51,13 @@ type props = InferGetStaticPropsType<typeof getStaticProps>;
 const ChapterPage = ({ chapter }: props) => {
   const router = useRouter();
   const chapterId = router.query.chapterId as string;
-  const { status } = useSession();
+  const [openBuyChapter, setOpenBuyChapter] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
+  // const [dialogState, dispatchDialog] = useReducer(
+  //   dialogReducer,
+  //   dialogInitialState
+  // );
+  const { data: session, status } = useSession();
   const utils = api.useContext();
   const { data: isLiked } = api.chapter.isLike.useQuery(
     {
@@ -59,20 +69,51 @@ const ChapterPage = ({ chapter }: props) => {
   const {
     data: comments,
     isSuccess,
-    isLoading,
+    isLoading: isLoadingComment,
   } = api.comment.getAll.useQuery({
     chapterId: chapterId,
   });
-  const editor = useEditor(chapter?.content as JSONContent, false);
+  const editor = useEditor("The content cannot be shown...", false);
+  const isChapterBought =
+    chapter &&
+    (chapter.price === 0 || chapter.chapterMarketHistories.length > 0);
+  const isOwner = chapter?.ownerId === session?.user.id;
 
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
+    console.log("status: ", status);
+    if (status === "loading") return;
+    if (!isChapterBought) {
+      if (status === "unauthenticated") {
+        setOpenLogin(true);
+        console.log("not authen");
+        return;
+      }
+      if (!isOwner) {
+        setOpenBuyChapter(true);
+        return;
+      }
+    }
+    console.log("open nothing", session, status);
     editor.commands.setContent(chapter.content as JSONContent);
-  }, [editor, chapter, chapterId]);
+  }, [editor, chapter, chapterId, isOwner, isChapterBought, status, session]);
 
   useEffect(() => {
+    if (status === "loading") return;
+    if (!isChapterBought) {
+      if (status === "unauthenticated") {
+        setOpenLogin(true);
+        console.log("not authen");
+        return;
+      }
+      if (!isOwner) {
+        setOpenBuyChapter(true);
+        return;
+      }
+    }
     readChapter.mutate({ id: chapterId });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -118,6 +159,44 @@ const ChapterPage = ({ chapter }: props) => {
     <div className="relative flex h-screen w-full flex-col">
       {chapter && chapter.book && chapter.book.status !== BookStatus.DRAFT ? (
         <div className="flex h-full flex-col overflow-y-scroll">
+          {chapter.price > 0 && (
+            <div className="absolute right-5 top-4 z-20 flex items-center gap-1 rounded-full bg-white px-2 py-1">
+              <Image
+                src="/authorie_coin_logo.svg"
+                alt="Authorie coin logo"
+                width={30}
+                height={30}
+                className="h-5 w-5"
+              />
+              <p className="text-sm font-semibold text-authYellow-500">
+                {chapter.price}
+              </p>
+            </div>
+          )}
+          <DialogLayout
+            isOpen={openLogin}
+            closeModal={() => setOpenLogin(false)}
+            openLoop={() => setOpenLogin(true)}
+            title="You still have not sign in yet!"
+            description="Please sign in before access this content."
+          >
+            <button
+              onClick={() => void signIn()}
+              className="focus:outlone-none justify-center gap-4 rounded-lg bg-green-700 px-3 py-1 text-white outline-none hover:bg-green-800"
+            >
+              Sign in now!
+            </button>
+          </DialogLayout>
+          <DialogBuyChapter
+            title={chapter.title}
+            price={chapter.price}
+            chapterId={chapter.id}
+            isOpen={openBuyChapter}
+            closeModal={() => setOpenBuyChapter(false)}
+            cancelClick={() => void router.push("/")}
+            cancelTitle="Exit"
+            openLoop={() => setOpenBuyChapter(true)}
+          />
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
               <h2 className="text-lg font-semibold text-white">
@@ -126,9 +205,12 @@ const ChapterPage = ({ chapter }: props) => {
               <h1 className="text-3xl font-semibold text-white">
                 #1 {chapter.title}
               </h1>
-              <h3 className="mt-2 text-sm text-white">
+              <Link
+                href={`/${chapter.owner.penname as string}`}
+                className="mt-2 cursor-pointer text-sm text-white hover:underline"
+              >
                 {chapter.owner.penname}
-              </h3>
+              </Link>
               <h4 className="mt-2 text-xs text-white">
                 {chapter.publishedAt?.toDateString()}
               </h4>
@@ -168,7 +250,7 @@ const ChapterPage = ({ chapter }: props) => {
                     comments.map((comment) => (
                       <Comment key={comment.id} comment={comment} />
                     ))}
-                  {isLoading && (
+                  {isLoadingComment && (
                     <div className="flex items-center justify-center rounded-full text-white">
                       <svg
                         className="... h-5 w-5 animate-spin"
@@ -188,7 +270,7 @@ const ChapterPage = ({ chapter }: props) => {
         </div>
       ) : (
         <div className="flex h-full items-center justify-center text-3xl font-bold">
-          This chapter does not exist
+          isLoading
         </div>
       )}
     </div>
