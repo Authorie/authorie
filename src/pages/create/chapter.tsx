@@ -33,8 +33,7 @@ const CreateChapter = () => {
   const filteredDrafts = useMemo(() => {
     return draftChapters?.filter(
       (draft) =>
-        !draft.publishedAt ||
-        dayjs().subtract(1, "hour").isAfter(draft.publishedAt)
+        !draft.publishedAt || dayjs().add(1, "hour").isBefore(draft.publishedAt)
     );
   }, [draftChapters]);
 
