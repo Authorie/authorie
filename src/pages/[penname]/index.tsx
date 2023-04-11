@@ -22,7 +22,7 @@ const HomePage = () => {
   useInfiniteScroll(fetchNextPage, hasNextPage);
 
   return (
-    <div className="flex w-[1024px] flex-col gap-8 py-8">
+    <div className="flex w-[1024px] flex-col gap-4 py-8">
       {data &&
         data.pages
           .flatMap((page) => page.items)

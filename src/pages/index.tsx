@@ -37,7 +37,7 @@ const Home = () => {
   return (
     <div className="flex flex-col px-10 py-4">
       <CategoryBoard isLogin={status === "authenticated"} />
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4">
         {data &&
           data.pages
             .flatMap((page) => page.items)
