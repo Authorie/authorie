@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { HiUser } from "react-icons/hi2";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
 
@@ -11,12 +10,14 @@ type props = {
 const SearchUserResult = ({ user, onClickCard }: props) => {
   return (
     <SearchResultCard onClick={onClickCard}>
-      <div className="flex w-2/12 items-center justify-center rounded-l bg-authBlue-500">
-        <HiUser className="h-12 w-12 fill-white" />
-      </div>
-      <div className="grow py-3">
-        <p className="text-xs font-semibold text-authBlue-500">AUTHOR</p>
-        <h4 className="text-2xl font-bold text-authBlue-500">{user.penname}</h4>
+      <div className="flex h-32 grow flex-col justify-between py-3">
+        <div>
+          <p className="text-xs text-authBlue-500">AUTHOR</p>
+          <h4 className="w-72 text-xl font-bold text-authBlue-500">
+            {user.penname}
+          </h4>
+          <p className="my-4 text-xs text-dark-600">{user.bio}</p>
+        </div>
         <div className="flex gap-16 text-sm">
           <p>
             <span className="font-semibold text-authBlue-500">
@@ -31,14 +32,13 @@ const SearchUserResult = ({ user, onClickCard }: props) => {
             following
           </p>
         </div>
-        <p className="my-4 text-xs text-dark-600">{user.bio}</p>
       </div>
-      <div className="flex w-2/12 items-center">
+      <div className="h-20 w-20">
         <div className="overflow-hidden rounded-full drop-shadow">
           <Image
             src={user.image || "/placeholder_profile.png"}
-            width={100}
-            height={100}
+            width={90}
+            height={90}
             alt="user profile image"
           />
         </div>

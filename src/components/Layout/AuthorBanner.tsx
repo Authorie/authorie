@@ -13,6 +13,8 @@ import useImageUpload from "~/hooks/imageUpload";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { type AuthorTab } from "./AuthorBannerContainer";
+import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
+import UserCardSkeleton from "../Card/UserCardSkeleton";
 
 const validationSchema = z.object({
   penname: z
@@ -37,6 +39,7 @@ const AuthorBanner = ({
   tab: AuthorTab;
   user: RouterOutputs["user"]["getData"];
 }) => {
+  const scrollableId = "dialog-body";
   const [isEditing, setIsEditing] = useState(false);
   const [openFollowers, setOpenFollowers] = useState(false);
   const [openFollowing, setOpenFollowing] = useState(false);
@@ -50,26 +53,36 @@ const AuthorBanner = ({
     api.user.isFollowUser.useQuery(user.penname as string, {
       enabled: !isOwner && user.penname != null,
     });
-  const { data: userFollowers, isLoading: loadingFollowers } =
-    api.user.getFollowers.useInfiniteQuery(
-      {
-        limit: 7,
-        penname: user.penname as string,
-      },
-      {
-        getNextPageParam: (lastpage) => lastpage.nextCursor,
-      }
-    );
-  const { data: userFollowing, isLoading: loadingFollowing } =
-    api.user.getFollowing.useInfiniteQuery(
-      {
-        limit: 7,
-        penname: user.penname as string,
-      },
-      {
-        getNextPageParam: (lastpage) => lastpage.nextCursor,
-      }
-    );
+  const {
+    data: userFollowers,
+    isLoading: loadingFollowers,
+    fetchNextPage: fetchFollowerNextPage,
+    isFetchingNextPage: isFetchingFollowerNextPage,
+    hasNextPage: hasFollowerNextPage,
+  } = api.user.getFollowers.useInfiniteQuery(
+    {
+      limit: 7,
+      penname: user.penname as string,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
+  const {
+    data: userFollowing,
+    isLoading: loadingFollowing,
+    fetchNextPage: fetchFollowingNextPage,
+    isFetchingNextPage: isFetchingFollowingNextPage,
+    hasNextPage: hasFollowingNextPage,
+  } = api.user.getFollowing.useInfiniteQuery(
+    {
+      limit: 7,
+      penname: user.penname as string,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
   const {
     imageData: profileImage,
     uploadHandler: uploadProfileImageHandler,
@@ -196,6 +209,17 @@ const AuthorBanner = ({
       success: "Profile updated!",
       error: "Failed to update profile",
     });
+  });
+
+  useInfiniteScrollDialog({
+    fetchNextPage: fetchFollowerNextPage,
+    hasNextPage: hasFollowerNextPage,
+    scrollableId,
+  });
+  useInfiniteScrollDialog({
+    fetchNextPage: fetchFollowingNextPage,
+    hasNextPage: hasFollowingNextPage,
+    scrollableId,
   });
 
   return (
@@ -402,7 +426,10 @@ const AuthorBanner = ({
         title={"Followers"}
       >
         {
-          <div>
+          <div
+            id={scrollableId}
+            className="flex h-full flex-col gap-4 overflow-y-scroll"
+          >
             {userFollowers && !loadingFollowers ? (
               userFollowers?.pages
                 .flatMap((page) => page.items)
@@ -421,8 +448,11 @@ const AuthorBanner = ({
                   />
                 ))
             ) : (
-              <div>loading follower...</div>
+              <div>
+                <UserCardSkeleton />
+              </div>
             )}
+            {isFetchingFollowerNextPage && <UserCardSkeleton />}
             {userFollowers?.pages.flatMap((page) => page.items).length ===
               0 && (
               <div className="flex w-96 items-center justify-center">
@@ -437,38 +467,42 @@ const AuthorBanner = ({
         closeModal={() => setOpenFollowing(false)}
         title={"Following"}
       >
-        <div className="w-fit">
-          {
-            <div>
-              {userFollowing && !loadingFollowing ? (
-                userFollowing?.pages
-                  .flatMap((page) => page.items)
-                  .map((user) => (
-                    <UserCard
-                      key={user.id}
-                      penname={user.penname as string}
-                      image={user.image || undefined}
-                      followersNumber={user._count.followers}
-                      followingNumber={user._count.following}
-                      userId={user.id}
-                      isOwner={user.id === session?.user.id}
-                      closeModal={() => setOpenFollowing(false)}
-                      followUser={(userId) => onFollowHandler(userId)}
-                      unfollowUser={(userId) => onUnfollowHandler(userId)}
-                    />
-                  ))
-              ) : (
-                <div>loading following...</div>
-              )}
-              {userFollowing?.pages.flatMap((page) => page.items).length ===
-                0 && (
-                <div className="flex w-96 items-center justify-center">
-                  <p className="text-lg">No following</p>
-                </div>
-              )}
-            </div>
-          }
-        </div>
+        {
+          <div
+            id={scrollableId}
+            className="flex h-full flex-col gap-4 overflow-y-scroll"
+          >
+            {userFollowing && !loadingFollowing ? (
+              userFollowing?.pages
+                .flatMap((page) => page.items)
+                .map((user) => (
+                  <UserCard
+                    key={user.id}
+                    penname={user.penname as string}
+                    image={user.image || undefined}
+                    followersNumber={user._count.followers}
+                    isOwner={user.id === session?.user.id}
+                    followingNumber={user._count.following}
+                    userId={user.id}
+                    closeModal={() => setOpenFollowers(false)}
+                    followUser={(userId) => onFollowHandler(userId)}
+                    unfollowUser={(userId) => onUnfollowHandler(userId)}
+                  />
+                ))
+            ) : (
+              <div>
+                <UserCardSkeleton />
+              </div>
+            )}
+            {isFetchingFollowingNextPage && <UserCardSkeleton />}
+            {userFollowing?.pages.flatMap((page) => page.items).length ===
+              0 && (
+              <div className="flex w-96 items-center justify-center">
+                <p className="text-lg">No following</p>
+              </div>
+            )}
+          </div>
+        }
       </DialogLayout>
     </>
   );

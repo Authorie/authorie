@@ -89,10 +89,10 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
           </div>
         )}
 
-        {arrangedChapters.map((chapter, index) => (
+        {arrangedChapters.reverse().map((chapter, index) => (
           <ChapterCard
             key={chapter.id}
-            chapterNo={index + 1}
+            chapterNo={arrangedChapters.length - index}
             isEdit={isEdit}
             chapter={chapter}
             moveChapter={moveChapter}
