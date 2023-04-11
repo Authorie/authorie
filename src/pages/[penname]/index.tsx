@@ -32,6 +32,13 @@ const HomePage = () => {
           <ChapterFeedSkeleton />
         </div>
       )}
+      {data &&
+        data.pages.flatMap((page) => page.items).length === 0 &&
+        !isLoading && (
+          <div className="flex h-44 items-center justify-center rounded-lg bg-white text-3xl font-semibold">
+            The author has not published anything yet!
+          </div>
+        )}
     </div>
   );
 };
