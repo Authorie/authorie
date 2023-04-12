@@ -81,10 +81,6 @@ const moveState = protectedProcedure
             message: "archived status can only be changed to previous status",
           });
         }
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "archived status cannot be changed",
-        });
     }
 
     await ctx.prisma.book.update({
