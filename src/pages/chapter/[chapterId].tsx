@@ -21,6 +21,7 @@ import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
 import DialogLayout from "~/components/Dialog/DialogLayout";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -170,6 +171,12 @@ const ChapterPage = ({ chapter, chapters }: props) => {
     }
   };
 
+  const copyToClipboard = () => {
+    const url = window.location.origin + router.asPath;
+    void navigator.clipboard.writeText(url);
+    toast.success("URL Copied");
+  };
+
   return (
     <div className="relative flex h-screen w-full flex-col">
       {chapter && chapter.book && chapter.book.status !== BookStatus.DRAFT ? (
@@ -253,7 +260,10 @@ const ChapterPage = ({ chapter, chapters }: props) => {
               </div>
             )}
             <ReadChapterPopover editor={editor} />
-            <div className="flex cursor-pointer items-center gap-2 rounded-full px-2 py-1 hover:bg-gray-500">
+            <div
+              onClick={copyToClipboard}
+              className="flex cursor-pointer items-center gap-2 rounded-full px-2 py-1 hover:bg-gray-500"
+            >
               <HiOutlineArrowTopRightOnSquare className="h-5 w-5 text-white" />
             </div>
             <button
