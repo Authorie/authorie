@@ -1,6 +1,7 @@
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
+import { BookOwnerStatus } from "@prisma/client";
 import { BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -10,6 +11,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import DialogLayout from "~/components/Dialog/DialogLayout";
 import {
   HiBars3CenterLeft,
   HiEye,
@@ -35,6 +37,7 @@ const validationSchema = z.object({
 });
 
 const BookContent = () => {
+  const [openWarning, setOpenWarning] = useState(false);
   const router = useRouter();
   const { status } = useSession();
   const bookId = router.query.bookId as string;
@@ -44,6 +47,9 @@ const BookContent = () => {
   const { data: categories } = api.category.getAll.useQuery(undefined);
   const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery({
     id: bookId,
+  });
+  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
+    bookId: bookId,
   });
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
@@ -184,9 +190,10 @@ const BookContent = () => {
     }
   }, [book]);
 
-  const draftBookHandler = async () => {
+  const confirmDraftBookHandler = async () => {
+    if (book === undefined) return;
     const promiseMoveState = moveState.mutateAsync({
-      id: bookId,
+      id: book?.id,
       status: BookStatus.DRAFT,
     });
     await toast.promise(promiseMoveState, {
@@ -194,6 +201,20 @@ const BookContent = () => {
       success: "Your book is in draft state now!",
       error: "Error occured during move state",
     });
+  };
+
+  const draftBookHandler = () => {
+    if (book === undefined) return;
+    if (
+      collaborators &&
+      collaborators.some(
+        (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
+      )
+    ) {
+      setOpenWarning(true);
+    } else {
+      void confirmDraftBookHandler();
+    }
   };
 
   const publishBookHandler = async () => {
@@ -320,6 +341,14 @@ const BookContent = () => {
 
   return (
     <div className="flex w-full items-center justify-center px-6">
+      <DialogLayout
+        isOpen={openWarning}
+        closeModal={() => setOpenWarning(false)}
+        title="Are you sure you want to start writing now?"
+        description="Not every authors has responsed to your invitation yet."
+        onClick={() => void confirmDraftBookHandler()}
+        button
+      />
       {book && (
         <form
           id="submit-changes"

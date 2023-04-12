@@ -70,6 +70,7 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
           isCollaborator={book.isCollborator}
           isInvitee={book.isInvited}
           status={book.status}
+          previousStatus={book.previousStatus}
           like={book.chapters.reduce((acc, curr) => acc + curr._count.likes, 0)}
           read={book.chapters.reduce((acc, curr) => acc + curr._count.views, 0)}
         />

@@ -301,7 +301,7 @@ const CreateBook = () => {
             aria-disabled={bookCreateMutation.isLoading}
             className="rounded-xl bg-slate-500 px-8 py-2 font-semibold text-white hover:bg-slate-700"
           >
-            Save
+            Create
           </button>
         </div>
       </div>

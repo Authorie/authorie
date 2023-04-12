@@ -24,6 +24,7 @@ type props = {
   ownerPenname: string;
   isCollaborator: boolean;
   isInvitee: boolean;
+  previousStatus: BookStatus | null;
 };
 
 const Book = ({
@@ -37,6 +38,7 @@ const Book = ({
   ownerPenname,
   isCollaborator,
   isInvitee,
+  previousStatus,
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
@@ -121,6 +123,22 @@ const Book = ({
     });
   };
 
+  const unarchiveBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    const promiseMoveState = moveState.mutateAsync({
+      id: id,
+      status:
+        previousStatus === BookStatus.PUBLISHED
+          ? BookStatus.PUBLISHED
+          : BookStatus.COMPLETED,
+    });
+    await toast.promise(promiseMoveState, {
+      loading: "returning to previous state...",
+      success: "unarchive successful!",
+      error: "Fail to unarchive",
+    });
+  };
+
   const responseInvaitationHandler = (
     e: MouseEvent<HTMLButtonElement>,
     response: boolean
@@ -130,6 +148,11 @@ const Book = ({
       bookId: id,
       accept: response,
     });
+  };
+
+  const onStatusHandler = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    void router.push(`/${penname}/book/${id}/status`);
   };
 
   return (
@@ -193,8 +216,19 @@ const Book = ({
               </button>
             )}
             {status === BookStatus.ARCHIVED && (
-              <button className="absolute right-2 top-2 z-10 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700">
+              <button
+                onClick={(e) => void unarchiveBookHandler(e)}
+                className="absolute right-2 top-2 z-20 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700"
+              >
                 Unarchive
+              </button>
+            )}
+            {status === BookStatus.INITIAL && (
+              <button
+                onClick={onStatusHandler}
+                className="absolute bottom-2 right-2 z-20 rounded-full bg-gray-400 px-1 py-1 text-xs font-semibold text-white hover:bg-gray-500"
+              >
+                Change state to start the book
               </button>
             )}
           </>
