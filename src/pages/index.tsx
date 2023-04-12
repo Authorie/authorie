@@ -1,13 +1,13 @@
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
+import ChapterFeedSkeleton from "~/components/Chapter/ChapterFeedSkeleton";
 import { useFollowedCategories } from "~/hooks/followedCategories";
+import useInfiniteScroll from "~/hooks/infiniteScroll";
 import { useSelectedCategory } from "~/hooks/selectedCategory";
 import { useSelectedDate } from "~/hooks/selectedDate";
 import { api } from "~/utils/api";
-import ChapterFeedSkeleton from "~/components/Chapter/ChapterFeedSkeleton";
 const ChapterFeed = dynamic(() => import("~/components/Chapter/ChapterFeed"));
-import useInfiniteScroll from "~/hooks/infiniteScroll";
 
 const Home = () => {
   const selectedDate = useSelectedDate();

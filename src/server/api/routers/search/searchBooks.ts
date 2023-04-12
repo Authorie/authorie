@@ -27,13 +27,13 @@ const searchBooks = publicProcedure
           some: {
             user: search.userId
               ? {
-                  id: search.userId,
-                }
+                id: search.userId,
+              }
               : {
-                  penname: {
-                    contains: search.penname,
-                  },
+                penname: {
+                  contains: search.penname,
                 },
+              },
             status: {
               in: [BookOwnerStatus.OWNER, BookOwnerStatus.COLLABORATOR],
             },

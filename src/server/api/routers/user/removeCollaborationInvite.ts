@@ -1,7 +1,7 @@
 import { BookOwnerStatus } from "@prisma/client";
-import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const removeCollaborationInvite = protectedProcedure
   .input(z.object({ bookId: z.string().cuid(), userId: z.string().cuid() }))

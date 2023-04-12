@@ -1,7 +1,7 @@
-import { api } from "~/utils/api";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
+import { api } from "~/utils/api";
 
 type props = {
   penname: string;

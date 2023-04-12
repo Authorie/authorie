@@ -107,8 +107,8 @@ const createChapter = protectedProcedure
             publishedAt === null || publishedAt === false
               ? null
               : publishedAt === true
-              ? new Date()
-              : publishedAt,
+                ? new Date()
+                : publishedAt,
         },
       });
     } else {
@@ -123,8 +123,8 @@ const createChapter = protectedProcedure
             publishedAt === null || publishedAt === false
               ? null
               : publishedAt === true
-              ? new Date()
-              : publishedAt,
+                ? new Date()
+                : publishedAt,
         },
       });
     }

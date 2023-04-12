@@ -25,12 +25,12 @@ const getFeeds = publicProcedure
           },
           categories: categoryIds
             ? {
-                some: {
-                  categoryId: {
-                    in: categoryIds,
-                  },
+              some: {
+                categoryId: {
+                  in: categoryIds,
                 },
-              }
+              },
+            }
             : undefined,
         },
       },

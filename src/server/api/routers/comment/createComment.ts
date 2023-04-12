@@ -1,7 +1,7 @@
 import { BookStatus } from "@prisma/client";
-import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const createComment = protectedProcedure
   .input(
@@ -69,10 +69,10 @@ const createComment = protectedProcedure
         },
         parent: input.parent
           ? {
-              connect: {
-                id: input.parent,
-              },
-            }
+            connect: {
+              id: input.parent,
+            },
+          }
           : undefined,
       },
     });
