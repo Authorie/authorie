@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "preinstall": "npx only-allow pnpm", 
     "build": "next build",
     "analyze": "ANALYZE=true next build",
     "dev": "next dev",
@@ -61,7 +62,6 @@
     "@types/eslint": "^8.37.0",
     "@upstash/ratelimit": "^0.4.1",
     "@upstash/redis": "^1.20.2",
-    "@uptrace/node": "^1.11.0",
     "@vercel/analytics": "^0.1.11",
     "dayjs": "^1.11.7",
     "immutability-helper": "^3.1.1",
@@ -105,7 +105,5 @@
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
-  "peerDependencies": {
-    "csstype": "^3.0.10"
-  }
+  "packageManager": "pnpm@8.2.0"
 }
