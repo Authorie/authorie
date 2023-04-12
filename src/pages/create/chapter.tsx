@@ -2,7 +2,7 @@ import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import dayjs from "dayjs";
 import dynamic from "next/dynamic";
-import NextImage from "next/image";
+import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -10,7 +10,6 @@ import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
 import { api } from "~/utils/api";
-import Image from "next/image";
 const CreateChapterBoard = dynamic(
   () => import("~/components/Create/Chapter/CreateChapterBoard")
 );

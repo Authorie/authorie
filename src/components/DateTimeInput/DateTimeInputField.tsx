@@ -1,7 +1,7 @@
-import DateInput from "~/components/DateTimeInput/DateInput";
-import TimeInput from "~/components/DateTimeInput/TimeInput";
 import dayjs from "dayjs";
 import { useState } from "react";
+import DateInput from "~/components/DateTimeInput/DateInput";
+import TimeInput from "~/components/DateTimeInput/TimeInput";
 
 type props = {
   label: string;

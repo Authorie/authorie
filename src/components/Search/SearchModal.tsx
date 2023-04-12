@@ -1,16 +1,16 @@
 import { Dialog } from "@headlessui/react";
-import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
+import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
 import useSearch from "~/hooks/search";
+import { api } from "~/utils/api";
 import SearchBookResult from "./SearchBookResult";
 import SearchChapterResult from "./SearchChapterResult";
-import SearchUserResult from "./SearchUserResult";
-import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
-import UserResultSkeleton from "./SearchSkeleton/UserResultSkeleton";
 import BookResultSkeleton from "./SearchSkeleton/BookResultSkeleton";
 import ChapterResultSkeleton from "./SearchSkeleton/ChapterResultSkeleton";
+import UserResultSkeleton from "./SearchSkeleton/UserResultSkeleton";
+import SearchUserResult from "./SearchUserResult";
 
 const allCategory = ["Users", "Books", "Chapters"] as const;
 

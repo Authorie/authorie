@@ -1,5 +1,5 @@
-import { protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const unfollowUser = protectedProcedure
   .input(z.string())

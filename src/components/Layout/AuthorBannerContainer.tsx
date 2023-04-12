@@ -1,9 +1,9 @@
 import { useRouter } from "next/router";
 import { useMemo } from "react";
+import Custom404 from "~/pages/404";
 import { api } from "~/utils/api";
 import AuthorBanner from "./AuthorBanner";
 import AuthorBannerSkeleton from "./AuthorBannerSkeleton";
-import Custom404 from "~/pages/404";
 
 const authorTabs = [
   { title: "HOME", url: "" },

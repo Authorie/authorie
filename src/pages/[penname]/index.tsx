@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import ChapterFeed from "~/components/Chapter/ChapterFeed";
-import { api } from "~/utils/api";
 import ChapterFeedSkeleton from "~/components/Chapter/ChapterFeedSkeleton";
 import useInfiniteScroll from "~/hooks/infiniteScroll";
+import { api } from "~/utils/api";
 
 const HomePage = () => {
   const router = useRouter();

@@ -3,9 +3,9 @@ import type { Editor } from "@tiptap/core";
 import type { ChangeEvent } from "react";
 import { Fragment, useEffect, useState } from "react";
 import {
-  HiOutlineChevronUpDown,
-  HiOutlineMinusCircle,
-  HiOutlinePlusCircle,
+    HiOutlineChevronUpDown,
+    HiOutlineMinusCircle,
+    HiOutlinePlusCircle,
 } from "react-icons/hi2";
 import { RiMarkPenLine, RiText } from "react-icons/ri";
 

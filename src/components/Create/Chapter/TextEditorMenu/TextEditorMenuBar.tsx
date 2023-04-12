@@ -3,19 +3,19 @@ import type { Editor } from "@tiptap/react";
 import type { CharacterCountStorage } from "@tiptap/extension-character-count";
 import { Fragment } from "react";
 import {
-  RiArrowLeftLine,
-  RiArrowRightLine,
-  RiBold,
-  RiFormatClear,
-  RiH1,
-  RiH2,
-  RiH3,
-  RiItalic,
-  RiListOrdered,
-  RiListUnordered,
-  RiMarkPenLine,
-  RiStrikethrough,
-  RiUnderline,
+    RiArrowLeftLine,
+    RiArrowRightLine,
+    RiBold,
+    RiFormatClear,
+    RiH1,
+    RiH2,
+    RiH3,
+    RiItalic,
+    RiListOrdered,
+    RiListUnordered,
+    RiMarkPenLine,
+    RiStrikethrough,
+    RiUnderline,
 } from "react-icons/ri";
 import FontColorSelection from "./FontColorSelection";
 import ImageInputButton from "./ImageInputButton";

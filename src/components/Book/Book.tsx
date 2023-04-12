@@ -5,10 +5,10 @@ import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
 import toast from "react-hot-toast";
 import {
-  HiOutlineEye,
-  HiOutlineHeart,
-  HiOutlineStar,
-  HiStar,
+    HiOutlineEye,
+    HiOutlineHeart,
+    HiOutlineStar,
+    HiStar,
 } from "react-icons/hi2";
 import { api } from "~/utils/api";
 

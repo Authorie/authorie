@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import type { InfiniteQueryObserverResult } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 type Props = {
   fetchNextPage: () => Promise<InfiniteQueryObserverResult>;

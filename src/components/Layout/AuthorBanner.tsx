@@ -10,11 +10,11 @@ import z from "zod";
 import UserCard from "~/components/Card/UserCard";
 import DialogLayout from "~/components/Dialog/DialogLayout";
 import useImageUpload from "~/hooks/imageUpload";
+import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
-import { type AuthorTab } from "./AuthorBannerContainer";
-import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
 import UserCardSkeleton from "../Card/UserCardSkeleton";
+import { type AuthorTab } from "./AuthorBannerContainer";
 
 const validationSchema = z.object({
   penname: z

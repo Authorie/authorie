@@ -1,5 +1,5 @@
-import type { ReactElement } from "react";
 import Head from "next/head";
+import type { ReactElement } from "react";
 
 export default function Custom404() {
   return (

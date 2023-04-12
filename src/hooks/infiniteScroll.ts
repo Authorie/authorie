@@ -1,6 +1,6 @@
+import type { InfiniteQueryObserverResult } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import type { InfiniteQueryObserverResult } from "@tanstack/react-query";
 
 interface MyScrollingElement extends HTMLElement {
   scrollHeight: number;
