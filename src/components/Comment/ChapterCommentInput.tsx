@@ -1,8 +1,8 @@
 import { api } from "~/utils/api";
 import { useState, type FormEvent } from "react";
+import UploadImageInput from "./UploadImageInput";
 import { HiOutlinePhoto } from "react-icons/hi2";
-import useImageUpload from "~/hooks/imageUpload";
-import z from "zod";
+import { Popover } from "@headlessui/react";
 
 type props = {
   chapterId: string;
@@ -11,19 +11,10 @@ type props = {
 const ChapterCommentInput = ({ chapterId }: props) => {
   const utils = api.useContext();
   const [content, setContent] = useState("");
-  const { imageData, uploadHandler, resetImageData } = useImageUpload();
   const commentMutation = api.comment.create.useMutation();
-  const uploadImage = api.upload.uploadImage.useMutation();
-
-  const submitCommentHandler = async (e: FormEvent<HTMLFormElement>) => {
+  const [commentImageUrl, setCommentImageUrl] = useState<string>("");
+  const submitCommentHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    let commentImageUrl;
-    const urlParser = z.string().startsWith("data:image");
-    if (imageData && urlParser.safeParse(imageData).success) {
-      commentImageUrl = await uploadImage.mutateAsync({
-        image: imageData,
-      });
-    }
     if (content !== "") {
       commentMutation.mutate(
         {
@@ -38,36 +29,44 @@ const ChapterCommentInput = ({ chapterId }: props) => {
           },
         }
       );
+      setCommentImageUrl("");
       setContent("");
-      resetImageData();
     }
   };
 
   return (
     <form
       onSubmit={(e) => void submitCommentHandler(e)}
-      className="flex w-full items-center gap-3 rounded-xl py-1 pl-3 pr-1"
+      className="relative flex w-full items-center gap-3 rounded-xl py-1 pl-3 pr-1"
     >
-      <div className="flex w-full gap-1">
+      {commentImageUrl && (
+        <div
+          onClick={() => setCommentImageUrl("")}
+          className="group/image-add absolute -top-2 right-0 cursor-pointer rounded-full bg-green-400 px-1 text-xs font-semibold text-white hover:bg-red-400"
+        >
+          <p className="visible group-hover/image-add:hidden">image added</p>
+          <p className="hidden group-hover/image-add:block">remove image</p>
+        </div>
+      )}
+      <div className="flex w-full items-center gap-1">
         <input
           className="w-full rounded-full bg-gray-200 px-4 py-1 text-sm outline-none focus:outline-none"
           placeholder="write comment here"
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <label
-          htmlFor="upload-image"
-          className="flex w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-500"
-        >
-          <input
-            id="upload-image"
-            hidden
-            type="file"
-            accept="image/jepg, image/png"
-            onChange={uploadHandler}
-          />
-          <HiOutlinePhoto className="h-5 w-5 text-white" />
-        </label>
+        <Popover>
+          <Popover.Panel className="relative">
+            <div className="absolute -left-10 top-8">
+              <UploadImageInput
+                onClick={(image: string) => setCommentImageUrl(image)}
+              />
+            </div>
+          </Popover.Panel>
+          <Popover.Button className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-500">
+            <HiOutlinePhoto className="h-5 w-5 text-white" />
+          </Popover.Button>
+        </Popover>
       </div>
       <input type="submit" hidden />
     </form>

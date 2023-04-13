@@ -1,7 +1,6 @@
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { HiEllipsisHorizontal } from "react-icons/hi2";
 import { CommentButton, LikeButton } from "~/components/action";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
@@ -64,68 +63,63 @@ const Comment = ({ comment }: props) => {
   }, [isLike]);
 
   return (
-    <div className="my-2 rounded-xl bg-white px-1 pt-1">
-      <div className="flex gap-1 ">
-        <div className="mt-6 h-6 w-6 overflow-hidden rounded-full">
+    <div className="w-[800px] border-y bg-white px-1 pt-2">
+      <div className="flex gap-1 px-1">
+        <div className="h-14 w-14 overflow-hidden rounded-full">
           <Image
             src={comment.user.image || "/placeholder_profile.png"}
             alt={`${comment.user.penname || "user"} profile image`}
-            width={50}
-            height={50}
+            width={170}
+            height={170}
           />
         </div>
-        <div className="flex grow flex-col">
-          <span className="text-sm font-semibold text-authGreen-600">
-            {comment.user.penname || ""}
-          </span>
-          <div className="flex-col rounded-lg bg-gray-200 px-2">
-            <div className=" overflow-hidden">
-              {comment.image !== null && (
-                <Image
-                  src={comment.image}
-                  alt={`${comment.user.penname || "user"} commment's image`}
-                  width={280}
-                  height={280}
-                />
-              )}
-            </div>
-            <div className="flex h-8 grow items-center justify-between">
-              <p className="text-sm">{comment.content}</p>
-              <HiEllipsisHorizontal className="h-7 w-7" />
-            </div>
-          </div>
-          <div className="my-1 flex items-center justify-between pr-2">
-            <div className="flex gap-7">
-              <LikeButton
-                isAuthenticated={status === "authenticated"}
-                isLiked={Boolean(isLiked)}
-                numberOfLike={comment._count.likes}
-                onClickHandler={onLikeHandler}
-                small
-              />
-              {comment.parentCommentId === null && (
-                <CommentButton
-                  numberOfComments={comment._count.replies}
-                  onClickHandler={() => setOpenReplies((prev) => !prev)}
-                  small
-                />
-              )}
-            </div>
+        <div className="flex flex-col gap-1 rounded-lg px-2">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-bold text-authGreen-600">
+              {comment.user.penname || ""}
+            </span>
             <p className="text-xs text-dark-400">
               {comment.createdAt.toDateString().split(" ").slice(1).join(" ")}
             </p>
+          </div>
+          <div className="flex grow items-center justify-between">
+            <p className="text-sm">{comment.content}</p>
+          </div>
+          {comment.image !== null && (
+            <Image
+              src={comment.image}
+              alt={`${comment.user.penname || "user"} commment's image`}
+              width={580}
+              height={580}
+            />
+          )}
+          <div className="flex gap-7 pb-1">
+            <LikeButton
+              isAuthenticated={status === "authenticated"}
+              isLiked={Boolean(isLiked)}
+              numberOfLike={comment._count.likes}
+              onClickHandler={onLikeHandler}
+              small
+            />
+            {comment.parentCommentId === null && (
+              <CommentButton
+                numberOfComments={comment._count.replies}
+                onClickHandler={() => setOpenReplies((prev) => !prev)}
+                small
+              />
+            )}
           </div>
         </div>
       </div>
       {openReplies &&
         "replies" in comment &&
         comment.replies.map((reply) => (
-          <div key={reply.id} className="-mb-1 -mt-2 ml-7">
+          <div key={reply.id} className="pl-16">
             <Comment comment={reply} />
           </div>
         ))}
       {openReplies && (
-        <div className="ml-7">
+        <div className="ml-7 mt-2">
           <ReplyCommentInput
             chapterId={comment.chapterId}
             parentId={comment.id || undefined}

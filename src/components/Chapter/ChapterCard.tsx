@@ -84,7 +84,6 @@ const ChapterCard = ({
     if (editable) return;
     if (!isOwner && !isChapterBought) {
       setOpenBuyChapter(true);
-      console.log("in");
     } else {
       void router.push(`/chapter/${chapter.id}`);
     }
