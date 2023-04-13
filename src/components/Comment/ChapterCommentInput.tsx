@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import UploadImageInput from "./UploadImageInput";
 import { HiOutlinePhoto } from "react-icons/hi2";
-import useImageUpload from "~/hooks/imageUpload";
+import { api } from "~/utils/api";
+import { Popover } from "@headlessui/react";
 
 type props = {
   chapterId: string;
