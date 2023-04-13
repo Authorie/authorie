@@ -40,6 +40,14 @@ const searchChapters = publicProcedure
             penname: true,
           },
         },
+        _count: true,
+        ...(ctx.session && {
+          chapterMarketHistories: {
+            where: {
+              userId: ctx.session?.user.id
+            }
+          }
+        }),
       },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,
