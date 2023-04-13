@@ -145,55 +145,93 @@ const CreateChapterBoard = ({
         />
       </div>
       <div className="flex justify-between bg-white px-4 py-4">
-        <button
-          type="button"
-          className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white disabled:bg-gray-400"
-          disabled={selectedChapter === null}
-          onClick={() => void deleteDraftChapterHandler()}
-        >
-          Delete
-        </button>
-        <div className="flex items-end gap-3">
-          {selectedChapter?.publishedAt && (
-            <p className="text-xs font-semibold text-green-500">
-              publish soon on:{" "}
-              {selectedChapter.publishedAt.toLocaleDateString()}
-              {", "}
-              {selectedChapter.publishedAt.toLocaleTimeString()}
-            </p>
-          )}
+        {!selectedChapter?.publishedAt && (
           <button
             type="button"
-            className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
+            className="h-8 w-24 rounded-lg bg-red-500 text-sm text-white hover:bg-red-700 disabled:bg-gray-400"
+            disabled={selectedChapter === null}
+            onClick={() => void deleteDraftChapterHandler()}
+          >
+            Delete
+          </button>
+        )}
+        {selectedChapter?.publishedAt && (
+          <button
+            type="button"
+            className="h-8 w-32 rounded-lg bg-red-500 text-sm text-white hover:bg-red-700"
             onClick={() => void saveDraftChapterHandler()}
           >
-            Save
+            Cancel Publish
           </button>
-          <Popover>
-            <Popover.Panel className="relative">
-              <div className="absolute -right-32 bottom-2 z-10">
-                <DateTimeInputField
-                  initialDate={
-                    selectedChapter ? selectedChapter.publishedAt : null
-                  }
-                  label={"Confirm Publish"}
-                  onSubmit={(date: Date) =>
-                    void publishDraftChapterHandler(date)
-                  }
-                />
+        )}
+        <div className="flex items-end gap-3">
+          {!selectedChapter?.publishedAt && (
+            <>
+              <button
+                type="button"
+                className="h-8 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
+                onClick={() => void saveDraftChapterHandler()}
+              >
+                Save
+              </button>
+              <Popover>
+                <Popover.Panel className="relative">
+                  <div className="absolute -right-32 bottom-2 z-10">
+                    <DateTimeInputField
+                      initialDate={
+                        selectedChapter ? selectedChapter.publishedAt : null
+                      }
+                      label={"Confirm Publish"}
+                      onSubmit={(date: Date) =>
+                        void publishDraftChapterHandler(date)
+                      }
+                    />
+                  </div>
+                </Popover.Panel>
+                <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
+                  Set Publish Date
+                </Popover.Button>
+              </Popover>
+              <button
+                type="button"
+                onClick={() => void publishDraftChapterHandler()}
+                className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
+              >
+                Publish Now
+              </button>
+            </>
+          )}
+          {selectedChapter?.publishedAt && (
+            <div>
+              <div className="flex items-end gap-3">
+                <Popover>
+                  <Popover.Panel className="relative">
+                    <div className="absolute -right-32 bottom-2 z-10">
+                      <DateTimeInputField
+                        initialDate={
+                          selectedChapter ? selectedChapter.publishedAt : null
+                        }
+                        label={"Update"}
+                        onSubmit={(date: Date) =>
+                          void publishDraftChapterHandler(date)
+                        }
+                      />
+                    </div>
+                  </Popover.Panel>
+                  <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
+                    Update Now
+                  </Popover.Button>
+                </Popover>
+                <button
+                  type="button"
+                  onClick={() => void publishDraftChapterHandler()}
+                  className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
+                >
+                  Publish Now
+                </button>
               </div>
-            </Popover.Panel>
-            <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
-              Set Publish Date
-            </Popover.Button>
-          </Popover>
-          <button
-            type="button"
-            onClick={() => void publishDraftChapterHandler()}
-            className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
-          >
-            Publish Now
-          </button>
+            </div>
+          )}
         </div>
       </div>
     </>

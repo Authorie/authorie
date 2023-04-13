@@ -104,7 +104,7 @@ const ChapterCard = ({
       }`}
     >
       {isOwner && chapter.price > 0 && (
-        <div className="absolute -left-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
+        <div className="absolute -right-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
           <Image
             src="/authorie_coin_logo.svg"
             alt="Authorie coin logo"
@@ -115,6 +115,15 @@ const ChapterCard = ({
           <p className="text-xs text-authYellow-500">{chapter.price}</p>
         </div>
       )}
+      {chapter.publishedAt &&
+        dayjs(new Date()).isAfter(chapter.publishedAt) &&
+        dayjs(new Date()).isBefore(
+          dayjs(chapter.publishedAt).add(1, "day")
+        ) && (
+          <div className="absolute -left-3 -top-1 z-20 bg-red-400 px-1 font-semibold">
+            <p className="text-xs text-white">New</p>
+          </div>
+        )}
       <DialogBuyChapter
         title={chapter.title}
         price={chapter.price}
@@ -149,8 +158,8 @@ const ChapterCard = ({
             </div>
           </>
         )}
-        <p className="mr-3 w-20 text-3xl font-bold text-authGreen-600">
-          # {chapterNo}
+        <p className="w-[90px] text-2xl font-bold text-authGreen-600">
+          #{chapterNo}
         </p>
         <div className="flex w-full flex-col gap-1">
           <h2 className="line-clamp-1 text-lg font-semibold">

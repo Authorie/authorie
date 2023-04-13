@@ -11,6 +11,7 @@ import {
   HiStar,
 } from "react-icons/hi2";
 import { api } from "~/utils/api";
+import type { RouterOutputs } from "~/utils/api";
 
 type props = {
   id: string;
@@ -195,18 +196,24 @@ const Book = ({
         )}
         {(isOwner || isCollaborator) && (
           <>
-            <div
-              className={`
+            {status !== BookStatus.PUBLISHED && (
+              <div
+                className={`
               ${status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
               ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
-              ${status === BookStatus.PUBLISHED ? "bg-green-400" : ""} 
               ${status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
               ${status === BookStatus.ARCHIVED ? "hidden" : ""}
               ${"absolute left-0 top-0 z-10 px-2 text-xs text-white"}
               `}
-            >
-              {status}
-            </div>
+              >
+                {status}
+              </div>
+            )}
+            {status === BookStatus.PUBLISHED && (
+              <div className="absolute left-0 top-0 z-10 px-2 text-xs text-white">
+                <p></p>
+              </div>
+            )}
             {status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}

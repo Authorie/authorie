@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { HiOutlinePhoto } from "react-icons/hi2";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import z from "zod";
 
 type props = {
   chapterId: string;
@@ -12,19 +13,27 @@ type props = {
 const ReplyCommentInput = ({ chapterId, parentId }: props) => {
   const utils = api.useContext();
   const [content, setContent] = useState("");
-  const { imageData, uploadHandler } = useImageUpload();
+  const { imageData, uploadHandler, resetImageData } = useImageUpload();
   const { data: user } = api.user.getData.useQuery();
   const commentMutation = api.comment.create.useMutation();
+  const uploadImage = api.upload.uploadImage.useMutation();
 
-  const submitCommentHandler = (e: FormEvent<HTMLFormElement>) => {
+  const submitCommentHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    let commentImageUrl;
+    const urlParser = z.string().startsWith("data:image");
+    if (imageData && urlParser.safeParse(imageData).success) {
+      commentImageUrl = await uploadImage.mutateAsync({
+        image: imageData,
+      });
+    }
     if (content !== "") {
       commentMutation.mutate(
         {
           id: chapterId,
           parent: parentId,
           content,
-          image: imageData !== "" ? imageData : undefined,
+          image: commentImageUrl !== "" ? commentImageUrl : undefined,
         },
         {
           onSuccess() {
@@ -33,12 +42,17 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
           },
         }
       );
+      resetImageData();
     }
   };
 
+  useEffect(() => {
+    console.log(imageData);
+  }, [imageData]);
+
   return (
     <form
-      onSubmit={submitCommentHandler}
+      onSubmit={(e) => void submitCommentHandler(e)}
       className="ml-1 flex items-center gap-1 rounded-xl bg-white pb-2"
     >
       <div className="h-6 w-7 overflow-hidden rounded-full">
@@ -57,11 +71,11 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
           onChange={(e) => setContent(e.target.value)}
         />
         <label
-          htmlFor="upload-image"
+          htmlFor="reply-upload-image"
           className="flex w-10 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-200"
         >
           <input
-            id="upload-image"
+            id="reply-upload-image"
             hidden
             type="file"
             accept="image/jepg, image/png"

@@ -78,13 +78,17 @@ const Comment = ({ comment }: props) => {
           <span className="text-sm font-semibold text-authGreen-600">
             {comment.user.penname || ""}
           </span>
-          <div className="flex rounded-lg bg-gray-200 px-2">
-            {comment.image !== null && (
-              <Image
-                src={comment.image}
-                alt={`${comment.user.penname || "user"} commment's image`}
-              />
-            )}
+          <div className="flex-col rounded-lg bg-gray-200 px-2">
+            <div className=" overflow-hidden">
+              {comment.image !== null && (
+                <Image
+                  src={comment.image}
+                  alt={`${comment.user.penname || "user"} commment's image`}
+                  width={280}
+                  height={280}
+                />
+              )}
+            </div>
             <div className="flex h-8 grow items-center justify-between">
               <p className="text-sm">{comment.content}</p>
               <HiEllipsisHorizontal className="h-7 w-7" />
@@ -116,7 +120,7 @@ const Comment = ({ comment }: props) => {
       {openReplies &&
         "replies" in comment &&
         comment.replies.map((reply) => (
-          <div key={comment.id} className="-mb-1 -mt-2 ml-7">
+          <div key={reply.id} className="-mb-1 -mt-2 ml-7">
             <Comment comment={reply} />
           </div>
         ))}

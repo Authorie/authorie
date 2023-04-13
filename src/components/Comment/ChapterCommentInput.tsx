@@ -2,6 +2,7 @@ import { api } from "~/utils/api";
 import { useState, type FormEvent } from "react";
 import { HiOutlinePhoto } from "react-icons/hi2";
 import useImageUpload from "~/hooks/imageUpload";
+import z from "zod";
 
 type props = {
   chapterId: string;
@@ -10,18 +11,26 @@ type props = {
 const ChapterCommentInput = ({ chapterId }: props) => {
   const utils = api.useContext();
   const [content, setContent] = useState("");
-  const { imageData, uploadHandler } = useImageUpload();
+  const { imageData, uploadHandler, resetImageData } = useImageUpload();
   const commentMutation = api.comment.create.useMutation();
+  const uploadImage = api.upload.uploadImage.useMutation();
 
-  const submitCommentHandler = (e: FormEvent<HTMLFormElement>) => {
+  const submitCommentHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    let commentImageUrl;
+    const urlParser = z.string().startsWith("data:image");
+    if (imageData && urlParser.safeParse(imageData).success) {
+      commentImageUrl = await uploadImage.mutateAsync({
+        image: imageData,
+      });
+    }
     if (content !== "") {
       commentMutation.mutate(
         {
           id: chapterId,
           parent: undefined,
           content,
-          image: imageData !== "" ? imageData : undefined,
+          image: commentImageUrl !== "" ? commentImageUrl : undefined,
         },
         {
           onSuccess() {
@@ -30,12 +39,13 @@ const ChapterCommentInput = ({ chapterId }: props) => {
         }
       );
       setContent("");
+      resetImageData();
     }
   };
 
   return (
     <form
-      onSubmit={submitCommentHandler}
+      onSubmit={(e) => void submitCommentHandler(e)}
       className="flex w-full items-center gap-3 rounded-xl py-1 pl-3 pr-1"
     >
       <div className="flex w-full gap-1">

@@ -31,6 +31,10 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
     chapters.sort(sortChapters)
   );
   const router = useRouter();
+  const reverseArrangedChapters = arrangedChapters.reverse();
+  const filterChaptersList = reverseArrangedChapters.filter(
+    (chapter) => chapter.publishedAt !== null
+  );
 
   useEffect(() => {
     setArrangedChapters(chapters.sort(sortChapters));
@@ -88,18 +92,17 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
             </span>
           </div>
         )}
-
-        {arrangedChapters.reverse().map((chapter, index) => (
+        {filterChaptersList.map((chapter, index) => (
           <ChapterCard
             key={chapter.id}
-            chapterNo={arrangedChapters.length - index}
+            chapterNo={filterChaptersList.length - index}
             isEdit={isEdit}
             chapter={chapter}
             moveChapter={moveChapter}
             findChapter={findChapter}
           />
         ))}
-      </div>{" "}
+      </div>
       <ChapterDragLayer
         moveChapter={moveChapter}
         findChapter={findChapter}
