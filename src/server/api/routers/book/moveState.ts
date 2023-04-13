@@ -91,15 +91,15 @@ const moveState = protectedProcedure
         owners:
           book.status === BookStatus.INITIAL
             ? {
-                deleteMany: {
-                  status: {
-                    notIn: [
-                      BookOwnerStatus.OWNER,
-                      BookOwnerStatus.COLLABORATOR,
-                    ],
-                  },
+              deleteMany: {
+                status: {
+                  notIn: [
+                    BookOwnerStatus.OWNER,
+                    BookOwnerStatus.COLLABORATOR,
+                  ],
                 },
-              }
+              },
+            }
             : undefined,
       },
     });

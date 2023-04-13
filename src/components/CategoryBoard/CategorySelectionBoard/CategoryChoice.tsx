@@ -1,7 +1,7 @@
-import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import type { Category } from "@prisma/client";
-import { api } from "~/utils/api";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import { useFollowCategory } from "~/hooks/followedCategories";
+import { api } from "~/utils/api";
 
 type props = {
   isLogin: boolean;

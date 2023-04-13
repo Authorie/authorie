@@ -1,7 +1,7 @@
 import { BookStatus } from "@prisma/client";
+import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 import { makePagination } from "~/server/utils";
-import { z } from "zod";
 
 const searchChapters = publicProcedure
   .input(
@@ -40,6 +40,14 @@ const searchChapters = publicProcedure
             penname: true,
           },
         },
+        _count: true,
+        ...(ctx.session && {
+          chapterMarketHistories: {
+            where: {
+              userId: ctx.session?.user.id
+            }
+          }
+        }),
       },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,

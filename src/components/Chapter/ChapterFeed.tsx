@@ -3,12 +3,12 @@ import { EditorContent } from "@tiptap/react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { HiLockClosed } from "react-icons/hi2";
 import { CommentButton, LikeButton } from "~/components/action";
 import { useEditor } from "~/hooks/editor";
 import { api, type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
-import { useState } from "react";
-import { HiLockClosed } from "react-icons/hi2";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];

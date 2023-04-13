@@ -12,10 +12,6 @@ import { withSuperjson } from "next-superjson";
 const config = {
   reactStrictMode: true,
   swcMinify: true,
-  i18n: {
-    locales: ["en"],
-    defaultLocale: "en",
-  },
   images: {
     remotePatterns: [
       {

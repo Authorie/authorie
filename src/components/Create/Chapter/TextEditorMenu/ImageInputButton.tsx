@@ -1,10 +1,10 @@
 import { Popover } from "@headlessui/react";
 import type { Editor } from "@tiptap/react";
-import { api } from "~/utils/api";
 import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { RiCloseFill, RiImageLine } from "react-icons/ri";
 import useImageUpload from "~/hooks/imageUpload";
+import { api } from "~/utils/api";
 
 const ImageInputButton = ({ editor }: { editor: Editor }) => {
   const [InputUrl, setInputUrl] = useState({ value: "" });

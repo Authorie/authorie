@@ -1,7 +1,7 @@
 import { BookStatus } from "@prisma/client";
-import { publicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { publicProcedure } from "~/server/api/trpc";
 
 const getAllComments = publicProcedure
   .input(z.object({ chapterId: z.string().cuid() }))

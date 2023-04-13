@@ -2,11 +2,11 @@ import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
-import { useSession, signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import DialogBuyChapter from "~/components/Dialog/DialogBuyChapter";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
@@ -15,12 +15,12 @@ import {
 import ReadChapterPopover from "~/components/Chapter/ReadChapterMenu/ReadChapterPopover";
 import ChapterCommentInput from "~/components/Comment/ChapterCommentInput";
 import Comment from "~/components/Comment/Comment";
+import DialogBuyChapter from "~/components/Dialog/DialogBuyChapter";
+import DialogLayout from "~/components/Dialog/DialogLayout";
 import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
-import DialogLayout from "~/components/Dialog/DialogLayout";
-import Link from "next/link";
 import { toast } from "react-hot-toast";
 
 export async function getStaticPaths() {

@@ -1,6 +1,6 @@
-import { TimeMachine } from "~/components/action/TimeMachine";
 import type { Category } from "@prisma/client";
 import { HiOutlinePlus, HiOutlineXMark } from "react-icons/hi2";
+import { TimeMachine } from "~/components/action/TimeMachine";
 import { useSelectedCategory } from "~/hooks/selectedCategory";
 import CategoryItem from "./CategoryItem";
 

@@ -1,5 +1,5 @@
 import { Popover } from "@headlessui/react";
-import type { Chapter } from "@prisma/client";
+import type { Book, Chapter } from "@prisma/client";
 import type { Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { useRouter } from "next/router";
@@ -8,7 +8,6 @@ import z from "zod";
 import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
 import { api } from "~/utils/api";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";
-import type { Book } from "@prisma/client";
 
 const validationSchema = z.object({
   title: z

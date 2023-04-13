@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "analyze": "ANALYZE=true next build",
     "dev": "next dev",
-    "postinstall": "prisma generate",
+    "build": "next build",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next build && next start",
+    "preinstall": "npx only-allow pnpm",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.306.0",
@@ -61,7 +61,6 @@
     "@types/eslint": "^8.37.0",
     "@upstash/ratelimit": "^0.4.1",
     "@upstash/redis": "^1.20.2",
-    "@uptrace/node": "^1.11.0",
     "@vercel/analytics": "^0.1.11",
     "dayjs": "^1.11.7",
     "immutability-helper": "^3.1.1",
@@ -105,7 +104,5 @@
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
-  "peerDependencies": {
-    "csstype": "^3.0.10"
-  }
+  "packageManager": "pnpm@8.2.0"
 }

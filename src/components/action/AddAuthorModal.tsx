@@ -1,8 +1,8 @@
 import type { User } from "@prisma/client";
-import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import useSearch from "~/hooks/search";
+import { api } from "~/utils/api";
 
 type props = {
   toogleCollaboratorsHandler: (collaborator: User) => void;

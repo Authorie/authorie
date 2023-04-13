@@ -1,5 +1,5 @@
-import type { Category } from "@prisma/client";
 import { Popover } from "@headlessui/react";
+import type { Category } from "@prisma/client";
 
 type props = {
   isEdit: boolean;
