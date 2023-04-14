@@ -31,14 +31,14 @@ const Leaderboard = () => {
   }, [chapters]);
 
   return (
-    <div className="flex h-full w-full justify-between px-10 py-5">
+    <div className="flex h-full w-full justify-between px-10 py-4">
       <div className="flex flex-col gap-3">
         <div className="w-24 font-bold text-white">
-          <span className="text-4xl">Best</span>{" "}
-          <span className="text-2xl">Article of the</span>{" "}
-          <span className="text-4xl">Month</span>
+          <span className="text-5xl">Best</span>{" "}
+          <span className="text-3xl">Article of the</span>{" "}
+          <span className="text-5xl">Month</span>
         </div>
-        <span className="text-xl font-semibold text-authGreen-400">
+        <span className="text-2xl font-semibold text-authGreen-400">
           {dayjs().format("MMMM")}
         </span>
       </div>

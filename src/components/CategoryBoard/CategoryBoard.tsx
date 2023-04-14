@@ -30,7 +30,7 @@ const CategoryBoard = ({ isLogin }: props) => {
   return (
     <>
       <div className="flex min-w-[1024px] max-w-5xl flex-col overflow-hidden rounded-t-xl bg-neutral-500 pb-2">
-        <div className="flex h-80 flex-col items-center justify-center rounded-xl bg-dark-600">
+        <div className="flex h-96 flex-col items-center justify-center rounded-xl bg-dark-600">
           {showCategories ? (
             <CategorySelectionBoard
               isLogin={isLogin}
