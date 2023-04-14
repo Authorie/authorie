@@ -54,11 +54,11 @@ const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
         {itemType === "chapter" && (
           <ChapterCard
             key={item.id}
-            chapterNo={findChapter(item.id).index + 1}
+            chapterNo={chapters.length - findChapter(item.id).index}
             isEdit={false}
             chapter={
               chapters[
-                findChapter(item.id).index
+              findChapter(item.id).index
               ] as RouterOutputs["book"]["getData"]["chapters"][number]
             }
             moveChapter={moveChapter}
