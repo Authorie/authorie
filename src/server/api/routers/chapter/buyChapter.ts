@@ -31,15 +31,15 @@ const buyChapter = protectedProcedure
             comments: true,
           },
         },
-        chapterMarketHistories: {
+        chapterMarketHistories: ctx.session ? {
           where: {
-            userId: ctx.session?.user.id,
-          },
-        },
+            userId: ctx.session.user.id,
+          }
+        } : false,
       },
     });
 
-    if (chapter.chapterMarketHistories.length > 0) {
+    if (chapter.chapterMarketHistories) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Already bought",

@@ -29,11 +29,11 @@ const getChapter = publicProcedure
             comments: true,
           },
         },
-        chapterMarketHistories: {
+        chapterMarketHistories: ctx.session ? {
           where: {
-            userId: ctx.session?.user.id,
-          },
-        },
+            userId: ctx.session.user.id,
+          }
+        } : false,
       },
     });
   });
