@@ -4,13 +4,13 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useCallback, useState } from "react";
 import {
-    HiOutlineArrowLeftOnRectangle,
-    HiOutlineArrowRightOnRectangle,
-    HiOutlineBell,
-    HiOutlineChatBubbleOvalLeftEllipsis,
-    HiOutlineHome,
-    HiOutlineMagnifyingGlass,
-    HiPencil,
+  HiOutlineArrowLeftOnRectangle,
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineBell,
+  HiOutlineChatBubbleOvalLeftEllipsis,
+  HiOutlineHome,
+  HiOutlineMagnifyingGlass,
+  HiPencil,
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";
@@ -18,11 +18,11 @@ import { api } from "~/utils/api";
 const SearchModal = dynamic(() => import("~/components/Search/SearchModal"));
 
 const NavigationSidebar = () => {
-  const { data: session } = useSession();
+  const { status, data: session } = useSession();
   const selectCategory = useSelectCategory();
   const [openSearchDialog, setOpenSearchDialog] = useState(false);
   const { data: user } = api.user.getData.useQuery(undefined, {
-    enabled: Boolean(session),
+    enabled: status === "authenticated",
   });
   const onOpenDialogHandler = useCallback(() => setOpenSearchDialog(true), []);
   const onCloseDialogHandler = useCallback(

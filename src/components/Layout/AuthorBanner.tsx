@@ -51,7 +51,7 @@ const AuthorBanner = ({
   }, [session?.user.id, user.id]);
   const { data: isFollowed, isLoading: queryLoading } =
     api.user.isFollowUser.useQuery(user.penname as string, {
-      enabled: !isOwner && user.penname != null,
+      enabled: status === "authenticated" && !isOwner && user.penname != null,
     });
   const {
     data: userFollowers,
@@ -255,9 +255,8 @@ const AuthorBanner = ({
           />
         ) : (
           <div
-            className={`${
-              isEditing ? "opacity-90" : ""
-            } h-full w-full bg-authGreen-400`}
+            className={`${isEditing ? "opacity-90" : ""
+              } h-full w-full bg-authGreen-400`}
           />
         )}
       </label>
@@ -268,9 +267,8 @@ const AuthorBanner = ({
         <div className="mb-3 flex justify-between ">
           <label
             htmlFor="upload-profile"
-            className={`${
-              isEditing ? "cursor-pointer" : ""
-            } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
+            className={`${isEditing ? "cursor-pointer" : ""
+              } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
           >
             {isEditing && (
               <div>
@@ -337,11 +335,10 @@ const AuthorBanner = ({
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${
-                            watch("penname") && watch("penname").length > 50
-                              ? "text-red-500"
-                              : "text-white"
-                          }`}
+                          ${watch("penname") && watch("penname").length > 50
+                        ? "text-red-500"
+                        : "text-white"
+                      }`}
                   >
                     {watch("penname") ? watch("penname").length : 0}
                     /50
@@ -400,11 +397,10 @@ const AuthorBanner = ({
                 />
                 <p
                   className={`${"text-xs"} 
-                          ${
-                            watch("bio") && watch("bio").length > 150
-                              ? "text-red-500"
-                              : "text-white"
-                          }`}
+                          ${watch("bio") && watch("bio").length > 150
+                      ? "text-red-500"
+                      : "text-white"
+                    }`}
                 >
                   {watch("bio") ? watch("bio").length : 0}/150
                 </p>
@@ -455,10 +451,10 @@ const AuthorBanner = ({
             {isFetchingFollowerNextPage && <UserCardSkeleton />}
             {userFollowers?.pages.flatMap((page) => page.items).length ===
               0 && (
-              <div className="flex w-96 items-center justify-center">
-                <p className="text-lg">No followers</p>
-              </div>
-            )}
+                <div className="flex w-96 items-center justify-center">
+                  <p className="text-lg">No followers</p>
+                </div>
+              )}
           </div>
         }
       </DialogLayout>
@@ -497,10 +493,10 @@ const AuthorBanner = ({
             {isFetchingFollowingNextPage && <UserCardSkeleton />}
             {userFollowing?.pages.flatMap((page) => page.items).length ===
               0 && (
-              <div className="flex w-96 items-center justify-center">
-                <p className="text-lg">No following</p>
-              </div>
-            )}
+                <div className="flex w-96 items-center justify-center">
+                  <p className="text-lg">No following</p>
+                </div>
+              )}
           </div>
         }
       </DialogLayout>
