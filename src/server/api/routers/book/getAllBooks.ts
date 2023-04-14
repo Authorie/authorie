@@ -52,7 +52,7 @@ const getAllBooks = publicProcedure
           },
         },
       },
-    };
+    } satisfies Prisma.BookFindManyArgs;
     if (!ctx.session) {
       const where = {
         status: {

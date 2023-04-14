@@ -178,6 +178,9 @@ dependencies:
   superjson:
     specifier: 1.12.2
     version: 1.12.2
+  tailwind-merge:
+    specifier: ^1.12.0
+    version: 1.12.0
   zod:
     specifier: ^3.21.4
     version: 3.21.4
@@ -2818,7 +2821,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001478
-      electron-to-chromium: 1.4.363
+      electron-to-chromium: 1.4.360
       node-releases: 2.0.10
       update-browserslist-db: 1.0.10(browserslist@4.21.5)
 
@@ -3098,8 +3101,8 @@ packages:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
     dev: false
 
-  /electron-to-chromium@1.4.363:
-    resolution: {integrity: sha512-ReX5qgmSU7ybhzMuMdlJAdYnRhT90UB3k9M05O5nF5WH3wR5wgdJjXw0uDeFyKNhmglmQiOxkAbzrP0hMKM59g==}
+  /electron-to-chromium@1.4.360:
+    resolution: {integrity: sha512-EP/jdF15S+l3iSSzgUpUqeazvkbVFXNuVxwwLMVUSie3lUeH1HH70gKe0IS7TASB/0h5QPG2bLMzv2jelSztIQ==}
 
   /emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
@@ -3404,8 +3407,8 @@ packages:
       esrecurse: 4.3.0
       estraverse: 4.3.0
 
-  /eslint-scope@7.2.0:
-    resolution: {integrity: sha512-DYj5deGlHBfMt15J7rdtyKNq/Nqlv5KfU4iodrQ019XESsRnwXH9KAE0y3cwtUHDo2ob7CypAnCqefh6vioWRw==}
+  /eslint-scope@7.1.1:
+    resolution: {integrity: sha512-QKQM/UXpIiHcLqJ5AOyIW7XZmzjkzQXYE54n1++wb0u9V/abW3l9uQnxX8Z5Xd18xyKIMTUAyQ0k1e8pz6LUrw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       esrecurse: 4.3.0
@@ -3435,7 +3438,7 @@ packages:
       debug: 4.3.4
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
-      eslint-scope: 7.2.0
+      eslint-scope: 7.1.1
       eslint-visitor-keys: 3.4.0
       espree: 9.5.1
       esquery: 1.5.0
@@ -5454,6 +5457,10 @@ packages:
       '@pkgr/utils': 2.3.1
       tslib: 2.5.0
     dev: true
+
+  /tailwind-merge@1.12.0:
+    resolution: {integrity: sha512-Y17eDp7FtN1+JJ4OY0Bqv9OA41O+MS8c1Iyr3T6JFLnOgLg3EvcyMKZAnQ8AGyvB5Nxm3t9Xb5Mhe139m8QT/g==}
+    dev: false
 
   /tailwindcss@3.3.1(postcss@8.4.21)(ts-node@10.9.1):
     resolution: {integrity: sha512-Vkiouc41d4CEq0ujXl6oiGFQ7bA3WEhUZdTgXAhtKxSy49OmKs8rEfQmupsfF0IGW8fv2iQkp1EVUuapCFrZ9g==}
