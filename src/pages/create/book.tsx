@@ -1,6 +1,7 @@
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category, User } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -24,6 +25,12 @@ type ValidationSchema = z.infer<typeof validationSchema>;
 
 const CreateBook = () => {
   const router = useRouter();
+  useSession({
+    required: true,
+    onUnauthenticated() {
+      void router.push("/auth/login")
+    }
+  })
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
   const { data: user } = api.user.getData.useQuery();
@@ -63,13 +70,13 @@ const CreateBook = () => {
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
       bookCover
         ? await uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+          image: bookCover,
+        })
         : undefined,
       bookWallpaper
         ? await uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+          image: bookWallpaper,
+        })
         : undefined,
     ] as const);
     const promiseCreateBook = bookCreateMutation.mutateAsync({
@@ -149,11 +156,10 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${
-                            watch("title") && watch("title").length > 100
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("title") && watch("title").length > 100
+                    ? "text-red-500"
+                    : "text-black"
+                  }`}
               >
                 {watch("title") ? watch("title").length : 0}/100
               </p>
@@ -272,12 +278,11 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${
-                            watch("description") &&
-                            watch("description").length > 500
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("description") &&
+                    watch("description").length > 500
+                    ? "text-red-500"
+                    : "text-black"
+                  }`}
               >
                 {watch("description") ? watch("description").length : 0}
                 /500

@@ -1,6 +1,7 @@
 import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import dayjs from "dayjs";
+import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
@@ -16,6 +17,12 @@ const CreateChapterBoard = dynamic(
 
 const CreateChapter = () => {
   const router = useRouter();
+  useSession({
+    required: true,
+    onUnauthenticated() {
+      void router.push("/auth/login")
+    }
+  })
   const [priceError, setPriceError] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
@@ -114,11 +121,10 @@ const CreateChapter = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${
-                            title && title.length > 80
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${title && title.length > 80
+                    ? "text-red-500"
+                    : "text-black"
+                  }`}
               >
                 {title ? title.length : 0}
                 /80
