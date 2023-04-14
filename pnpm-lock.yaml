@@ -1,262 +1,263 @@
 lockfileVersion: '6.0'
 
-importers:
+dependencies:
+  '@aws-sdk/client-s3':
+    specifier: ^3.306.0
+    version: 3.306.0
+  '@formkit/auto-animate':
+    specifier: ^1.0.0-beta.6
+    version: 1.0.0-beta.6
+  '@headlessui/react':
+    specifier: ^1.7.13
+    version: 1.7.13(react-dom@18.2.0)(react@18.2.0)
+  '@hookform/resolvers':
+    specifier: ^3.0.1
+    version: 3.0.1(react-hook-form@7.43.9)
+  '@next-auth/prisma-adapter':
+    specifier: ^1.0.5
+    version: 1.0.5(@prisma/client@4.12.0)(next-auth@4.21.1)
+  '@next/bundle-analyzer':
+    specifier: ^13.2.4
+    version: 13.2.4
+  '@opentelemetry/api':
+    specifier: ^1.4.1
+    version: 1.4.1
+  '@opentelemetry/instrumentation-http':
+    specifier: ^0.37.0
+    version: 0.37.0(@opentelemetry/api@1.4.1)
+  '@opentelemetry/sdk-trace-node':
+    specifier: ^1.11.0
+    version: 1.11.0(@opentelemetry/api@1.4.1)
+  '@opentelemetry/semantic-conventions':
+    specifier: ^1.11.0
+    version: 1.11.0
+  '@paralleldrive/cuid2':
+    specifier: ^2.2.0
+    version: 2.2.0
+  '@prisma/client':
+    specifier: ^4.12.0
+    version: 4.12.0(prisma@4.12.0)
+  '@prisma/instrumentation':
+    specifier: ^4.12.0
+    version: 4.12.0
+  '@tanstack/react-query':
+    specifier: ^4.28.0
+    version: 4.28.0(react-dom@18.2.0)(react@18.2.0)
+  '@tiptap/core':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/pm@2.0.2)
+  '@tiptap/extension-bold':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-bullet-list':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-character-count':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
+  '@tiptap/extension-color':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/extension-text-style@2.0.2)
+  '@tiptap/extension-document':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-dropcursor':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
+  '@tiptap/extension-font-family':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/extension-text-style@2.0.2)
+  '@tiptap/extension-gapcursor':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
+  '@tiptap/extension-hard-break':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-heading':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-highlight':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-history':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
+  '@tiptap/extension-image':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-italic':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-link':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
+  '@tiptap/extension-list-item':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-ordered-list':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-paragraph':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-strike':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-table':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
+  '@tiptap/extension-table-cell':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-table-header':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-table-row':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-text':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-text-style':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/extension-underline':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/pm':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)
+  '@tiptap/react':
+    specifier: ^2.0.2
+    version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)(react-dom@18.2.0)(react@18.2.0)
+  '@trpc/client':
+    specifier: ^10.19.1
+    version: 10.19.1(@trpc/server@10.19.1)
+  '@trpc/next':
+    specifier: ^10.19.1
+    version: 10.19.1(@tanstack/react-query@4.28.0)(@trpc/client@10.19.1)(@trpc/react-query@10.19.1)(@trpc/server@10.19.1)(next@13.2.4)(react-dom@18.2.0)(react@18.2.0)
+  '@trpc/react-query':
+    specifier: ^10.19.1
+    version: 10.19.1(@tanstack/react-query@4.28.0)(@trpc/client@10.19.1)(@trpc/server@10.19.1)(react-dom@18.2.0)(react@18.2.0)
+  '@trpc/server':
+    specifier: ^10.19.1
+    version: 10.19.1
+  '@types/eslint':
+    specifier: ^8.37.0
+    version: 8.37.0
+  '@upstash/ratelimit':
+    specifier: ^0.4.1
+    version: 0.4.1(@upstash/redis@1.20.2)
+  '@upstash/redis':
+    specifier: ^1.20.2
+    version: 1.20.2
+  '@vercel/analytics':
+    specifier: ^0.1.11
+    version: 0.1.11(react@18.2.0)
+  dayjs:
+    specifier: ^1.11.7
+    version: 1.11.7
+  immutability-helper:
+    specifier: ^3.1.1
+    version: 3.1.1
+  next:
+    specifier: 13.2.4
+    version: 13.2.4(@babel/core@7.21.4)(@opentelemetry/api@1.4.1)(react-dom@18.2.0)(react@18.2.0)
+  next-auth:
+    specifier: ^4.21.1
+    version: 4.21.1(next@13.2.4)(react-dom@18.2.0)(react@18.2.0)
+  next-axiom:
+    specifier: ^0.17.0
+    version: 0.17.0(next@13.2.4)
+  next-superjson:
+    specifier: ^0.0.4
+    version: 0.0.4(next@13.2.4)(superjson@1.12.2)(webpack@5.79.0)
+  react:
+    specifier: 18.2.0
+    version: 18.2.0
+  react-dnd:
+    specifier: ^16.0.1
+    version: 16.0.1(@types/node@18.15.11)(@types/react@18.0.33)(react@18.2.0)
+  react-dnd-html5-backend:
+    specifier: ^16.0.1
+    version: 16.0.1
+  react-dom:
+    specifier: 18.2.0
+    version: 18.2.0(react@18.2.0)
+  react-hook-form:
+    specifier: ^7.43.9
+    version: 7.43.9(react@18.2.0)
+  react-hot-toast:
+    specifier: ^2.4.0
+    version: 2.4.0(csstype@3.1.2)(react-dom@18.2.0)(react@18.2.0)
+  react-icons:
+    specifier: ^4.8.0
+    version: 4.8.0(react@18.2.0)
+  superjson:
+    specifier: 1.12.2
+    version: 1.12.2
+  tailwind-merge:
+    specifier: ^1.12.0
+    version: 1.12.0
+  zod:
+    specifier: ^3.21.4
+    version: 3.21.4
+  zustand:
+    specifier: ^4.3.7
+    version: 4.3.7(react@18.2.0)
 
-  .:
-    dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.306.0
-        version: 3.306.0
-      '@formkit/auto-animate':
-        specifier: ^1.0.0-beta.6
-        version: 1.0.0-beta.6
-      '@headlessui/react':
-        specifier: ^1.7.13
-        version: 1.7.13(react-dom@18.2.0)(react@18.2.0)
-      '@hookform/resolvers':
-        specifier: ^3.0.1
-        version: 3.0.1(react-hook-form@7.43.9)
-      '@next-auth/prisma-adapter':
-        specifier: ^1.0.5
-        version: 1.0.5(@prisma/client@4.12.0)(next-auth@4.21.1)
-      '@next/bundle-analyzer':
-        specifier: ^13.2.4
-        version: 13.2.4
-      '@opentelemetry/api':
-        specifier: ^1.4.1
-        version: 1.4.1
-      '@opentelemetry/instrumentation-http':
-        specifier: ^0.37.0
-        version: 0.37.0(@opentelemetry/api@1.4.1)
-      '@opentelemetry/sdk-trace-node':
-        specifier: ^1.11.0
-        version: 1.11.0(@opentelemetry/api@1.4.1)
-      '@opentelemetry/semantic-conventions':
-        specifier: ^1.11.0
-        version: 1.11.0
-      '@paralleldrive/cuid2':
-        specifier: ^2.2.0
-        version: 2.2.0
-      '@prisma/client':
-        specifier: ^4.12.0
-        version: 4.12.0(prisma@4.12.0)
-      '@prisma/instrumentation':
-        specifier: ^4.12.0
-        version: 4.12.0
-      '@tanstack/react-query':
-        specifier: ^4.28.0
-        version: 4.28.0(react-dom@18.2.0)(react@18.2.0)
-      '@tiptap/core':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/pm@2.0.2)
-      '@tiptap/extension-bold':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-bullet-list':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-character-count':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
-      '@tiptap/extension-color':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/extension-text-style@2.0.2)
-      '@tiptap/extension-document':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-dropcursor':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
-      '@tiptap/extension-font-family':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/extension-text-style@2.0.2)
-      '@tiptap/extension-gapcursor':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
-      '@tiptap/extension-hard-break':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-heading':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-highlight':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-history':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
-      '@tiptap/extension-image':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-italic':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-link':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
-      '@tiptap/extension-list-item':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-ordered-list':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-paragraph':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-strike':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-table':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)
-      '@tiptap/extension-table-cell':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-table-header':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-table-row':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-text':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-text-style':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/extension-underline':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/pm':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)
-      '@tiptap/react':
-        specifier: ^2.0.2
-        version: 2.0.2(@tiptap/core@2.0.2)(@tiptap/pm@2.0.2)(react-dom@18.2.0)(react@18.2.0)
-      '@trpc/client':
-        specifier: ^10.19.1
-        version: 10.19.1(@trpc/server@10.19.1)
-      '@trpc/next':
-        specifier: ^10.19.1
-        version: 10.19.1(@tanstack/react-query@4.28.0)(@trpc/client@10.19.1)(@trpc/react-query@10.19.1)(@trpc/server@10.19.1)(next@13.2.4)(react-dom@18.2.0)(react@18.2.0)
-      '@trpc/react-query':
-        specifier: ^10.19.1
-        version: 10.19.1(@tanstack/react-query@4.28.0)(@trpc/client@10.19.1)(@trpc/server@10.19.1)(react-dom@18.2.0)(react@18.2.0)
-      '@trpc/server':
-        specifier: ^10.19.1
-        version: 10.19.1
-      '@types/eslint':
-        specifier: ^8.37.0
-        version: 8.37.0
-      '@upstash/ratelimit':
-        specifier: ^0.4.1
-        version: 0.4.1(@upstash/redis@1.20.2)
-      '@upstash/redis':
-        specifier: ^1.20.2
-        version: 1.20.2
-      '@vercel/analytics':
-        specifier: ^0.1.11
-        version: 0.1.11(react@18.2.0)
-      dayjs:
-        specifier: ^1.11.7
-        version: 1.11.7
-      immutability-helper:
-        specifier: ^3.1.1
-        version: 3.1.1
-      next:
-        specifier: 13.2.4
-        version: 13.2.4(@babel/core@7.21.4)(@opentelemetry/api@1.4.1)(react-dom@18.2.0)(react@18.2.0)
-      next-auth:
-        specifier: ^4.21.1
-        version: 4.21.1(next@13.2.4)(react-dom@18.2.0)(react@18.2.0)
-      next-axiom:
-        specifier: ^0.17.0
-        version: 0.17.0(next@13.2.4)
-      next-superjson:
-        specifier: ^0.0.4
-        version: 0.0.4(next@13.2.4)(superjson@1.12.2)(webpack@5.79.0)
-      react:
-        specifier: 18.2.0
-        version: 18.2.0
-      react-dnd:
-        specifier: ^16.0.1
-        version: 16.0.1(@types/node@18.15.11)(@types/react@18.0.33)(react@18.2.0)
-      react-dnd-html5-backend:
-        specifier: ^16.0.1
-        version: 16.0.1
-      react-dom:
-        specifier: 18.2.0
-        version: 18.2.0(react@18.2.0)
-      react-hook-form:
-        specifier: ^7.43.9
-        version: 7.43.9(react@18.2.0)
-      react-hot-toast:
-        specifier: ^2.4.0
-        version: 2.4.0(csstype@3.1.2)(react-dom@18.2.0)(react@18.2.0)
-      react-icons:
-        specifier: ^4.8.0
-        version: 4.8.0(react@18.2.0)
-      superjson:
-        specifier: 1.12.2
-        version: 1.12.2
-      zod:
-        specifier: ^3.21.4
-        version: 3.21.4
-      zustand:
-        specifier: ^4.3.7
-        version: 4.3.7(react@18.2.0)
-    devDependencies:
-      '@total-typescript/ts-reset':
-        specifier: ^0.4.2
-        version: 0.4.2
-      '@types/node':
-        specifier: ^18.15.11
-        version: 18.15.11
-      '@types/prettier':
-        specifier: ^2.7.2
-        version: 2.7.2
-      '@types/react':
-        specifier: ^18.0.33
-        version: 18.0.33
-      '@types/react-dom':
-        specifier: ^18.0.11
-        version: 18.0.11
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^5.57.1
-        version: 5.57.1(@typescript-eslint/parser@5.57.1)(eslint@8.37.0)(typescript@5.0.3)
-      '@typescript-eslint/parser':
-        specifier: ^5.57.1
-        version: 5.57.1(eslint@8.37.0)(typescript@5.0.3)
-      autoprefixer:
-        specifier: ^10.4.14
-        version: 10.4.14(postcss@8.4.21)
-      eslint:
-        specifier: ^8.37.0
-        version: 8.37.0
-      eslint-config-next:
-        specifier: 13.2.4
-        version: 13.2.4(eslint@8.37.0)(typescript@5.0.3)
-      postcss:
-        specifier: ^8.4.21
-        version: 8.4.21
-      prettier:
-        specifier: ^2.8.7
-        version: 2.8.7
-      prettier-plugin-tailwindcss:
-        specifier: ^0.2.7
-        version: 0.2.7(prettier@2.8.7)
-      prisma:
-        specifier: ^4.12.0
-        version: 4.12.0
-      tailwindcss:
-        specifier: ^3.3.1
-        version: 3.3.1(postcss@8.4.21)(ts-node@10.9.1)
-      ts-node:
-        specifier: ^10.9.1
-        version: 10.9.1(@types/node@18.15.11)(typescript@5.0.3)
-      typescript:
-        specifier: ^5.0.3
-        version: 5.0.3
+devDependencies:
+  '@total-typescript/ts-reset':
+    specifier: ^0.4.2
+    version: 0.4.2
+  '@types/node':
+    specifier: ^18.15.11
+    version: 18.15.11
+  '@types/prettier':
+    specifier: ^2.7.2
+    version: 2.7.2
+  '@types/react':
+    specifier: ^18.0.33
+    version: 18.0.33
+  '@types/react-dom':
+    specifier: ^18.0.11
+    version: 18.0.11
+  '@typescript-eslint/eslint-plugin':
+    specifier: ^5.57.1
+    version: 5.57.1(@typescript-eslint/parser@5.57.1)(eslint@8.37.0)(typescript@5.0.3)
+  '@typescript-eslint/parser':
+    specifier: ^5.57.1
+    version: 5.57.1(eslint@8.37.0)(typescript@5.0.3)
+  autoprefixer:
+    specifier: ^10.4.14
+    version: 10.4.14(postcss@8.4.21)
+  eslint:
+    specifier: ^8.37.0
+    version: 8.37.0
+  eslint-config-next:
+    specifier: 13.2.4
+    version: 13.2.4(eslint@8.37.0)(typescript@5.0.3)
+  postcss:
+    specifier: ^8.4.21
+    version: 8.4.21
+  prettier:
+    specifier: ^2.8.7
+    version: 2.8.7
+  prettier-plugin-tailwindcss:
+    specifier: ^0.2.7
+    version: 0.2.7(prettier@2.8.7)
+  prisma:
+    specifier: ^4.12.0
+    version: 4.12.0
+  tailwindcss:
+    specifier: ^3.3.1
+    version: 3.3.1(postcss@8.4.21)(ts-node@10.9.1)
+  ts-node:
+    specifier: ^10.9.1
+    version: 10.9.1(@types/node@18.15.11)(typescript@5.0.3)
+  typescript:
+    specifier: ^5.0.3
+    version: 5.0.3
 
 packages:
 
@@ -5636,6 +5637,10 @@ packages:
       '@pkgr/utils': 2.3.1
       tslib: 2.5.0
     dev: true
+
+  /tailwind-merge@1.12.0:
+    resolution: {integrity: sha512-Y17eDp7FtN1+JJ4OY0Bqv9OA41O+MS8c1Iyr3T6JFLnOgLg3EvcyMKZAnQ8AGyvB5Nxm3t9Xb5Mhe139m8QT/g==}
+    dev: false
 
   /tailwindcss@3.3.1(postcss@8.4.21)(ts-node@10.9.1):
     resolution: {integrity: sha512-Vkiouc41d4CEq0ujXl6oiGFQ7bA3WEhUZdTgXAhtKxSy49OmKs8rEfQmupsfF0IGW8fv2iQkp1EVUuapCFrZ9g==}

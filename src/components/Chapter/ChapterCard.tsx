@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 import { HiEye, HiHeart, HiLockClosed, HiPencil } from "react-icons/hi2";
+import { twJoin } from "tailwind-merge";
 import { type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
 
@@ -34,7 +35,7 @@ const ChapterCard = ({
   const isOwner = session?.user.id === chapter.ownerId;
   const editable =
     chapter.publishedAt === null ||
-    dayjs().add(1, "hour").isBefore(chapter.publishedAt);
+    dayjs().diff(chapter.publishedAt, "day") > 1;
   const isChapterBought =
     chapter.price === 0 || chapter.chapterMarketHistories.length > 0;
   const onEditHandler = (e: MouseEvent) => {
@@ -93,14 +94,10 @@ const ChapterCard = ({
   return (
     <div
       onClick={clickCardHandler}
-      className={`relative z-10 h-fit w-full ${
-        editable
-          ? ""
-          : "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-      }
-    ${isDragging ? "opacity-0" : "opacity-100"} ${
-        isEdit ? "cursor-move" : "cursor-default"
-      }`}
+      className={twJoin("relative z-10 h-fit w-full",
+        editable && "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
+        isDragging ? "opacity-0" : "opacity-100",
+        isEdit ? "cursor-move" : "cursor-default")}
     >
       {isOwner && chapter.price > 0 && (
         <div className="absolute -right-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
@@ -115,10 +112,8 @@ const ChapterCard = ({
         </div>
       )}
       {chapter.publishedAt &&
-        dayjs(new Date()).isAfter(chapter.publishedAt) &&
-        dayjs(new Date()).isBefore(
-          dayjs(chapter.publishedAt).add(1, "day")
-        ) && (
+        dayjs().diff(chapter.publishedAt, "day") < 1 &&
+        (
           <div className="absolute -left-3 -top-1 z-20 bg-red-400 px-1 font-semibold">
             <p className="text-xs text-white">New</p>
           </div>
@@ -132,12 +127,11 @@ const ChapterCard = ({
       />
       <div
         ref={(node) => drag(drop(node))}
-        className={`relative flex h-16 w-full cursor-pointer items-center justify-between overflow-hidden rounded-lg 
-      bg-white px-3 shadow-lg`}
+        className="relative flex h-16 w-full cursor-pointer items-center justify-between overflow-hidden rounded-lg bg-white px-3 shadow-lg"
       >
-        {((status !== "authenticated" && chapter.price > 0) ||
-          (!isOwner && !isChapterBought)) && (
-          <>
+        {(chapter.price > 0) &&
+          (status !== "authenticated" || (!isOwner && !isChapterBought)) &&
+          (
             <div className="absolute left-0 top-0 h-full w-full bg-black/70">
               <div className="flex h-full w-full items-center justify-center gap-4 text-white">
                 <HiLockClosed className="h-5 w-5" />
@@ -155,8 +149,7 @@ const ChapterCard = ({
                 </div>
               </div>
             </div>
-          </>
-        )}
+          )}
         <p className="w-[90px] text-2xl font-bold text-authGreen-600">
           #{chapterNo}
         </p>
@@ -165,17 +158,14 @@ const ChapterCard = ({
             {chapter.title}
           </h2>
           {chapter.publishedAt &&
-            (chapter.publishedAt > new Date() ? (
+            (dayjs().isBefore(chapter.publishedAt) ? (
               <p className="text-xs font-semibold text-green-500">
-                publish soon on: {chapter.publishedAt.toLocaleDateString()}
-                {", "}
-                {chapter.publishedAt.toLocaleTimeString()}
+                publish soon on: {chapter.publishedAt.toLocaleDateString() + ", " + chapter.publishedAt.toLocaleTimeString()}
               </p>
             ) : (
-              <p className="text-xs font-extralight">{`publish at : ${chapter.publishedAt.toLocaleDateString(
-                "en-US"
-              )}`}</p>
-            ))}
+              <p className="text-xs font-extralight">publish at : {chapter.publishedAt.toLocaleDateString()}</p>
+            ))
+          }
         </div>
         <div className="flex h-full flex-col items-end justify-end gap-1 py-2">
           {editable && (
