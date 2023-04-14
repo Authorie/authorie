@@ -31,21 +31,18 @@ const ChapterRankCard = ({
     >
       <div className="h-full w-full overflow-hidden rounded-sm shadow-lg">
         {image ? (
-          <Image
-            src={image}
-            alt={`${chapterTitle}'s cover image`}
-            width={170}
-            height={220}
-          />
+          <div className="h-full w-36 overflow-hidden rounded-sm">
+            <Image src={image} alt={`${chapterTitle}'s cover image`} fill />
+          </div>
         ) : (
-          <div className="h-52 w-36 bg-authGreen-500" />
+          <div className="h-full w-36 bg-authGreen-500" />
         )}
         <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-gray-600 px-2">
           <HiEye className="h-3 w-3 text-white" />
           <p className="text-xs text-white">{read}</p>
         </div>
         <div
-          className={`absolute left-2 top-28 z-10 h-32 w-32 rounded-md p-2 shadow-xl backdrop-blur-2xl ${
+          className={`absolute left-2 top-32 z-10 h-32 w-32 rounded-md p-2 shadow-xl backdrop-blur-md ${
             rank === 1 ? "bg-gold/60" : ""
           }${rank === 2 ? "bg-dark-300/60" : ""}${
             rank === 3 ? "bg-rose-400/60" : ""

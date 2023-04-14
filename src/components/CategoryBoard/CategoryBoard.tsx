@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import {
-    useFollowedCategories,
-    useSetFollowedCategories,
+  useFollowedCategories,
+  useSetFollowedCategories,
 } from "~/hooks/followedCategories";
 import { api } from "~/utils/api";
 import CategoryBar from "./CategoryBar/CategoryBar";
