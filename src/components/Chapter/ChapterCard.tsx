@@ -161,7 +161,7 @@ const ChapterCard = ({
           {chapter.publishedAt &&
             (dayjs().isBefore(chapter.publishedAt) ? (
               <p className="text-xs font-semibold text-green-500">
-                publish soon {dayjs(chapter.publishedAt).toNow()}
+                publish soon {dayjs(chapter.publishedAt).fromNow()}
               </p>
             ) : (
               <p className="text-xs font-extralight">publish at : {dayjs(chapter.publishedAt).format("DD/MM/YYYY")}</p>
