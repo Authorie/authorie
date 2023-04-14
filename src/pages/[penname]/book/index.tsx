@@ -12,7 +12,7 @@ const BookPage = () => {
   const penname = router.query.penname as string;
   const { data: session } = useSession();
   const [openArchive, setOpenArchive] = useState(false);
-  const { data: user } = api.user.getData.useQuery(penname);
+  const { data: user } = api.user.getData.useQuery(penname, { enabled: router.isReady });
   const { data: books, isLoading: bookIsLoading } = api.book.getAll.useQuery(
     {
       penname,
