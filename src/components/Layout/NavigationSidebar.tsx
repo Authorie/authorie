@@ -31,7 +31,7 @@ const NavigationSidebar = () => {
   );
 
   return (
-    <nav className="text-md fixed z-50 flex h-full w-60 flex-col justify-center border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
+    <div className="text-md fixed z-50 flex h-full w-60 flex-col justify-center border-gray-900/20 bg-white px-10 pt-10 sm:justify-start">
       <NextLink href="/">
         <Image
           src="/authorie_logo.svg"
@@ -160,7 +160,7 @@ const NavigationSidebar = () => {
           <p className="text-xs font-light text-gray-500">Authorie 2023</p>
         </div>
       </div>
-    </nav>
+    </div>
   );
 };
 
