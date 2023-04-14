@@ -1,52 +1,29 @@
-import { BookStatus } from "@prisma/client";
+import { Book, BookOwnerStatus, BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
 import toast from "react-hot-toast";
 import {
-    HiOutlineEye,
-    HiOutlineHeart,
-    HiOutlineStar,
-    HiStar,
+  HiOutlineEye,
+  HiOutlineHeart,
+  HiOutlineStar,
+  HiStar,
 } from "react-icons/hi2";
-import { api } from "~/utils/api";
-import type { RouterOutputs } from "~/utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
 
 type props = {
-  id: string;
-  title: string;
-  description: string | null;
-  read: number;
-  like: number;
-  isOwner: boolean;
-  coverImage: string | null;
-  status: BookStatus;
-  ownerPenname: string;
-  isCollaborator: boolean;
-  isInvitee: boolean;
-  previousStatus: BookStatus | null;
+  book: RouterOutputs["book"]["getAll"][number]
 };
 
-const Book = ({
-  title,
-  read,
-  like,
-  id,
-  isOwner,
-  coverImage,
-  status,
-  ownerPenname,
-  isCollaborator,
-  isInvitee,
-  previousStatus,
-}: props) => {
+const Book = ({ book }: props) => {
   const router = useRouter();
   const utils = api.useContext();
   const { status: authStatus } = useSession();
   const penname = router.query.penname as string;
+  const ownerPenname = book.owners.find((owner) => owner.status === BookOwnerStatus.OWNER)?.user.penname as string
   const { data: isFavorite } = api.book.isFavorite.useQuery(
-    { id: id },
+    { id: book.id },
     { enabled: authStatus === "authenticated" }
   );
   const responseInvitation = api.user.responseCollaborationInvite.useMutation({
@@ -77,7 +54,7 @@ const Book = ({
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
       const previousFavorite = utils.book.isFavorite.getData();
-      utils.book.isFavorite.setData({ id: id }, (old) => !old);
+      utils.book.isFavorite.setData({ id: book.id }, (old) => !old);
       return { previousFavorite };
     },
     onSettled: () => {
@@ -88,7 +65,7 @@ const Book = ({
     onMutate: async () => {
       await utils.book.isFavorite.cancel();
       const previousFavorite = utils.book.isFavorite.getData();
-      utils.book.isFavorite.setData({ id: id }, (old) => !old);
+      utils.book.isFavorite.setData({ id: book.id }, (old) => !old);
       return { previousFavorite };
     },
     onSettled: () => {
@@ -96,25 +73,19 @@ const Book = ({
     },
   });
 
-  const onClickHandler = () => {
-    if (status !== BookStatus.ARCHIVED) {
-      void router.push(`/${penname}/book/${id}`);
-    }
-  };
-
   const toggleFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (isFavorite) {
-      unfavoriteBook.mutate({ id: id });
+      unfavoriteBook.mutate({ id: book.id });
     } else {
-      favoriteBook.mutate({ id: id });
+      favoriteBook.mutate({ id: book.id });
     }
   };
 
   const publishBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const promiseMoveState = moveState.mutateAsync({
-      id: id,
+      id: book.id,
       status: BookStatus.PUBLISHED,
     });
     await toast.promise(promiseMoveState, {
@@ -127,9 +98,9 @@ const Book = ({
   const unarchiveBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const promiseMoveState = moveState.mutateAsync({
-      id: id,
+      id: book.id,
       status:
-        previousStatus === BookStatus.PUBLISHED
+        book.previousStatus === BookStatus.PUBLISHED
           ? BookStatus.PUBLISHED
           : BookStatus.COMPLETED,
     });
@@ -140,48 +111,43 @@ const Book = ({
     });
   };
 
-  const responseInvaitationHandler = (
+  const respondInvitationHandler = (
     e: MouseEvent<HTMLButtonElement>,
-    response: boolean
+    accept: boolean
   ) => {
     e.stopPropagation();
     responseInvitation.mutate({
-      bookId: id,
-      accept: response,
+      bookId: book.id,
+      accept,
     });
   };
 
-  const onStatusHandler = (e: MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    void router.push(`/${penname}/book/${id}/status`);
-  };
 
   return (
     <div
-      onClick={onClickHandler}
-      className={`${
-        status === BookStatus.ARCHIVED
-          ? ""
-          : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-      } flex`}
+      onClick={() => void router.push(`/${penname}/book/${book.id}`)}
+      className={`${book.status === BookStatus.ARCHIVED
+        ? ""
+        : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+        } flex`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">
-        {isInvitee && status === BookStatus.INITIAL && (
+        {book.isInvited && book.status === BookStatus.INITIAL && (
           <div className="absolute bottom-4 right-2 z-20 flex h-fit w-fit flex-col items-center justify-center gap-2 rounded bg-gray-800/70 p-2">
-            <h1 className="w-40 text-sm text-white">
+            <span className="w-40 text-sm text-white">
               <span className="font-semibold">{ownerPenname}</span> has invited
               you to write a book!
-            </h1>
+            </span>
             <div className="flex w-full items-center justify-center gap-4">
               <button
-                onClick={(e) => responseInvaitationHandler(e, true)}
+                onClick={(e) => respondInvitationHandler(e, true)}
                 className="h-6 w-20 rounded-full bg-green-500 text-xs font-semibold text-white hover:bg-green-600"
               >
                 Accept
               </button>
               <button
-                onClick={(e) => responseInvaitationHandler(e, false)}
+                onClick={(e) => respondInvitationHandler(e, false)}
                 className="h-6 w-20 rounded-full bg-red-500 text-xs font-semibold text-white hover:bg-red-600"
               >
                 Reject
@@ -189,32 +155,32 @@ const Book = ({
             </div>
           </div>
         )}
-        {coverImage ? (
-          <Image src={coverImage} alt="book picture" fill />
+        {book.coverImage ? (
+          <Image src={book.coverImage} alt="book picture" fill />
         ) : (
           <div className="absolute h-full w-full bg-authGreen-400" />
         )}
-        {(isOwner || isCollaborator) && (
+        {(book.isOwner || book.isCollborator) && (
           <>
-            {status !== BookStatus.PUBLISHED && (
+            {book.status !== BookStatus.PUBLISHED && (
               <div
                 className={`
-              ${status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
-              ${status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
-              ${status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
-              ${status === BookStatus.ARCHIVED ? "hidden" : ""}
+              ${book.status === BookStatus.INITIAL ? "bg-gray-400" : ""} 
+              ${book.status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
+              ${book.status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
+              ${book.status === BookStatus.ARCHIVED ? "hidden" : ""}
               ${"absolute left-0 top-0 z-10 px-2 text-xs text-white"}
               `}
               >
-                {status}
+                {book.status}
               </div>
             )}
-            {status === BookStatus.PUBLISHED && (
+            {book.status === BookStatus.PUBLISHED && (
               <div className="absolute left-0 top-0 z-10 px-2 text-xs text-white">
                 <p></p>
               </div>
             )}
-            {status === BookStatus.DRAFT && (
+            {book.status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}
                 className="absolute right-2 top-2 z-20 rounded-full border border-white bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700"
@@ -222,7 +188,7 @@ const Book = ({
                 Publish now
               </button>
             )}
-            {status === BookStatus.ARCHIVED && (
+            {book.status === BookStatus.ARCHIVED && (
               <button
                 onClick={(e) => void unarchiveBookHandler(e)}
                 className="absolute right-2 top-2 z-20 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700"
@@ -230,9 +196,9 @@ const Book = ({
                 Unarchive
               </button>
             )}
-            {status === BookStatus.INITIAL && (
+            {book.status === BookStatus.INITIAL && (
               <button
-                onClick={onStatusHandler}
+                onClick={() => void router.push(`/${penname}/book/${book.id}/status`)}
                 className="absolute bottom-2 right-2 z-20 rounded-full bg-gray-400 px-1 py-1 text-xs font-semibold text-white hover:bg-gray-500"
               >
                 Change state to start the book
@@ -240,10 +206,10 @@ const Book = ({
             )}
           </>
         )}
-        {!isOwner &&
-          (status === BookStatus.PUBLISHED ||
-            status === BookStatus.COMPLETED) &&
-          authStatus === "authenticated" && (
+        {authStatus === "authenticated" &&
+          !(book.isOwner || book.isCollborator) &&
+          (book.status === BookStatus.PUBLISHED || book.status === BookStatus.COMPLETED) &&
+          (
             <button onClick={toggleFavoriteHandler}>
               {isFavorite ? (
                 <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
@@ -254,20 +220,18 @@ const Book = ({
           )}
         <div className="z-10 flex grow flex-col justify-between">
           <div className="mt-10 flex w-full flex-col items-center justify-center gap-2 px-3">
-            <h1 className="rounded-full bg-white/60 px-2 font-bold">{title}</h1>
+            <span className="rounded-full bg-white/60 px-2 font-bold">{book.title}</span>
           </div>
-          {status !== BookStatus.DRAFT && status !== BookStatus.INITIAL && (
-            <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
-              <div className="flex items-center gap-1">
-                <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
-                <p className="text-xs font-medium text-authGreen-600">{read}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <HiOutlineHeart className="h-5 w-5 text-red-400" />
-                <p className="text-xs font-medium text-red-400">{like}</p>
-              </div>
+          <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
+            <div className="flex items-center gap-1">
+              <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
+              <p className="text-xs font-medium text-authGreen-600">{book.chapters.reduce((prev, curr) => prev + curr._count.views, 0)}</p>
             </div>
-          )}
+            <div className="flex items-center gap-1">
+              <HiOutlineHeart className="h-5 w-5 text-red-400" />
+              <p className="text-xs font-medium text-red-400">{book.chapters.reduce((prev, curr) => prev + curr._count.likes, 0)}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

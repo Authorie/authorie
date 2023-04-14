@@ -1,4 +1,4 @@
-import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import Link from "next/link";
 import { useMemo } from "react";
 import type { RouterOutputs } from "~/utils/api";
@@ -58,21 +58,7 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
       {filteredBooks.map((book) => (
         <Book
           key={book.id}
-          id={book.id}
-          title={book.title}
-          ownerPenname={
-            book.owners.find((data) => data.status === BookOwnerStatus.OWNER)
-              ?.user.penname as string
-          }
-          coverImage={book.coverImage}
-          description={book.description}
-          isOwner={book.isOwner}
-          isCollaborator={book.isCollborator}
-          isInvitee={book.isInvited}
-          status={book.status}
-          previousStatus={book.previousStatus}
-          like={book.chapters.reduce((acc, curr) => acc + curr._count.likes, 0)}
-          read={book.chapters.reduce((acc, curr) => acc + curr._count.views, 0)}
+          book={book}
         />
       ))}
     </div>
