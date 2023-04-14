@@ -7,6 +7,8 @@ type props = {
   title: string;
   closeModal: () => void;
   openModal: () => void;
+  color: string;
+  hoverColor: string;
 };
 
 const InfomationButton = ({
@@ -15,13 +17,15 @@ const InfomationButton = ({
   isOpen,
   closeModal,
   openModal,
+  color,
+  hoverColor,
 }: props) => {
   console.log("check");
   return (
     <div>
       <div
         onClick={openModal}
-        className="flex h-7 w-7 cursor-pointer items-center justify-center justify-self-end rounded-full border-2 border-gray-400 text-gray-400 hover:bg-gray-200"
+        className={`flex h-7 w-7 cursor-pointer items-center justify-center justify-self-end rounded-full border-2 border-${color} text-${color} hover:bg-${hoverColor}`}
       >
         <p>i</p>
       </div>

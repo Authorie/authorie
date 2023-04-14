@@ -60,6 +60,8 @@ const BookPage = () => {
                 isOpen={openInfomation}
                 closeModal={() => setOpenInformation(false)}
                 title={"Book State"}
+                color="gray-400"
+                hoverColor="gray-200"
               >
                 <BookStateInformation />
               </InfomationButton>

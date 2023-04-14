@@ -74,7 +74,7 @@ const NavigationSidebar = () => {
           <HiOutlineHome className="h-7 w-7" />
           <span className="hidden sm:inline-block">Home</span>
         </Link>
-        {session && (
+        {/* {session && (
           <>
             <Link aria-label="/notifications" href="/404">
               <HiOutlineBell className="h-7 w-7" />
@@ -85,7 +85,7 @@ const NavigationSidebar = () => {
               <span className="hidden sm:inline-block">Messages</span>
             </Link>
           </>
-        )}
+        )} */}
         <Button onClick={onOpenDialogHandler}>
           <HiOutlineMagnifyingGlass className="h-7 w-7" />
           <span className="hidden sm:inline-block">Search</span>
@@ -95,7 +95,7 @@ const NavigationSidebar = () => {
           openDialog={openSearchDialog}
         />
         {session && (
-          <Link href="/coin-shop" className="hidden sm:flex">
+          <Button className="hidden sm:flex">
             <Image
               src="/authorie_coin_logo.svg"
               alt="Authorie coin logo"
@@ -106,7 +106,7 @@ const NavigationSidebar = () => {
             <span className="text-amber-500">
               {user?.coin || session.user?.coin} Au
             </span>
-          </Link>
+          </Button>
         )}
         <div className="mt-2 flex flex-col items-center gap-2 sm:items-stretch">
           {session ? (

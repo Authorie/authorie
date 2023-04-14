@@ -10,12 +10,11 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import InfomationButton from "~/components/Infomation/InfomationButton";
 import {
-  HiBars3CenterLeft,
   HiEye,
   HiHeart,
   HiOutlineChevronLeft,
-  HiOutlineMagnifyingGlass,
   HiOutlineStar,
   HiPhoto,
   HiStar,
@@ -26,6 +25,7 @@ import DialogLayout from "~/components/Dialog/DialogLayout";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import BookManagementInformation from "~/components/Infomation/BookManagementInformation";
 
 const validationSchema = z.object({
   title: z
@@ -42,21 +42,31 @@ const BookContent = () => {
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
   const utils = api.useContext();
+  const [openInformation, setOpenInformation] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const { data: categories } = api.category.getAll.useQuery(undefined);
-  const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery({
-    id: bookId,
-  }, {
-    enabled: router.isReady
-  });
-  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
-    bookId: bookId,
-  }, {
-    enabled: router.isReady
-  });
-  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId }, {
-    enabled: router.isReady
-  });
+  const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery(
+    {
+      id: bookId,
+    },
+    {
+      enabled: router.isReady,
+    }
+  );
+  const { data: collaborators } = api.user.getBookCollaborators.useQuery(
+    {
+      bookId: bookId,
+    },
+    {
+      enabled: router.isReady,
+    }
+  );
+  const { data: isFavorite } = api.book.isFavorite.useQuery(
+    { id: bookId },
+    {
+      enabled: router.isReady,
+    }
+  );
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
   );
@@ -309,13 +319,13 @@ const BookContent = () => {
     const promises = [
       bookCover
         ? uploadImageUrl.mutateAsync({
-          image: bookCover,
-        })
+            image: bookCover,
+          })
         : undefined,
       bookWallpaper
         ? uploadImageUrl.mutateAsync({
-          image: bookWallpaper,
-        })
+            image: bookWallpaper,
+          })
         : undefined,
     ] as const;
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -468,7 +478,7 @@ const BookContent = () => {
                       </div>
                       {categories && (
                         <Popover className="relative">
-                          <Popover.Panel className="absolute left-32 top-0 z-10">
+                          <Popover.Panel className="absolute left-32 top-0 z-20">
                             <div className="grid w-max grid-cols-2 gap-2 rounded-xl bg-gray-200 p-2">
                               {categories
                                 .filter(
@@ -482,7 +492,7 @@ const BookContent = () => {
                                     onClick={() =>
                                       toggleCategoryHandler(category)
                                     }
-                                    className="justify-ceisEditnter flex w-36 items-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
+                                    className="flex w-36 items-center justify-center rounded-lg bg-white p-2 text-xs font-bold shadow-md hover:bg-gray-300"
                                   >
                                     {category.title}
                                   </button>
@@ -491,10 +501,10 @@ const BookContent = () => {
                                 (category: Category) =>
                                   !addedCategories.includes(category)
                               ).length === 0 && (
-                                  <p className="text-sm font-semibold">
-                                    No more categories left...
-                                  </p>
-                                )}
+                                <p className="text-sm font-semibold">
+                                  No more categories left...
+                                </p>
+                              )}
                             </div>
                           </Popover.Panel>
                           <Popover.Button
@@ -540,24 +550,24 @@ const BookContent = () => {
                       )}
                       {(book.status === BookStatus.INITIAL ||
                         book.status === BookStatus.DRAFT) && (
-                          <button
-                            type="button"
-                            onClick={() => void deleteBookHandler()}
-                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Delete
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => void deleteBookHandler()}
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Delete
+                        </button>
+                      )}
                       {(book.status === BookStatus.PUBLISHED ||
                         book.status === BookStatus.COMPLETED) && (
-                          <button
-                            type="button"
-                            onClick={() => void archiveBookHandler()}
-                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Archive
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => void archiveBookHandler()}
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Archive
+                        </button>
+                      )}
                     </div>
                     <div className="my-10 flex flex-col gap-1">
                       <span className="text-6xl font-bold">12</span>
@@ -586,8 +596,9 @@ const BookContent = () => {
             <div className="flex grow flex-col">
               <div
                 className={`
-                ${isEdit ? "justify-end gap-2" : "justify-center"
-                  } ${"flex h-52 flex-col gap-2"}`}
+                ${
+                  isEdit ? "justify-end gap-2" : "justify-center"
+                } ${"flex h-52 flex-col gap-2"}`}
               >
                 {!isEdit && (
                   <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -629,10 +640,11 @@ const BookContent = () => {
                         />
                         <p
                           className={`${"text-xs"} 
-                          ${watch("title") && watch("title").length > 100
+                          ${
+                            watch("title") && watch("title").length > 100
                               ? "text-red-500"
                               : "text-black"
-                            }`}
+                          }`}
                         >
                           {watch("title") ? watch("title").length : 0}/100
                         </p>
@@ -667,10 +679,11 @@ const BookContent = () => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${watch("description") &&
+                          ${
+                            watch("description") &&
                             watch("description").length > 500
-                            ? "text-red-500"
-                            : "text-black"
+                              ? "text-red-500"
+                              : "text-black"
                           }`}
                       >
                         {watch("description") ? watch("description").length : 0}
@@ -688,8 +701,16 @@ const BookContent = () => {
                 )}
               </div>
               <div className="flex gap-2 self-end">
-                <HiBars3CenterLeft className="h-7 w-7 rounded-lg bg-gray-200" />
-                <HiOutlineMagnifyingGlass className="h-7 w-7 rounded-lg bg-gray-200" />
+                <InfomationButton
+                  openModal={() => setOpenInformation(true)}
+                  isOpen={openInformation}
+                  closeModal={() => setOpenInformation(false)}
+                  title={"Rearrange Chapters"}
+                  color="gray-400"
+                  hoverColor="gray-200"
+                >
+                  <BookManagementInformation />
+                </InfomationButton>
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 {book.chapters && (
