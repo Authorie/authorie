@@ -35,7 +35,7 @@ const ChapterCard = ({
   const isOwner = session?.user.id === chapter.ownerId;
   const editable =
     chapter.publishedAt === null ||
-    dayjs().diff(chapter.publishedAt, "day") > 1;
+    dayjs().isAfter(chapter.publishedAt, "day");
   const isChapterBought =
     chapter.price === 0 || chapter.chapterMarketHistories.length > 0;
   const onEditHandler = (e: MouseEvent) => {
@@ -91,6 +91,7 @@ const ChapterCard = ({
     return;
   };
 
+
   return (
     <div
       onClick={clickCardHandler}
@@ -112,7 +113,7 @@ const ChapterCard = ({
         </div>
       )}
       {chapter.publishedAt &&
-        dayjs().diff(chapter.publishedAt, "day") < 1 &&
+        dayjs().isAfter(chapter.publishedAt, "day") &&
         (
           <div className="absolute -left-3 -top-1 z-20 bg-red-400 px-1 font-semibold">
             <p className="text-xs text-white">New</p>
@@ -137,7 +138,7 @@ const ChapterCard = ({
                 <HiLockClosed className="h-5 w-5" />
                 <div className="flex items-center gap-2">
                   <p className="font-semibold">
-                    {chapter.price.toLocaleString()}
+                    {chapter.price}
                   </p>
                   <Image
                     src="/authorie_coin_logo.svg"
@@ -160,10 +161,10 @@ const ChapterCard = ({
           {chapter.publishedAt &&
             (dayjs().isBefore(chapter.publishedAt) ? (
               <p className="text-xs font-semibold text-green-500">
-                publish soon on: {chapter.publishedAt.toLocaleDateString() + ", " + chapter.publishedAt.toLocaleTimeString()}
+                publish soon {dayjs(chapter.publishedAt).toNow()}
               </p>
             ) : (
-              <p className="text-xs font-extralight">publish at : {chapter.publishedAt.toLocaleDateString()}</p>
+              <p className="text-xs font-extralight">publish at : {dayjs(chapter.publishedAt).format("DD/MM/YYYY")}</p>
             ))
           }
         </div>

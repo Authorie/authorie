@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { HiEye, HiHeart } from "react-icons/hi2";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
@@ -14,9 +15,7 @@ const SearchChapterResult = ({ chapter, onClickCard }: props) => {
         <p className="text-xs text-authBlue-500">CHAPTER</p>
         <h4 className="text-xl font-bold text-authBlue-500">{chapter.title}</h4>
         <div className="my-2 flex gap-10 text-xs text-dark-400">
-          <p>{`publish : ${
-            chapter.publishedAt?.toLocaleDateString() || ""
-          }`}</p>
+          <p>{`publish : ${dayjs(chapter.publishedAt).format("DD/MM/YYYY")}`}</p>
           <p>{`author : ${chapter.owner.penname as string}`}</p>
           <p>{`book : ${chapter.book?.title as string}`}</p>
         </div>

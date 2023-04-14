@@ -68,7 +68,7 @@ const ChapterFeed = ({ chapter }: props) => {
                   <HiLockClosed className="h-5 w-5" />
                   <div className="flex items-center gap-2">
                     <p className="font-semibold">
-                      {chapter.price.toLocaleString()}
+                      {chapter.price}
                     </p>
                     <Image
                       src="/authorie_coin_logo.svg"
