@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { HiOutlinePhoto } from "react-icons/hi2";
-import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import { Popover } from "@headlessui/react";
+import UploadImageInput from "./UploadImageInput";
 
 type props = {
   chapterId: string;
@@ -12,9 +13,9 @@ type props = {
 const ReplyCommentInput = ({ chapterId, parentId }: props) => {
   const utils = api.useContext();
   const [content, setContent] = useState("");
-  const { imageData, uploadHandler } = useImageUpload();
   const { data: user } = api.user.getData.useQuery();
   const commentMutation = api.comment.create.useMutation();
+  const [commentImageUrl, setCommentImageUrl] = useState("");
 
   const submitCommentHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,11 +25,12 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
           id: chapterId,
           parent: parentId,
           content,
-          image: imageData !== "" ? imageData : undefined,
+          image: commentImageUrl !== "" ? commentImageUrl : undefined,
         },
         {
           onSuccess() {
             setContent("");
+            setCommentImageUrl("");
             void utils.comment.getAll.invalidate({ chapterId });
           },
         }
@@ -38,10 +40,19 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
 
   return (
     <form
-      onSubmit={submitCommentHandler}
-      className="ml-1 flex items-center gap-1 rounded-xl bg-white pb-2"
+      onSubmit={(e) => void submitCommentHandler(e)}
+      className="relative ml-1 flex items-center gap-1 rounded-xl bg-white pb-2"
     >
-      <div className="h-6 w-7 overflow-hidden rounded-full">
+      {commentImageUrl && (
+        <div
+          onClick={() => setCommentImageUrl("")}
+          className="group/image-add absolute -top-2 right-0 cursor-pointer rounded-full bg-green-400 px-1 text-xs font-semibold text-white hover:bg-red-400"
+        >
+          <p className="visible group-hover/image-add:hidden">image added</p>
+          <p className="hidden group-hover/image-add:block">remove image</p>
+        </div>
+      )}
+      <div className="h-8 w-9 overflow-hidden rounded-full">
         <Image
           src={user?.image || "/placeholder_profile.png"}
           alt="user's profile image"
@@ -49,26 +60,23 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
           height={50}
         />
       </div>
-      <div className="flex w-full gap-2">
+      <div className="flex w-full items-center gap-2">
         <input
-          className="w-full rounded-md bg-gray-200 px-4 py-1 text-xs outline-none focus:outline-none"
+          className="w-full rounded-md bg-gray-200 px-4 py-1 text-sm outline-none focus:outline-none"
           placeholder="write comment here"
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <label
-          htmlFor="upload-image"
-          className="flex w-10 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-200"
-        >
-          <input
-            id="upload-image"
-            hidden
-            type="file"
-            accept="image/jepg, image/png"
-            onChange={uploadHandler}
-          />
-          <HiOutlinePhoto className="absolute h-5 w-5 cursor-pointer" />
-        </label>
+        <Popover>
+          <Popover.Panel className="absolute bottom-10 right-0">
+            <UploadImageInput
+              onClick={(image: string) => setCommentImageUrl(image)}
+            />
+          </Popover.Panel>
+          <Popover.Button className="flex w-10 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-200">
+            <HiOutlinePhoto className="absolute h-5 w-5 cursor-pointer" />
+          </Popover.Button>
+        </Popover>
       </div>
       <input type="submit" hidden />
     </form>

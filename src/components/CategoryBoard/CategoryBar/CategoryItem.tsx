@@ -1,9 +1,9 @@
-import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import type { Category } from "@prisma/client";
-import { api } from "~/utils/api";
 import { HiOutlineXMark } from "react-icons/hi2";
+import LoadingSpinner from "~/components/ui/LoadingSpinner";
 import { useUnfollowCategory } from "~/hooks/followedCategories";
 import { useSelectCategory } from "~/hooks/selectedCategory";
+import { api } from "~/utils/api";
 
 type props = {
   isLogin: boolean;

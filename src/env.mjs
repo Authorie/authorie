@@ -30,7 +30,6 @@ const server = z.object({
   R2_OBJECT_URL: z.string(),
   UPSTASH_REDIS_REST_URL: z.string().url(),
   UPSTASH_REDIS_REST_TOKEN: z.string(),
-  UPTRACE_DSN: z.string().url(),
 });
 
 /**
@@ -63,7 +62,6 @@ const processEnv = {
   R2_OBJECT_URL: process.env.R2_OBJECT_URL,
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
   UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
-  UPTRACE_DSN: process.env.UPTRACE_DSN,
   NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS:
     process.env.NEXT_PUBLIC_BOUNCE_DELAY_MILLISECONDS,
 };

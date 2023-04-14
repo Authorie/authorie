@@ -1,6 +1,6 @@
-import type { RouterOutputs } from "~/utils/api";
 import Image from "next/image";
-import { HiBookOpen } from "react-icons/hi2";
+import type { RouterOutputs } from "~/utils/api";
+import SearchResultCard from "./SearchResultCard";
 
 type props = {
   book: RouterOutputs["search"]["searchBooks"]["items"][number];
@@ -9,35 +9,41 @@ type props = {
 
 const SearchBookResult = ({ book, onClickCard }: props) => {
   return (
-    <div
-      onClick={onClickCard}
-      className="flex cursor-pointer gap-4 rounded shadow-md drop-shadow-xl transition duration-300 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-    >
-      <div className="flex w-2/12 items-center justify-center rounded-l bg-authGreen-500">
-        <HiBookOpen className="h-12 w-12 fill-white" />
-      </div>
+    <SearchResultCard onClick={onClickCard}>
       <div className="grow py-3">
-        <p className="text-xs font-semibold text-authGreen-500">BOOK</p>
-        <h4 className="text-2xl font-bold text-authGreen-500">{book.title}</h4>
-        <div className="flex gap-24 text-xs text-dark-400">
-          <p>{`publish : ${book.createdAt.toLocaleDateString()}`}</p>
-          <p>{`author : ${book.owners[0]?.user.penname as string}`}</p>
+        <p className="text-xs text-authGreen-600">BOOK</p>
+        <h4 className="text-xl font-bold text-authGreen-600">{book.title}</h4>
+        <div className="flex gap-14 text-xs text-dark-400">
+          <p>
+            published : <span>{book.createdAt.toLocaleDateString()}</span>
+          </p>
+          <p>
+            author :{" "}
+            <span className="font-semibold text-dark-500">
+              {book.owners[0]?.user.penname as string}
+            </span>
+          </p>
         </div>
-        <p className="mt-4 line-clamp-2 text-xs text-dark-600">
+        <p className="mt-2 line-clamp-2 text-xs text-dark-600">
           {book.description || ""}
         </p>
       </div>
-      <div className="flex w-2/12 items-center justify-center">
-        <div className="overflow-hidden drop-shadow-lg">
-          <Image
-            src="/placeholder_book_cover.png"
-            width={100}
-            height={100}
-            alt="book cover image"
-          />
+      <div className="flex h-full items-center justify-center py-2">
+        <div className="h-full w-2 bg-authGreen-500" />
+        <div className="flex h-28 w-20 items-center justify-center overflow-hidden">
+          {book.coverImage ? (
+            <Image
+              src={book.coverImage}
+              width={170}
+              height={220}
+              alt="book cover image"
+            />
+          ) : (
+            <div className="h-full w-full bg-authGreen-400" />
+          )}
         </div>
       </div>
-    </div>
+    </SearchResultCard>
   );
 };
 

@@ -4,13 +4,13 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { useCallback, useState } from "react";
 import {
-  HiOutlineArrowLeftOnRectangle,
-  HiOutlineArrowRightOnRectangle,
-  HiOutlineBell,
-  HiOutlineChatBubbleOvalLeftEllipsis,
-  HiOutlineHome,
-  HiOutlineMagnifyingGlass,
-  HiPencil,
+    HiOutlineArrowLeftOnRectangle,
+    HiOutlineArrowRightOnRectangle,
+    HiOutlineBell,
+    HiOutlineChatBubbleOvalLeftEllipsis,
+    HiOutlineHome,
+    HiOutlineMagnifyingGlass,
+    HiPencil,
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";

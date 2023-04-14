@@ -9,6 +9,9 @@ type props = {
   children?: ReactNode;
   button?: boolean;
   onClick?: () => void;
+  cancelClick?: () => void;
+  cancelTitle?: string;
+  openLoop?: () => void;
 };
 
 const DialogLayout = ({
@@ -19,7 +22,17 @@ const DialogLayout = ({
   children,
   button,
   onClick,
+  cancelClick,
+  cancelTitle,
+  openLoop,
 }: props) => {
+  const onCloseHandler = () => {
+    if (openLoop) {
+      openLoop();
+    } else {
+      closeModal();
+    }
+  };
   const onConfirmHandler = () => {
     if (onClick) {
       onClick();
@@ -28,7 +41,7 @@ const DialogLayout = ({
   };
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-30" onClose={closeModal}>
+      <Dialog as="div" className="relative z-50" onClose={onCloseHandler}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -74,13 +87,13 @@ const DialogLayout = ({
                 {button && (
                   <div className="my-3 flex justify-end gap-3 px-6">
                     <button
-                      className="h-7 w-24 rounded-lg bg-red-400 text-sm text-white hover:bg-red-500"
-                      onClick={closeModal}
+                      className="h-7 w-24 rounded-lg bg-red-400 text-sm text-white outline-none hover:bg-red-500"
+                      onClick={cancelClick ? cancelClick : onCloseHandler}
                     >
-                      Cancel
+                      {cancelTitle ? cancelTitle : "Cancel"}
                     </button>
                     <button
-                      className="h-7 w-24 rounded-lg bg-authBlue-500 text-sm text-white hover:bg-authBlue-700"
+                      className="h-7 w-24 rounded-lg bg-authBlue-500 text-sm text-white outline-none hover:bg-authBlue-700"
                       onClick={onConfirmHandler}
                     >
                       Confirm

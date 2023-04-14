@@ -25,12 +25,12 @@ const getFeeds = publicProcedure
           },
           categories: categoryIds
             ? {
-                some: {
-                  categoryId: {
-                    in: categoryIds,
-                  },
+              some: {
+                categoryId: {
+                  in: categoryIds,
                 },
-              }
+              },
+            }
             : undefined,
         },
       },
@@ -47,6 +47,11 @@ const getFeeds = publicProcedure
             id: true,
             penname: true,
             image: true,
+          },
+        },
+        chapterMarketHistories: {
+          where: {
+            userId: ctx.session?.user.id,
           },
         },
         _count: {

@@ -1,10 +1,10 @@
 import { Menu } from "@headlessui/react";
 import {
-  RiAddCircleLine,
-  RiDeleteBinLine,
-  RiMergeCellsHorizontal,
-  RiSplitCellsHorizontal,
-  RiTableLine,
+    RiAddCircleLine,
+    RiDeleteBinLine,
+    RiMergeCellsHorizontal,
+    RiSplitCellsHorizontal,
+    RiTableLine,
 } from "react-icons/ri";
 
 import type { Editor } from "@tiptap/react";

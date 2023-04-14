@@ -1,2 +1,3 @@
-export * from "./LikeButton";
 export * from "./CommentButton";
+export * from "./LikeButton";
+

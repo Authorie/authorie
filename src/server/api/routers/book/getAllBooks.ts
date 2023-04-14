@@ -44,10 +44,15 @@ const getAllBooks = publicProcedure
                 likes: true,
               },
             },
+            chapterMarketHistories: {
+              where: {
+                userId: ctx.session?.user.id,
+              },
+            },
           },
         },
       },
-    };
+    } satisfies Prisma.BookFindManyArgs;
     if (!ctx.session) {
       const where = {
         status: {

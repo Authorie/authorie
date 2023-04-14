@@ -24,6 +24,7 @@ const NewUser = () => {
     resolver: zodResolver(validationSchema),
   });
   const router = useRouter();
+  const context = api.useContext();
   useSession({
     required: true,
     onUnauthenticated() {
@@ -35,13 +36,17 @@ const NewUser = () => {
       if (data.penname) void router.replace("/");
     },
   });
-  const updateUser = api.user.update.useMutation({
-    onSuccess() {
-      void router.replace("/");
-    },
-  });
+  const updateUser = api.user.update.useMutation();
   const onSubmitHandler: SubmitHandler<ValidationSchema> = (data) => {
-    updateUser.mutate({ penname: data.penname });
+    updateUser.mutate(
+      { penname: data.penname },
+      {
+        onSuccess() {
+          void context.user.getData.invalidate();
+          void router.replace("/");
+        },
+      }
+    );
   };
   const errorsExist = Boolean(errors.penname || updateUser.isError);
 

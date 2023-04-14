@@ -1,5 +1,5 @@
-import { publicProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { publicProcedure } from "~/server/api/trpc";
 
 const getLeaderboard = publicProcedure
   .input(

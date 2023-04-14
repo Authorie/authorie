@@ -1,7 +1,7 @@
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
-import { BookStatus } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -22,6 +22,7 @@ import {
 } from "react-icons/hi2";
 import z from "zod";
 import ChapterCardList from "~/components/Chapter/ChapterCardList";
+import DialogLayout from "~/components/Dialog/DialogLayout";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
@@ -35,6 +36,7 @@ const validationSchema = z.object({
 });
 
 const BookContent = () => {
+  const [openWarning, setOpenWarning] = useState(false);
   const router = useRouter();
   const { status } = useSession();
   const bookId = router.query.bookId as string;
@@ -44,6 +46,16 @@ const BookContent = () => {
   const { data: categories } = api.category.getAll.useQuery(undefined);
   const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery({
     id: bookId,
+  }, {
+    enabled: router.isReady
+  });
+  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
+    bookId: bookId,
+  }, {
+    enabled: router.isReady
+  });
+  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId }, {
+    enabled: router.isReady
   });
   const [addedCategories, setAddedCategories] = useState(
     book?.categories.map((data) => data.category) || []
@@ -59,7 +71,6 @@ const BookContent = () => {
       return 0;
     }) || []
   );
-  const { data: isFavorite } = api.book.isFavorite.useQuery({ id: bookId });
   const {
     imageData: bookCover,
     uploadHandler: setBookCover,
@@ -184,9 +195,10 @@ const BookContent = () => {
     }
   }, [book]);
 
-  const draftBookHandler = async () => {
+  const confirmDraftBookHandler = async () => {
+    if (book === undefined) return;
     const promiseMoveState = moveState.mutateAsync({
-      id: bookId,
+      id: book?.id,
       status: BookStatus.DRAFT,
     });
     await toast.promise(promiseMoveState, {
@@ -194,6 +206,20 @@ const BookContent = () => {
       success: "Your book is in draft state now!",
       error: "Error occured during move state",
     });
+  };
+
+  const draftBookHandler = () => {
+    if (book === undefined) return;
+    if (
+      collaborators &&
+      collaborators.some(
+        (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
+      )
+    ) {
+      setOpenWarning(true);
+    } else {
+      void confirmDraftBookHandler();
+    }
   };
 
   const publishBookHandler = async () => {
@@ -283,13 +309,13 @@ const BookContent = () => {
     const promises = [
       bookCover
         ? uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+          image: bookCover,
+        })
         : undefined,
       bookWallpaper
         ? uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+          image: bookWallpaper,
+        })
         : undefined,
     ] as const;
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -320,6 +346,14 @@ const BookContent = () => {
 
   return (
     <div className="flex w-full items-center justify-center px-6">
+      <DialogLayout
+        isOpen={openWarning}
+        closeModal={() => setOpenWarning(false)}
+        title="Are you sure you want to start writing now?"
+        description="Not every authors has responsed to your invitation yet."
+        onClick={() => void confirmDraftBookHandler()}
+        button
+      />
       {book && (
         <form
           id="submit-changes"
@@ -457,10 +491,10 @@ const BookContent = () => {
                                 (category: Category) =>
                                   !addedCategories.includes(category)
                               ).length === 0 && (
-                                <p className="text-sm font-semibold">
-                                  No more categories left...
-                                </p>
-                              )}
+                                  <p className="text-sm font-semibold">
+                                    No more categories left...
+                                  </p>
+                                )}
                             </div>
                           </Popover.Panel>
                           <Popover.Button
@@ -506,24 +540,24 @@ const BookContent = () => {
                       )}
                       {(book.status === BookStatus.INITIAL ||
                         book.status === BookStatus.DRAFT) && (
-                        <button
-                          type="button"
-                          onClick={() => void deleteBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                        >
-                          Delete
-                        </button>
-                      )}
+                          <button
+                            type="button"
+                            onClick={() => void deleteBookHandler()}
+                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Delete
+                          </button>
+                        )}
                       {(book.status === BookStatus.PUBLISHED ||
                         book.status === BookStatus.COMPLETED) && (
-                        <button
-                          type="button"
-                          onClick={() => void archiveBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                        >
-                          Archive
-                        </button>
-                      )}
+                          <button
+                            type="button"
+                            onClick={() => void archiveBookHandler()}
+                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Archive
+                          </button>
+                        )}
                     </div>
                     <div className="my-10 flex flex-col gap-1">
                       <span className="text-6xl font-bold">12</span>
@@ -552,9 +586,8 @@ const BookContent = () => {
             <div className="flex grow flex-col">
               <div
                 className={`
-                ${
-                  isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 flex-col gap-2"}`}
+                ${isEdit ? "justify-end gap-2" : "justify-center"
+                  } ${"flex h-52 flex-col gap-2"}`}
               >
                 {!isEdit && (
                   <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -596,11 +629,10 @@ const BookContent = () => {
                         />
                         <p
                           className={`${"text-xs"} 
-                          ${
-                            watch("title") && watch("title").length > 100
+                          ${watch("title") && watch("title").length > 100
                               ? "text-red-500"
                               : "text-black"
-                          }`}
+                            }`}
                         >
                           {watch("title") ? watch("title").length : 0}/100
                         </p>
@@ -635,11 +667,10 @@ const BookContent = () => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${
-                            watch("description") &&
+                          ${watch("description") &&
                             watch("description").length > 500
-                              ? "text-red-500"
-                              : "text-black"
+                            ? "text-red-500"
+                            : "text-black"
                           }`}
                       >
                         {watch("description") ? watch("description").length : 0}
@@ -662,7 +693,10 @@ const BookContent = () => {
               </div>
               <div className="mt-3 min-h-[400px] rounded-sm bg-authGreen-300 shadow-lg">
                 {book.chapters && (
-                  <DndProvider backend={HTML5Backend}>
+                  <DndProvider
+                    key={book.updatedAt.toString()}
+                    backend={HTML5Backend}
+                  >
                     <ChapterCardList
                       isEdit={isEdit}
                       isChapterCreatable={isChapterCreatable}

@@ -1,7 +1,7 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
-import { protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { protectedProcedure } from "~/server/api/trpc";
 
 const updateBook = protectedProcedure
   .input(
@@ -69,17 +69,17 @@ const updateBook = protectedProcedure
             wallpaperImage: wallpaperImageUrl,
             categories: category
               ? {
-                  upsert: category.map((categoryId) => ({
-                    where: { bookId_categoryId: { bookId: id, categoryId } },
-                    create: { categoryId },
-                    update: {},
-                  })),
-                  deleteMany: {
-                    categoryId: {
-                      notIn: category,
-                    },
+                upsert: category.map((categoryId) => ({
+                  where: { bookId_categoryId: { bookId: id, categoryId } },
+                  create: { categoryId },
+                  update: {},
+                })),
+                deleteMany: {
+                  categoryId: {
+                    notIn: category,
                   },
-                }
+                },
+              }
               : undefined,
           },
         }),

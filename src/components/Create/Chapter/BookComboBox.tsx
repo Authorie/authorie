@@ -32,9 +32,9 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
   return (
     <Combobox value={selectedBook} onChange={onToggleBook} by="id">
       <div className="relative">
-        <div className="flex w-full items-center overflow-hidden rounded-lg shadow-md outline outline-gray-600">
+        <div className="flex w-full items-center overflow-hidden rounded-lg shadow-md">
           <Combobox.Input
-            className="w-full border-none bg-white pl-3 pr-10 text-xs leading-5 text-gray-900 focus:outline-none"
+            className="w-72 border-none bg-white pl-3 pr-5 text-xs leading-5 text-gray-900 focus:outline-none"
             onChange={searchTermChangeHandler}
             displayValue={(book) =>
               book

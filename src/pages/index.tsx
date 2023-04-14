@@ -1,7 +1,9 @@
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
+import ChapterFeedSkeleton from "~/components/Chapter/ChapterFeedSkeleton";
 import { useFollowedCategories } from "~/hooks/followedCategories";
+import useInfiniteScroll from "~/hooks/infiniteScroll";
 import { useSelectedCategory } from "~/hooks/selectedCategory";
 import { useSelectedDate } from "~/hooks/selectedDate";
 import { api } from "~/utils/api";
@@ -18,27 +20,35 @@ const Home = () => {
       : selectedCategories === "following"
       ? followedCategories.map((c) => c.id)
       : [selectedCategories.id];
-  const { data } = api.chapter.getFeeds.useInfiniteQuery(
-    {
-      limit: 10,
-      categoryIds: categoryIds,
-      publishedAt: selectedDate,
-    },
-    {
-      getNextPageParam: (lastpage) => lastpage.nextCursor,
-    }
-  );
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading } =
+    api.chapter.getFeeds.useInfiniteQuery(
+      {
+        limit: 10,
+        categoryIds: categoryIds,
+        publishedAt: selectedDate,
+      },
+      {
+        getNextPageParam: (lastpage) => lastpage.nextCursor,
+      }
+    );
+
+  useInfiniteScroll(fetchNextPage, hasNextPage);
 
   return (
     <div className="flex flex-col px-10 py-4">
       <CategoryBoard isLogin={status === "authenticated"} />
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4">
         {data &&
           data.pages
             .flatMap((page) => page.items)
             .map((chapter) => (
               <ChapterFeed key={chapter.id} chapter={chapter} />
             ))}
+        {(isFetchingNextPage || isLoading) && (
+          <div>
+            <ChapterFeedSkeleton />
+          </div>
+        )}
       </div>
     </div>
   );

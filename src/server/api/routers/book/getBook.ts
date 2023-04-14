@@ -26,8 +26,8 @@ const getBook = publicProcedure
           id: input.id,
           status: !isContributor
             ? {
-                in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-              }
+              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
+            }
             : {},
         },
         include: {
@@ -60,6 +60,7 @@ const getBook = publicProcedure
               title: true,
               views: true,
               price: true,
+              ownerId: true,
               chapterNo: true,
               publishedAt: true,
               chapterMarketHistories: {

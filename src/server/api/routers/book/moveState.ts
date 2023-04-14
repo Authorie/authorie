@@ -75,30 +75,31 @@ const moveState = protectedProcedure
         }
         break;
       case BookStatus.ARCHIVED:
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "archived status cannot be changed",
-        });
-      default:
-        break;
+        if (status !== book.previousStatus) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "archived status can only be changed to previous status",
+          });
+        }
     }
 
     await ctx.prisma.book.update({
       where: { id },
       data: {
+        previousStatus: book.status, // save previous status
         status,
         owners:
           book.status === BookStatus.INITIAL
             ? {
-                deleteMany: {
-                  status: {
-                    notIn: [
-                      BookOwnerStatus.OWNER,
-                      BookOwnerStatus.COLLABORATOR,
-                    ],
-                  },
+              deleteMany: {
+                status: {
+                  notIn: [
+                    BookOwnerStatus.OWNER,
+                    BookOwnerStatus.COLLABORATOR,
+                  ],
                 },
-              }
+              },
+            }
             : undefined,
       },
     });

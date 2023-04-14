@@ -1,6 +1,6 @@
-import { TimeMachine } from "~/components/action/TimeMachine";
 import type { Category } from "@prisma/client";
 import { HiOutlinePlus, HiOutlineXMark } from "react-icons/hi2";
+import { TimeMachine } from "~/components/action/TimeMachine";
 import { useSelectedCategory } from "~/hooks/selectedCategory";
 import CategoryItem from "./CategoryItem";
 
@@ -20,7 +20,7 @@ const CategoryBar = ({
   const selectedCategory = useSelectedCategory();
 
   return (
-    <div className="sticky top-0 z-20 mb-6 flex max-w-5xl justify-between rounded-b-xl bg-dark-600 px-4 py-3">
+    <div className="sticky top-0 z-30 mb-6 flex max-w-5xl justify-between rounded-b-xl bg-dark-600 px-4 py-3">
       <div className="flex items-center gap-3 overflow-x-auto">
         <button
           title="Open Categories"

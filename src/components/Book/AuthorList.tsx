@@ -63,7 +63,7 @@ const AuthorList = ({
       {bookStatus === BookStatus.INITIAL &&
         status !== BookOwnerStatus.OWNER && (
           <div className="flex w-52 justify-end gap-2">
-            {status !== "accept" && (
+            {status !== BookOwnerStatus.COLLABORATOR && (
               <button
                 type="button"
                 onClick={() => onInvite(penname)}
@@ -72,13 +72,15 @@ const AuthorList = ({
                 invite
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => onRemove(userId, penname)}
-              className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
-            >
-              remove
-            </button>
+            {status !== BookOwnerStatus.REJECTED && (
+              <button
+                type="button"
+                onClick={() => onRemove(userId, penname)}
+                className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
+              >
+                remove
+              </button>
+            )}
           </div>
         )}
     </div>

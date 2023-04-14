@@ -1,7 +1,7 @@
-import { api } from "~/utils/api";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
+import { api } from "~/utils/api";
 
 type props = {
   penname: string;
@@ -11,6 +11,8 @@ type props = {
   userId: string;
   followUser: (userId: string) => void;
   unfollowUser: (userId: string) => void;
+  isOwner: boolean;
+  closeModal: () => void;
 };
 
 const UserCard = ({
@@ -21,6 +23,8 @@ const UserCard = ({
   userId,
   followUser,
   unfollowUser,
+  isOwner,
+  closeModal,
 }: props) => {
   const { data: isFollowed } = api.user.isFollowUser.useQuery(penname, {
     enabled: penname !== null,
@@ -34,9 +38,14 @@ const UserCard = ({
     e.stopPropagation();
     unfollowUser(userId);
   };
+
+  const onClickHandler = () => {
+    closeModal();
+    void router.push(`/${penname}`);
+  };
   return (
     <div
-      onClick={() => void router.push(`/${penname}`)}
+      onClick={onClickHandler}
       className="max-h-[500px] w-full cursor-pointer rounded-full px-4 py-1 hover:bg-gray-200"
     >
       <div className="flex items-center justify-between">
@@ -67,23 +76,24 @@ const UserCard = ({
             </div>
           </div>
         </div>
-        {isFollowed ? (
-          <button
-            type="button"
-            onClick={unfollowHandler}
-            className="h-8 w-20 rounded-md bg-green-600 text-sm font-semibold text-white outline-none hover:bg-green-700"
-          >
-            Followed
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={followHandler}
-            className="h-8 w-20 rounded-md bg-blue-600 text-sm text-white outline-none hover:bg-blue-700"
-          >
-            Follow
-          </button>
-        )}
+        {!isOwner &&
+          (isFollowed ? (
+            <button
+              type="button"
+              onClick={unfollowHandler}
+              className="h-8 w-20 rounded-md bg-green-600 text-sm font-semibold text-white outline-none hover:bg-green-700"
+            >
+              Followed
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={followHandler}
+              className="h-8 w-20 rounded-md bg-blue-600 text-sm text-white outline-none hover:bg-blue-700"
+            >
+              Follow
+            </button>
+          ))}
       </div>
     </div>
   );

@@ -95,7 +95,7 @@ const createChapter = protectedProcedure
         });
       }
 
-      await ctx.prisma.chapter.update({
+      return await ctx.prisma.chapter.update({
         where: { id: chapterId },
         data: {
           title,
@@ -107,12 +107,12 @@ const createChapter = protectedProcedure
             publishedAt === null || publishedAt === false
               ? null
               : publishedAt === true
-              ? new Date()
-              : publishedAt,
+                ? new Date()
+                : publishedAt,
         },
       });
     } else {
-      await ctx.prisma.chapter.create({
+      return await ctx.prisma.chapter.create({
         data: {
           title,
           content,
@@ -123,8 +123,8 @@ const createChapter = protectedProcedure
             publishedAt === null || publishedAt === false
               ? null
               : publishedAt === true
-              ? new Date()
-              : publishedAt,
+                ? new Date()
+                : publishedAt,
         },
       });
     }
