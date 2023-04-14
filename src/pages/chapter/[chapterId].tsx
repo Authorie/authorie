@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import {
   HiOutlineArrowTopRightOnSquare,
   HiOutlineChevronLeft,
@@ -21,7 +22,6 @@ import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
-import { toast } from "react-hot-toast";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -39,9 +39,9 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const ssg = generateSSGHelper(null);
   const chapterId = params.chapterId as string;
   const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
-  const chapters = await ssg.book.getData.fetch({
-    id: chapter.bookId as string,
-  });
+  const chapters = chapter.bookId ? await ssg.book.getData.fetch({
+    id: chapter.bookId,
+  }) : null;
   return {
     props: {
       chapter,
@@ -89,7 +89,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   const editor = useEditor("The content cannot be shown...", false);
   const isChapterBought =
     chapter &&
-    (chapter.price === 0 || chapter.chapterMarketHistories.length > 0);
+    (chapter.price === 0 || chapter.chapterMarketHistories);
   const isOwner = chapter?.ownerId === session?.user.id;
 
   useEffect(() => {
@@ -241,9 +241,8 @@ const ChapterPage = ({ chapter, chapters }: props) => {
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
               <Link
-                href={`/${chapter.owner.penname as string}/book/${
-                  chapter.bookId as string
-                }`}
+                href={`/${chapter.owner.penname as string}/book/${chapter.bookId as string
+                  }`}
                 className="text-lg font-semibold text-white hover:underline"
               >
                 {chapter.book?.title}

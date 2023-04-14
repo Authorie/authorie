@@ -50,11 +50,11 @@ const getAllChapters = publicProcedure
             image: true,
           },
         },
-        chapterMarketHistories: {
+        chapterMarketHistories: ctx.session ? {
           where: {
-            userId: ctx.session?.user.id,
-          },
-        },
+            userId: ctx.session.user.id,
+          }
+        } : false,
         _count: {
           select: {
             views: true,

@@ -20,7 +20,7 @@ const ChapterFeed = ({ chapter }: props) => {
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const isOwner = session?.user.id === chapter.owner.id;
   const isChapterBought =
-    chapter.price === 0 || chapter.chapterMarketHistories.length > 0;
+    chapter.price === 0 || chapter.chapterMarketHistories;
   const editor = useEditor(chapter.content as Content, false);
   const { data: isLike } = api.comment.isLike.useQuery(
     { id: chapter.id },

@@ -37,7 +37,7 @@ const ChapterCard = ({
     chapter.publishedAt === null ||
     dayjs().isAfter(chapter.publishedAt, "day");
   const isChapterBought =
-    chapter.price === 0 || chapter.chapterMarketHistories.length > 0;
+    chapter.price === 0 || chapter.chapterMarketHistories;
   const onEditHandler = (e: MouseEvent) => {
     e.stopPropagation();
     void router.push({
