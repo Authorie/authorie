@@ -75,6 +75,9 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   const [openComment, setOpenComment] = useState(false);
   const bookUnavailable =
     chapter?.book?.status === (BookStatus.DRAFT || BookStatus.ARCHIVED);
+  const chapterUnavailable =
+    chapter?.publishedAt === null ||
+    (chapter?.publishedAt as Date) > new Date();
   const { data: session, status } = useSession();
   const utils = api.useContext();
   const { data: isLiked } = api.chapter.isLike.useQuery(
@@ -99,6 +102,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
+    if (bookUnavailable || chapterUnavailable) return;
     if (status === "loading") return;
     if (!isChapterBought) {
       if (status === "unauthenticated") {
@@ -111,10 +115,21 @@ const ChapterPage = ({ chapter, chapters }: props) => {
       }
     }
     editor.commands.setContent(chapter.content as JSONContent);
-  }, [editor, chapter, chapterId, isOwner, isChapterBought, status, session]);
+  }, [
+    editor,
+    chapter,
+    chapterId,
+    isOwner,
+    isChapterBought,
+    status,
+    session,
+    bookUnavailable,
+    chapterUnavailable,
+  ]);
 
   useEffect(() => {
     if (status === "loading") return;
+    if (bookUnavailable || chapterUnavailable) return;
     if (!isChapterBought) {
       if (status === "unauthenticated") {
         setOpenLogin(true);
@@ -125,7 +140,6 @@ const ChapterPage = ({ chapter, chapters }: props) => {
         return;
       }
     }
-    if (bookUnavailable) return;
     readChapter.mutate({ id: chapterId });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
