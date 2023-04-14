@@ -87,7 +87,7 @@ const DialogBuyChapter = ({
             className="mx-1 h-4 w-4"
           />
           <span className="mr-1 font-semibold text-authYellow-500">
-            {price.toLocaleString()} Au
+            {price} Au
           </span>
           to read the chapter called &quot;
           <span className="font-semibold text-authGreen-600">{title}</span>

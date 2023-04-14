@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import Image from "next/image";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
@@ -15,7 +16,7 @@ const SearchBookResult = ({ book, onClickCard }: props) => {
         <h4 className="text-xl font-bold text-authGreen-600">{book.title}</h4>
         <div className="flex gap-14 text-xs text-dark-400">
           <p>
-            published : <span>{book.createdAt.toLocaleDateString()}</span>
+            published : <span>{dayjs(book.createdAt).format("DD/MM/YYYY")}</span>
           </p>
           <p>
             author :{" "}
