@@ -1,4 +1,3 @@
-import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
@@ -172,7 +171,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
 
   return (
     <div className="relative flex h-screen w-full flex-col">
-      {chapter && chapter.book && chapter.book.status !== BookStatus.DRAFT ? (
+      {chapter && chapter.book ? (
         <div className="flex h-full flex-col items-center overflow-y-scroll">
           {chapter.price > 0 && (
             <div className="absolute right-5 top-4 z-20 flex items-center gap-1 rounded-full bg-white px-2 py-1">

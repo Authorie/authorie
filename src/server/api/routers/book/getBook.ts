@@ -1,4 +1,4 @@
-import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { BookOwnerStatus } from "@prisma/client";
 import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 import { computeIsOwner } from "./utils";
@@ -21,14 +21,9 @@ const getBook = publicProcedure
 
     return computeIsOwner(
       ctx.session?.user?.id,
-      await ctx.prisma.book.findFirstOrThrow({
+      await ctx.prisma.book.findUniqueOrThrow({
         where: {
           id: input.id,
-          status: !isContributor
-            ? {
-              in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
-            }
-            : {},
         },
         include: {
           categories: {
