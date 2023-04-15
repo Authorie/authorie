@@ -15,7 +15,7 @@ function getButtonClassname(selected: boolean) {
 
 const NavigationTopBar = ({ pathname }: props) => {
   return (
-    <nav className="fixed top-0 z-20 w-full bg-white px-36 py-5">
+    <div className="fixed top-0 z-20 w-full bg-white px-36 py-5">
       <div className="flex items-center gap-4 text-lg font-semibold">
         <Link href="/main/home">
           <Image
@@ -44,7 +44,7 @@ const NavigationTopBar = ({ pathname }: props) => {
           </button>
         </div>
       </div>
-    </nav>
+    </div>
   );
 };
 

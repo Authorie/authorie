@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { api, type RouterOutputs } from "~/utils/api";
 import ChapterRankCard from "./ChapterRankCard";
 import ChapterRankMinicard from "./ChapterRankMinicard";
+import { BookStatus } from "@prisma/client";
 
 const Leaderboard = () => {
   const { data: leaderboard } = api.chapter.getLeaderboard.useQuery({
@@ -17,20 +18,27 @@ const Leaderboard = () => {
     if (chapters.some((chapter) => chapter.data === undefined)) {
       return undefined;
     }
-    return chapters.map(
-      (chapter) => chapter.data
-    ) as unknown as RouterOutputs["chapter"]["getData"][];
+    return chapters
+      .filter(
+        ({ data: chapter }) =>
+          chapter?.book?.status !== (BookStatus.DRAFT || BookStatus.ARCHIVED) &&
+          chapter?.publishedAt !== null &&
+          (chapter?.publishedAt as Date) < new Date()
+      )
+      .map(
+        (chapter) => chapter.data
+      ) as unknown as RouterOutputs["chapter"]["getData"][];
   }, [chapters]);
 
   return (
-    <div className="flex h-full w-full justify-between px-10 py-5">
+    <div className="flex h-full w-full justify-between px-10 py-4">
       <div className="flex flex-col gap-3">
         <div className="w-24 font-bold text-white">
-          <span className="text-4xl">Best</span>{" "}
-          <span className="text-2xl">Article of the</span>{" "}
-          <span className="text-4xl">Month</span>
+          <span className="text-5xl">Best</span>{" "}
+          <span className="text-3xl">Article of the</span>{" "}
+          <span className="text-5xl">Month</span>
         </div>
-        <span className="text-xl font-semibold text-authGreen-400">
+        <span className="text-2xl font-semibold text-authGreen-400">
           {dayjs().format("MMMM")}
         </span>
       </div>

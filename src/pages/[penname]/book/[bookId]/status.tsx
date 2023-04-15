@@ -15,6 +15,8 @@ import { CategoryPopover } from "~/components/action/CategoryPopover";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import BookStateInformation from "~/components/Infomation/BookStateInformation";
+import InfomationButton from "~/components/Infomation/InfomationButton";
 
 const validationSchema = z.object({
   title: z
@@ -101,6 +103,7 @@ const StatusPage = () => {
     dialogInitialState
   );
   const [isEdit, setIsEdit] = useState(false);
+  const [openInformation, setOpenInformation] = useState(false);
   const {
     imageData: bookCover,
     uploadHandler: setBookCover,
@@ -409,6 +412,18 @@ const StatusPage = () => {
         button
       />
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
+        <div className="absolute right-2 top-2 z-10">
+          <InfomationButton
+            openModal={() => setOpenInformation(true)}
+            isOpen={openInformation}
+            closeModal={() => setOpenInformation(false)}
+            title={"Book State"}
+            color={"white"}
+            hoverColor="gray-300"
+          >
+            <BookStateInformation />
+          </InfomationButton>
+        </div>
         <div
           onClick={() => router.back()}
           className="absolute inset-0 left-2 top-2 z-10 w-fit"

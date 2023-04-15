@@ -73,11 +73,11 @@ const DialogBuyChapter = ({
         title="Buy chapter"
         button
         onClick={() => void confirmHandler()}
-        cancelClick={cancelClick}
-        cancelTitle={cancelTitle}
+        onClickCancel={cancelClick}
+        cancelButtonLabel={cancelTitle}
         openLoop={openLoop}
       >
-        <div className="-mb-2 mt-2 flex items-center">
+        <div className="flex items-center">
           I want to pay
           <Image
             src="/authorie_coin_logo.svg"

@@ -22,11 +22,11 @@ const SearchChapterResult = ({ chapter, onClickCard }: props) => {
         <div className="flex gap-5">
           <div className="flex items-center gap-1 text-red-400">
             <HiHeart className="h-3 w-3" />
-            <p className="text-xs font-semibold">Like</p>
+            <p className="text-xs font-semibold">{chapter._count.likes}</p>
           </div>
           <div className="flex items-center gap-1 text-authGreen-600">
             <HiEye className="h-3 w-3" />
-            <p className="text-xs font-semibold">View</p>
+            <p className="text-xs font-semibold">{chapter._count.views}</p>
           </div>
         </div>
       </div>
