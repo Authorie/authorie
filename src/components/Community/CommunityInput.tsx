@@ -23,7 +23,7 @@ const CommunityInput = ({ userImg, penname }: props) => {
     },
   });
 
-  const titleChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
+  const titleChangeHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setTitle(e.target.value);
   };
 
@@ -48,19 +48,20 @@ const CommunityInput = ({ userImg, penname }: props) => {
   };
 
   return (
-    <div className="flex h-fit flex-col items-start justify-center gap-4 rounded-xl bg-white p-4 px-6">
+    <div className="flex h-fit w-[672px] flex-col items-start justify-center gap-4 rounded-xl bg-white px-6 py-4">
       <div className="flex gap-2">
         <div className="h-7 w-7 overflow-hidden rounded-full">
           <Image src={userImg} alt="user image" width={50} height={50} />
         </div>
         <div className="font-semibold">{penname}</div>
       </div>
-      <div className="flex flex-col bg-dark-100 px-4 pb-2 pt-4">
-        <div className="flex h-fit flex-col gap-4">
-          <input
+      <div className="flex w-full flex-col bg-dark-100 px-4 pb-2 pt-4">
+        <div className="flex h-fit w-full flex-col gap-4">
+          <TextareaAutoSize
+            minRows={1}
             onChange={titleChangeHandler}
             placeholder="Write a title"
-            className="text-dark-700 bg-transparent text-xl font-semibold outline-none focus:outline-none"
+            className="text-dark-700 w-full resize-none bg-transparent text-xl font-semibold outline-none focus:outline-none"
           />
           {discussionImageUrl && (
             <div className="relative">
@@ -82,7 +83,7 @@ const CommunityInput = ({ userImg, penname }: props) => {
             onChange={contentChangeHandler}
             placeholder="Write a discussion"
             minRows={2}
-            className="h-24 w-[524px] bg-transparent text-gray-700 outline-none focus:outline-none"
+            className="flex h-24 w-full resize-none bg-transparent text-gray-700 outline-none focus:outline-none"
           />
         </div>
         <PhotoInputButton

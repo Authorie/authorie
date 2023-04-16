@@ -1,3 +1,5 @@
+import TextareaAutoSize from "react-textarea-autosize";
+
 const ReportPage = () => {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center bg-authGreen-200">
@@ -14,7 +16,7 @@ const ReportPage = () => {
         </div>
         <div className="flex items-start gap-2">
           <label className="text-lg font-semibold">Report: </label>
-          <textarea className="h-40 w-96 rounded-lg bg-slate-100 p-2 outline-none focus:outline-none" />
+          <TextareaAutoSize className="h-40 w-96 resize-none rounded-lg bg-slate-100 p-2 outline-none focus:outline-none" />
         </div>
       </div>
       <button className="mt-10 rounded-lg bg-blue-500 px-4 py-1 text-white hover:bg-blue-600">

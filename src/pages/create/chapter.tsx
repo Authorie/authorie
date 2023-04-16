@@ -11,6 +11,7 @@ import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
 import { api } from "~/utils/api";
+import TextareaAutoSize from "react-textarea-autosize";
 const CreateChapterBoard = dynamic(
   () => import("~/components/Create/Chapter/CreateChapterBoard")
 );
@@ -20,9 +21,9 @@ const CreateChapter = () => {
   useSession({
     required: true,
     onUnauthenticated() {
-      void router.push("/auth/login")
-    }
-  })
+      void router.push("/auth/login");
+    },
+  });
   const [priceError, setPriceError] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
@@ -113,18 +114,20 @@ const CreateChapter = () => {
           </div>
           <div className="z-20 flex flex-col gap-2 rounded-lg bg-gray-200/50 p-2 backdrop-blur">
             <div className="flex items-end gap-2">
-              <input
+              <TextareaAutoSize
+                minRows={1}
                 placeholder="Untitled"
-                className="w-full bg-transparent text-2xl font-semibold placeholder-gray-600 outline-none focus:outline-none"
+                className="w-full resize-none bg-transparent text-2xl font-semibold placeholder-gray-600 outline-none focus:outline-none"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
               <p
                 className={`${"text-xs"} 
-                          ${title && title.length > 80
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            title && title.length > 80
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {title ? title.length : 0}
                 /80

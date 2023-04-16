@@ -12,7 +12,7 @@ const CommunityPage = () => {
     penname: communityPenname as string,
   });
   return (
-    <div className="mt-8 flex h-full w-full items-start justify-center">
+    <div className="my-8 flex h-full w-full flex-col items-start justify-center gap-7 pl-20">
       {session && (
         <CommunityInput
           penname={session?.user.penname as string}
@@ -34,6 +34,21 @@ const CommunityPage = () => {
           id={post.id}
         />
       ))}
+      <CommunityPost
+        key={1}
+        penname={"four"}
+        userImg={"/FourPicture.png"}
+        discussion={
+          "Function invoked on textarea height change, with height as first argument. The second function argument is an object containing additional information that might be useful for custom behaviors. Current options include { rowHeight: number }."
+        }
+        discussionTitle={"Codeing"}
+        discussionImage={"/FourPicture.png"}
+        isLiked={true}
+        numberOfLike={44}
+        isAuthenticated={status === "authenticated"}
+        numberOfComment={3}
+        id={"eiei"}
+      />
     </div>
   );
 };

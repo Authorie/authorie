@@ -12,6 +12,7 @@ import z from "zod";
 import { AddAuthorModal } from "~/components/action/AddAuthorModal";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import TextareaAutoSize from "react-textarea-autosize";
 
 const validationSchema = z.object({
   title: z
@@ -28,9 +29,9 @@ const CreateBook = () => {
   useSession({
     required: true,
     onUnauthenticated() {
-      void router.push("/auth/login")
-    }
-  })
+      void router.push("/auth/login");
+    },
+  });
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
   const { data: user } = api.user.getData.useQuery();
@@ -70,13 +71,13 @@ const CreateBook = () => {
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
       bookCover
         ? await uploadImageUrl.mutateAsync({
-          image: bookCover,
-        })
+            image: bookCover,
+          })
         : undefined,
       bookWallpaper
         ? await uploadImageUrl.mutateAsync({
-          image: bookWallpaper,
-        })
+            image: bookWallpaper,
+          })
         : undefined,
     ] as const);
     const promiseCreateBook = bookCreateMutation.mutateAsync({
@@ -146,20 +147,21 @@ const CreateBook = () => {
           </label>
           <div className="flex grow flex-col justify-end gap-2 pt-6">
             <div className="flex items-end gap-2">
-              <input
+              <TextareaAutoSize
+                minRows={1}
                 aria-invalid={errors.title ? "true" : "false"}
                 id="title"
-                type="text"
-                className="focus:shadow-outline bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
+                className="focus:shadow-outline resize-none bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
                 placeholder="Untitled"
                 {...register("title")}
               />
               <p
                 className={`${"text-xs"} 
-                          ${watch("title") && watch("title").length > 100
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            watch("title") && watch("title").length > 100
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {watch("title") ? watch("title").length : 0}/100
               </p>
@@ -269,8 +271,8 @@ const CreateBook = () => {
               </div>
             </div>
             <div className="flex w-full items-end gap-2">
-              <textarea
-                rows={2}
+              <TextareaAutoSize
+                minRows={2}
                 id="description"
                 className="focus:shadow-outline h-32 w-full resize-none rounded-xl bg-gray-300 p-3 text-sm placeholder:text-gray-500 focus:outline-none"
                 placeholder="write the description down..."
@@ -278,11 +280,12 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${watch("description") &&
-                    watch("description").length > 500
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            watch("description") &&
+                            watch("description").length > 500
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {watch("description") ? watch("description").length : 0}
                 /500

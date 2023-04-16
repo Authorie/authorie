@@ -8,11 +8,10 @@ import type { ChangeEvent } from "react";
 import { toast } from "react-hot-toast";
 
 type props = {
-  userImg?: string;
   id: string;
 };
 
-const CommunityCommentInput = ({ userImg, id }: props) => {
+const CommunityCommentInput = ({ id }: props) => {
   const { data: session } = useSession();
   const utils = api.useContext();
   const [comment, setComment] = useState("");
@@ -43,30 +42,34 @@ const CommunityCommentInput = ({ userImg, id }: props) => {
   };
   //add comment in community post api
   return (
-    <form onSubmit={() => void submitCommentHandler()} className="flex p-2">
+    <form
+      onSubmit={() => void submitCommentHandler()}
+      className="flex w-full items-center gap-2"
+    >
       <div className="h-6 w-6 overflow-hidden rounded-full bg-authGreen-500">
-        {userImg && (
-          <Image src={userImg} alt="user's image" width={100} height={100} />
-        )}
-      </div>
-      <div className="p-1">
-        {commentImageUrl && (
+        {session && session.user.image && (
           <Image
-            src={commentImageUrl}
-            alt="comment image"
-            width={150}
-            height={150}
+            src={session?.user.image}
+            alt="user's image"
+            width={100}
+            height={100}
           />
         )}
+      </div>
+      <div className="flex w-full items-center gap-2 rounded-lg bg-dark-100 px-3 py-1">
         <TextareaAutoSize
           minRows={1}
           onChange={commentChangeHandler}
           placeholder="Write a comment"
-          className="text-gray-600"
+          className="w-full resize-none bg-transparent text-sm text-gray-600 outline-none focus:outline-none"
         />
-        <PhotoInputButton
-          setImageUrl={(image: string) => setCommentImageUrl(image)}
-        />
+        <div className="self-start">
+          <PhotoInputButton
+            setImageUrl={(image: string) => setCommentImageUrl(image)}
+            color="black"
+            hoverColor="gray-300"
+          />
+        </div>
       </div>
       <input type="submit" hidden />
     </form>
