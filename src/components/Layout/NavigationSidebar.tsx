@@ -6,11 +6,9 @@ import { useCallback, useState } from "react";
 import {
   HiOutlineArrowLeftOnRectangle,
   HiOutlineArrowRightOnRectangle,
-  HiOutlineBell,
-  HiOutlineChatBubbleOvalLeftEllipsis,
   HiOutlineHome,
   HiOutlineMagnifyingGlass,
-  HiPencil,
+  HiPencil
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";
