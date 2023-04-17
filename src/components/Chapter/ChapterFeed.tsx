@@ -9,6 +9,7 @@ import { CommentButton, LikeButton } from "~/components/action";
 import { useEditor } from "~/hooks/editor";
 import { api, type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
+import { DateLabel } from "../action/DateLabel";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];
@@ -19,8 +20,7 @@ const ChapterFeed = ({ chapter }: props) => {
   const { status, data: session } = useSession();
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const isOwner = session?.user.id === chapter.owner.id;
-  const isChapterBought =
-    chapter.price === 0 || chapter.chapterMarketHistories;
+  const isChapterBought = chapter.price === 0 || chapter.chapterMarketHistories;
   const editor = useEditor(chapter.content as Content, false);
   const { data: isLike } = api.comment.isLike.useQuery(
     { id: chapter.id },
@@ -62,26 +62,24 @@ const ChapterFeed = ({ chapter }: props) => {
         )}
         {((status !== "authenticated" && chapter.price > 0) ||
           (!isOwner && !isChapterBought)) && (
-            <>
-              <div className="absolute left-0 top-0 z-20 h-full w-full bg-black/70">
-                <div className="flex h-full w-full items-center justify-center gap-4 text-white">
-                  <HiLockClosed className="h-5 w-5" />
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold">
-                      {chapter.price}
-                    </p>
-                    <Image
-                      src="/authorie_coin_logo.svg"
-                      alt="Authorie coin logo"
-                      width={30}
-                      height={30}
-                      className="h-5 w-5"
-                    />
-                  </div>
+          <>
+            <div className="absolute left-0 top-0 z-20 h-full w-full bg-black/70">
+              <div className="flex h-full w-full items-center justify-center gap-4 text-white">
+                <HiLockClosed className="h-5 w-5" />
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold">{chapter.price}</p>
+                  <Image
+                    src="/authorie_coin_logo.svg"
+                    alt="Authorie coin logo"
+                    width={30}
+                    height={30}
+                    className="h-5 w-5"
+                  />
                 </div>
               </div>
-            </>
-          )}
+            </div>
+          </>
+        )}
         <div className="invisible absolute z-20 h-full w-full bg-black/20 group-hover/items:visible" />
         <div className="relative flex flex-col gap-1 px-8 py-4">
           <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/60 to-transparent" />
@@ -104,9 +102,11 @@ const ChapterFeed = ({ chapter }: props) => {
         </div>
         <div className="my-3 px-8">
           {chapter.publishedAt && (
-            <p className="mb-2 text-xs text-dark-400">
-              publish: {chapter.publishedAt.toDateString()}
-            </p>
+            <DateLabel
+              date={chapter.publishedAt}
+              withTime={false}
+              publishedLabel
+            />
           )}
           <EditorContent editor={editor} />
           <div className="z-10 flex items-center pt-3">

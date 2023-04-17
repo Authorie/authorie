@@ -49,7 +49,7 @@ const CommunityInput = ({ userImg, penname }: props) => {
 
   return (
     <div className="flex h-fit w-[672px] flex-col items-start justify-center gap-4 rounded-xl bg-white px-6 py-4">
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <div className="h-7 w-7 overflow-hidden rounded-full">
           <Image src={userImg} alt="user image" width={50} height={50} />
         </div>

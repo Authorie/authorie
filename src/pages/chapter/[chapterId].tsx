@@ -23,6 +23,7 @@ import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
 import Custom404 from "../404";
+import { DateLabel } from "~/components/action/DateLabel";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -276,13 +277,19 @@ const ChapterPage = ({ chapter, chapters }: props) => {
               </h1>
               <Link
                 href={`/${chapter.owner.penname as string}`}
-                className="mt-2 cursor-pointer text-sm text-white hover:underline"
+                className="mt-2 cursor-pointer font-semibold text-white hover:underline"
               >
                 {chapter.owner.penname}
               </Link>
-              <h4 className="mt-2 text-xs text-white">
-                {chapter.publishedAt?.toDateString()}
-              </h4>
+              <div className="mt-2">
+                <DateLabel
+                  date={chapter.publishedAt as Date}
+                  withTime={false}
+                  publishedLabel
+                  hover
+                  color={"white"}
+                />
+              </div>
             </div>
           </div>
           <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between rounded-b-xl bg-authGreen-600 p-2">
