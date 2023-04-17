@@ -5,7 +5,7 @@ const getPost = publicProcedure.input(z.object({
   id: z.string().cuid(),
 })).query(async ({ ctx, input }) => {
   const { id } = input;
-  const post = await ctx.prisma.communityPost.findFirst({
+  const post = await ctx.prisma.communityPost.findUniqueOrThrow({
     where: {
       id,
     },
@@ -25,10 +25,12 @@ const getPost = publicProcedure.input(z.object({
       _count: true
     }
   });
-  const isLike = ctx.session ? await ctx.prisma.communityPostLike.findFirst({
+  const isLike = ctx.session ? await ctx.prisma.communityPostLike.findUnique({
     where: {
-      userId: ctx.session.user.id,
-      postId: id,
+      postId_userId: {
+        postId: id,
+        userId: ctx.session.user.id,
+      }
     }
   }) : false;
 
