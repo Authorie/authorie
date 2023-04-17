@@ -25,14 +25,14 @@ const getPost = publicProcedure.input(z.object({
       _count: true
     }
   });
-  const isLike = ctx.session ? await ctx.prisma.communityPostLike.findUnique({
+  const isLike = ctx.session ? Boolean(await ctx.prisma.communityPostLike.findUnique({
     where: {
       postId_userId: {
         postId: id,
         userId: ctx.session.user.id,
       }
     }
-  }) : false;
+  })) : false;
 
   return {
     ...post,
