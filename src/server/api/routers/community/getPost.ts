@@ -10,7 +10,18 @@ const getPost = publicProcedure.input(z.object({
       id,
     },
     include: {
-      children: true,
+      user: {
+        select: {
+          id: true,
+          penname: true,
+          image: true,
+        }
+      },
+      children: {
+        select: {
+          id: true,
+        }
+      },
       _count: true
     }
   });
