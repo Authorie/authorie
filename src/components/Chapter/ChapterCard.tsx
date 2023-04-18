@@ -166,7 +166,9 @@ const ChapterCard = ({
               <DateLabel
                 date={chapter.publishedAt}
                 withTime={true}
-                chapterCard
+                publishedLabel
+                font={"font-light"}
+                size={"xs"}
               />
             ))}
         </div>

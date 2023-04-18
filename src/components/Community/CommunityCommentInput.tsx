@@ -18,7 +18,7 @@ const CommunityCommentInput = ({ id }: props) => {
   const [commentImageUrl, setCommentImageUrl] = useState<string>();
   const postComment = api.communityPosts.createNewPost.useMutation({
     onSuccess() {
-      void utils.communityPosts.getPost.invalidate();
+      void utils.communityPosts.getPost.invalidate({ id });
     },
   });
 
@@ -59,7 +59,7 @@ const CommunityCommentInput = ({ id }: props) => {
           <p className="hidden group-hover/image-add:block">remove image</p>
         </div>
       )}
-      <div className="h-6 w-6 overflow-hidden rounded-full bg-authGreen-500">
+      <div className="h-7 w-8 overflow-hidden rounded-full bg-authGreen-500">
         {session && session.user.image && (
           <Image
             src={session?.user.image}
