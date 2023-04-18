@@ -17,6 +17,7 @@ import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
 import BookStateInformation from "~/components/Infomation/BookStateInformation";
 import InfomationButton from "~/components/Infomation/InfomationButton";
+import TextareaAutoSize from "react-textarea-autosize";
 
 const validationSchema = z.object({
   title: z
@@ -506,11 +507,11 @@ const StatusPage = () => {
                         ) : (
                           <div className="flex flex-col">
                             <div className="flex items-end gap-2">
-                              <input
+                              <TextareaAutoSize
+                                minRows={1}
                                 aria-invalid={errors.title ? "true" : "false"}
                                 id="title"
-                                type="text"
-                                className="focus:shadow-outline w-96 rounded-lg border bg-gray-300 px-3 text-3xl font-bold text-black placeholder:text-gray-400 focus:outline-none"
+                                className="focus:shadow-outline w-96 resize-none rounded-lg border bg-gray-300 px-3 text-3xl font-bold text-black placeholder:text-gray-400 focus:outline-none"
                                 placeholder={book.title}
                                 {...register("title")}
                               />
@@ -546,8 +547,8 @@ const StatusPage = () => {
                       ) : (
                         <>
                           <div className="flex items-end gap-2">
-                            <textarea
-                              rows={2}
+                            <TextareaAutoSize
+                              minRows={2}
                               id="description"
                               className="focus:shadow-outline h-24 w-96 resize-none rounded-lg border bg-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-400 focus:outline-none"
                               placeholder={

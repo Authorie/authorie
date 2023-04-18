@@ -10,6 +10,7 @@ import { HiEye, HiHeart, HiLockClosed, HiPencil } from "react-icons/hi2";
 import { twJoin } from "tailwind-merge";
 import { type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
+import { DateLabel } from "../action/DateLabel";
 
 type props = {
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
@@ -162,10 +163,13 @@ const ChapterCard = ({
                 {dayjs(chapter.publishedAt).format("hh:mm")}
               </p>
             ) : (
-              <p className="text-xs font-extralight text-gray-500">
-                published : {dayjs(chapter.publishedAt).format("DD/MM/YYYY")}{" "}
-                {dayjs(chapter.publishedAt).format("hh:mm")}
-              </p>
+              <DateLabel
+                date={chapter.publishedAt}
+                withTime={true}
+                publishedLabel
+                font={"font-light"}
+                size={"xs"}
+              />
             ))}
         </div>
         <div className="flex h-full flex-col items-end justify-end gap-1 py-2">
