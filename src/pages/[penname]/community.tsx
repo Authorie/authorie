@@ -12,20 +12,25 @@ const CommunityPage = () => {
     penname: communityPenname as string,
   });
   return (
-    <div className="my-8 flex h-full w-full flex-col items-start justify-start gap-7 pl-20">
-      {session && (
-        <CommunityInput
-          penname={session?.user.penname as string}
-          userImg={session?.user.image as string}
-        />
-      )}
-      {communityPosts?.map((post) => (
-        <CommunityPost
-          key={post.id}
-          isAuthenticated={status === "authenticated"}
-          id={post.id}
-        />
-      ))}
+    <div className="flex gap-5">
+      <div className="my-8 flex w-fit flex-col items-start justify-start gap-7">
+        {session && (
+          <CommunityInput
+            penname={session?.user.penname as string}
+            userImg={session?.user.image as string}
+          />
+        )}
+        {communityPosts?.map((post) => (
+          <CommunityPost
+            key={post.id}
+            isAuthenticated={status === "authenticated"}
+            id={post.id}
+          />
+        ))}
+      </div>
+      <div className="sticky top-5 mt-8 flex h-96 w-[380px] items-center justify-center rounded-lg bg-white text-2xl font-bold">
+        Authorie
+      </div>
     </div>
   );
 };

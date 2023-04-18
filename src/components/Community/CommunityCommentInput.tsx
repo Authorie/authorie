@@ -59,15 +59,17 @@ const CommunityCommentInput = ({ id }: props) => {
           <p className="hidden group-hover/image-add:block">remove image</p>
         </div>
       )}
-      <div className="h-7 w-8 overflow-hidden rounded-full bg-authGreen-500">
-        {session && session.user.image && (
-          <Image
-            src={session?.user.image}
-            alt="user's image"
-            width={100}
-            height={100}
-          />
-        )}
+      <div className="w-8">
+        <div className="h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
+          {session && session.user.image && (
+            <Image
+              src={session?.user.image}
+              alt="user's image"
+              width={100}
+              height={100}
+            />
+          )}
+        </div>
       </div>
       <div className="flex w-full items-center gap-2 rounded-lg bg-dark-100 px-3 py-1">
         <TextareaAutoSize

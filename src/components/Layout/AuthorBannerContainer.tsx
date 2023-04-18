@@ -22,9 +22,10 @@ const parseUserTab = (pathname: string | undefined) => {
 
 function getAuthorTabButtonClassname(selected: boolean) {
   return `
-    ${selected
-      ? "text-green-500 underline decoration-green-500 underline-offset-2"
-      : "cursor-pointer text-white"
+    ${
+      selected
+        ? "text-green-500 underline decoration-green-500 underline-offset-2"
+        : "cursor-pointer text-white"
     }
     select-none px-11 py-3 text-sm hover:bg-black/30
   `;
@@ -38,8 +39,11 @@ const AuthorBannerContainer = () => {
     () => parseUserTab(router.pathname.split("/")[2]),
     [router.pathname]
   );
-  const { data: user } = api.user.getData.useQuery(undefined, { enabled: status === "authenticated" });
-  const isOwner = status === "authenticated" && router.isReady && user?.penname === penname;
+  const { data: user } = api.user.getData.useQuery(undefined, {
+    enabled: status === "authenticated",
+  });
+  const isOwner =
+    status === "authenticated" && router.isReady && user?.penname === penname;
   const { data: userInBanner, isLoading } = api.user.getData.useQuery(
     isOwner ? undefined : penname,
     {
