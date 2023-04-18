@@ -7,17 +7,17 @@ import { useReducer, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
+import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
 import AuthorList from "~/components/Book/AuthorList";
 import BookCoverEditable from "~/components/Book/BookCoverEditable";
 import DialogLayout from "~/components/Dialog/DialogLayout";
+import BookStateInformation from "~/components/Infomation/BookStateInformation";
+import InfomationButton from "~/components/Infomation/InfomationButton";
 import { CategoryPopover } from "~/components/action/CategoryPopover";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
-import BookStateInformation from "~/components/Infomation/BookStateInformation";
-import InfomationButton from "~/components/Infomation/InfomationButton";
-import TextareaAutoSize from "react-textarea-autosize";
 
 const validationSchema = z.object({
   title: z
@@ -32,27 +32,27 @@ type ValidationSchema = z.infer<typeof validationSchema>;
 
 type DialogState =
   | {
-      isOpen: false;
-    }
+    isOpen: false;
+  }
   | {
-      isOpen: true;
-      title: string;
-      description: string;
-      action: () => void;
-    };
+    isOpen: true;
+    title: string;
+    description: string;
+    action: () => void;
+  };
 
 type DialogAction =
   | {
-      type: "reset";
-    }
+    type: "reset";
+  }
   | {
-      type:
-        | "draftWarning"
-        | "deleteWarning"
-        | "archiveWarning"
-        | "completeWarning";
-      action: () => void;
-    };
+    type:
+    | "draftWarning"
+    | "deleteWarning"
+    | "archiveWarning"
+    | "completeWarning";
+    action: () => void;
+  };
 
 const dialogInitialState = { isOpen: false as const };
 
@@ -343,15 +343,15 @@ const StatusPage = () => {
     setValue("author", "");
   };
 
-  const removeCollaboratorHandler = async (userId: string, penname: string) => {
+  const removeCollaboratorHandler = async (user: { id: string, penname: string }) => {
     const promiseRemove = removeCollaborator.mutateAsync({
-      userId: userId,
+      userId: user.id,
       bookId: bookId,
     });
     await toast.promise(promiseRemove, {
-      loading: `Removing ${penname}...`,
-      success: `Successful removed ${penname}!`,
-      error: `Error occured while removing ${penname}`,
+      loading: `Removing ${user.penname}...`,
+      success: `Successful removed ${user.penname}!`,
+      error: `Error occured while removing ${user.penname}`,
     });
   };
 
@@ -374,13 +374,13 @@ const StatusPage = () => {
       const promises = [
         bookCover
           ? uploadImageUrl.mutateAsync({
-              image: bookCover,
-            })
+            image: bookCover,
+          })
           : undefined,
         bookWallpaper
           ? uploadImageUrl.mutateAsync({
-              image: bookWallpaper,
-            })
+            image: bookWallpaper,
+          })
           : undefined,
       ] as const;
       const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -497,10 +497,10 @@ const StatusPage = () => {
                       />
                     </div>
                     <div className="mt-12 flex grow flex-col gap-3">
-                      <h1 className="text-2xl font-bold">
+                      <span className="text-2xl font-bold">
                         Book Status:{" "}
                         <span className="text-yellow-600">{book.status}</span>
-                      </h1>
+                      </span>
                       <div className="flex gap-3">
                         {!isEdit ? (
                           <h1 className="text-3xl font-bold">{book.title}</h1>
@@ -516,17 +516,16 @@ const StatusPage = () => {
                                 {...register("title")}
                               />
                               <p
-                                className={`${"text-xs"} 
-                          ${
-                            watch("title") && watch("title").length > 100
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                                className={`text-xs 
+                                ${watch("title", "").length > 100
+                                    ? "text-red-500"
+                                    : "text-black"
+                                  }`}
                               >
-                                {watch("title") ? watch("title").length : 0}/100
+                                {watch("title", "").length}/100
                               </p>
                             </div>
-                            {errors.title && (
+                            {errors.title?.message && (
                               <p className="text-xs text-red-400" role="alert">
                                 {errors.title.message}
                               </p>
@@ -558,21 +557,16 @@ const StatusPage = () => {
                               {...register("description")}
                             />
                             <p
-                              className={`${"text-xs"} 
-                          ${
-                            watch("description") &&
-                            watch("description").length > 500
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                              className={`text-xs 
+                              ${watch("description", "").length > 500
+                                  ? "text-red-500"
+                                  : "text-black"
+                                }`}
                             >
-                              {watch("description")
-                                ? watch("description").length
-                                : 0}
-                              /500
+                              {watch("description", "").length}/500
                             </p>
                           </div>
-                          {errors.description && (
+                          {errors.description?.message && (
                             <p className="text-xs text-red-400" role="alert">
                               {errors.description.message}
                             </p>
@@ -611,23 +605,23 @@ const StatusPage = () => {
                         )}
                         {(book.status === BookStatus.INITIAL ||
                           book.status === BookStatus.DRAFT) && (
-                          <button
-                            type="button"
-                            onClick={() => void deleteBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Delete
-                          </button>
-                        )}
+                            <button
+                              type="button"
+                              onClick={() => void deleteBookHandler()}
+                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                            >
+                              Delete
+                            </button>
+                          )}
                         {(book.status === BookStatus.PUBLISHED ||
                           book.status === BookStatus.COMPLETED) && (
-                          <button
-                            onClick={() => void archiveBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Archive
-                          </button>
-                        )}
+                            <button
+                              onClick={() => void archiveBookHandler()}
+                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                            >
+                              Archive
+                            </button>
+                          )}
                       </div>
                     )}
                   </div>
@@ -644,7 +638,7 @@ const StatusPage = () => {
                   {!isEdit && (
                     <div className="mt-6 flex w-fit flex-col items-center self-center rounded-lg bg-gray-50 p-4 shadow-lg">
                       <div className="flex items-center justify-center">
-                        <h1 className="text-xl font-bold">Author List</h1>
+                        <h2 className="text-xl font-bold">Author List</h2>
                       </div>
                       {book.status === BookStatus.INITIAL && (
                         <div className="my-4 flex items-center justify-center gap-4">
@@ -672,28 +666,23 @@ const StatusPage = () => {
                           </div>
                         )}
                         <ol className="divide-y-2 self-center">
-                          {collaborators ? (
+                          {collaborators && (
                             collaborators.map((author, index) => (
                               <AuthorList
-                                key={index}
-                                number={index + 1}
-                                penname={author.user.penname as string}
-                                userId={author.userId}
+                                key={author.userId}
+                                index={index + 1}
                                 status={author.status}
-                                authorPicture={author.user.image || ""}
-                                bookStatus={book.status}
-                                onInvite={(penname) =>
-                                  void inviteCollaboratorHandler(penname)
+                                penname={author.user.penname as string}
+                                image={author.user.image || "/placeholder_profile.png"}
+                                isBookInitialStatus={book.status === BookStatus.INITIAL}
+                                onInvite={() =>
+                                  void inviteCollaboratorHandler(author.user.penname as string)
                                 }
-                                onRemove={(id: string, penname: string) =>
-                                  void removeCollaboratorHandler(id, penname)
+                                onRemove={() =>
+                                  void removeCollaboratorHandler({ id: author.userId, penname: author.user.penname as string })
                                 }
                               />
                             ))
-                          ) : (
-                            <div className="mt-10 flex items-center justify-center">
-                              <p>No collaborators</p>
-                            </div>
                           )}
                         </ol>
                       </div>
