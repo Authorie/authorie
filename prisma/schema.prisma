@@ -52,8 +52,11 @@ model User {
     emailVerified          DateTime?
     image                  String?
     wallpaperImage         String?
+    contact                String?
+    location               String?
     coin                   Int                    @default(100000)
     bio                    String                 @default("")
+    createdAt              DateTime               @default(now())
     accounts               Account[]
     sessions               Session[]
     categories             CategoriesOnUsers[]
