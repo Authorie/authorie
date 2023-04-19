@@ -8,8 +8,8 @@ import ReplyCommentInput from "./ReplyCommentInput";
 
 type props = {
   comment:
-    | RouterOutputs["comment"]["getAll"][number]
-    | RouterOutputs["comment"]["getAll"][number]["replies"][number];
+  | RouterOutputs["comment"]["getAll"][number]
+  | RouterOutputs["comment"]["getAll"][number]["replies"][number];
 };
 
 const Comment = ({ comment }: props) => {

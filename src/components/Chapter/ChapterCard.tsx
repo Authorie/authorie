@@ -97,7 +97,7 @@ const ChapterCard = ({
       className={twJoin(
         "relative z-10 h-fit w-full",
         !editable &&
-          "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
+        "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
         isDragging ? "opacity-0" : "opacity-100",
         isEdit ? "cursor-move" : "cursor-default"
       )}
