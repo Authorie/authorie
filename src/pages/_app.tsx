@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import Layout from "~/components/Layout/Layout";
 import { api } from "~/utils/api";
 import Head from "next/head";
+import "~/utils/dayjs";
 import { useRouter } from "next/router";
 import "~/styles/globals.css";
 
