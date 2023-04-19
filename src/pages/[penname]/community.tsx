@@ -17,6 +17,7 @@ const CommunityPage = () => {
         {session && (
           <CommunityInput
             penname={session?.user.penname as string}
+            communityPenname={communityPenname as string}
             userImg={session?.user.image as string}
           />
         )}

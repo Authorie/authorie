@@ -14,7 +14,7 @@ const validationSchema = z.object({
   description: z
     .string()
     .min(1, { message: "Title is required" })
-    .max(400, { message: "Title is too long" }),
+    .max(700, { message: "Title is too long" }),
   bio: z.string().max(150, { message: "Your bio is too long" }),
   facebook: z
     .string()
@@ -151,12 +151,12 @@ const AboutPage = () => {
                     className={`${"text-xs"} 
                           ${
                             watch("description") &&
-                            watch("description").length > 400
+                            watch("description").length > 700
                               ? "text-red-500"
                               : "text-black"
                           }`}
                   >
-                    {watch("description") ? watch("description").length : 0}/400
+                    {watch("description") ? watch("description").length : 0}/700
                   </p>
                 </div>
                 {errors.description && (
@@ -391,9 +391,7 @@ const AboutPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <p className="text-lg font-semibold text-gray-600">Joined</p>
-            <p className="text-gray-500">
-              {user?.emailVerified?.toDateString()}
-            </p>
+            <p className="text-gray-500">{user?.createdAt?.toDateString()}</p>
           </div>
         </div>
       </form>

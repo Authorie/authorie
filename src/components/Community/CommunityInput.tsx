@@ -10,9 +10,10 @@ import { HiXMark } from "react-icons/hi2";
 type props = {
   userImg: string;
   penname: string;
+  communityPenname: string;
 };
 
-const CommunityInput = ({ userImg, penname }: props) => {
+const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
   const utils = api.useContext();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -36,8 +37,8 @@ const CommunityInput = ({ userImg, penname }: props) => {
     const promisePostDiscussion = postDiscussion.mutateAsync({
       title: title,
       content: content,
-      authorPenname: penname,
-      image: discussionImageUrl,
+      authorPenname: communityPenname,
+      image: discussionImageUrl || undefined,
       parentId: undefined,
     });
     await toast.promise(promisePostDiscussion, {
@@ -45,6 +46,9 @@ const CommunityInput = ({ userImg, penname }: props) => {
       success: `Posted successfully!`,
       error: "Post Failed!",
     });
+    setTitle("");
+    setContent("");
+    setDiscussionImageUrl("");
   };
 
   return (
@@ -60,6 +64,7 @@ const CommunityInput = ({ userImg, penname }: props) => {
           <TextareaAutoSize
             minRows={1}
             onChange={titleChangeHandler}
+            value={title}
             placeholder="Write a title"
             className="text-dark-700 w-full resize-none bg-transparent text-xl font-semibold outline-none focus:outline-none"
           />
@@ -80,6 +85,7 @@ const CommunityInput = ({ userImg, penname }: props) => {
             </div>
           )}
           <TextareaAutoSize
+            value={content}
             onChange={contentChangeHandler}
             placeholder="Write a discussion"
             minRows={2}

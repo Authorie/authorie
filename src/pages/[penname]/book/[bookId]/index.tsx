@@ -424,7 +424,7 @@ const BookContent = () => {
                     )}
                     {!book.isOwner && status === "authenticated" && (
                       <button type="button" onClick={toggleFavoriteHandler}>
-                        {isFavorite ? (
+                        {!isFavorite ? (
                           <HiOutlineStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                         ) : (
                           <HiStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
