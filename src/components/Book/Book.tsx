@@ -1,10 +1,10 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type { MouseEvent } from "react";
 import toast from "react-hot-toast";
-import dayjs from "dayjs";
 import {
   HiOutlineEye,
   HiOutlineHeart,
@@ -83,7 +83,7 @@ const Book = ({ book }: props) => {
 
   console.log("latestChapt", publishedChapter);
 
-  const toggleFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
+  const toggleFavoriteHandler = (e: MouseEvent) => {
     e.stopPropagation();
     if (isFavorite) {
       unfavoriteBook.mutate({ id: book.id });
@@ -92,7 +92,7 @@ const Book = ({ book }: props) => {
     }
   };
 
-  const publishBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
+  const publishBookHandler = async (e: MouseEvent) => {
     e.stopPropagation();
     const promiseMoveState = moveState.mutateAsync({
       id: book.id,
@@ -175,6 +175,17 @@ const Book = ({ book }: props) => {
         ) : (
           <div className="absolute h-full w-full bg-authGreen-400" />
         )}
+        {book.status === BookStatus.PUBLISHED && latestChapter && (
+          <div className="absolute right-0 top-0 z-10 flex w-full justify-between text-xs font-semibold text-white">
+            {latestChapter.publishedAt &&
+              dayjs(new Date()).isBefore(
+                dayjs(latestChapter.publishedAt).add(1, "day")
+              ) && <p className="bg-red-400 px-2">New</p>}
+            <p className="line-clamp-1 bg-slate-500 px-2 font-medium">
+              #{publishedChapter.length} - {latestChapter.title}
+            </p>
+          </div>
+        )}
         {(book.isOwner || book.isCollborator) && (
           <>
             {book.status !== BookStatus.PUBLISHED && (
@@ -188,17 +199,6 @@ const Book = ({ book }: props) => {
               `}
               >
                 {book.status}
-              </div>
-            )}
-            {book.status === BookStatus.PUBLISHED && latestChapter && (
-              <div className="absolute right-0 top-0 z-10 flex w-full justify-between text-xs font-semibold text-white">
-                {latestChapter.publishedAt &&
-                  dayjs(new Date()).isBefore(
-                    dayjs(latestChapter.publishedAt).add(1, "day")
-                  ) && <p className="bg-red-400 px-2">New</p>}
-                <p className="line-clamp-1 bg-slate-500 px-2 font-medium">
-                  #{publishedChapter.length} - {latestChapter.title}
-                </p>
               </div>
             )}
             {book.status === BookStatus.DRAFT && (
@@ -231,13 +231,16 @@ const Book = ({ book }: props) => {
           !(book.isOwner || book.isCollborator) &&
           (book.status === BookStatus.PUBLISHED ||
             book.status === BookStatus.COMPLETED) && (
-            <button onClick={toggleFavoriteHandler}>
-              {isFavorite ? (
-                <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+            <div
+              className="group/star absolute bottom-0 right-0 z-20 h-10 w-10"
+              onClick={toggleFavoriteHandler}
+            >
+              {!isFavorite ? (
+                <HiOutlineStar className="h-10 w-10 text-yellow-400 group-hover/star:text-yellow-600" />
               ) : (
-                <HiStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                <HiStar className="h-10 w-10 text-yellow-400 hover:text-yellow-600" />
               )}
-            </button>
+            </div>
           )}
         <div className="z-10 flex grow flex-col justify-between">
           <div className="mt-10 flex w-full flex-col items-center justify-center gap-2 px-3">

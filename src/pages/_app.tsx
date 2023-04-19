@@ -7,7 +7,7 @@ import type { ReactElement, ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 import Layout from "~/components/Layout/Layout";
 import { api } from "~/utils/api";
-
+import Head from "next/head";
 import { useRouter } from "next/router";
 import "~/styles/globals.css";
 
@@ -32,11 +32,20 @@ const MyApp = ({
     Component.getLayout || ((page) => commonLayout(router.pathname, page));
 
   return (
-    <SessionProvider session={session}>
-      {getLayout(<Component {...pageProps} />)}
-      <Analytics />
-      <Toaster />
-    </SessionProvider>
+    <>
+      <Head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#4a4a4a" />
+      </Head>
+      <SessionProvider session={session}>
+        {getLayout(<Component {...pageProps} />)}
+        <Analytics />
+        <Toaster />
+      </SessionProvider>
+    </>
   );
 };
 

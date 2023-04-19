@@ -1,6 +1,6 @@
 import { Popover } from "@headlessui/react";
-import UploadImageInput from "../Comment/UploadImageInput";
 import { HiOutlinePhoto } from "react-icons/hi2";
+import UploadImageInput from "../Comment/UploadImageInput";
 
 type props = {
   setImageUrl: (image: string) => void;
@@ -23,9 +23,8 @@ export const PhotoInputButton = ({
         </div>
       </Popover.Panel>
       <Popover.Button
-        className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg outline-none hover:bg-${
-          hoverColor ? `${hoverColor}` : "gray-500"
-        } focus:outline-none`}
+        className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg outline-none hover:bg-${hoverColor ? `${hoverColor}` : "gray-500"
+          } focus:outline-none`}
       >
         <HiOutlinePhoto
           className={`h-5 w-5 text-${color ? `${color}` : "white"}`}

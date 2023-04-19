@@ -3,9 +3,9 @@ import type { Editor } from "@tiptap/core";
 import type { ChangeEvent } from "react";
 import { Fragment, useEffect, useState } from "react";
 import {
-    HiOutlineChevronUpDown,
-    HiOutlineMinusCircle,
-    HiOutlinePlusCircle,
+  HiOutlineChevronUpDown,
+  HiOutlineMinusCircle,
+  HiOutlinePlusCircle,
 } from "react-icons/hi2";
 import { RiMarkPenLine, RiText } from "react-icons/ri";
 
@@ -148,10 +148,9 @@ const ReadChapterPopover = ({ editor }: { editor: Editor | null }) => {
                         <Listbox.Option
                           key={font.id}
                           className={({ active }) =>
-                            `relative w-full cursor-default select-none whitespace-nowrap py-2 pl-5 pr-4 ${
-                              active
-                                ? "bg-authGreen-300 text-authGreen-600"
-                                : "text-gray-900"
+                            `relative w-full cursor-default select-none whitespace-nowrap py-2 pl-5 pr-4 ${active
+                              ? "bg-authGreen-300 text-authGreen-600"
+                              : "text-gray-900"
                             }`
                           }
                           value={font}

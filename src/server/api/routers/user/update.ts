@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "~/server/api/trpc";
@@ -7,13 +6,19 @@ const update = protectedProcedure
   .input(
     z.object({
       penname: z.string().trim().optional(),
-      profileImageUrl: z.string().url().optional(),
-      wallpaperImageUrl: z.string().url().optional(),
-      bio: z.string().trim().optional(),
+      bio: z.string().trim().nullable().optional(),
+      profileImageUrl: z.string().url().nullable().optional(),
+      wallpaperImageUrl: z.string().url().nullable().optional(),
+      description: z.string().trim().nullable().optional(),
+      location: z.string().trim().nullable().optional(),
+      facebookContact: z.string().trim().nullable().optional(),
+      instagramContact: z.string().trim().nullable().optional(),
+      emailContact: z.string().trim().nullable().optional(),
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { penname, profileImageUrl, wallpaperImageUrl, bio } = input;
+    const { penname, profileImageUrl, wallpaperImageUrl, bio,
+      description, location, facebookContact, instagramContact, emailContact } = input;
 
     if (penname) {
       const exists = await ctx.prisma.user.findUnique({
@@ -29,18 +34,21 @@ const update = protectedProcedure
       }
     }
 
-    const userData: Prisma.UserUpdateInput = {
-      penname,
-      bio,
-      image: profileImageUrl,
-      wallpaperImage: wallpaperImageUrl,
-    };
-
     return await ctx.prisma.user.update({
       where: {
         id: ctx.session.user.id,
       },
-      data: userData,
+      data: {
+        penname,
+        bio,
+        description,
+        location,
+        facebookContact,
+        instagramContact,
+        emailContact,
+        image: profileImageUrl,
+        wallpaperImage: wallpaperImageUrl,
+      },
     });
   });
 

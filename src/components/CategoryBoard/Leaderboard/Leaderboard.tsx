@@ -1,9 +1,9 @@
+import { BookStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { api, type RouterOutputs } from "~/utils/api";
 import ChapterRankCard from "./ChapterRankCard";
 import ChapterRankMinicard from "./ChapterRankMinicard";
-import { BookStatus } from "@prisma/client";
 
 const Leaderboard = () => {
   const { data: leaderboard } = api.chapter.getLeaderboard.useQuery({
