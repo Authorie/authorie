@@ -391,18 +391,18 @@ const AuthorBanner = ({
               <div className="flex items-end gap-2">
                 <textarea
                   rows={2}
-                  placeholder={user.bio === "" ? "Put bio here" : user.bio}
+                  placeholder={user.bio ? user.bio : "Put bio here..."}
                   {...register("bio")}
                   className="w-full resize-none rounded-lg border border-gray-400 bg-transparent px-1.5 placeholder-gray-400 outline-none"
                 />
                 <p
                   className={`${"text-xs"} 
-                          ${watch("bio") && watch("bio").length > 150
+                          ${(watch("bio") || "").length > 150
                       ? "text-red-500"
                       : "text-white"
                     }`}
                 >
-                  {watch("bio") ? watch("bio").length : 0}/150
+                  {(watch("bio") || "").length}/150
                 </p>
               </div>
               {errors.bio && (

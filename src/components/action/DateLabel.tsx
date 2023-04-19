@@ -28,9 +28,8 @@ export const DateLabel = ({
   return (
     <div className="group/date relative cursor-pointer ">
       <p
-        className={`text-${size ? size : "sm"} ${font ? font : ""} text-${
-          color ? color : "gray-500"
-        }`}
+        className={`text-${size ? size : "sm"} ${font ? font : ""} text-${color ? color : "gray-500"
+          }`}
       >
         {publishedLabel && "published : "}
         {formattedDate}
