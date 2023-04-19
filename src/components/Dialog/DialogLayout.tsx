@@ -1,5 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, type ReactNode } from "react";
+import { HiXMark } from "react-icons/hi2";
 
 type props = {
   isOpen: boolean;
@@ -9,8 +10,8 @@ type props = {
   children?: ReactNode;
   button?: boolean;
   onClick?: () => void;
-  cancelClick?: () => void;
-  cancelTitle?: string;
+  onClickCancel?: () => void;
+  cancelButtonLabel?: string;
   openLoop?: () => void;
 };
 
@@ -22,8 +23,8 @@ const DialogLayout = ({
   children,
   button,
   onClick,
-  cancelClick,
-  cancelTitle,
+  onClickCancel,
+  cancelButtonLabel,
   openLoop,
 }: props) => {
   const onCloseHandler = () => {
@@ -65,41 +66,54 @@ const DialogLayout = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="max-w-full transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all">
-                {title && (
-                  <Dialog.Title
-                    as="h3"
-                    className=" bg-authGreen-600 px-6 py-4 text-lg font-semibold leading-6 text-white"
-                  >
-                    {title}
-                  </Dialog.Title>
-                )}
-                {description && (
-                  <div className="my-5 px-6">
-                    <p className="text-sm text-gray-500">{description}</p>
-                  </div>
-                )}
-                {children && (
-                  <div className="mt-4 w-fit overflow-y-auto px-6 pb-6">
-                    {children}
-                  </div>
-                )}
-                {button && (
-                  <div className="my-3 flex justify-end gap-3 px-6">
-                    <button
-                      className="h-7 w-24 rounded-lg bg-red-400 text-sm text-white outline-none hover:bg-red-500"
-                      onClick={cancelClick ? cancelClick : onCloseHandler}
+              <Dialog.Panel className="flex max-w-full transform items-stretch overflow-hidden rounded-l-lg rounded-r-2xl bg-white text-left align-middle shadow-xl transition-all">
+                <div className="w-7 bg-authGreen-600"></div>
+                <div className="h-full">
+                  {title && (
+                    <div className="mt-4 flex items-center justify-center">
+                      <Dialog.Title
+                        as="h3"
+                        className="px-6 py-4 text-xl font-semibold leading-6 text-black"
+                      >
+                        {title}
+                      </Dialog.Title>
+                    </div>
+                  )}
+                  {!openLoop && (
+                    <div
+                      onClick={closeModal}
+                      className="absolute right-3 top-4 cursor-pointer text-black"
                     >
-                      {cancelTitle ? cancelTitle : "Cancel"}
-                    </button>
-                    <button
-                      className="h-7 w-24 rounded-lg bg-authBlue-500 text-sm text-white outline-none hover:bg-authBlue-700"
-                      onClick={onConfirmHandler}
-                    >
-                      Confirm
-                    </button>
-                  </div>
-                )}
+                      <HiXMark className="h-7 w-7" />
+                    </div>
+                  )}
+                  {description && (
+                    <div className="my-5 px-6">
+                      <p className="text-sm text-gray-500">{description}</p>
+                    </div>
+                  )}
+                  {children && (
+                    <div className="mt-4 w-fit overflow-y-auto px-6 pb-4">
+                      {children}
+                    </div>
+                  )}
+                  {button && (
+                    <div className="my-3 flex justify-end gap-3 px-6">
+                      <button
+                        className="h-7 w-24 rounded-lg bg-red-400 text-sm text-white outline-none hover:bg-red-500"
+                        onClick={onClickCancel ? onClickCancel : onCloseHandler}
+                      >
+                        {cancelButtonLabel ? cancelButtonLabel : "Cancel"}
+                      </button>
+                      <button
+                        className="h-7 w-24 rounded-lg bg-authBlue-500 text-sm text-white outline-none hover:bg-authBlue-700"
+                        onClick={onConfirmHandler}
+                      >
+                        Confirm
+                      </button>
+                    </div>
+                  )}
+                </div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

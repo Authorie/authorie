@@ -1,4 +1,5 @@
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -13,15 +14,22 @@ import {
 import { api, type RouterOutputs } from "~/utils/api";
 
 type props = {
-  book: RouterOutputs["book"]["getAll"][number]
+  book: RouterOutputs["book"]["getAll"][number];
 };
 
 const Book = ({ book }: props) => {
   const router = useRouter();
   const utils = api.useContext();
   const { status: authStatus } = useSession();
+  const publishedChapter = book.chapters.filter(
+    (chapters) =>
+      chapters.publishedAt && dayjs(new Date()).isAfter(chapters.publishedAt)
+  );
+  const latestChapter = publishedChapter[publishedChapter.length - 1];
   const penname = router.query.penname as string;
-  const ownerPenname = book.owners.find((owner) => owner.status === BookOwnerStatus.OWNER)?.user.penname as string
+  const ownerPenname = book.owners.find(
+    (owner) => owner.status === BookOwnerStatus.OWNER
+  )?.user.penname as string;
   const { data: isFavorite } = api.book.isFavorite.useQuery(
     { id: book.id },
     { enabled: authStatus === "authenticated" }
@@ -73,7 +81,9 @@ const Book = ({ book }: props) => {
     },
   });
 
-  const toggleFavoriteHandler = (e: MouseEvent<HTMLButtonElement>) => {
+  console.log("latestChapt", publishedChapter);
+
+  const toggleFavoriteHandler = (e: MouseEvent) => {
     e.stopPropagation();
     if (isFavorite) {
       unfavoriteBook.mutate({ id: book.id });
@@ -82,7 +92,7 @@ const Book = ({ book }: props) => {
     }
   };
 
-  const publishBookHandler = async (e: MouseEvent<HTMLButtonElement>) => {
+  const publishBookHandler = async (e: MouseEvent) => {
     e.stopPropagation();
     const promiseMoveState = moveState.mutateAsync({
       id: book.id,
@@ -122,14 +132,19 @@ const Book = ({ book }: props) => {
     });
   };
 
+  const changeStateHandler = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    void router.push(`/${penname}/book/${book.id}/status`);
+  };
 
   return (
     <div
       onClick={() => void router.push(`/${penname}/book/${book.id}`)}
-      className={`${book.status === BookStatus.ARCHIVED
-        ? ""
-        : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-        } flex`}
+      className={`${
+        book.status === BookStatus.ARCHIVED
+          ? ""
+          : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
+      } flex`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">
@@ -160,6 +175,17 @@ const Book = ({ book }: props) => {
         ) : (
           <div className="absolute h-full w-full bg-authGreen-400" />
         )}
+        {book.status === BookStatus.PUBLISHED && latestChapter && (
+          <div className="absolute right-0 top-0 z-10 flex w-full justify-between text-xs font-semibold text-white">
+            {latestChapter.publishedAt &&
+              dayjs(new Date()).isBefore(
+                dayjs(latestChapter.publishedAt).add(1, "day")
+              ) && <p className="bg-red-400 px-2">New</p>}
+            <p className="line-clamp-1 bg-slate-500 px-2 font-medium">
+              #{publishedChapter.length} - {latestChapter.title}
+            </p>
+          </div>
+        )}
         {(book.isOwner || book.isCollborator) && (
           <>
             {book.status !== BookStatus.PUBLISHED && (
@@ -173,11 +199,6 @@ const Book = ({ book }: props) => {
               `}
               >
                 {book.status}
-              </div>
-            )}
-            {book.status === BookStatus.PUBLISHED && (
-              <div className="absolute left-0 top-0 z-10 px-2 text-xs text-white">
-                <p></p>
               </div>
             )}
             {book.status === BookStatus.DRAFT && (
@@ -198,7 +219,7 @@ const Book = ({ book }: props) => {
             )}
             {book.status === BookStatus.INITIAL && (
               <button
-                onClick={() => void router.push(`/${penname}/book/${book.id}/status`)}
+                onClick={changeStateHandler}
                 className="absolute bottom-2 right-2 z-20 rounded-full bg-gray-400 px-1 py-1 text-xs font-semibold text-white hover:bg-gray-500"
               >
                 Change state to start the book
@@ -208,30 +229,47 @@ const Book = ({ book }: props) => {
         )}
         {authStatus === "authenticated" &&
           !(book.isOwner || book.isCollborator) &&
-          (book.status === BookStatus.PUBLISHED || book.status === BookStatus.COMPLETED) &&
-          (
-            <button onClick={toggleFavoriteHandler}>
-              {isFavorite ? (
-                <HiOutlineStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+          (book.status === BookStatus.PUBLISHED ||
+            book.status === BookStatus.COMPLETED) && (
+            <div
+              className="group/star absolute bottom-0 right-0 z-20 h-10 w-10"
+              onClick={toggleFavoriteHandler}
+            >
+              {!isFavorite ? (
+                <HiOutlineStar className="h-10 w-10 text-yellow-400 group-hover/star:text-yellow-600" />
               ) : (
-                <HiStar className="absolute right-0 top-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
+                <HiStar className="h-10 w-10 text-yellow-400 hover:text-yellow-600" />
               )}
-            </button>
+            </div>
           )}
         <div className="z-10 flex grow flex-col justify-between">
           <div className="mt-10 flex w-full flex-col items-center justify-center gap-2 px-3">
-            <span className="rounded-full bg-white/60 px-2 font-bold">{book.title}</span>
+            <span className="line-clamp-1 rounded-full bg-white/60 px-2 font-bold">
+              {book.title}
+            </span>
           </div>
-          <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
-            <div className="flex items-center gap-1">
-              <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
-              <p className="text-xs font-medium text-authGreen-600">{book.chapters.reduce((prev, curr) => prev + curr._count.views, 0)}</p>
+          {book.status !== (BookStatus.INITIAL || BookStatus.DRAFT) && (
+            <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
+              <div className="flex items-center gap-1">
+                <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
+                <p className="text-xs font-medium text-authGreen-600">
+                  {book.chapters.reduce(
+                    (prev, curr) => prev + curr._count.views,
+                    0
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-1">
+                <HiOutlineHeart className="h-5 w-5 text-red-400" />
+                <p className="text-xs font-medium text-red-400">
+                  {book.chapters.reduce(
+                    (prev, curr) => prev + curr._count.likes,
+                    0
+                  )}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <HiOutlineHeart className="h-5 w-5 text-red-400" />
-              <p className="text-xs font-medium text-red-400">{book.chapters.reduce((prev, curr) => prev + curr._count.likes, 0)}</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

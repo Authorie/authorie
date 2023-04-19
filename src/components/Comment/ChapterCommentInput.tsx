@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from "react";
-import UploadImageInput from "./UploadImageInput";
-import { HiOutlinePhoto } from "react-icons/hi2";
 import { api } from "~/utils/api";
-import { Popover } from "@headlessui/react";
+import { PhotoInputButton } from "../action/PhotoInputButton";
 
 type props = {
   chapterId: string;
@@ -55,18 +53,9 @@ const ChapterCommentInput = ({ chapterId }: props) => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <Popover>
-          <Popover.Panel className="relative">
-            <div className="absolute -left-10 top-8">
-              <UploadImageInput
-                onClick={(image: string) => setCommentImageUrl(image)}
-              />
-            </div>
-          </Popover.Panel>
-          <Popover.Button className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg hover:bg-gray-500">
-            <HiOutlinePhoto className="h-5 w-5 text-white" />
-          </Popover.Button>
-        </Popover>
+        <PhotoInputButton
+          setImageUrl={(image: string) => setCommentImageUrl(image)}
+        />
       </div>
       <input type="submit" hidden />
     </form>

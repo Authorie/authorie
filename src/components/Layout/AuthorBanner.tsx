@@ -15,6 +15,7 @@ import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import UserCardSkeleton from "../Card/UserCardSkeleton";
 import { type AuthorTab } from "./AuthorBannerContainer";
+import TextareaAutoSize from "react-textarea-autosize";
 
 const validationSchema = z.object({
   penname: z
@@ -255,8 +256,9 @@ const AuthorBanner = ({
           />
         ) : (
           <div
-            className={`${isEditing ? "opacity-90" : ""
-              } h-full w-full bg-authGreen-400`}
+            className={`${
+              isEditing ? "opacity-90" : ""
+            } h-full w-full bg-authGreen-400`}
           />
         )}
       </label>
@@ -267,8 +269,9 @@ const AuthorBanner = ({
         <div className="mb-3 flex justify-between ">
           <label
             htmlFor="upload-profile"
-            className={`${isEditing ? "cursor-pointer" : ""
-              } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
+            className={`${
+              isEditing ? "cursor-pointer" : ""
+            } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
           >
             {isEditing && (
               <div>
@@ -335,10 +338,11 @@ const AuthorBanner = ({
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${watch("penname") && watch("penname").length > 50
-                        ? "text-red-500"
-                        : "text-white"
-                      }`}
+                          ${
+                            watch("penname") && watch("penname").length > 50
+                              ? "text-red-500"
+                              : "text-white"
+                          }`}
                   >
                     {watch("penname") ? watch("penname").length : 0}
                     /50
@@ -387,22 +391,23 @@ const AuthorBanner = ({
         </div>
         <div className="h-fit w-4/5 pb-2 text-sm text-white">
           {isEditing ? (
-            <div className="h-16S">
+            <div className="h-16">
               <div className="flex items-end gap-2">
-                <textarea
+                <TextareaAutoSize
                   rows={2}
-                  placeholder={user.bio === "" ? "Put bio here" : user.bio}
+                  placeholder={user.bio ? user.bio : "Put bio here..."}
                   {...register("bio")}
                   className="w-full resize-none rounded-lg border border-gray-400 bg-transparent px-1.5 placeholder-gray-400 outline-none"
                 />
                 <p
                   className={`${"text-xs"} 
-                          ${watch("bio") && watch("bio").length > 150
-                      ? "text-red-500"
-                      : "text-white"
-                    }`}
+                          ${
+                            (watch("bio") || "").length > 150
+                              ? "text-red-500"
+                              : "text-white"
+                          }`}
                 >
-                  {watch("bio") ? watch("bio").length : 0}/150
+                  {(watch("bio") || "").length}/150
                 </p>
               </div>
               {errors.bio && (
@@ -451,10 +456,10 @@ const AuthorBanner = ({
             {isFetchingFollowerNextPage && <UserCardSkeleton />}
             {userFollowers?.pages.flatMap((page) => page.items).length ===
               0 && (
-                <div className="flex w-96 items-center justify-center">
-                  <p className="text-lg">No followers</p>
-                </div>
-              )}
+              <div className="flex w-96 items-center justify-center">
+                <p className="text-lg">No followers</p>
+              </div>
+            )}
           </div>
         }
       </DialogLayout>
@@ -493,10 +498,10 @@ const AuthorBanner = ({
             {isFetchingFollowingNextPage && <UserCardSkeleton />}
             {userFollowing?.pages.flatMap((page) => page.items).length ===
               0 && (
-                <div className="flex w-96 items-center justify-center">
-                  <p className="text-lg">No following</p>
-                </div>
-              )}
+              <div className="flex w-96 items-center justify-center">
+                <p className="text-lg">No following</p>
+              </div>
+            )}
           </div>
         }
       </DialogLayout>

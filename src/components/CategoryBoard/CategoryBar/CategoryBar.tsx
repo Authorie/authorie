@@ -26,11 +26,10 @@ const CategoryBar = ({
           title="Open Categories"
           type="button"
           onClick={onOpenCategories}
-          className={`h-210 flex aspect-square w-9 items-center justify-center rounded-full text-white ${
-            openCategories
+          className={`h-210 flex aspect-square w-9 items-center justify-center rounded-full text-white ${openCategories
               ? "bg-yellow-700 hover:bg-yellow-800"
               : "bg-black hover:bg-dark-500"
-          }`}
+            }`}
         >
           {openCategories ? (
             <HiOutlineXMark className="h-4 w-4" />

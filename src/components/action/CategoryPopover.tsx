@@ -51,10 +51,10 @@ export const CategoryPopover = ({
                   {categories.filter(
                     (category: Category) => !addedCategories.includes(category)
                   ).length === 0 && (
-                    <p className="text-sm font-semibold">
-                      No more categories left...
-                    </p>
-                  )}
+                      <p className="text-sm font-semibold">
+                        No more categories left...
+                      </p>
+                    )}
                 </div>
               </Popover.Panel>
               <Popover.Button

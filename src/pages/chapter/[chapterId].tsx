@@ -1,3 +1,4 @@
+import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
@@ -21,6 +22,8 @@ import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
+import Custom404 from "../404";
+import { DateLabel } from "~/components/action/DateLabel";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -38,9 +41,11 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
   const ssg = generateSSGHelper(null);
   const chapterId = params.chapterId as string;
   const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
-  const chapters = chapter.bookId ? await ssg.book.getData.fetch({
-    id: chapter.bookId,
-  }) : null;
+  const chapters = chapter.bookId
+    ? await ssg.book.getData.fetch({
+        id: chapter.bookId,
+      })
+    : null;
   return {
     props: {
       chapter,
@@ -69,6 +74,11 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openComment, setOpenComment] = useState(false);
+  const bookUnavailable =
+    chapter?.book?.status === (BookStatus.DRAFT || BookStatus.ARCHIVED);
+  const chapterUnavailable =
+    chapter?.publishedAt === null ||
+    (chapter?.publishedAt as Date) > new Date();
   const { data: session, status } = useSession();
   const utils = api.useContext();
   const { data: isLiked } = api.chapter.isLike.useQuery(
@@ -87,13 +97,13 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   });
   const editor = useEditor("The content cannot be shown...", false);
   const isChapterBought =
-    chapter &&
-    (chapter.price === 0 || chapter.chapterMarketHistories);
+    chapter && (chapter.price === 0 || chapter.chapterMarketHistories);
   const isOwner = chapter?.ownerId === session?.user.id;
 
   useEffect(() => {
     if (!editor) return;
     if (!chapter) return;
+    if (bookUnavailable || chapterUnavailable) return;
     if (status === "loading") return;
     if (!isChapterBought) {
       if (status === "unauthenticated") {
@@ -106,10 +116,21 @@ const ChapterPage = ({ chapter, chapters }: props) => {
       }
     }
     editor.commands.setContent(chapter.content as JSONContent);
-  }, [editor, chapter, chapterId, isOwner, isChapterBought, status, session]);
+  }, [
+    editor,
+    chapter,
+    chapterId,
+    isOwner,
+    isChapterBought,
+    status,
+    session,
+    bookUnavailable,
+    chapterUnavailable,
+  ]);
 
   useEffect(() => {
     if (status === "loading") return;
+    if (bookUnavailable || chapterUnavailable) return;
     if (!isChapterBought) {
       if (status === "unauthenticated") {
         setOpenLogin(true);
@@ -168,6 +189,10 @@ const ChapterPage = ({ chapter, chapters }: props) => {
     void navigator.clipboard.writeText(url);
     toast.success("URL Copied");
   };
+
+  if (bookUnavailable && !isOwner) {
+    return <Custom404 />;
+  }
 
   return (
     <div className="relative flex h-screen w-full flex-col">
@@ -240,8 +265,9 @@ const ChapterPage = ({ chapter, chapters }: props) => {
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
               <Link
-                href={`/${chapter.owner.penname as string}/book/${chapter.bookId as string
-                  }`}
+                href={`/${chapter.owner.penname as string}/book/${
+                  chapter.bookId as string
+                }`}
                 className="text-lg font-semibold text-white hover:underline"
               >
                 {chapter.book?.title}
@@ -251,13 +277,19 @@ const ChapterPage = ({ chapter, chapters }: props) => {
               </h1>
               <Link
                 href={`/${chapter.owner.penname as string}`}
-                className="mt-2 cursor-pointer text-sm text-white hover:underline"
+                className="mt-2 cursor-pointer font-semibold text-white hover:underline"
               >
                 {chapter.owner.penname}
               </Link>
-              <h4 className="mt-2 text-xs text-white">
-                {chapter.publishedAt?.toDateString()}
-              </h4>
+              <div className="mt-2">
+                <DateLabel
+                  date={chapter.publishedAt as Date}
+                  withTime={false}
+                  publishedLabel
+                  hover
+                  color={"white"}
+                />
+              </div>
             </div>
           </div>
           <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between rounded-b-xl bg-authGreen-600 p-2">

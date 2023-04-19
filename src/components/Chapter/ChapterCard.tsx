@@ -10,6 +10,7 @@ import { HiEye, HiHeart, HiLockClosed, HiPencil } from "react-icons/hi2";
 import { twJoin } from "tailwind-merge";
 import { type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
+import { DateLabel } from "../action/DateLabel";
 
 type props = {
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
@@ -35,9 +36,8 @@ const ChapterCard = ({
   const isOwner = session?.user.id === chapter.ownerId;
   const editable =
     chapter.publishedAt === null ||
-    dayjs().isAfter(chapter.publishedAt, "day");
-  const isChapterBought =
-    chapter.price === 0 || chapter.chapterMarketHistories;
+    dayjs().add(1, "hour").isBefore(chapter.publishedAt);
+  const isChapterBought = chapter.price === 0 || chapter.chapterMarketHistories;
   const onEditHandler = (e: MouseEvent) => {
     e.stopPropagation();
     void router.push({
@@ -91,14 +91,16 @@ const ChapterCard = ({
     return;
   };
 
-
   return (
     <div
       onClick={clickCardHandler}
-      className={twJoin("relative z-10 h-fit w-full",
-        editable && "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
+      className={twJoin(
+        "relative z-10 h-fit w-full",
+        !editable &&
+        "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
         isDragging ? "opacity-0" : "opacity-100",
-        isEdit ? "cursor-move" : "cursor-default")}
+        isEdit ? "cursor-move" : "cursor-default"
+      )}
     >
       {isOwner && chapter.price > 0 && (
         <div className="absolute -right-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
@@ -113,8 +115,7 @@ const ChapterCard = ({
         </div>
       )}
       {chapter.publishedAt &&
-        dayjs().isAfter(chapter.publishedAt, "day") &&
-        (
+        dayjs().isBefore(dayjs(chapter.publishedAt).add(1, "day")) && (
           <div className="absolute -left-3 -top-1 z-20 bg-red-400 px-1 font-semibold">
             <p className="text-xs text-white">New</p>
           </div>
@@ -130,16 +131,13 @@ const ChapterCard = ({
         ref={(node) => drag(drop(node))}
         className="relative flex h-16 w-full cursor-pointer items-center justify-between overflow-hidden rounded-lg bg-white px-3 shadow-lg"
       >
-        {(chapter.price > 0) &&
-          (status !== "authenticated" || (!isOwner && !isChapterBought)) &&
-          (
+        {chapter.price > 0 &&
+          (status !== "authenticated" || (!isOwner && !isChapterBought)) && (
             <div className="absolute left-0 top-0 h-full w-full bg-black/70">
               <div className="flex h-full w-full items-center justify-center gap-4 text-white">
                 <HiLockClosed className="h-5 w-5" />
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold">
-                    {chapter.price}
-                  </p>
+                  <p className="font-semibold">{chapter.price}</p>
                   <Image
                     src="/authorie_coin_logo.svg"
                     alt="Authorie coin logo"
@@ -161,12 +159,18 @@ const ChapterCard = ({
           {chapter.publishedAt &&
             (dayjs().isBefore(chapter.publishedAt) ? (
               <p className="text-xs font-semibold text-green-500">
-                publish soon {dayjs(chapter.publishedAt).fromNow()}
+                publish soon : {dayjs(chapter.publishedAt).format("DD/MM/YYYY")}{" "}
+                {dayjs(chapter.publishedAt).format("hh:mm")}
               </p>
             ) : (
-              <p className="text-xs font-extralight">publish at : {dayjs(chapter.publishedAt).format("DD/MM/YYYY")}</p>
-            ))
-          }
+              <DateLabel
+                date={chapter.publishedAt}
+                withTime={true}
+                publishedLabel
+                font={"font-light"}
+                size={"xs"}
+              />
+            ))}
         </div>
         <div className="flex h-full flex-col items-end justify-end gap-1 py-2">
           {editable && (
