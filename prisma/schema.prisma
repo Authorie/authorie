@@ -51,11 +51,14 @@ model User {
     email                  String?                @unique
     emailVerified          DateTime?
     image                  String?
+    bio                    String?
+    description            String?
     wallpaperImage         String?
-    contact                String?
+    facebookContact        String?
+    instagramContact       String?
+    emailContact           String?
     location               String?
     coin                   Int                    @default(100000)
-    bio                    String                 @default("")
     createdAt              DateTime               @default(now())
     accounts               Account[]
     sessions               Session[]
