@@ -87,6 +87,17 @@ const CreateChapter = () => {
     }
   };
 
+  const changeTitleHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const input = e.target.value.trim();
+    if (input.length > 80) {
+      setErrors({ title: "The title is too long" });
+    }
+    if (input.length <= 80) {
+      setErrors({ title: "" });
+    }
+    setTitle(input);
+  };
+
   useEffect(() => {
     const chapterId = router.query.chapterId as string | undefined;
     if (chapterId) {
@@ -119,7 +130,7 @@ const CreateChapter = () => {
                 placeholder="Untitled"
                 className="w-full resize-none bg-transparent text-2xl font-semibold placeholder-gray-600 outline-none focus:outline-none"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={changeTitleHandler}
               />
               <p
                 className={`${"text-xs"} 

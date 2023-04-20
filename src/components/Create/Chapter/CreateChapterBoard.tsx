@@ -9,13 +9,6 @@ import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
 import { api } from "~/utils/api";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";
 
-const validationSchema = z.object({
-  title: z
-    .string()
-    .max(80, { message: "Your title is too long" })
-    .min(1, { message: "Your title is required" }),
-});
-
 type props = {
   editor: Editor;
   title: string;
@@ -63,11 +56,13 @@ const CreateChapterBoard = ({
     });
   };
   const saveDraftChapterHandler = async () => {
-    const validationOutput = validationSchema.safeParse({ title });
-    if (!validationOutput.success) {
+    if (title === "") {
       setErrors({
-        title: validationOutput.error.message,
+        title: "The title is required!",
       });
+      return;
+    } else if (title.trim().length > 80) {
+      setErrors({ title: "The title is too long" });
       return;
     }
     const promise = createChapterMutation.mutateAsync(
@@ -96,11 +91,13 @@ const CreateChapterBoard = ({
   };
   const publishDraftChapterHandler = async (date?: Date) => {
     if (!editor) return;
-    const validationOutput = validationSchema.safeParse({ title });
-    if (!validationOutput.success) {
+    if (title === "") {
       setErrors({
-        title: validationOutput.error.message,
+        title: "The title is required!",
       });
+      return;
+    } else if (title.trim().length > 80) {
+      setErrors({ title: "The title is too long" });
       return;
     }
     if (!bookId) {

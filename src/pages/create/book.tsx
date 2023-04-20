@@ -105,7 +105,12 @@ const CreateBook = () => {
         <div className="relative flex min-h-[550px] gap-5 rounded-lg bg-gray-100 px-24 pb-11 pt-24 drop-shadow-lg">
           <div className="absolute left-0 right-0 top-0 -z-10 h-72 self-end overflow-hidden rounded-t-lg">
             {bookWallpaper ? (
-              <Image src={bookWallpaper} fill alt="book's wallpaper" />
+              <Image
+                src={bookWallpaper}
+                height={200}
+                width={2000}
+                alt="book's wallpaper"
+              />
             ) : (
               <div className="h-full w-full bg-authGreen-500"></div>
             )}
@@ -300,7 +305,7 @@ const CreateBook = () => {
         </div>
         <div className="flex justify-between">
           <p className="text-sm text-gray-500">
-            Noted: You can only invite the author who follow you and you follow
+            Note: You can only invite the author who follow you and you follow
             back
           </p>
           <button

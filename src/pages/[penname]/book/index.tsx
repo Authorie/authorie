@@ -86,7 +86,12 @@ const BookPage = () => {
       </div>
       {openArchive && (
         <p className="mt-4 text-sm text-gray-600">
-          Noted: Unarchive to make the book viewable again
+          Note: Unarchive to make the book viewable again
+        </p>
+      )}
+      {isOwner && !openArchive && (
+        <p className="mt-4 text-sm text-gray-600">
+          Note: Do not forget to publish your book so people can read it
         </p>
       )}
     </div>
