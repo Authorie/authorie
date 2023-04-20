@@ -6,7 +6,10 @@ const ReportPage = () => {
       <h1 className="text-3xl font-bold">Report or Feedback</h1>
       <p className="my-4 w-2/5">
         If you find any bugs or have some suggestion to our website. Feel free
-        to do it! Your report would benefit us and make Authorie become better.
+        to do it! If you find some content of other users that include any
+        harmful or offensive material, feel free to give us all the details and
+        we will take care of it. Your report would benefit us and let us make
+        Authorie and our community become better.
         <span className="font-semibold">Thank you in advance! 🙏</span>
       </p>
       <div className="flex flex-col items-end gap-4">
