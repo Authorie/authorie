@@ -42,6 +42,9 @@ const NavigationTopBar = ({ pathname }: props) => {
           <button className={getButtonClassname(pathname === "/main/report")}>
             <Link href="/main/report">Report</Link>
           </button>
+          <button className={getButtonClassname(pathname === "/main/privacy")}>
+            <Link href="/main/privacy">Privacy</Link>
+          </button>
         </div>
       </div>
     </div>
