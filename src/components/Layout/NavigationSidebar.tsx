@@ -8,7 +8,7 @@ import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineHome,
   HiOutlineMagnifyingGlass,
-  HiPencil
+  HiPencil,
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";
@@ -147,14 +147,25 @@ const NavigationSidebar = () => {
           >
             About us
           </NextLink>
-          <div className="text-sm text-gray-500">.</div>
-          <NextLink
-            className="mt-2 text-xs font-light text-gray-500 hover:underline"
-            href="/main/report"
-          >
-            Report
-          </NextLink>
-          <div className="text-sm text-gray-500">.</div>
+          <div className="flex items-center gap-1">
+            <div className="text-sm text-gray-500">.</div>
+            <NextLink
+              className="mt-2 text-xs font-light text-gray-500 hover:underline"
+              href="/main/report"
+            >
+              Report
+            </NextLink>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="text-sm text-gray-500">.</div>
+            <NextLink
+              className="mt-2 text-xs font-light text-gray-500 hover:underline"
+              href="/main/privacy"
+            >
+              Privacy
+            </NextLink>
+          </div>
+          <div className="mb-2 text-sm text-gray-500">.</div>
           <p className="text-xs font-light text-gray-500">Authorie 2023</p>
         </div>
       </div>

@@ -227,7 +227,9 @@ const AuthorBanner = ({
     <>
       <label
         htmlFor="upload-wallpaper"
-        className={`absolute inset-0 h-72 ${isEditing ? "cursor-pointer" : ""}`}
+        className={`absolute inset-0 h-72 overflow-hidden ${
+          isEditing ? "cursor-pointer" : ""
+        }`}
       >
         {isEditing && (
           <div>
@@ -251,7 +253,8 @@ const AuthorBanner = ({
             }
             alt="wallpaper"
             priority
-            fill
+            height={100}
+            width={2000}
             className={isEditing ? "opacity-90" : ""}
           />
         ) : (

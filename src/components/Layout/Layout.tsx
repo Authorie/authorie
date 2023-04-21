@@ -23,14 +23,15 @@ const Layout = ({
     content = children;
   } else if (isMainPage) {
     content = (
-      <div className="h-screen">
+      <div className="max-h-full min-h-screen">
         <NavigationTopBar pathname={pathname} />
         {children}
       </div>
     );
   } else {
-    const mainClassname = `max-h-full min-h-screen grow border-l-2 border-gray-200 bg-gray-100 ${isCreatePage ? "" : "flex flex-col items-center"
-      }`;
+    const mainClassname = `max-h-full min-h-screen grow border-l-2 border-gray-200 bg-gray-100 ${
+      isCreatePage ? "" : "flex flex-col items-center"
+    }`;
     content = (
       <div className="mx-auto w-screen max-w-screen-2xl">
         <div className="flex w-full">

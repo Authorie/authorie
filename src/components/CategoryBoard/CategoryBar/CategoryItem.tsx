@@ -42,10 +42,11 @@ const CategoryItem = ({ isLogin, selected, category }: props) => {
 
   return (
     <div
-      className={`group/categoryItem relative rounded-3xl text-sm text-white ${selected
+      className={`group/categoryItem relative rounded-3xl text-sm text-white ${
+        selected
           ? "bg-yellow-700 hover:bg-yellow-800"
           : "bg-black hover:bg-dark-500"
-        }`}
+      }`}
     >
       <button
         title="Select Category for Posts"
@@ -57,8 +58,8 @@ const CategoryItem = ({ isLogin, selected, category }: props) => {
           {category === "all"
             ? "All"
             : category === "following"
-              ? "Following"
-              : category.title}
+            ? "Following"
+            : category.title}
         </span>
       </button>
       {isValidCategory && (

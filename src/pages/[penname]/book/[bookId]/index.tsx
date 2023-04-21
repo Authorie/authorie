@@ -380,7 +380,8 @@ const BookContent = () => {
                     : (book.wallpaperImage as string)
                 }
                 alt="book's wallpaper image"
-                fill
+                height={200}
+                width={2000}
               />
             ) : (
               <div className="h-full w-full bg-authGreen-400" />
@@ -395,7 +396,7 @@ const BookContent = () => {
           <div className="z-10 mt-10 flex gap-7 pb-5 pt-12">
             <div className="ml-7 flex flex-col">
               <div className="flex">
-                <div className="h-52 w-3 rounded-r-lg bg-white shadow-lg" />
+                <div className="h-52 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
                 <div className="w-40 rounded-l-lg bg-white shadow-lg">
                   <div className="relative h-full w-full overflow-hidden rounded-tl-lg">
                     {isEdit && (

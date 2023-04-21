@@ -26,8 +26,8 @@ const HomePage = () => {
           name={"Siriwudhi Sawaidee"}
           img={"/FamePicture.png"}
           position={"Lead Developer, Full-stack Developer"}
-          quote={"....."}
-          email={"....."}
+          quote={"All your journey can be kept in Authorie forever"}
+          email={"swsd2544@gmail.com"}
         />
         <DeveloperInfoCard
           name={"Supakit Kuewsupakorn"}
@@ -40,8 +40,8 @@ const HomePage = () => {
           name={"Supakorn Suvichai"}
           img={"/KenPicture.png"}
           position={"Researcher, Frontend-Developer"}
-          quote={"....."}
-          email={"....."}
+          quote={"I love penguin"}
+          email={"droidakaken@gmail.com"}
         />
       </div>
       <div className="relative py-8">

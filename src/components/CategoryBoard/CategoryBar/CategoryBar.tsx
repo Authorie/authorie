@@ -20,16 +20,17 @@ const CategoryBar = ({
   const selectedCategory = useSelectedCategory();
 
   return (
-    <div className="sticky top-0 z-30 mb-6 flex max-w-5xl justify-between rounded-b-xl bg-dark-600 px-4 py-3">
+    <div className="sticky top-0 z-30 mb-6 flex h-14 max-w-5xl justify-between rounded-b-xl bg-dark-600 px-4">
       <div className="flex items-center gap-3 overflow-x-auto">
         <button
           title="Open Categories"
           type="button"
           onClick={onOpenCategories}
-          className={`h-210 flex aspect-square w-9 items-center justify-center rounded-full text-white ${openCategories
+          className={`h-210 flex aspect-square w-9 items-center justify-center rounded-full text-white ${
+            openCategories
               ? "bg-yellow-700 hover:bg-yellow-800"
               : "bg-black hover:bg-dark-500"
-            }`}
+          }`}
         >
           {openCategories ? (
             <HiOutlineXMark className="h-4 w-4" />
@@ -58,7 +59,9 @@ const CategoryBar = ({
           />
         ))}
       </div>
-      <TimeMachine />
+      <div className="self-center">
+        <TimeMachine />
+      </div>
     </div>
   );
 };
