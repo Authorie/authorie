@@ -4,7 +4,6 @@ import type { Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
-import z from "zod";
 import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
 import { api } from "~/utils/api";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";

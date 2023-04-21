@@ -1,11 +1,12 @@
 import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import { type GetStaticPropsContext, type InferGetStaticPropsType } from "next";
+import type { GetStaticProps, InferGetStaticPropsType } from "next";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import type { ParsedUrlQuery } from "querystring";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import {
@@ -22,7 +23,7 @@ import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { DateLabel } from "~/components/action/DateLabel";
 import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
-import { api } from "~/utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
 import Custom404 from "../404";
 
 export async function getStaticPaths() {
@@ -36,9 +37,21 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }: GetStaticPropsContext) {
+type Props = {
+  chapter: RouterOutputs["chapter"]["getData"];
+  chapters: RouterOutputs["book"]["getData"] | null;
+};
+
+interface Params extends ParsedUrlQuery {
+  chapterId: string;
+}
+
+export const getStaticProps: GetStaticProps<Props, Params> = async (
+  context
+) => {
   const ssg = generateSSGHelper(null);
-  const chapterId = params?.chapterId as string;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const chapterId = context.params!.chapterId;
   try {
     const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
     const chapters = chapter.bookId
@@ -62,7 +75,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
 
     throw err;
   }
-}
+};
 
 type props = InferGetStaticPropsType<typeof getStaticProps>;
 
@@ -84,10 +97,9 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   const [openLogin, setOpenLogin] = useState(false);
   const [openComment, setOpenComment] = useState(false);
   const bookUnavailable =
-    chapter?.book?.status === (BookStatus.DRAFT || BookStatus.ARCHIVED);
+    chapter.book?.status === (BookStatus.DRAFT || BookStatus.ARCHIVED);
   const chapterUnavailable =
-    chapter?.publishedAt === null ||
-    (chapter?.publishedAt as Date) > new Date();
+    chapter.publishedAt === null || chapter.publishedAt > new Date();
   const { data: session, status } = useSession();
   const utils = api.useContext();
   const { data: isLiked } = api.chapter.isLike.useQuery(
@@ -107,7 +119,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   const editor = useEditor("The content cannot be shown...", false);
   const isChapterBought =
     chapter && (chapter.price === 0 || chapter.chapterMarketHistories);
-  const isOwner = chapter?.ownerId === session?.user.id;
+  const isOwner = chapter.ownerId === session?.user.id;
 
   useEffect(() => {
     if (!editor) return;
@@ -319,7 +331,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
                 <ChapterLikeButton
                   isAuthenticated={status === "authenticated"}
                   isLiked={Boolean(isLiked)}
-                  numberOfLike={chapter?._count.likes || 0}
+                  numberOfLike={chapter._count.likes || 0}
                   onClickHandler={onLikeHandler}
                 />
                 <ChapterCommentInput chapterId={chapterId} />
