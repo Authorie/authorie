@@ -64,7 +64,6 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
         chapter,
         chapters,
       },
-      revalidate: 5,
     };
   } catch (err) {
     if (err instanceof Error) {

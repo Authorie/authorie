@@ -1,11 +1,11 @@
 const PrivacyPage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="grid h-3/4 w-3/5 grid-cols-2 rounded-xl bg-slate-50 ">
-        <div className="flex items-center justify-center rounded-l-lg bg-authGreen-200">
+      <div className="flex w-3/5 flex-col rounded-xl bg-slate-100 ">
+        <div className="flex items-center justify-center rounded-t-lg bg-authGreen-200 py-6">
           <p className="text-5xl font-bold">Privacy</p>
         </div>
-        <div className="flex items-center justify-center px-4">
+        <div className="flex items-center justify-center px-4 py-20">
           <h1 className="text-center text-lg font-bold text-black">
             We will keep all your draft, saved, published, archived data into
             our database so that all your data will not be lost and stay in our
