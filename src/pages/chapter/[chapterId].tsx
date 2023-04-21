@@ -19,11 +19,11 @@ import Comment from "~/components/Comment/Comment";
 import DialogBuyChapter from "~/components/Dialog/DialogBuyChapter";
 import DialogLayout from "~/components/Dialog/DialogLayout";
 import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
+import { DateLabel } from "~/components/action/DateLabel";
 import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api } from "~/utils/api";
 import Custom404 from "../404";
-import { DateLabel } from "~/components/action/DateLabel";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -37,22 +37,31 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: GetStaticPropsContext) {
-  if (!params) return { props: {} };
   const ssg = generateSSGHelper(null);
-  const chapterId = params.chapterId as string;
-  const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
-  const chapters = chapter.bookId
-    ? await ssg.book.getData.fetch({
-        id: chapter.bookId,
-      })
-    : null;
-  return {
-    props: {
-      chapter,
-      chapters,
-    },
-    revalidate: 10,
-  };
+  const chapterId = params?.chapterId as string;
+  try {
+    const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+    const chapters = chapter.bookId
+      ? await ssg.book.getData.fetch({
+          id: chapter.bookId,
+        })
+      : null;
+    return {
+      props: {
+        chapter,
+        chapters,
+      },
+      revalidate: 5,
+    };
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log(err.message);
+    } else {
+      console.log("Unexpected Exception", err);
+    }
+
+    throw err;
+  }
 }
 
 type props = InferGetStaticPropsType<typeof getStaticProps>;
