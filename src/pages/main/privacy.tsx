@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 const PrivacyPage = () => {
   return (
     <div className="flex h-screen items-center justify-center">

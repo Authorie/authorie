@@ -21,7 +21,9 @@ const DeveloperInfoCard = ({ name, img, position, quote, email }: props) => {
       <div className="flex flex-col items-center px-6">
         <p className="text-xs text-gray-600">{position}</p>
         <h1 className="my-2 text-xl font-semibold">{name}</h1>
-        <p className="my-4 text-xs font-semibold">&quot;{quote}&quot;</p>
+        <p className="my-4 text-center text-xs font-semibold">
+          &quot;{quote}&quot;
+        </p>
         <div className="mt-4 flex items-center gap-2">
           <HiEnvelope className="h-5 w-5" />
           <p className="text-xs">{email}</p>

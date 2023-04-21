@@ -2,7 +2,7 @@ import TextareaAutoSize from "react-textarea-autosize";
 
 const ReportPage = () => {
   return (
-    <div className="flex max-h-fit min-h-screen flex-col items-center justify-center bg-authGreen-200 py-44">
+    <div className="flex max-h-fit min-h-screen flex-col items-center justify-center bg-authGreen-200">
       <h1 className="text-3xl font-bold">Report or Feedback</h1>
       <p className="my-4 w-3/5">
         If you find any bugs or have some suggestion to our website, or find
