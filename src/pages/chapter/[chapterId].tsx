@@ -51,7 +51,6 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       chapter,
       chapters,
     },
-    revalidate: 10,
   };
 }
 

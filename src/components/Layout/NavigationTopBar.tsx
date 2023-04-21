@@ -36,15 +36,30 @@ const NavigationTopBar = ({ pathname }: props) => {
           />
         </Link>
         <div className="ml-16 flex items-center gap-2">
-          <button className={getButtonClassname(pathname === "/main/home")}>
-            <Link href="/main/home">Home</Link>
-          </button>
-          <button className={getButtonClassname(pathname === "/main/report")}>
-            <Link href="/main/report">Report</Link>
-          </button>
-          <button className={getButtonClassname(pathname === "/main/privacy")}>
-            <Link href="/main/privacy">Privacy</Link>
-          </button>
+          <Link
+            href="/main/home"
+            className={getButtonClassname(pathname === "/main/home")}
+          >
+            Home
+          </Link>
+          <Link
+            href="/main/report"
+            className={getButtonClassname(pathname === "/main/report")}
+          >
+            Report
+          </Link>
+          <Link
+            href="/main/privacy"
+            className={getButtonClassname(pathname === "/main/privacy")}
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/main/history"
+            className={getButtonClassname(pathname === "/main/history")}
+          >
+            History
+          </Link>
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "~/utils/api";
 import DialogLayout from "./DialogLayout";
+import { useSession } from "next-auth/react";
 
 type props = {
   isOpen: boolean;
@@ -28,7 +29,10 @@ const DialogBuyChapter = ({
 }: props) => {
   const router = useRouter();
   const utils = api.useContext();
-  const { data: user } = api.user.getData.useQuery();
+  const { status } = useSession();
+  const { data: user } = api.user.getData.useQuery(undefined, {
+    enabled: status === "authenticated",
+  });
   const [openNotEnoughCoin, setOpenNotEnoughCoin] = useState(false);
   const buyChapter = api.chapter.buyChapter.useMutation({
     onSuccess() {

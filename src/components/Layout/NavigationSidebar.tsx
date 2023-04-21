@@ -165,8 +165,19 @@ const NavigationSidebar = () => {
               Privacy
             </NextLink>
           </div>
-          <div className="mb-2 text-sm text-gray-500">.</div>
-          <p className="text-xs font-light text-gray-500">Authorie 2023</p>
+          <div className="flex items-center gap-1">
+            <div className="mb-2 text-sm text-gray-500">.</div>
+            <NextLink
+              className="text-xs font-light text-gray-500 hover:underline"
+              href="/main/history"
+            >
+              History
+            </NextLink>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="mb-2 text-sm text-gray-500">.</div>
+            <p className="text-xs font-light text-gray-500">Authorie 2023</p>
+          </div>
         </div>
       </div>
     </div>
