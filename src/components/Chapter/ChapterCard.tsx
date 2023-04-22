@@ -97,13 +97,13 @@ const ChapterCard = ({
       className={twJoin(
         "relative z-10 h-fit w-full",
         !editable &&
-        "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
+          "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
         isDragging ? "opacity-0" : "opacity-100",
         isEdit ? "cursor-move" : "cursor-default"
       )}
     >
       {isOwner && chapter.price > 0 && (
-        <div className="absolute -right-3 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
+        <div className="absolute -right-0 -top-1 z-20 flex items-center gap-1 rounded-full bg-gray-200 px-1">
           <Image
             src="/authorie_coin_logo.svg"
             alt="Authorie coin logo"
