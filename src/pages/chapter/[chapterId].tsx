@@ -33,7 +33,7 @@ export async function getStaticPaths() {
     paths: chapterIds.map(({ id }) => ({
       params: { chapterId: id },
     })),
-    fallback: false,
+    fallback: "blocking",
   };
 }
 
@@ -64,6 +64,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
         chapter,
         chapters,
       },
+      revalidate: 10,
     };
   } catch (err) {
     if (err instanceof Error) {
