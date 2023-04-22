@@ -171,7 +171,14 @@ const Book = ({ book }: props) => {
           </div>
         )}
         {book.coverImage ? (
-          <Image src={book.coverImage} alt="book picture" fill />
+          <div className="absolute h-72 w-52 overflow-hidden">
+            <Image
+              src={book.coverImage}
+              alt="book picture"
+              width={208}
+              height={288}
+            />
+          </div>
         ) : (
           <div className="absolute h-full w-full bg-authGreen-400" />
         )}

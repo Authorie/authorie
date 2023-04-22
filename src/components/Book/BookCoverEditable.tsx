@@ -33,14 +33,17 @@ const BookCoverEditable = ({
         </label>
       )}
       <div className="h-52 w-3 rounded-r-lg bg-gray-500 shadow-lg" />
-      <div className="w-40">
+      <div className="w-36">
         <div className="relative h-full w-full overflow-hidden rounded-l-lg">
           {coverImage || uploadCover ? (
-            <Image
-              src={uploadCover ? uploadCover : (coverImage as string)}
-              alt={`cover image of the book called ${title}`}
-              fill
-            />
+            <div className="absolute h-52 w-36 overflow-hidden">
+              <Image
+                src={uploadCover ? uploadCover : (coverImage as string)}
+                alt={`cover image of the book called ${title}`}
+                width={144}
+                height={208}
+              />
+            </div>
           ) : (
             <div className="h-full w-full bg-authGreen-400" />
           )}

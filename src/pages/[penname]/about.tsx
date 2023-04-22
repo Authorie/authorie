@@ -166,7 +166,7 @@ const AboutPage = () => {
                 )}
               </div>
             ) : (
-              <p className="text-gray-600">{user?.description}</p>
+              <p className="max-w-lg text-gray-600">{user?.description}</p>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -201,7 +201,7 @@ const AboutPage = () => {
                 )}
               </div>
             ) : (
-              <p className="text-gray-600">{user?.bio}</p>
+              <p className="max-w-lg text-gray-600">{user?.bio}</p>
             )}
           </div>
         </div>

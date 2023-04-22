@@ -95,7 +95,7 @@ const CreateChapter = () => {
     if (input.length <= 80) {
       setErrors({ title: "" });
     }
-    setTitle(input);
+    setTitle(e.target.value);
   };
 
   useEffect(() => {

@@ -397,7 +397,7 @@ const BookContent = () => {
             <div className="ml-7 flex flex-col">
               <div className="flex">
                 <div className="h-52 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
-                <div className="w-40 rounded-l-lg bg-white shadow-lg">
+                <div className="w-36 rounded-l-lg bg-white shadow-lg">
                   <div className="relative h-full w-full overflow-hidden rounded-tl-lg">
                     {isEdit && (
                       <label htmlFor="BookCover">
@@ -413,13 +413,16 @@ const BookContent = () => {
                       </label>
                     )}
                     {book?.coverImage || bookCover ? (
-                      <Image
-                        src={
-                          bookCover ? bookCover : (book.coverImage as string)
-                        }
-                        alt="book's cover image"
-                        fill
-                      />
+                      <div className="absolute h-52 w-36 overflow-hidden">
+                        <Image
+                          src={
+                            bookCover ? bookCover : (book.coverImage as string)
+                          }
+                          alt="book's cover image"
+                          width={144}
+                          height={208}
+                        />
+                      </div>
                     ) : (
                       <div className="h-full w-full bg-authGreen-400" />
                     )}

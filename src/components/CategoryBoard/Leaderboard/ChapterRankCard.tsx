@@ -23,14 +23,21 @@ const ChapterRankCard = ({
   return (
     <div
       onClick={() => void router.push(`/chapter/${chapterId}`)}
-      className={`${rank === 1 ? "self-start" : ""} ${rank === 2 ? "mt-10" : ""
-        } ${rank === 3 ? "mt-20" : ""
-        } relative h-52 w-36 cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]`}
+      className={`${rank === 1 ? "self-start" : ""} ${
+        rank === 2 ? "mt-10" : ""
+      } ${
+        rank === 3 ? "mt-20" : ""
+      } relative h-52 w-36 cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]`}
     >
       <div className="h-full w-full overflow-hidden rounded-sm shadow-lg">
         {image ? (
           <div className="h-full w-36 overflow-hidden rounded-sm">
-            <Image src={image} alt={`${chapterTitle}'s cover image`} fill />
+            <Image
+              src={image}
+              alt={`${chapterTitle}'s cover image`}
+              width={144}
+              height={208}
+            />
           </div>
         ) : (
           <div className="h-full w-36 bg-authGreen-500" />
@@ -40,9 +47,11 @@ const ChapterRankCard = ({
           <p className="text-xs text-white">{read}</p>
         </div>
         <div
-          className={`absolute left-2 top-36 z-10 h-32 w-32 rounded-md p-2 shadow-xl backdrop-blur-md ${rank === 1 ? "bg-gold/60" : ""
-            }${rank === 2 ? "bg-dark-300/60" : ""}${rank === 3 ? "bg-rose-400/60" : ""
-            }`}
+          className={`absolute left-2 top-36 z-10 h-32 w-32 rounded-md p-2 shadow-xl backdrop-blur-md ${
+            rank === 1 ? "bg-gold/60" : ""
+          }${rank === 2 ? "bg-dark-300/60" : ""}${
+            rank === 3 ? "bg-rose-400/60" : ""
+          }`}
         >
           <div className="flex h-full flex-col justify-between">
             <div className="flex justify-between">
