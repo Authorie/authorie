@@ -6,10 +6,16 @@
 !process.env.SKIP_ENV_VALIDATION && (await import("./src/env.mjs"));
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withAxiom } from "next-axiom";
-import { withSuperjson } from "next-superjson";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  experimental: {
+    swcPlugins: [["next-superjson-plugin", {}]],
+  },
+  i18n: {
+    locales: ["en"],
+    defaultLocale: "en",
+  },
   reactStrictMode: true,
   swcMinify: true,
   images: {
@@ -44,5 +50,5 @@ const config = {
   },
 };
 export default withBundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(
-  withAxiom(withSuperjson()(config))
+  withAxiom(config)
 );
