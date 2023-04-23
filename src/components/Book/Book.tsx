@@ -81,8 +81,6 @@ const Book = ({ book }: props) => {
     },
   });
 
-  console.log("latestChapt", publishedChapter);
-
   const toggleFavoriteHandler = (e: MouseEvent) => {
     e.stopPropagation();
     if (isFavorite) {
@@ -140,11 +138,10 @@ const Book = ({ book }: props) => {
   return (
     <div
       onClick={() => void router.push(`/${penname}/book/${book.id}`)}
-      className={`${
-        book.status === BookStatus.ARCHIVED
+      className={`${book.status === BookStatus.ARCHIVED
           ? ""
           : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-      } flex`}
+        } flex`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">

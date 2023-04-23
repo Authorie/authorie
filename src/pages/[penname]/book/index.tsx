@@ -5,8 +5,8 @@ import { useState } from "react";
 import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
 import BookList from "~/components/Book/BookList";
 import BookSkeleton from "~/components/Book/BookSkeleton";
-import BookStateInformation from "~/components/Infomation/BookStateInformation";
-import InfomationButton from "~/components/Infomation/InfomationButton";
+import BookStateInformation from "~/components/Information/BookStateInformation";
+import InfomationButton from "~/components/Information/InformationButton";
 import { api } from "~/utils/api";
 
 const BookPage = () => {

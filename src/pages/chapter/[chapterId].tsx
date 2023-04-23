@@ -56,8 +56,8 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
     const chapters = chapter.bookId
       ? await ssg.book.getData.fetch({
-          id: chapter.bookId,
-        })
+        id: chapter.bookId,
+      })
       : null;
     return {
       props: {
@@ -68,9 +68,9 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     };
   } catch (err) {
     if (err instanceof Error) {
-      console.log(err.message);
+      console.error(err.message);
     } else {
-      console.log("Unexpected Exception", err);
+      console.error("Unexpected Exception", err);
     }
 
     throw err;
@@ -286,9 +286,8 @@ const ChapterPage = ({ chapter, chapters }: props) => {
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
               <Link
-                href={`/${chapter.owner.penname as string}/book/${
-                  chapter.bookId as string
-                }`}
+                href={`/${chapter.owner.penname as string}/book/${chapter.bookId as string
+                  }`}
                 className="text-lg font-semibold text-white hover:underline"
               >
                 {chapter.book?.title}
