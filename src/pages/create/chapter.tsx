@@ -2,19 +2,16 @@ import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TextareaAutoSize from "react-textarea-autosize";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
+import CreateChapterBoard from "~/components/Create/Chapter/CreateChapterBoard";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
 import { api } from "~/utils/api";
-const CreateChapterBoard = dynamic(
-  () => import("~/components/Create/Chapter/CreateChapterBoard")
-);
 
 const CreateChapter = () => {
   const router = useRouter();
@@ -139,11 +136,10 @@ const CreateChapter = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${
-                            title && title.length > 80
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${title && title.length > 80
+                    ? "text-red-500"
+                    : "text-black"
+                  }`}
               >
                 {title ? title.length : 0}
                 /80

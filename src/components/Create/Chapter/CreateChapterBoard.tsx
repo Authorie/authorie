@@ -74,11 +74,11 @@ const CreateChapterBoard = ({
       },
       {
         async onSuccess(data) {
-          await context.chapter.getDrafts.invalidate();
+          await context.chapter.invalidate();
           if (bookId) {
             await context.book.getData.invalidate({ id: bookId });
           }
-          await router.replace(`/create/chapter?chapterId=${data.id}`);
+          void router.replace(`/create/chapter?chapterId=${data.id}`);
         },
       }
     );
@@ -114,7 +114,7 @@ const CreateChapterBoard = ({
       },
       {
         onSettled() {
-          void context.chapter.getDrafts.invalidate();
+          void context.chapter.invalidate();
           void context.book.getData.invalidate({ id: bookId });
           selectDraftHandler(null);
         },
