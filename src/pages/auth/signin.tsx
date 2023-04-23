@@ -11,7 +11,7 @@ const SignInPage = () => {
       await signOut({ redirect: false });
     }
     void signIn(provider, {
-      callbackUrl: router.query.callbackUrl! || "/",
+      callbackUrl: (router.query.callbackUrl as string | undefined) || "/",
     });
   };
 

@@ -99,7 +99,7 @@ const CreateChapter = () => {
   };
 
   useEffect(() => {
-    const chapterId = router.query.chapterId! | undefined;
+    const chapterId = router.query.chapterId as string | undefined;
     if (chapterId) {
       const chapter = filteredDrafts?.find(
         (chapter) => chapter.id === chapterId
