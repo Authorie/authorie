@@ -10,8 +10,6 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import InfomationButton from "~/components/Infomation/InfomationButton";
-import TextareaAutoSize from "react-textarea-autosize";
 import {
   HiEye,
   HiHeart,
@@ -20,13 +18,15 @@ import {
   HiPhoto,
   HiStar,
 } from "react-icons/hi2";
+import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
 import ChapterCardList from "~/components/Chapter/ChapterCardList";
 import DialogLayout from "~/components/Dialog/DialogLayout";
+import BookManagementInformation from "~/components/Infomation/BookManagementInformation";
+import InfomationButton from "~/components/Infomation/InfomationButton";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
-import { api } from "~/utils/api";
-import BookManagementInformation from "~/components/Infomation/BookManagementInformation";
+import { api, type RouterOutputs } from "~/utils/api";
 
 const validationSchema = z.object({
   title: z
@@ -35,6 +35,13 @@ const validationSchema = z.object({
     .max(100, { message: "Title is too long" }),
   description: z.string().max(500, { message: "Description is too long" }),
 });
+interface withChapterNo {
+  chapterNo: number | null;
+}
+
+const sortChapters = (a: withChapterNo, b: withChapterNo) => {
+  return (b.chapterNo ?? 0) - (a.chapterNo ?? 0);
+}
 
 const BookContent = () => {
   const [openWarning, setOpenWarning] = useState(false);
@@ -43,8 +50,10 @@ const BookContent = () => {
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
   const utils = api.useContext();
-  const [openInformation, setOpenInformation] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [openInformation, setOpenInformation] = useState(false);
+  const [arrangedChapters, setArrangedChapters] = useState<RouterOutputs["book"]["getData"]["chapters"]>([]);
+  const [addedCategories, setAddedCategories] = useState<{ id: string; title: string; }[]>([]);
   const { data: categories } = api.category.getAll.useQuery(undefined);
   const { data: book, isFetched: isBookFetched } = api.book.getData.useQuery(
     {
@@ -52,6 +61,10 @@ const BookContent = () => {
     },
     {
       enabled: router.isReady,
+      onSuccess(data) {
+        setAddedCategories(data.categories.map(({ category }) => category));
+        setArrangedChapters(data.chapters.sort(sortChapters));
+      },
     }
   );
   const { data: collaborators } = api.user.getBookCollaborators.useQuery(
@@ -68,20 +81,7 @@ const BookContent = () => {
       enabled: router.isReady,
     }
   );
-  const [addedCategories, setAddedCategories] = useState(
-    book?.categories.map((data) => data.category) || []
-  );
-  const [arrangedChapters, setArrangedChapters] = useState(
-    book?.chapters.sort((x, y) => {
-      if (x.chapterNo || y.chapterNo)
-        return (x.chapterNo ?? 0) - (y.chapterNo ?? 0);
-      if (x.publishedAt || y.publishedAt)
-        return (
-          (x.publishedAt?.getTime() ?? 0) - (y.publishedAt?.getTime() ?? 0)
-        );
-      return 0;
-    }) || []
-  );
+
   const {
     imageData: bookCover,
     uploadHandler: setBookCover,
@@ -94,39 +94,11 @@ const BookContent = () => {
   } = useImageUpload();
   const uploadImageUrl = api.upload.uploadImage.useMutation();
   const updateBook = api.book.update.useMutation({
-    async onMutate(newBook) {
-      await utils.book.getData.cancel();
-      const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return;
-      const book = {
-        ...prevData,
-        title: newBook.title !== undefined ? newBook.title : prevData.title,
-        description:
-          newBook.description !== undefined
-            ? newBook.description
-            : prevData.description,
-        categories: addedCategories.map((data) => ({ category: data })),
-        coverImage:
-          newBook.coverImageUrl !== undefined
-            ? newBook.coverImageUrl
-            : prevData.coverImage,
-        wallpaperImage:
-          newBook.wallpaperImageUrl !== undefined
-            ? newBook.wallpaperImageUrl
-            : prevData.wallpaperImage,
-      };
-      utils.book.getData.setData({ id: newBook.id }, book);
-      return { prevData };
-    },
-    onError(_, newPost, ctx) {
-      if (!ctx?.prevData) return;
-      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
-    },
     onSuccess() {
       resetHandler();
     },
     onSettled: () => {
-      void utils.book.invalidate();
+      void utils.book.getData.invalidate({ id: bookId });
     },
   });
   const moveState = api.book.moveState.useMutation({
@@ -186,24 +158,15 @@ const BookContent = () => {
     },
   });
   const isChapterCreatable = useMemo(() => {
-    if (!book) return false;
-    if (!book.isOwner) return false;
+    if (!book?.isOwner && !book?.isCollborator) return false;
     const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
     return validBookStatus.includes(book.status);
   }, [book]);
   const totalViews = useMemo(() => {
-    if (book) {
-      return book.chapters.reduce((acc, curr) => acc + curr._count.views, 0);
-    } else {
-      return 0;
-    }
+    return book?.chapters.reduce((acc, curr) => acc + curr._count.views, 0) || 0;
   }, [book]);
   const totalLikes = useMemo(() => {
-    if (book) {
-      return book.chapters.reduce((acc, curr) => acc + curr._count.likes, 0);
-    } else {
-      return 0;
-    }
+    return book?.chapters.reduce((acc, curr) => acc + curr._count.likes, 0) || 0;
   }, [book]);
 
   const confirmDraftBookHandler = async () => {
@@ -280,12 +243,14 @@ const BookContent = () => {
     void router.push(`/${penname}/book`);
   };
 
-  const toggleCategoryHandler = (category: Category) => {
-    if (addedCategories.includes(category)) {
-      setAddedCategories(addedCategories.filter((data) => data !== category));
-    } else {
-      setAddedCategories([...addedCategories, category]);
-    }
+  const toggleCategoryHandler = (category: { id: string; title: string; }) => {
+    setAddedCategories(addedCategories => {
+      if (addedCategories.includes(category)) {
+        return addedCategories.filter((data) => data !== category);
+      } else {
+        return [...addedCategories, category];
+      }
+    })
   };
 
   const toggleFavoriteHandler = () => {
@@ -297,21 +262,14 @@ const BookContent = () => {
   };
 
   const resetHandler = () => {
+    if (book === undefined) return;
     setIsEdit(false);
-    setValue("title", book?.title || "");
-    setValue("description", book?.description || "");
+    setValue("title", book.title);
+    setValue("description", book.description || "");
     resetBookCover();
     resetBookWallpaper();
-    setAddedCategories(book?.categories.map((data) => data.category) || []);
-    setArrangedChapters(
-      book?.chapters.sort((x, y) => {
-        if (!x.chapterNo || !y.chapterNo) {
-          if (!x.publishedAt || !y.publishedAt) return 0;
-          return x.publishedAt?.getTime() - y.publishedAt?.getTime();
-        }
-        return x.chapterNo - y.chapterNo;
-      }) || []
-    );
+    setAddedCategories(book.categories.map(({ category }) => category));
+    setArrangedChapters(book.chapters.sort(sortChapters));
   };
 
   const onSaveHandler = handleSubmit(async (data) => {
@@ -320,13 +278,13 @@ const BookContent = () => {
     const promises = [
       bookCover
         ? uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+          image: bookCover,
+        })
         : undefined,
       bookWallpaper
         ? uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+          image: bookWallpaper,
+        })
         : undefined,
     ] as const;
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -337,7 +295,7 @@ const BookContent = () => {
       category: addedCategories.map((category) => category.id),
       coverImageUrl,
       wallpaperImageUrl,
-      chaptersArrangement: arrangedChapters.map((chapter) => chapter.id),
+      chaptersArrangement: arrangedChapters.filter(chapter => chapter.publishedAt).map((chapter) => chapter.id).reverse() // need reverse since the order is from the latest,
     });
     await toast.promise(promiseUpdateBook, {
       loading: "Updating book...",
@@ -506,10 +464,10 @@ const BookContent = () => {
                                 (category: Category) =>
                                   !addedCategories.includes(category)
                               ).length === 0 && (
-                                <p className="text-sm font-semibold">
-                                  No more categories left...
-                                </p>
-                              )}
+                                  <p className="text-sm font-semibold">
+                                    No more categories left...
+                                  </p>
+                                )}
                             </div>
                           </Popover.Panel>
                           <Popover.Button
@@ -555,24 +513,24 @@ const BookContent = () => {
                       )}
                       {(book.status === BookStatus.INITIAL ||
                         book.status === BookStatus.DRAFT) && (
-                        <button
-                          type="button"
-                          onClick={() => void deleteBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                        >
-                          Delete
-                        </button>
-                      )}
+                          <button
+                            type="button"
+                            onClick={() => void deleteBookHandler()}
+                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Delete
+                          </button>
+                        )}
                       {(book.status === BookStatus.PUBLISHED ||
                         book.status === BookStatus.COMPLETED) && (
-                        <button
-                          type="button"
-                          onClick={() => void archiveBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                        >
-                          Archive
-                        </button>
-                      )}
+                          <button
+                            type="button"
+                            onClick={() => void archiveBookHandler()}
+                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Archive
+                          </button>
+                        )}
                     </div>
                     <div className="my-10 flex flex-col gap-1">
                       <span className="text-6xl font-bold">12</span>
@@ -601,9 +559,8 @@ const BookContent = () => {
             <div className="flex grow flex-col">
               <div
                 className={`
-                ${
-                  isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 flex-col gap-2"}`}
+                ${isEdit ? "justify-end gap-2" : "justify-center"
+                  } ${"flex h-52 flex-col gap-2"}`}
               >
                 {!isEdit && (
                   <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -645,11 +602,10 @@ const BookContent = () => {
                         />
                         <p
                           className={`${"text-xs"} 
-                          ${
-                            watch("title") && watch("title").length > 100
+                          ${watch("title") && watch("title").length > 100
                               ? "text-red-500"
                               : "text-black"
-                          }`}
+                            }`}
                         >
                           {watch("title") ? watch("title").length : 0}/100
                         </p>
@@ -684,11 +640,10 @@ const BookContent = () => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${
-                            watch("description") &&
+                          ${watch("description") &&
                             watch("description").length > 500
-                              ? "text-red-500"
-                              : "text-black"
+                            ? "text-red-500"
+                            : "text-black"
                           }`}
                       >
                         {watch("description") ? watch("description").length : 0}
@@ -726,7 +681,8 @@ const BookContent = () => {
                     <ChapterCardList
                       isEdit={isEdit}
                       isChapterCreatable={isChapterCreatable}
-                      chapters={book.chapters}
+                      arrangedChapters={arrangedChapters}
+                      setArrangedChapters={setArrangedChapters}
                     />
                   </DndProvider>
                 )}

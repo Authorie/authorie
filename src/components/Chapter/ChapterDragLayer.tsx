@@ -40,6 +40,11 @@ const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
       currentOffset: monitor.getSourceClientOffset(),
       isDragging: monitor.isDragging(),
     }));
+  const itemIndex = item ? findChapter(item.id).index : 0;
+  const numberOfDraftChapters = chapters.reduceRight((acc, chapter) => {
+    if (chapter.publishedAt) return acc;
+    return acc + 1;
+  }, 0)
 
   if (!isDragging) {
     return null;
@@ -54,13 +59,10 @@ const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
         {itemType === "chapter" && (
           <ChapterCard
             key={item.id}
-            chapterNo={chapters.length - findChapter(item.id).index}
+            chapterNo={chapters.length - numberOfDraftChapters - itemIndex}
             isEdit={false}
-            chapter={
-              chapters[
-              findChapter(item.id).index
-              ] as RouterOutputs["book"]["getData"]["chapters"][number]
-            }
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            chapter={chapters[itemIndex]!}
             moveChapter={moveChapter}
             findChapter={findChapter}
           />
