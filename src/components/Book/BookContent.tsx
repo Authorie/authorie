@@ -107,16 +107,24 @@ const BookContent = ({
                 ? newBook.wallpaperImageUrl
                 : old.wallpaperImage,
               categories: addedCategories.map((category) => ({ category })),
-              chapters: arrangedChapters.slice(),
+              chapters: arrangedChapters.map((chapter) => {
+                if (!newBook.chaptersArrangement) return chapter;
+                const newChapterNo = newBook.chaptersArrangement.findIndex(
+                  (c) => c === chapter.id
+                );
+                return {
+                  ...chapter,
+                  chapterNo: newChapterNo === -1 ? null : newChapterNo + 1,
+                };
+              }),
             }
           : undefined
       );
-
+      console.log(utils.book.getData.getData({ id: book.id }));
       return { prevData };
     },
-    onError(err, newPost, ctx) {
-      // If the mutation fails, use the context-value from onMutate
-      utils.book.getData.setData({ id: book.id }, ctx?.prevData);
+    onError(error, variables, context) {
+      utils.book.getData.setData({ id: book.id }, context?.prevData);
     },
     onSettled() {
       resetHandler();
@@ -134,11 +142,29 @@ const BookContent = ({
     },
   });
   const unfavoriteBook = api.book.unfavorite.useMutation({
+    async onMutate() {
+      await utils.book.isFavorite.cancel({ id: book.id });
+      const prevData = utils.book.isFavorite.getData({ id: book.id });
+      utils.book.isFavorite.setData({ id: book.id }, false);
+      return { prevData };
+    },
+    onError(error, variables, context) {
+      utils.book.isFavorite.setData({ id: book.id }, context?.prevData);
+    },
     onSettled: () => {
       void utils.book.invalidate();
     },
   });
   const favoriteBook = api.book.favorite.useMutation({
+    async onMutate() {
+      await utils.book.isFavorite.cancel({ id: book.id });
+      const prevData = utils.book.isFavorite.getData({ id: book.id });
+      utils.book.isFavorite.setData({ id: book.id }, true);
+      return { prevData };
+    },
+    onError(error, variables, context) {
+      utils.book.isFavorite.setData({ id: book.id }, context?.prevData);
+    },
     onSettled: () => {
       void utils.book.invalidate();
     },
@@ -265,8 +291,6 @@ const BookContent = ({
     setValue("description", book.description || "");
     resetBookCover();
     resetBookWallpaper();
-    setAddedCategories(book.categories.map(({ category }) => category));
-    setArrangedChapters(book.chapters.sort(sortChapters));
   };
 
   const onSaveHandler = handleSubmit(async (data) => {
