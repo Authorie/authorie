@@ -110,8 +110,7 @@ const checkChapterReadable = (
   const isOwner =
     chapter.ownerId === userId ||
     chapter.book.owners.some(({ user: owner }) => owner.id === userId) ||
-    (chapter.chapterMarketHistories &&
-      chapter.chapterMarketHistories.some((hist) => hist.userId === userId));
+    chapter.chapterMarketHistories.some((history) => history.userId === userId);
   if (isOwner) {
     return true;
   }
@@ -186,20 +185,20 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
   }, [chapter, editor, isChapterReadable]);
   useEffect(() => {
     if (!isChapterReadable) {
-      const validBookState = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
-      if (!chapter.book || !validBookState.includes(chapter.book.status)) {
-        setOpen404(true);
-        return;
-      }
-      if (status === "unauthenticated") {
-        setOpenLogin(true);
-        return;
-      }
-      if (status === "authenticated") {
-        setOpenBuyChapter(true);
-        return;
-      }
+      setOpen404(() => {
+        if (!chapter.book) return true;
+        return ![BookStatus.PUBLISHED, BookStatus.COMPLETED].includes(
+          chapter.book.status
+        );
+      });
+      setOpenLogin(status === "unauthenticated");
+      setOpenBuyChapter(status === "authenticated");
     }
+    return () => {
+      setOpen404(false);
+      setOpenLogin(false);
+      setOpenBuyChapter(false);
+    };
   }, [chapter.book, isChapterReadable, status]);
   useEffect(() => {
     if (!router.isReady) return;

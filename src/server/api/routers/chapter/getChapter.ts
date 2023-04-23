@@ -40,13 +40,7 @@ const getChapter = publicProcedure
             comments: true,
           },
         },
-        chapterMarketHistories: ctx.session
-          ? {
-            where: {
-              userId: ctx.session.user.id,
-            },
-          }
-          : false,
+        chapterMarketHistories: true,
       },
     });
   });

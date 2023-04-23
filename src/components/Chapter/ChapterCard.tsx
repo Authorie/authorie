@@ -37,7 +37,11 @@ const ChapterCard = ({
   const editable =
     chapter.publishedAt === null ||
     dayjs().isBefore(chapter.publishedAt, "hour");
-  const isChapterBought = chapter.price === 0 || chapter.chapterMarketHistories;
+  const isChapterBought =
+    chapter.price === 0 ||
+    chapter.chapterMarketHistories.some(
+      (history) => history.userId === session?.user.id
+    );
   const onEditHandler = (e: MouseEvent) => {
     e.stopPropagation();
     void router.push({
@@ -159,7 +163,8 @@ const ChapterCard = ({
           {chapter.publishedAt &&
             (dayjs().isBefore(chapter.publishedAt) ? (
               <p className="text-xs font-semibold text-green-500">
-                publish soon : {dayjs(chapter.publishedAt).format("DD/MM/YYYY hh:MM")}
+                publish soon :{" "}
+                {dayjs(chapter.publishedAt).format("DD/MM/YYYY hh:MM")}
               </p>
             ) : (
               <DateLabel

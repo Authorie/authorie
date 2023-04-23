@@ -31,15 +31,15 @@ const buyChapter = protectedProcedure
             comments: true,
           },
         },
-        chapterMarketHistories: ctx.session ? {
-          where: {
-            userId: ctx.session.user.id,
-          }
-        } : false,
+        chapterMarketHistories: true,
       },
     });
 
-    if (chapter.chapterMarketHistories) {
+    if (
+      chapter.chapterMarketHistories.some(
+        (history) => history.userId === ctx.session.user.id
+      )
+    ) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Already bought",

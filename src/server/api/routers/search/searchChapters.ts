@@ -41,11 +41,7 @@ const searchChapters = publicProcedure
           },
         },
         _count: true,
-        chapterMarketHistories: ctx.session ? {
-          where: {
-            userId: ctx.session.user.id,
-          }
-        } : false,
+        chapterMarketHistories: true,
       },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,
