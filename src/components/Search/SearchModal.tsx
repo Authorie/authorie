@@ -1,5 +1,4 @@
 import { Dialog } from "@headlessui/react";
-import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiOutlineMagnifyingGlass, HiOutlineXMark } from "react-icons/hi2";
 import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
@@ -33,7 +32,6 @@ const categoryButtonClassName = (
 };
 
 const SearchModal = ({ onCloseDialog, openDialog }: props) => {
-  const router = useRouter();
   const { searchTerm, enableSearch, searchTermChangeHandler } = useSearch();
   const [selectedCategory, setSelectedCategory] =
     useState<SearchCategory>("Users");

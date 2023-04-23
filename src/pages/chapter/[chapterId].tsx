@@ -103,7 +103,7 @@ const checkChapterReadable = (
   chapter: props["chapter"],
   userId: string | undefined
 ) => {
-  if (!chapter.book) {
+  if (!chapter || !chapter.book) {
     return false;
   }
 
