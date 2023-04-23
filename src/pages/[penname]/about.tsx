@@ -1,14 +1,14 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { api } from "~/utils/api";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { HiEye, HiHeart } from "react-icons/hi2";
 import TextareaAutoSize from "react-textarea-autosize";
-import { useForm } from "react-hook-form";
 import z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import toast from "react-hot-toast";
+import { api } from "~/utils/api";
 
 const validationSchema = z.object({
   description: z
@@ -31,9 +31,9 @@ const AboutPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const utils = api.useContext();
-  const penname = router.query.penname;
+  const penname = router.query.penname as string;
   const isOwner = session?.user.penname === penname;
-  const { data: user } = api.user.getData.useQuery(penname as string);
+  const { data: user } = api.user.getData.useQuery(penname);
 
   const {
     register,
@@ -53,12 +53,12 @@ const AboutPage = () => {
     },
   });
   useEffect(() => {
-    setValue("description", user?.description as string);
-    setValue("bio", user?.bio as string);
-    setValue("facebook", user?.facebookContact as string);
-    setValue("ig", user?.instagramContact as string);
-    setValue("email", user?.emailContact as string);
-    setValue("location", user?.location as string);
+    setValue("description", user?.description || "");
+    setValue("bio", user?.bio || "");
+    setValue("facebook", user?.facebookContact || "");
+    setValue("ig", user?.instagramContact || "");
+    setValue("email", user?.emailContact || "");
+    setValue("location", user?.location || "");
   }, [user, setValue]);
   const { totalViews = 0, totalLikes = 0 } =
     user?.ownedBooks.reduce(
@@ -74,7 +74,7 @@ const AboutPage = () => {
 
   const updateInfo = api.user.update.useMutation({
     onSuccess() {
-      void utils.user.getData.invalidate(penname as string);
+      void utils.user.getData.invalidate(penname);
     },
   });
 

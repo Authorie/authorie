@@ -362,7 +362,7 @@ const StatusPage = () => {
     setIsEdit(false);
     reset((formValues) => ({
       ...formValues,
-      title: book?.title as string,
+      title: book?.title || "",
       description: book?.description || "",
     }));
     resetBookCover();
@@ -443,11 +443,7 @@ const StatusPage = () => {
               <div className="absolute h-52 w-full overflow-hidden">
                 {book?.wallpaperImage || bookWallpaper ? (
                   <Image
-                    src={
-                      bookWallpaper
-                        ? bookWallpaper
-                        : (book.wallpaperImage as string)
-                    }
+                    src={bookWallpaper ? bookWallpaper : book.wallpaperImage!}
                     alt={`${book.title}'s wallpaper image`}
                     height={200}
                     width={2000}
@@ -678,7 +674,7 @@ const StatusPage = () => {
                                 key={author.userId}
                                 index={index + 1}
                                 status={author.status}
-                                penname={author.user.penname as string}
+                                penname={author.user.penname!}
                                 image={
                                   author.user.image ||
                                   "/placeholder_profile.png"
@@ -688,13 +684,13 @@ const StatusPage = () => {
                                 }
                                 onInvite={() =>
                                   void inviteCollaboratorHandler(
-                                    author.user.penname as string
+                                    author.user.penname!
                                   )
                                 }
                                 onRemove={() =>
                                   void removeCollaboratorHandler({
                                     id: author.userId,
-                                    penname: author.user.penname as string,
+                                    penname: author.user.penname!,
                                   })
                                 }
                               />

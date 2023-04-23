@@ -346,9 +346,7 @@ const BookContent = ({
         <div className="absolute inset-0 h-72 w-full overflow-hidden rounded-lg rounded-tl-large">
           {book.wallpaperImage || bookWallpaper ? (
             <Image
-              src={
-                bookWallpaper ? bookWallpaper : (book.wallpaperImage as string)
-              }
+              src={bookWallpaper ? bookWallpaper : book.wallpaperImage!}
               alt="book's wallpaper image"
               height={200}
               width={2000}
@@ -385,9 +383,7 @@ const BookContent = ({
                   {book.coverImage || bookCover ? (
                     <div className="absolute h-52 w-36 overflow-hidden">
                       <Image
-                        src={
-                          bookCover ? bookCover : (book.coverImage as string)
-                        }
+                        src={bookCover ? bookCover : book.coverImage!}
                         alt="book's cover image"
                         width={144}
                         height={208}
@@ -427,7 +423,7 @@ const BookContent = ({
                     <div
                       key={author.user.id}
                       onClick={() =>
-                        void router.push(`/${author.user.penname as string}`)
+                        void router.push(`/${author.user.penname!}`)
                       }
                       className="cursor-pointer rounded-full bg-authGreen-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-authGreen-600"
                     >

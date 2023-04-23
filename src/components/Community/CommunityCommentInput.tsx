@@ -1,11 +1,11 @@
-import Image from "next/image";
-import { useState } from "react";
-import { PhotoInputButton } from "../action/PhotoInputButton";
-import { api } from "~/utils/api";
-import TextareaAutoSize from "react-textarea-autosize";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import type { ChangeEvent } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
+import TextareaAutoSize from "react-textarea-autosize";
+import { api } from "~/utils/api";
+import { PhotoInputButton } from "../action/PhotoInputButton";
 
 type props = {
   id: string;
@@ -31,10 +31,14 @@ const CommunityCommentInput = ({ id }: props) => {
   ) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
+      if (!session) {
+        toast.error("You must be logged in to comment!");
+        return;
+      }
       const promisePostComment = postComment.mutateAsync({
         title: "",
         content: comment,
-        authorPenname: session?.user.penname as string,
+        authorPenname: session.user.penname!,
         image: commentImageUrl || undefined,
         parentId: id,
       });

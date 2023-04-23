@@ -50,7 +50,7 @@ const Leaderboard = () => {
                 <ChapterRankCard
                   rank={2}
                   chapterTitle={topChapters[1].title}
-                  authorPenname={topChapters[1].owner.penname as string}
+                  authorPenname={topChapters[1].owner.penname!}
                   image={topChapters[1].book.coverImage}
                   chapterId={topChapters[1].id}
                   read={topChapters[1]._count.views}
@@ -60,7 +60,7 @@ const Leaderboard = () => {
                 <ChapterRankCard
                   rank={1}
                   chapterTitle={topChapters[0].title}
-                  authorPenname={topChapters[0].owner.penname as string}
+                  authorPenname={topChapters[0].owner.penname!}
                   image={topChapters[0].book?.coverImage}
                   chapterId={topChapters[0].id}
                   read={topChapters[0]._count.views}
@@ -70,7 +70,7 @@ const Leaderboard = () => {
                 <ChapterRankCard
                   rank={3}
                   chapterTitle={topChapters[2].title}
-                  authorPenname={topChapters[2].owner.penname as string}
+                  authorPenname={topChapters[2].owner.penname!}
                   image={topChapters[2].book?.coverImage}
                   chapterId={topChapters[2].id}
                   read={topChapters[2]._count.views}
@@ -90,7 +90,7 @@ const Leaderboard = () => {
                   rank={index + 4}
                   id={chapter.id}
                   title={chapter.title}
-                  penname={chapter.owner.penname as string}
+                  penname={chapter.owner.penname!}
                   views={chapter._count.views}
                 />
               ))}

@@ -6,7 +6,7 @@ import { api } from "~/utils/api";
 
 const HomePage = () => {
   const router = useRouter();
-  const penname = router.query.penname as string;
+  const penname = router.query.penname!;
   const { data, fetchNextPage, isFetchingNextPage, isLoading, hasNextPage } =
     api.chapter.getAllChapters.useInfiniteQuery(
       {

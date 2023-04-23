@@ -56,8 +56,8 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
     const chapters = chapter.bookId
       ? await ssg.book.getData.fetch({
-        id: chapter.bookId,
-      })
+          id: chapter.bookId,
+        })
       : null;
     return {
       props: {
@@ -92,7 +92,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
     chapterIndex + 1 !== undefined &&
     chapters?.chapters[chapterIndex + 1]?.id;
   const router = useRouter();
-  const chapterId = router.query.chapterId as string;
+  const chapterId = router.query.chapterId!;
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openComment, setOpenComment] = useState(false);
@@ -286,8 +286,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
           <div className="flex h-fit w-full bg-authGreen-500 p-3">
             <div className="ml-8 flex flex-col">
               <Link
-                href={`/${chapter.owner.penname as string}/book/${chapter.bookId as string
-                  }`}
+                href={`/${chapter.owner.penname!}/book/${chapter.bookId!}`}
                 className="text-lg font-semibold text-white hover:underline"
               >
                 {chapter.book?.title}
@@ -296,7 +295,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
                 #{(chapterIndex as number) + 1} {chapter.title}
               </h1>
               <Link
-                href={`/${chapter.owner.penname as string}`}
+                href={`/${chapter.owner.penname!}`}
                 className="mt-2 cursor-pointer font-semibold text-white hover:underline"
               >
                 {chapter.owner.penname}

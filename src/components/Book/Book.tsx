@@ -1,4 +1,4 @@
-import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -27,9 +27,7 @@ const Book = ({ book }: props) => {
   );
   const latestChapter = publishedChapter[publishedChapter.length - 1];
   const penname = router.query.penname as string;
-  const ownerPenname = book.owners.find(
-    (owner) => owner.status === BookOwnerStatus.OWNER
-  )?.user.penname as string;
+  const ownerPenname = book.owners[0]!.user.penname!;
   const { data: isFavorite } = api.book.isFavorite.useQuery(
     { id: book.id },
     { enabled: authStatus === "authenticated" }
@@ -138,10 +136,11 @@ const Book = ({ book }: props) => {
   return (
     <div
       onClick={() => void router.push(`/${penname}/book/${book.id}`)}
-      className={`${book.status === BookStatus.ARCHIVED
+      className={`${
+        book.status === BookStatus.ARCHIVED
           ? ""
           : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-        } flex`}
+      } flex`}
     >
       <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
       <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">

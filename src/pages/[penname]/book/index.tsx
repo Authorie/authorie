@@ -12,7 +12,7 @@ import { api } from "~/utils/api";
 const BookPage = () => {
   const [openInformation, setOpenInformation] = useState(false);
   const router = useRouter();
-  const penname = router.query.penname as string;
+  const penname = router.query.penname!;
   const { data: session } = useSession();
   const [openArchive, setOpenArchive] = useState(false);
   const { data: user } = api.user.getData.useQuery(penname, {
