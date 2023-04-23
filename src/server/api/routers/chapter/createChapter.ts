@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import dayjs from "dayjs";
 import { z } from "zod";
 import { protectedProcedure } from "~/server/api/trpc";
 
@@ -14,19 +15,26 @@ const createChapter = protectedProcedure
       price: z.number().int().min(0).optional(),
       publishedAt: z
         .union([
-          z.date().refine((date) => date.getTime() > Date.now()),
+          z.date().refine((date) => dayjs().isAfter(date), {
+            message: "Published date must be in the future",
+          }),
           z.boolean(),
         ])
-        .nullish()
+        .nullable()
         .default(null),
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { chapterId, title, content, bookId, price, publishedAt } = input;
+
+    const { chapterId, title, content, bookId, price } = input;
+    const publishedAt = input.publishedAt === null || input.publishedAt === false ? null : input.publishedAt === true ? dayjs().toDate() : input.publishedAt;
     if (bookId) {
-      const book = await ctx.prisma.book.findFirst({
+      await ctx.prisma.book.findFirstOrThrow({
         where: {
           id: bookId,
+          status: {
+            in: [BookStatus.DRAFT, BookStatus.PUBLISHED]
+          },
           owners: {
             some: {
               userId: ctx.session.user.id,
@@ -44,21 +52,6 @@ const createChapter = protectedProcedure
           },
         },
       });
-
-      if (!book) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Book not found",
-        });
-      }
-
-      const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
-      if (!validBookStatus.includes(book.status)) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You can't add chapters to this book",
-        });
-      }
     } else if (publishedAt) {
       throw new TRPCError({
         code: "BAD_REQUEST",
@@ -66,27 +59,22 @@ const createChapter = protectedProcedure
       });
     }
 
+    const chapterNo = publishedAt ? await ctx.prisma.chapter.count({
+      where: {
+        bookId,
+        publishedAt: {
+          lte: publishedAt,
+        }
+      }
+    }) + 1 : undefined
+
     if (chapterId) {
-      const chapter = await ctx.prisma.chapter.findFirst({
+      const chapter = await ctx.prisma.chapter.findFirstOrThrow({
         where: {
           id: chapterId,
           ownerId: ctx.session.user.id,
         },
       });
-
-      if (!chapter) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Chapter not found",
-        });
-      }
-
-      if (chapter.publishedAt && chapter.publishedAt.getTime() < Date.now()) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You can't update a published chapter",
-        });
-      }
 
       if (bookId && chapter.bookId && chapter.bookId !== bookId) {
         throw new TRPCError({
@@ -102,13 +90,9 @@ const createChapter = protectedProcedure
           content,
           bookId,
           price,
+          chapterNo,
+          publishedAt,
           ownerId: ctx.session.user.id,
-          publishedAt:
-            publishedAt === null || publishedAt === false
-              ? null
-              : publishedAt === true
-                ? new Date()
-                : publishedAt,
         },
       });
     } else {
@@ -118,13 +102,9 @@ const createChapter = protectedProcedure
           content,
           bookId,
           price,
+          chapterNo,
+          publishedAt,
           ownerId: ctx.session.user.id,
-          publishedAt:
-            publishedAt === null || publishedAt === false
-              ? null
-              : publishedAt === true
-                ? new Date()
-                : publishedAt,
         },
       });
     }
