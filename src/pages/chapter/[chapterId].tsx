@@ -92,7 +92,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
     chapterIndex + 1 !== undefined &&
     chapters?.chapters[chapterIndex + 1]?.id;
   const router = useRouter();
-  const chapterId = router.query.chapterId!;
+  const chapterId = router.query.chapterId as string;
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openComment, setOpenComment] = useState(false);

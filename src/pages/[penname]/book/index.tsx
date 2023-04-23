@@ -12,7 +12,7 @@ import { api } from "~/utils/api";
 const BookPage = () => {
   const [openInformation, setOpenInformation] = useState(false);
   const router = useRouter();
-  const penname = router.query.penname!;
+  const penname = router.query.penname as string | undefined;
   const { data: session } = useSession();
   const [openArchive, setOpenArchive] = useState(false);
   const { data: user } = api.user.getData.useQuery(penname, {
@@ -20,7 +20,7 @@ const BookPage = () => {
   });
   const { data: books, isLoading: bookIsLoading } = api.book.getAll.useQuery(
     {
-      penname,
+      penname: penname as string,
     },
     { enabled: penname !== undefined }
   );
@@ -72,7 +72,7 @@ const BookPage = () => {
             books={openArchive ? archiveBooks : nonarchiveBooks}
             isOwner={user.id === session?.user.id}
             isArchived={openArchive}
-            penname={penname}
+            penname={penname as string}
           />
         )}
         {bookIsLoading && (
