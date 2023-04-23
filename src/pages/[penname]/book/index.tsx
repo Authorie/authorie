@@ -6,11 +6,11 @@ import { HiOutlineArchiveBox, HiOutlineArrowUturnLeft } from "react-icons/hi2";
 import BookList from "~/components/Book/BookList";
 import BookSkeleton from "~/components/Book/BookSkeleton";
 import BookStateInformation from "~/components/Information/BookStateInformation";
-import InfomationButton from "~/components/Information/InformationButton";
+import InformationButton from "~/components/Information/InformationButton";
 import { api } from "~/utils/api";
 
 const BookPage = () => {
-  const [openInfomation, setOpenInformation] = useState(false);
+  const [openInformation, setOpenInformation] = useState(false);
   const router = useRouter();
   const penname = router.query.penname as string;
   const { data: session } = useSession();
@@ -54,16 +54,16 @@ const BookPage = () => {
                   <p>View Book Shelf</p>
                 </div>
               )}
-              <InfomationButton
+              <InformationButton
                 openModal={() => setOpenInformation(true)}
-                isOpen={openInfomation}
+                isOpen={openInformation}
                 closeModal={() => setOpenInformation(false)}
                 title={"Book State"}
                 color="gray-400"
                 hoverColor="gray-200"
               >
                 <BookStateInformation />
-              </InfomationButton>
+              </InformationButton>
             </>
           )}
         </div>

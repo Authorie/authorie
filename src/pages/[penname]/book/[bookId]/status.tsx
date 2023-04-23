@@ -13,7 +13,7 @@ import AuthorList from "~/components/Book/AuthorList";
 import BookCoverEditable from "~/components/Book/BookCoverEditable";
 import DialogLayout from "~/components/Dialog/DialogLayout";
 import BookStateInformation from "~/components/Information/BookStateInformation";
-import InfomationButton from "~/components/Information/InformationButton";
+import InformationButton from "~/components/Information/InformationButton";
 import { CategoryPopover } from "~/components/action/CategoryPopover";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
@@ -32,27 +32,27 @@ type ValidationSchema = z.infer<typeof validationSchema>;
 
 type DialogState =
   | {
-    isOpen: false;
-  }
+      isOpen: false;
+    }
   | {
-    isOpen: true;
-    title: string;
-    description: string;
-    action: () => void;
-  };
+      isOpen: true;
+      title: string;
+      description: string;
+      action: () => void;
+    };
 
 type DialogAction =
   | {
-    type: "reset";
-  }
+      type: "reset";
+    }
   | {
-    type:
-    | "draftWarning"
-    | "deleteWarning"
-    | "archiveWarning"
-    | "completeWarning";
-    action: () => void;
-  };
+      type:
+        | "draftWarning"
+        | "deleteWarning"
+        | "archiveWarning"
+        | "completeWarning";
+      action: () => void;
+    };
 
 const dialogInitialState = { isOpen: false as const };
 
@@ -377,13 +377,13 @@ const StatusPage = () => {
       const promises = [
         bookCover
           ? uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+              image: bookCover,
+            })
           : undefined,
         bookWallpaper
           ? uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+              image: bookWallpaper,
+            })
           : undefined,
       ] as const;
       const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -417,7 +417,7 @@ const StatusPage = () => {
       />
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
         <div className="absolute right-2 top-2 z-10">
-          <InfomationButton
+          <InformationButton
             openModal={() => setOpenInformation(true)}
             isOpen={openInformation}
             closeModal={() => setOpenInformation(false)}
@@ -426,7 +426,7 @@ const StatusPage = () => {
             hoverColor="gray-300"
           >
             <BookStateInformation />
-          </InfomationButton>
+          </InformationButton>
         </div>
         <div
           onClick={() => router.back()}
@@ -521,10 +521,11 @@ const StatusPage = () => {
                               />
                               <p
                                 className={`text-xs 
-                                ${watch("title", "").length > 100
+                                ${
+                                  watch("title", "").length > 100
                                     ? "text-red-500"
                                     : "text-black"
-                                  }`}
+                                }`}
                               >
                                 {watch("title", "").length}/100
                               </p>
@@ -562,10 +563,11 @@ const StatusPage = () => {
                             />
                             <p
                               className={`text-xs 
-                              ${watch("description", "").length > 500
+                              ${
+                                watch("description", "").length > 500
                                   ? "text-red-500"
                                   : "text-black"
-                                }`}
+                              }`}
                             >
                               {watch("description", "").length}/500
                             </p>
@@ -609,23 +611,23 @@ const StatusPage = () => {
                         )}
                         {(book.status === BookStatus.INITIAL ||
                           book.status === BookStatus.DRAFT) && (
-                            <button
-                              type="button"
-                              onClick={() => void deleteBookHandler()}
-                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                            >
-                              Delete
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => void deleteBookHandler()}
+                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Delete
+                          </button>
+                        )}
                         {(book.status === BookStatus.PUBLISHED ||
                           book.status === BookStatus.COMPLETED) && (
-                            <button
-                              onClick={() => void archiveBookHandler()}
-                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                            >
-                              Archive
-                            </button>
-                          )}
+                          <button
+                            onClick={() => void archiveBookHandler()}
+                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Archive
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
