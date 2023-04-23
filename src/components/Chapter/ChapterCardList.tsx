@@ -1,6 +1,6 @@
 import update from "immutability-helper";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useDrop } from "react-dnd";
 import { HiPlusCircle } from "react-icons/hi2";
 import { type RouterOutputs } from "~/utils/api";
@@ -10,35 +10,16 @@ import ChapterDragLayer from "./ChapterDragLayer";
 type props = {
   isEdit: boolean;
   isChapterCreatable: boolean;
-  chapters: RouterOutputs["book"]["getData"]["chapters"];
+  arrangedChapters: RouterOutputs["book"]["getData"]["chapters"];
+  setArrangedChapters: React.Dispatch<React.SetStateAction<RouterOutputs["book"]["getData"]["chapters"]>>;
 };
 
-interface Chapter {
-  chapterNo: number | null;
-  publishedAt: Date | null;
-}
-
-function sortChapters(x: Chapter, y: Chapter) {
-  if (x.chapterNo || y.chapterNo)
-    return (x.chapterNo ?? 0) - (y.chapterNo ?? 0);
-  if (x.publishedAt || y.publishedAt)
-    return (x.publishedAt?.getTime() ?? 0) - (y.publishedAt?.getTime() ?? 0);
-  return 0;
-}
-
-const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
-  const [arrangedChapters, setArrangedChapters] = useState(
-    chapters.sort(sortChapters)
-  );
+const ChapterCardList = ({ arrangedChapters, setArrangedChapters, isEdit, isChapterCreatable }: props) => {
   const router = useRouter();
-  const reverseArrangedChapters = arrangedChapters.reverse();
-  const filterChaptersList = reverseArrangedChapters.filter(
-    (chapter) => chapter.publishedAt !== null
-  );
-
-  useEffect(() => {
-    setArrangedChapters(chapters.sort(sortChapters));
-  }, [chapters]);
+  const numberOfDraftChapters = arrangedChapters.reduceRight((acc, chapter) => {
+    if (chapter.publishedAt) return acc;
+    return acc + 1;
+  }, 0)
 
   const findChapter = useCallback(
     (id: string) => {
@@ -69,7 +50,7 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
         ],
       });
     });
-  }, []);
+  }, [setArrangedChapters]);
 
   const [, drop] = useDrop(() => ({ accept: "chapter" }));
 
@@ -85,17 +66,17 @@ const ChapterCardList = ({ chapters, isEdit, isChapterCreatable }: props) => {
             <span className="text-lg font-semibold">Create new chapter</span>
           </div>
         )}
-        {chapters.length === 0 && !isChapterCreatable && (
+        {arrangedChapters.length === 0 && !isChapterCreatable && (
           <div className="flex h-16 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-3 shadow-lg">
             <span className="text-lg font-semibold">
               This book has no chapters yet
             </span>
           </div>
         )}
-        {filterChaptersList.map((chapter, index) => (
+        {arrangedChapters.map((chapter, index) => (
           <ChapterCard
             key={chapter.id}
-            chapterNo={filterChaptersList.length - index}
+            chapterNo={isEdit && chapter.chapterNo ? arrangedChapters.length - numberOfDraftChapters - index : chapter.chapterNo ?? 0}
             isEdit={isEdit}
             chapter={chapter}
             moveChapter={moveChapter}

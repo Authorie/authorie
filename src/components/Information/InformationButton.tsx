@@ -11,7 +11,7 @@ type props = {
   hoverColor: string;
 };
 
-const InfomationButton = ({
+const InformationButton = ({
   children,
   title,
   isOpen,
@@ -20,14 +20,13 @@ const InfomationButton = ({
   color,
   hoverColor,
 }: props) => {
-  console.log("check");
   return (
     <div>
       <div
         onClick={openModal}
         className={`flex h-7 w-7 cursor-pointer items-center justify-center justify-self-end rounded-full border-2 border-${color} text-${color} hover:bg-${hoverColor}`}
       >
-        <p>i</p>
+        <span>i</span>
       </div>
       <DialogLayout title={title} isOpen={isOpen} closeModal={closeModal}>
         {children}
@@ -36,4 +35,4 @@ const InfomationButton = ({
   );
 };
 
-export default InfomationButton;
+export default InformationButton;

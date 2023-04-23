@@ -7,11 +7,11 @@ import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import TextareaAutoSize from "react-textarea-autosize";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
 import { api } from "~/utils/api";
-import TextareaAutoSize from "react-textarea-autosize";
 const CreateChapterBoard = dynamic(
   () => import("~/components/Create/Chapter/CreateChapterBoard")
 );
@@ -99,7 +99,7 @@ const CreateChapter = () => {
   };
 
   useEffect(() => {
-    const chapterId = router.query.chapterId as string | undefined;
+    const chapterId = router.query.chapterId! | undefined;
     if (chapterId) {
       const chapter = filteredDrafts?.find(
         (chapter) => chapter.id === chapterId

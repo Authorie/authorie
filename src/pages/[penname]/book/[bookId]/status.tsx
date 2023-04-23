@@ -12,8 +12,8 @@ import z from "zod";
 import AuthorList from "~/components/Book/AuthorList";
 import BookCoverEditable from "~/components/Book/BookCoverEditable";
 import DialogLayout from "~/components/Dialog/DialogLayout";
-import BookStateInformation from "~/components/Infomation/BookStateInformation";
-import InfomationButton from "~/components/Infomation/InfomationButton";
+import BookStateInformation from "~/components/Information/BookStateInformation";
+import InformationButton from "~/components/Information/InformationButton";
 import { CategoryPopover } from "~/components/action/CategoryPopover";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
@@ -362,7 +362,7 @@ const StatusPage = () => {
     setIsEdit(false);
     reset((formValues) => ({
       ...formValues,
-      title: book?.title as string,
+      title: book?.title || "",
       description: book?.description || "",
     }));
     resetBookCover();
@@ -417,7 +417,7 @@ const StatusPage = () => {
       />
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
         <div className="absolute right-2 top-2 z-10">
-          <InfomationButton
+          <InformationButton
             openModal={() => setOpenInformation(true)}
             isOpen={openInformation}
             closeModal={() => setOpenInformation(false)}
@@ -426,7 +426,7 @@ const StatusPage = () => {
             hoverColor="gray-300"
           >
             <BookStateInformation />
-          </InfomationButton>
+          </InformationButton>
         </div>
         <div
           onClick={() => router.back()}
@@ -443,11 +443,7 @@ const StatusPage = () => {
               <div className="absolute h-52 w-full overflow-hidden">
                 {book?.wallpaperImage || bookWallpaper ? (
                   <Image
-                    src={
-                      bookWallpaper
-                        ? bookWallpaper
-                        : (book.wallpaperImage as string)
-                    }
+                    src={bookWallpaper ? bookWallpaper : book.wallpaperImage!}
                     alt={`${book.title}'s wallpaper image`}
                     height={200}
                     width={2000}
@@ -678,7 +674,7 @@ const StatusPage = () => {
                                 key={author.userId}
                                 index={index + 1}
                                 status={author.status}
-                                penname={author.user.penname as string}
+                                penname={author.user.penname!}
                                 image={
                                   author.user.image ||
                                   "/placeholder_profile.png"
@@ -688,13 +684,13 @@ const StatusPage = () => {
                                 }
                                 onInvite={() =>
                                   void inviteCollaboratorHandler(
-                                    author.user.penname as string
+                                    author.user.penname!
                                   )
                                 }
                                 onRemove={() =>
                                   void removeCollaboratorHandler({
                                     id: author.userId,
-                                    penname: author.user.penname as string,
+                                    penname: author.user.penname!,
                                   })
                                 }
                               />

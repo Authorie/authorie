@@ -8,11 +8,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePhoto, HiOutlinePlus } from "react-icons/hi2";
+import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
 import { AddAuthorModal } from "~/components/action/AddAuthorModal";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
-import TextareaAutoSize from "react-textarea-autosize";
 
 const validationSchema = z.object({
   title: z
@@ -68,6 +68,10 @@ const CreateBook = () => {
   };
 
   const submitHandler = handleSubmit(async ({ title, description }) => {
+    if (!user) {
+      toast.error("You are not logged in!");
+      return;
+    }
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
       bookCover
         ? await uploadImageUrl.mutateAsync({
@@ -93,7 +97,7 @@ const CreateBook = () => {
       success: `Created ${title} successfully!`,
       error: "Error occured while creating book!",
     });
-    void router.push(`/${user?.penname as string}/book`);
+    void router.push(`/${user.penname!}/book`);
   });
 
   return (

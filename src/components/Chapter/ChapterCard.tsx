@@ -36,7 +36,7 @@ const ChapterCard = ({
   const isOwner = session?.user.id === chapter.ownerId;
   const editable =
     chapter.publishedAt === null ||
-    dayjs().add(1, "hour").isBefore(chapter.publishedAt);
+    dayjs().isBefore(chapter.publishedAt, "hour");
   const isChapterBought = chapter.price === 0 || chapter.chapterMarketHistories;
   const onEditHandler = (e: MouseEvent) => {
     e.stopPropagation();
@@ -60,7 +60,7 @@ const ChapterCard = ({
           moveChapter(droppedId, originalIndex);
         }
       },
-      canDrag: isEdit,
+      canDrag: chapterNo > 0 && isEdit,
     },
     [chapter.id, originalIndex, moveChapter, isEdit]
   );
@@ -97,7 +97,7 @@ const ChapterCard = ({
       className={twJoin(
         "relative z-10 h-fit w-full",
         !editable &&
-          "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
+        "transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]",
         isDragging ? "opacity-0" : "opacity-100",
         isEdit ? "cursor-move" : "cursor-default"
       )}
@@ -159,8 +159,7 @@ const ChapterCard = ({
           {chapter.publishedAt &&
             (dayjs().isBefore(chapter.publishedAt) ? (
               <p className="text-xs font-semibold text-green-500">
-                publish soon : {dayjs(chapter.publishedAt).format("DD/MM/YYYY")}{" "}
-                {dayjs(chapter.publishedAt).format("hh:mm")}
+                publish soon : {dayjs(chapter.publishedAt).format("DD/MM/YYYY hh:MM")}
               </p>
             ) : (
               <DateLabel

@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
+import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
 import UserCard from "~/components/Card/UserCard";
 import DialogLayout from "~/components/Dialog/DialogLayout";
@@ -15,7 +16,6 @@ import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import UserCardSkeleton from "../Card/UserCardSkeleton";
 import { type AuthorTab } from "./AuthorBannerContainer";
-import TextareaAutoSize from "react-textarea-autosize";
 
 const validationSchema = z.object({
   penname: z
@@ -51,7 +51,7 @@ const AuthorBanner = ({
     return session?.user.id === user.id;
   }, [session?.user.id, user.id]);
   const { data: isFollowed, isLoading: queryLoading } =
-    api.user.isFollowUser.useQuery(user.penname as string, {
+    api.user.isFollowUser.useQuery(user.penname!, {
       enabled: status === "authenticated" && !isOwner && user.penname != null,
     });
   const {
@@ -63,7 +63,7 @@ const AuthorBanner = ({
   } = api.user.getFollowers.useInfiniteQuery(
     {
       limit: 7,
-      penname: user.penname as string,
+      penname: user.penname!,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,
@@ -78,7 +78,7 @@ const AuthorBanner = ({
   } = api.user.getFollowing.useInfiniteQuery(
     {
       limit: 7,
-      penname: user.penname as string,
+      penname: user.penname!,
     },
     {
       getNextPageParam: (lastpage) => lastpage.nextCursor,
@@ -117,11 +117,11 @@ const AuthorBanner = ({
       return { previousFollow };
     },
     onSettled: () => {
-      void context.user.isFollowUser.invalidate(user.penname as string);
+      void context.user.isFollowUser.invalidate(user.penname!);
       void context.user.getFollowers.invalidate({
-        penname: user.penname as string,
+        penname: user.penname!,
       });
-      void context.user.getData.invalidate(user.penname as string);
+      void context.user.getData.invalidate(user.penname!);
     },
   });
   const unfollowUserMutation = api.user.unfollowUser.useMutation({
@@ -132,11 +132,11 @@ const AuthorBanner = ({
       return { previousFollow };
     },
     onSettled: () => {
-      void context.user.isFollowUser.invalidate(user.penname as string);
+      void context.user.isFollowUser.invalidate(user.penname!);
       void context.user.getFollowers.invalidate({
-        penname: user.penname as string,
+        penname: user.penname!,
       });
-      void context.user.getData.invalidate(user.penname as string);
+      void context.user.getData.invalidate(user.penname!);
     },
   });
 
@@ -246,11 +246,7 @@ const AuthorBanner = ({
         )}
         {user.wallpaperImage || wallpaperImage !== "" ? (
           <Image
-            src={
-              wallpaperImage !== ""
-                ? wallpaperImage
-                : (user.wallpaperImage as string)
-            }
+            src={wallpaperImage !== "" ? wallpaperImage : user.wallpaperImage!}
             alt="wallpaper"
             priority
             height={100}
@@ -335,7 +331,7 @@ const AuthorBanner = ({
               <div className="w-full">
                 <div className="flex items-end gap-2">
                   <input
-                    placeholder={user.penname as string}
+                    placeholder={user.penname!}
                     className="w-full rounded-lg border border-gray-400 bg-transparent px-2 text-2xl font-bold text-white placeholder-gray-400 outline-none focus:outline-none"
                     {...register("penname")}
                   />
@@ -440,7 +436,7 @@ const AuthorBanner = ({
                 .map((user) => (
                   <UserCard
                     key={user.id}
-                    penname={user.penname as string}
+                    penname={user.penname!}
                     image={user.image || undefined}
                     followersNumber={user._count.followers}
                     isOwner={user.id === session?.user.id}
@@ -482,7 +478,7 @@ const AuthorBanner = ({
                 .map((user) => (
                   <UserCard
                     key={user.id}
-                    penname={user.penname as string}
+                    penname={user.penname!}
                     image={user.image || undefined}
                     followersNumber={user._count.followers}
                     isOwner={user.id === session?.user.id}

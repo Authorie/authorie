@@ -1,4 +1,4 @@
-import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -27,9 +27,7 @@ const Book = ({ book }: props) => {
   );
   const latestChapter = publishedChapter[publishedChapter.length - 1];
   const penname = router.query.penname as string;
-  const ownerPenname = book.owners.find(
-    (owner) => owner.status === BookOwnerStatus.OWNER
-  )?.user.penname as string;
+  const ownerPenname = book.owners[0]!.user.penname!;
   const { data: isFavorite } = api.book.isFavorite.useQuery(
     { id: book.id },
     { enabled: authStatus === "authenticated" }
@@ -80,8 +78,6 @@ const Book = ({ book }: props) => {
       void utils.book.invalidate();
     },
   });
-
-  console.log("latestChapt", publishedChapter);
 
   const toggleFavoriteHandler = (e: MouseEvent) => {
     e.stopPropagation();

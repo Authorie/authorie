@@ -89,54 +89,22 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
     }
   );
 
-  const redirectUserHandler = (penname: string) => () => {
-    void router.push(`/${penname}`);
-    onCloseDialog();
-  };
-  const redirectBookHandler = (penname: string, bookId: string) => () => {
-    void router.push(`/${penname}/book/${bookId}`);
-    onCloseDialog();
-  };
-  const redirectChapterHandler = (chapterId: string) => () => {
-    void router.push(`/chapter/${chapterId}`);
-    onCloseDialog();
-  };
-
   // TODO: handle loading, empty and error state
   const searchResults = (category: SearchCategory) => {
     switch (category) {
       case "Users":
         return users?.pages
           .flatMap((page) => page.items)
-          .map((user) => (
-            <SearchUserResult
-              key={user.id}
-              user={user}
-              onClickCard={redirectUserHandler(user.penname as string)}
-            />
-          ));
+          .map((user) => <SearchUserResult key={user.id} user={user} />);
       case "Books":
         return books?.pages
           .flatMap((page) => page.items)
-          .map((book) => (
-            <SearchBookResult
-              key={book.id}
-              book={book}
-              onClickCard={redirectBookHandler(
-                book.owners[0]?.user.penname as string,
-                book.id
-              )}
-            />
-          ));
+          .map((book) => <SearchBookResult key={book.id} book={book} />);
       case "Chapters":
         return chapters?.pages
           .flatMap((page) => page.items)
           .map((chapter) => (
-            <SearchChapterResult
-              key={chapter.id}
-              chapter={chapter}
-              onClickCard={redirectChapterHandler(chapter.id)}
-            />
+            <SearchChapterResult key={chapter.id} chapter={chapter} />
           ));
     }
   };
@@ -199,15 +167,18 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
             className="grid-flow-rol grid h-96 gap-3 overflow-y-scroll px-8 pb-6 pt-3 "
           >
             {searchResults(selectedCategory)}
-            {(isFetchingUserNextPage || isLoadingUser) && (
-              <UserResultSkeleton />
-            )}
-            {(isFetchingBookNextPage || isLoadingBook) && (
-              <BookResultSkeleton />
-            )}
-            {(isFetchingChapterNextPage || isLoadingChapter) && (
-              <ChapterResultSkeleton />
-            )}
+            {selectedCategory === "Users" &&
+              (isFetchingUserNextPage || isLoadingUser) && (
+                <UserResultSkeleton />
+              )}
+            {selectedCategory === "Books" &&
+              (isFetchingBookNextPage || isLoadingBook) && (
+                <BookResultSkeleton />
+              )}
+            {selectedCategory === "Chapters" &&
+              (isFetchingChapterNextPage || isLoadingChapter) && (
+                <ChapterResultSkeleton />
+              )}
           </div>
         </Dialog.Panel>
       </div>

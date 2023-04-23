@@ -20,10 +20,7 @@ const extractImageType = (imageFile: string) => {
     return undefined;
   }
 
-  return [
-    imageType as ImageType,
-    Buffer.from(matches[2] as string, "base64"),
-  ] as const; // matches[1] is the image type
+  return [imageType as ImageType, Buffer.from(matches[2]!, "base64")] as const; // matches[1] is the image type
 };
 
 const getImageData = (imageFile: string) => {

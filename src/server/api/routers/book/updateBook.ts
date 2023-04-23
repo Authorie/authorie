@@ -58,6 +58,13 @@ const updateBook = protectedProcedure
       });
     }
 
+    if (chaptersArrangement && book.chapters.filter(chapter => chapter.publishedAt).length !== chaptersArrangement.length) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "chapter arrangement must include all published chapters",
+      });
+    }
+
     await ctx.prisma.$transaction(async (trx) => {
       const promises: unknown[] = [
         trx.book.update({
@@ -86,40 +93,17 @@ const updateBook = protectedProcedure
       ];
 
       if (chaptersArrangement !== undefined) {
-        const includeChapters = book.chapters.filter((c) =>
-          chaptersArrangement.includes(c.id)
-        );
-        const nonincludeChapters = book.chapters.filter(
-          (c) => !chaptersArrangement.includes(c.id)
-        );
-        if (includeChapters.length !== chaptersArrangement.length) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Invalid chapter arrangement",
-          });
-        }
-
         promises.push(
-          ...includeChapters.map((chapter, index) =>
+          ...chaptersArrangement.map((chapterId, index) =>
             trx.chapter.update({
               where: {
-                id: chapter.id,
+                id: chapterId,
               },
               data: {
-                chapterNo: index,
+                chapterNo: index + 1,
               },
             })
           ),
-          ...nonincludeChapters.map((chapter) =>
-            trx.chapter.update({
-              where: {
-                id: chapter.id,
-              },
-              data: {
-                chapterNo: null,
-              },
-            })
-          )
         );
       }
 
