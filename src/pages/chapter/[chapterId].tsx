@@ -25,6 +25,7 @@ import { useEditor } from "~/hooks/editor";
 import { generateSSGHelper } from "~/server/utils";
 import { api, type RouterOutputs } from "~/utils/api";
 import Custom404 from "../404";
+import dayjs from "dayjs";
 
 export async function getStaticPaths() {
   const ssg = generateSSGHelper(null);
@@ -33,13 +34,14 @@ export async function getStaticPaths() {
     paths: chapterIds.map(({ id }) => ({
       params: { chapterId: id },
     })),
-    fallback: "blocking",
+    fallback: true,
   };
 }
 
 type Props = {
   chapter: RouterOutputs["chapter"]["getData"];
-  chapters: RouterOutputs["book"]["getData"] | null;
+  nextChapterId: string | null;
+  previousChapterId: string | null;
 };
 
 interface Params extends ParsedUrlQuery {
@@ -50,65 +52,98 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
   context
 ) => {
   const ssg = generateSSGHelper(null);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const chapterId = context.params!.chapterId;
-  try {
-    const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
-    const chapters = chapter.bookId
-      ? await ssg.book.getData.fetch({
-          id: chapter.bookId,
-        })
-      : null;
+  const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
+  if (!chapter || !chapter.bookId || dayjs().isBefore(chapter.publishedAt)) {
     return {
-      props: {
-        chapter,
-        chapters,
-      },
-      revalidate: 10,
+      notFound: true,
     };
-  } catch (err) {
-    if (err instanceof Error) {
-      console.error(err.message);
-    } else {
-      console.error("Unexpected Exception", err);
-    }
-
-    throw err;
   }
+  const book = await ssg.book.getData.fetch({
+    id: chapter.bookId,
+  });
+  if (
+    !book ||
+    book.status === BookStatus.INITIAL ||
+    book.status === BookStatus.DRAFT
+  ) {
+    return {
+      notFound: true,
+    };
+  }
+  let nextChapterId: string | null = null;
+  let previousChapterId: string | null = null;
+  if (chapter.chapterNo !== null && chapter.chapterNo > 0) {
+    for (const ch of book.chapters) {
+      if (!ch.chapterNo) continue;
+      const diff = ch.chapterNo - chapter.chapterNo;
+      if (diff === 1) {
+        nextChapterId = ch.id;
+      } else if (diff === -1) {
+        previousChapterId = ch.id;
+      }
+    }
+  }
+  return {
+    props: {
+      chapter,
+      nextChapterId,
+      previousChapterId,
+    },
+    revalidate: 10,
+  };
 };
 
 type props = InferGetStaticPropsType<typeof getStaticProps>;
 
-const ChapterPage = ({ chapter, chapters }: props) => {
-  const chapterIndex = chapters?.chapters.findIndex(
-    (data) => chapter.id === data.id
-  );
-  const previousChapterId =
-    chapterIndex &&
-    chapterIndex - 1 !== undefined &&
-    chapters?.chapters[chapterIndex - 1]?.id;
-  const nextChapterId =
-    chapterIndex &&
-    chapterIndex + 1 !== undefined &&
-    chapters?.chapters[chapterIndex + 1]?.id;
+// checkChapterReadable
+// return false means the chapter is not readable (no book, not owner, book is draft or archived, valid book state but not free)
+// return true means the chapter is readable (owner, book is published or completed and free)
+const checkChapterReadable = (
+  chapter: props["chapter"],
+  userId: string | undefined
+) => {
+  if (!chapter.book) {
+    return false;
+  }
+
+  const isOwner =
+    chapter.ownerId === userId ||
+    chapter.book.owners.some(({ user: owner }) => owner.id === userId) ||
+    (chapter.chapterMarketHistories &&
+      chapter.chapterMarketHistories.some((hist) => hist.userId === userId));
+  if (isOwner) {
+    return true;
+  }
+
+  switch (chapter.book.status) {
+    case BookStatus.PUBLISHED:
+    case BookStatus.COMPLETED:
+      return chapter.price === 0;
+    case BookStatus.ARCHIVED:
+      return false;
+  }
+};
+
+const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
+  const utils = api.useContext();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const chapterId = router.query.chapterId as string;
-  const [openBuyChapter, setOpenBuyChapter] = useState(false);
+  const [open404, setOpen404] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [openComment, setOpenComment] = useState(false);
-  const bookUnavailable =
-    chapter.book?.status === (BookStatus.DRAFT || BookStatus.ARCHIVED);
-  const chapterUnavailable =
-    chapter.publishedAt === null || chapter.publishedAt > new Date();
-  const { data: session, status } = useSession();
-  const utils = api.useContext();
+  const [openBuyChapter, setOpenBuyChapter] = useState(false);
+  const [isChapterReadable, setIsChapterReadable] = useState(
+    checkChapterReadable(chapter, session?.user.id)
+  );
+  const editor = useEditor("The content cannot be shown...", false);
   const { data: isLiked } = api.chapter.isLike.useQuery(
     {
       id: chapterId,
     },
     { enabled: status === "authenticated" }
   );
-  const readChapter = api.chapter.read.useMutation();
   const {
     data: comments,
     isSuccess,
@@ -116,57 +151,8 @@ const ChapterPage = ({ chapter, chapters }: props) => {
   } = api.comment.getAll.useQuery({
     chapterId: chapterId,
   });
-  const editor = useEditor("The content cannot be shown...", false);
-  const isChapterBought =
-    chapter && (chapter.price === 0 || chapter.chapterMarketHistories);
-  const isOwner = chapter.ownerId === session?.user.id;
 
-  useEffect(() => {
-    if (!editor) return;
-    if (!chapter) return;
-    if (bookUnavailable || chapterUnavailable) return;
-    if (status === "loading") return;
-    if (!isChapterBought) {
-      if (status === "unauthenticated") {
-        setOpenLogin(true);
-        return;
-      }
-      if (!isOwner) {
-        setOpenBuyChapter(true);
-        return;
-      }
-    }
-    editor.commands.setContent(chapter.content as JSONContent);
-  }, [
-    editor,
-    chapter,
-    chapterId,
-    isOwner,
-    isChapterBought,
-    status,
-    session,
-    bookUnavailable,
-    chapterUnavailable,
-  ]);
-
-  useEffect(() => {
-    if (status === "loading") return;
-    if (bookUnavailable || chapterUnavailable) return;
-    if (!isChapterBought) {
-      if (status === "unauthenticated") {
-        setOpenLogin(true);
-        return;
-      }
-      if (!isOwner) {
-        setOpenBuyChapter(true);
-        return;
-      }
-    }
-    readChapter.mutate({ id: chapterId });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  const { mutate: readChapterMutate } = api.chapter.read.useMutation();
   const likeMutation = api.chapter.like.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
@@ -178,7 +164,6 @@ const ChapterPage = ({ chapter, chapters }: props) => {
       void utils.chapter.isLike.invalidate({ id: chapterId });
     },
   });
-
   const unlikeMutation = api.chapter.unlike.useMutation({
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
@@ -190,6 +175,36 @@ const ChapterPage = ({ chapter, chapters }: props) => {
       void utils.chapter.isLike.invalidate({ id: chapterId });
     },
   });
+
+  useEffect(() => {
+    setIsChapterReadable(checkChapterReadable(chapter, session?.user.id));
+  }, [chapter, session?.user.id]);
+  useEffect(() => {
+    if (editor && isChapterReadable) {
+      editor.commands.setContent(chapter.content as JSONContent);
+    }
+  }, [chapter, editor, isChapterReadable]);
+  useEffect(() => {
+    if (!isChapterReadable) {
+      const validBookState = [BookStatus.PUBLISHED, BookStatus.COMPLETED];
+      if (!chapter.book || !validBookState.includes(chapter.book.status)) {
+        setOpen404(true);
+        return;
+      }
+      if (status === "unauthenticated") {
+        setOpenLogin(true);
+        return;
+      }
+      if (status === "authenticated") {
+        setOpenBuyChapter(true);
+        return;
+      }
+    }
+  }, [chapter.book, isChapterReadable, status]);
+  useEffect(() => {
+    if (!router.isReady) return;
+    readChapterMutate({ id: chapterId });
+  }, [router.isReady, readChapterMutate, chapterId]);
 
   const onLikeHandler = () => {
     if (
@@ -204,14 +219,13 @@ const ChapterPage = ({ chapter, chapters }: props) => {
       likeMutation.mutate({ id: chapterId });
     }
   };
-
   const copyToClipboard = () => {
     const url = window.location.origin + router.asPath;
     void navigator.clipboard.writeText(url);
     toast.success("URL Copied");
   };
 
-  if (bookUnavailable && !isOwner) {
+  if (open404) {
     return <Custom404 />;
   }
 
@@ -292,7 +306,7 @@ const ChapterPage = ({ chapter, chapters }: props) => {
                 {chapter.book?.title}
               </Link>
               <h1 className="text-3xl font-semibold text-white">
-                #{(chapterIndex as number) + 1} {chapter.title}
+                #{chapter.chapterNo ?? 0} {chapter.title}
               </h1>
               <Link
                 href={`/${chapter.owner.penname!}`}

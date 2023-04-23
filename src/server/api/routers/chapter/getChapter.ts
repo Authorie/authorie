@@ -13,6 +13,17 @@ const getChapter = publicProcedure
             title: true,
             coverImage: true,
             status: true,
+            owners: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    penname: true,
+                    image: true,
+                  },
+                },
+              },
+            },
           },
         },
         owner: {
@@ -29,11 +40,13 @@ const getChapter = publicProcedure
             comments: true,
           },
         },
-        chapterMarketHistories: ctx.session ? {
-          where: {
-            userId: ctx.session.user.id,
+        chapterMarketHistories: ctx.session
+          ? {
+            where: {
+              userId: ctx.session.user.id,
+            },
           }
-        } : false,
+          : false,
       },
     });
   });

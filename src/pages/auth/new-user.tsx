@@ -43,7 +43,11 @@ const NewUser = () => {
       {
         onSuccess() {
           void context.user.getData.invalidate();
-          void router.replace("/");
+          if (router.query.callbackUrl) {
+            void router.replace(router.query.callbackUrl as string);
+          } else {
+            void router.replace("/");
+          }
         },
       }
     );
@@ -62,9 +66,8 @@ const NewUser = () => {
         <input
           {...register("penname")}
           aria-invalid={errorsExist}
-          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${
-            errorsExist ? "border-red-500" : ""
-          }`}
+          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${errorsExist ? "border-red-500" : ""
+            }`}
           id="username"
           type="text"
           placeholder="your pen name..."
@@ -77,8 +80,8 @@ const NewUser = () => {
             {errors.penname
               ? "Please enter your pen name."
               : updateUser.isError
-              ? "The pen name already exists. Please enter a new one."
-              : ""}
+                ? "The pen name already exists. Please enter a new one."
+                : ""}
           </p>
         </div>
       </div>
