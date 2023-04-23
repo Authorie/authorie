@@ -116,11 +116,16 @@ const CreateChapter = () => {
         selectedChapterId={chapter?.id}
         selectDraftHandler={selectDraftHandler}
       />
-      <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow">
+      <div className="flex grow flex-col overflow-y-auto rounded-lg bg-gray-100 shadow-xl drop-shadow-2xl">
         <div className="relative flex flex-col bg-gray-200 px-4 py-3">
-          <div className="absolute inset-0 cursor-pointer">
+          <div className="absolute inset-0 cursor-pointer overflow-hidden">
             {book && book.wallpaperImage && (
-              <NextImage src={book.wallpaperImage} alt="chapter's cover" fill />
+              <NextImage
+                src={book.wallpaperImage}
+                alt="chapter's cover"
+                width={1000}
+                height={200}
+              />
             )}
           </div>
           <div className="z-20 flex flex-col gap-2 rounded-lg bg-gray-200/50 p-2 backdrop-blur">
