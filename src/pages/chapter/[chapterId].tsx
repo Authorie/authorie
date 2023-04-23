@@ -34,7 +34,7 @@ export async function getStaticPaths() {
     paths: chapterIds.map(({ id }) => ({
       params: { chapterId: id },
     })),
-    fallback: true,
+    fallback: "blocking",
   };
 }
 
