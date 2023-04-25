@@ -153,7 +153,11 @@ const AuthorBanner = ({
   const onFollowHandler = (userId: string) => {
     if (!user) return;
     if (session?.user.id === userId) return;
-    followUserMutation.mutate(userId);
+    followUserMutation.mutate(userId, {
+      onSuccess() {
+        void context.user.isFollowUser.invalidate(userId);
+      },
+    });
   };
 
   const onUnfollowHandler = (userId: string) => {
@@ -161,7 +165,11 @@ const AuthorBanner = ({
     if (session?.user.id === userId) {
       return;
     }
-    unfollowUserMutation.mutate(userId);
+    unfollowUserMutation.mutate(userId, {
+      onSuccess() {
+        void context.user.isFollowUser.invalidate(userId);
+      },
+    });
   };
 
   const onCancelHandler = () => {
@@ -227,9 +235,8 @@ const AuthorBanner = ({
     <>
       <label
         htmlFor="upload-wallpaper"
-        className={`absolute inset-0 h-72 overflow-hidden ${
-          isEditing ? "cursor-pointer" : ""
-        }`}
+        className={`absolute inset-0 h-72 overflow-hidden ${isEditing ? "cursor-pointer" : ""
+          }`}
       >
         {isEditing && (
           <div>
@@ -255,9 +262,8 @@ const AuthorBanner = ({
           />
         ) : (
           <div
-            className={`${
-              isEditing ? "opacity-90" : ""
-            } h-full w-full bg-authGreen-400`}
+            className={`${isEditing ? "opacity-90" : ""
+              } h-full w-full bg-authGreen-400`}
           />
         )}
       </label>
@@ -268,9 +274,8 @@ const AuthorBanner = ({
         <div className="mb-3 flex justify-between ">
           <label
             htmlFor="upload-profile"
-            className={`${
-              isEditing ? "cursor-pointer" : ""
-            } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
+            className={`${isEditing ? "cursor-pointer" : ""
+              } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
           >
             {isEditing && (
               <div>
@@ -337,11 +342,10 @@ const AuthorBanner = ({
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${
-                            watch("penname") && watch("penname").length > 50
-                              ? "text-red-500"
-                              : "text-white"
-                          }`}
+                          ${watch("penname") && watch("penname").length > 50
+                        ? "text-red-500"
+                        : "text-white"
+                      }`}
                   >
                     {watch("penname") ? watch("penname").length : 0}
                     /50
@@ -400,11 +404,10 @@ const AuthorBanner = ({
                 />
                 <p
                   className={`${"text-xs"} 
-                          ${
-                            (watch("bio") || "").length > 150
-                              ? "text-red-500"
-                              : "text-white"
-                          }`}
+                          ${(watch("bio") || "").length > 150
+                      ? "text-red-500"
+                      : "text-white"
+                    }`}
                 >
                   {(watch("bio") || "").length}/150
                 </p>
@@ -455,10 +458,10 @@ const AuthorBanner = ({
             {isFetchingFollowerNextPage && <UserCardSkeleton />}
             {userFollowers?.pages.flatMap((page) => page.items).length ===
               0 && (
-              <div className="flex w-96 items-center justify-center">
-                <p className="text-lg">No followers</p>
-              </div>
-            )}
+                <div className="flex w-96 items-center justify-center">
+                  <p className="text-lg">No followers</p>
+                </div>
+              )}
           </div>
         }
       </DialogLayout>
@@ -497,10 +500,10 @@ const AuthorBanner = ({
             {isFetchingFollowingNextPage && <UserCardSkeleton />}
             {userFollowing?.pages.flatMap((page) => page.items).length ===
               0 && (
-              <div className="flex w-96 items-center justify-center">
-                <p className="text-lg">No following</p>
-              </div>
-            )}
+                <div className="flex w-96 items-center justify-center">
+                  <p className="text-lg">No following</p>
+                </div>
+              )}
           </div>
         }
       </DialogLayout>
