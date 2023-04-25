@@ -7,30 +7,36 @@ import BookList from "~/components/Book/BookList";
 import BookSkeleton from "~/components/Book/BookSkeleton";
 import BookStateInformation from "~/components/Information/BookStateInformation";
 import InformationButton from "~/components/Information/InformationButton";
-import { api } from "~/utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
 
 const BookPage = () => {
-  const [openInformation, setOpenInformation] = useState(false);
   const router = useRouter();
-  const penname = router.query.penname as string | undefined;
   const { data: session } = useSession();
+  const penname = router.query.penname as string;
   const [openArchive, setOpenArchive] = useState(false);
-  const { data: user } = api.user.getData.useQuery(penname, {
-    enabled: router.isReady,
-  });
-  const { data: books, isLoading: bookIsLoading } = api.book.getAll.useQuery(
-    {
-      penname: penname as string,
-    },
-    { enabled: penname !== undefined }
+  const [openInformation, setOpenInformation] = useState(false);
+  const { data: user } = api.user.getData.useQuery(penname);
+  const { data: bookIds, isLoading: bookIdsLoading } = api.book.getAll.useQuery(
+    { penname }
   );
-  const archiveBooks = books?.filter(
-    (book) => book.status === BookStatus.ARCHIVED
+  const isOwner = session ? user?.id === session.user.id : false;
+  const books = api.useQueries(
+    (t) => bookIds?.map((bookId) => t.book.getData(bookId)) ?? []
   );
-  const nonarchiveBooks = books?.filter(
-    (book) => book.status !== BookStatus.ARCHIVED
-  );
-  const isOwner = user?.id === session?.user.id;
+  const booksLoading = books.some((book) => book.isLoading);
+  const [archiveBooks, nonarchiveBooks] = booksLoading
+    ? [undefined, undefined]
+    : books.reduce(
+        (acc, { data: book }) => {
+          acc[book!.status === BookStatus.ARCHIVED ? 0 : 1]!.push(book!);
+          return acc;
+        },
+        [
+          [] as RouterOutputs["book"]["getData"][],
+          [] as RouterOutputs["book"]["getData"][],
+        ]
+      );
+
   return (
     <div className="mb-8 mt-6 w-[1024px]">
       <div className={"max-h-full rounded-lg p-4 px-6 shadow-lg"}>
@@ -67,22 +73,23 @@ const BookPage = () => {
             </>
           )}
         </div>
-        {user && books && archiveBooks && nonarchiveBooks && (
+        {user && archiveBooks && nonarchiveBooks && (
           <BookList
-            books={openArchive ? archiveBooks : nonarchiveBooks}
-            isOwner={user.id === session?.user.id}
+            penname={penname}
+            isOwner={isOwner}
             isArchived={openArchive}
-            penname={penname as string}
+            books={openArchive ? archiveBooks : nonarchiveBooks}
           />
         )}
-        {bookIsLoading && (
-          <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-            <BookSkeleton />
-            <BookSkeleton />
-            <BookSkeleton />
-            <BookSkeleton />
-          </div>
-        )}
+        {bookIdsLoading ||
+          (booksLoading && (
+            <div className="grid grid-cols-4 gap-x-8 gap-y-6">
+              <BookSkeleton />
+              <BookSkeleton />
+              <BookSkeleton />
+              <BookSkeleton />
+            </div>
+          ))}
       </div>
       {openArchive && (
         <p className="mt-4 text-sm text-gray-600">

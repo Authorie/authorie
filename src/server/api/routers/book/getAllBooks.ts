@@ -1,7 +1,6 @@
 import { BookOwnerStatus, BookStatus, type Prisma } from "@prisma/client";
 import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
-import { computeIsOwner } from "./utils";
 
 const getAllBooks = publicProcedure
   .input(
@@ -13,48 +12,10 @@ const getAllBooks = publicProcedure
     const { penname } = input;
     const bookFindManyArgs = {
       where: {},
-      include: {
-        owners: {
-          select: {
-            status: true,
-            user: {
-              select: {
-                id: true,
-                penname: true,
-                image: true,
-              },
-            },
-          },
-        },
-        categories: {
-          select: {
-            category: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-        },
-        chapters: {
-          select: {
-            title: true,
-            chapterNo: true,
-            publishedAt: true,
-            _count: {
-              select: {
-                views: true,
-                likes: true,
-                comments: true,
-              },
-            },
-            chapterMarketHistories: true,
-          },
-        },
-      },
+      select: { id: true },
     } satisfies Prisma.BookFindManyArgs;
     if (!ctx.session) {
-      const where = {
+      bookFindManyArgs.where = {
         status: {
           in: [BookStatus.PUBLISHED, BookStatus.COMPLETED],
         },
@@ -65,10 +26,9 @@ const getAllBooks = publicProcedure
             },
           },
         },
-      } satisfies Prisma.BookWhereInput;
-      bookFindManyArgs.where = where;
+      };
     } else if (ctx.session.user.penname !== penname) {
-      const where = {
+      bookFindManyArgs.where = {
         OR: [
           {
             status: {
@@ -124,22 +84,18 @@ const getAllBooks = publicProcedure
             },
           },
         ],
-      } satisfies Prisma.BookWhereInput;
-      bookFindManyArgs.where = where;
+      };
     } else {
-      const where = {
+      bookFindManyArgs.where = {
         owners: {
           some: {
             userId: ctx.session?.user.id,
           },
         },
-      } satisfies Prisma.BookWhereInput;
-      bookFindManyArgs.where = where;
+      };
     }
 
-    return (await ctx.prisma.book.findMany(bookFindManyArgs)).map((book) =>
-      computeIsOwner(ctx.session?.user.id, book)
-    );
+    return await ctx.prisma.book.findMany(bookFindManyArgs);
   });
 
 export default getAllBooks;

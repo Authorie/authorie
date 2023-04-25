@@ -1,4 +1,4 @@
-import { BookStatus } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -14,42 +14,50 @@ import {
 import { api, type RouterOutputs } from "~/utils/api";
 
 type props = {
-  book: RouterOutputs["book"]["getAll"][number];
+  book: RouterOutputs["book"]["getData"];
 };
 
 const Book = ({ book }: props) => {
   const router = useRouter();
+  const { status } = useSession();
   const utils = api.useContext();
-  const { status: authStatus } = useSession();
-  const publishedChapter = book.chapters.filter(
-    (chapters) =>
-      chapters.publishedAt && dayjs(new Date()).isAfter(chapters.publishedAt)
-  );
-  const latestChapter = publishedChapter[publishedChapter.length - 1];
   const penname = router.query.penname as string;
-  const ownerPenname = book.owners[0]!.user.penname!;
-  const { data: isFavorite } = api.book.isFavorite.useQuery(
-    { id: book.id },
-    { enabled: authStatus === "authenticated" }
-  );
-  const responseInvitation = api.user.responseCollaborationInvite.useMutation({
-    onSuccess: () => {
-      void Promise.all([
-        utils.book.invalidate(),
-        utils.user.getBookCollaborators.invalidate(),
-      ]);
+  const ownerPenname = book.owners.find(
+    (owner) => owner.status === BookOwnerStatus.OWNER
+  )!.user.penname!;
+  const publishedChapter = book.chapters
+    .filter(
+      (chapters) =>
+        chapters.publishedAt && dayjs().isAfter(chapters.publishedAt)
+    )
+    .sort((a, b) => (a.chapterNo ?? 0) - (b.chapterNo ?? 0));
+  const latestChapter = publishedChapter.at(-1);
+
+  const responseInvitation = api.book.responseCollaborationInvite.useMutation({
+    async onMutate(variables) {
+      await utils.book.getData.cancel();
+      const prevData = utils.book.getData.getData({ id: variables.bookId });
+      utils.book.getData.setData({ id: variables.bookId }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isCollborator: variables.accept,
+        };
+      });
+      return { prevData };
     },
   });
   const moveState = api.book.moveState.useMutation({
-    async onMutate(newBook) {
+    async onMutate(variables) {
       await utils.book.getData.cancel();
-      const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return;
-      const book = {
-        ...prevData,
-        status: newBook.status,
-      };
-      utils.book.getData.setData({ id: newBook.id }, book);
+      const prevData = utils.book.getData.getData({ id: variables.id });
+      utils.book.getData.setData({ id: variables.id }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          status: variables.status,
+        };
+      });
       return { prevData };
     },
     onSettled: () => {
@@ -57,31 +65,49 @@ const Book = ({ book }: props) => {
     },
   });
   const unfavoriteBook = api.book.unfavorite.useMutation({
-    onMutate: async () => {
-      await utils.book.isFavorite.cancel();
-      const previousFavorite = utils.book.isFavorite.getData();
-      utils.book.isFavorite.setData({ id: book.id }, (old) => !old);
-      return { previousFavorite };
+    async onMutate(variables) {
+      await utils.book.getData.cancel(variables);
+      const previousBook = utils.book.getData.getData(variables);
+      utils.book.getData.setData(variables, (old) => {
+        if (old === undefined) return old;
+        return {
+          ...old,
+          isFavorite: false,
+        };
+      });
+      return { previousBook };
     },
-    onSettled: () => {
-      void utils.book.invalidate();
+    onError(_error, variables, context) {
+      utils.book.getData.setData(variables, context?.previousBook);
+    },
+    onSettled(_data, _error, variables, _context) {
+      void utils.book.getData.invalidate(variables);
     },
   });
   const favoriteBook = api.book.favorite.useMutation({
-    onMutate: async () => {
-      await utils.book.isFavorite.cancel();
-      const previousFavorite = utils.book.isFavorite.getData();
-      utils.book.isFavorite.setData({ id: book.id }, (old) => !old);
-      return { previousFavorite };
+    async onMutate(variables) {
+      await utils.book.getData.cancel(variables);
+      const previousBook = utils.book.getData.getData(variables);
+      utils.book.getData.setData(variables, (old) => {
+        if (old === undefined) return old;
+        return {
+          ...old,
+          isFavorite: true,
+        };
+      });
+      return { previousBook };
     },
-    onSettled: () => {
-      void utils.book.invalidate();
+    onError(_error, variables, context) {
+      utils.book.getData.setData(variables, context?.previousBook);
+    },
+    onSettled(_data, _error, variables, _context) {
+      void utils.book.getData.invalidate(variables);
     },
   });
 
   const toggleFavoriteHandler = (e: MouseEvent) => {
     e.stopPropagation();
-    if (isFavorite) {
+    if (book.isFavorite) {
       unfavoriteBook.mutate({ id: book.id });
     } else {
       favoriteBook.mutate({ id: book.id });
@@ -198,7 +224,7 @@ const Book = ({ book }: props) => {
               ${book.status === BookStatus.DRAFT ? "bg-orange-400" : ""} 
               ${book.status === BookStatus.COMPLETED ? "bg-blue-400" : ""} 
               ${book.status === BookStatus.ARCHIVED ? "hidden" : ""}
-              ${"absolute left-0 top-0 z-10 px-2 text-xs text-white"}
+              absolute left-0 top-0 z-10 px-2 text-xs text-white
               `}
               >
                 {book.status}
@@ -230,18 +256,18 @@ const Book = ({ book }: props) => {
             )}
           </>
         )}
-        {authStatus === "authenticated" &&
-          !(book.isOwner || book.isCollborator) &&
-          (book.status === BookStatus.PUBLISHED ||
-            book.status === BookStatus.COMPLETED) && (
+        {status === "authenticated" &&
+          !book.isOwner &&
+          !book.isCollborator &&
+          book.status === (BookStatus.PUBLISHED || BookStatus.COMPLETED) && (
             <div
               className="group/star absolute bottom-0 right-0 z-20 h-10 w-10"
               onClick={toggleFavoriteHandler}
             >
-              {!isFavorite ? (
-                <HiOutlineStar className="h-10 w-10 text-yellow-400 group-hover/star:text-yellow-600" />
-              ) : (
+              {book.isFavorite ? (
                 <HiStar className="h-10 w-10 text-yellow-400 hover:text-yellow-600" />
+              ) : (
+                <HiOutlineStar className="h-10 w-10 text-yellow-400 group-hover/star:text-yellow-600" />
               )}
             </div>
           )}

@@ -117,10 +117,10 @@ const StatusPage = () => {
   } = useImageUpload();
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
-  const { data: collaborators } = api.user.getBookCollaborators.useQuery({
-    bookId: bookId,
-  });
   const { data: book } = api.book.getData.useQuery({ id: bookId });
+  const deleteBook = api.book.delete.useMutation();
+  const removeCollaborator = api.book.removeCollaborator.useMutation();
+  const inviteCollaborator = api.book.inviteCollaborator.useMutation();
   const [addedCategories, setAddedCategories] = useState<Category[]>(
     book?.categories ? book?.categories.map((data) => data.category) : []
   );
@@ -136,24 +136,6 @@ const StatusPage = () => {
     defaultValues: {
       title: book?.title,
       description: book?.description || "",
-    },
-  });
-  const deleteBook = api.book.delete.useMutation({
-    onSettled: () => {
-      void Promise.allSettled([
-        utils.book.getAll.invalidate({ penname }),
-        utils.book.getData.invalidate({ id: bookId }),
-      ]);
-    },
-  });
-  const removeCollaborator = api.user.removeCollaborationInvite.useMutation({
-    onSettled: () => {
-      void utils.user.getBookCollaborators.invalidate();
-    },
-  });
-  const inviteCollaborator = api.user.inviteCollaborator.useMutation({
-    onSettled: () => {
-      void utils.user.getBookCollaborators.invalidate();
     },
   });
 
@@ -175,42 +157,41 @@ const StatusPage = () => {
   });
 
   const updateBook = api.book.update.useMutation({
-    async onMutate(newBook) {
-      await utils.book.getData.cancel();
-      const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return;
-      const book = {
-        ...prevData,
-        title: newBook.title !== undefined ? newBook.title : prevData.title,
-        description:
-          newBook.description !== undefined
-            ? newBook.description
-            : prevData.description,
-        categories: addedCategories.map((data) => ({ category: data })),
-        coverImage:
-          newBook.coverImageUrl !== undefined
-            ? newBook.coverImageUrl
-            : prevData.coverImage,
-        wallpaperImage:
-          newBook.wallpaperImageUrl !== undefined
-            ? newBook.wallpaperImageUrl
-            : prevData.wallpaperImage,
-      };
-      utils.book.getData.setData({ id: newBook.id }, book);
+    async onMutate(variables) {
+      await utils.book.getData.cancel({ id: variables.id });
+      const prevData = utils.book.getData.getData({ id: variables.id });
+      utils.book.getData.setData({ id: variables.id }, (old) =>
+        old
+          ? {
+              ...old,
+              description: variables.description
+                ? variables.description
+                : old.description,
+              coverImage: variables.coverImageUrl
+                ? variables.coverImageUrl
+                : old.coverImage,
+              wallpaperImage: variables.wallpaperImageUrl
+                ? variables.wallpaperImageUrl
+                : old.wallpaperImage,
+              categories: addedCategories.map((category) => ({ category })),
+              chapters: variables.chaptersArrangement
+                ? variables.chaptersArrangement.map((chapterId) => {
+                    return old.chapters.find(
+                      (chapter) => chapter.id === chapterId
+                    )!;
+                  })
+                : old.chapters,
+            }
+          : undefined
+      );
       return { prevData };
     },
-    onError(_, newPost, ctx) {
-      if (!ctx?.prevData) return;
-      utils.book.getData.setData({ id: newPost.id }, ctx.prevData);
+    onError(_error, variables, context) {
+      utils.book.getData.setData(variables, context?.prevData);
     },
-    onSuccess() {
+    onSettled(_data, _error, variables, _context) {
       resetHandler();
-    },
-    onSettled: () => {
-      void Promise.allSettled([
-        utils.book.getAll.invalidate({ penname }),
-        utils.book.getData.invalidate({ id: bookId }),
-      ]);
+      void utils.book.getData.invalidate(variables);
     },
   });
 
@@ -231,12 +212,10 @@ const StatusPage = () => {
 
   const draftBookHandler = () => {
     if (book === undefined) return;
-    if (
-      collaborators &&
-      collaborators.some(
-        (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
-      )
-    ) {
+    const hasCollaborators = book.owners.some(
+      ({ status }) => status === BookOwnerStatus.INVITEE
+    );
+    if (hasCollaborators) {
       dispatchDialog({
         type: "draftWarning",
         action: () => void confirmDraftBookHandler(),
@@ -668,33 +647,31 @@ const StatusPage = () => {
                           </div>
                         )}
                         <ol className="divide-y-2 self-center">
-                          {collaborators &&
-                            collaborators.map((author, index) => (
-                              <AuthorList
-                                key={author.userId}
-                                index={index + 1}
-                                status={author.status}
-                                penname={author.user.penname!}
-                                image={
-                                  author.user.image ||
-                                  "/placeholder_profile.png"
-                                }
-                                isBookInitialStatus={
-                                  book.status === BookStatus.INITIAL
-                                }
-                                onInvite={() =>
-                                  void inviteCollaboratorHandler(
-                                    author.user.penname!
-                                  )
-                                }
-                                onRemove={() =>
-                                  void removeCollaboratorHandler({
-                                    id: author.userId,
-                                    penname: author.user.penname!,
-                                  })
-                                }
-                              />
-                            ))}
+                          {book.owners.map((author, index) => (
+                            <AuthorList
+                              key={author.user.id}
+                              index={index + 1}
+                              status={author.status}
+                              penname={author.user.penname!}
+                              image={
+                                author.user.image || "/placeholder_profile.png"
+                              }
+                              isBookInitialStatus={
+                                book.status === BookStatus.INITIAL
+                              }
+                              onInvite={() =>
+                                void inviteCollaboratorHandler(
+                                  author.user.penname!
+                                )
+                              }
+                              onRemove={() =>
+                                void removeCollaboratorHandler({
+                                  id: author.user.id,
+                                  penname: author.user.penname!,
+                                })
+                              }
+                            />
+                          ))}
                         </ol>
                       </div>
                     </div>

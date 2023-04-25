@@ -2,6 +2,7 @@ import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -48,19 +49,12 @@ type props = {
   penname: string;
   book: RouterOutputs["book"]["getData"];
   categories: RouterOutputs["category"]["getAll"];
-  collaborators: RouterOutputs["user"]["getBookCollaborators"];
-  isFavorite: RouterOutputs["book"]["isFavorite"];
 };
 
-const BookContent = ({
-  penname,
-  book,
-  categories,
-  collaborators,
-  isFavorite,
-}: props) => {
+const BookContent = ({ penname, book, categories }: props) => {
   const router = useRouter();
   const utils = api.useContext();
+  const { status } = useSession();
   const [isEdit, setIsEdit] = useState(false);
   const [openWarning, setOpenWarning] = useState(false);
   const [openInformation, setOpenInformation] = useState(false);
@@ -90,82 +84,91 @@ const BookContent = ({
   } = useImageUpload();
   const uploadImageUrl = api.upload.uploadImage.useMutation();
   const updateBook = api.book.update.useMutation({
-    async onMutate(newBook) {
-      await utils.book.getData.cancel({ id: book.id });
-      const prevData = utils.book.getData.getData({ id: book.id });
-      utils.book.getData.setData({ id: book.id }, (old) =>
+    async onMutate(variables) {
+      await utils.book.getData.cancel({ id: variables.id });
+      const prevData = utils.book.getData.getData({ id: variables.id });
+      utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-            ...old,
-            description: newBook.description
-              ? newBook.description
-              : old.description,
-            coverImage: newBook.coverImageUrl
-              ? newBook.coverImageUrl
-              : old.coverImage,
-            wallpaperImage: newBook.wallpaperImageUrl
-              ? newBook.wallpaperImageUrl
-              : old.wallpaperImage,
-            categories: addedCategories.map((category) => ({ category })),
-            chapters: arrangedChapters.map((chapter) => {
-              if (!newBook.chaptersArrangement) return chapter;
-              const newChapterNo = newBook.chaptersArrangement.findIndex(
-                (c) => c === chapter.id
-              );
-              return {
-                ...chapter,
-                chapterNo: newChapterNo === -1 ? null : newChapterNo + 1,
-              };
-            }),
-          }
+              ...old,
+              description: variables.description
+                ? variables.description
+                : old.description,
+              coverImage: variables.coverImageUrl
+                ? variables.coverImageUrl
+                : old.coverImage,
+              wallpaperImage: variables.wallpaperImageUrl
+                ? variables.wallpaperImageUrl
+                : old.wallpaperImage,
+              categories: addedCategories.map((category) => ({ category })),
+              chapters: variables.chaptersArrangement
+                ? variables.chaptersArrangement.map((chapterId) => {
+                    return old.chapters.find(
+                      (chapter) => chapter.id === chapterId
+                    )!;
+                  })
+                : old.chapters,
+            }
           : undefined
       );
       return { prevData };
     },
-    onError(error, variables, context) {
-      utils.book.getData.setData({ id: book.id }, context?.prevData);
+    onError(_error, variables, context) {
+      utils.book.getData.setData(variables, context?.prevData);
     },
-    onSettled() {
+    onSettled(_data, _error, variables, _context) {
       resetHandler();
-      void utils.book.invalidate();
+      void utils.book.getData.invalidate(variables);
     },
   });
   const moveState = api.book.moveState.useMutation({
-    onSettled: () => {
-      void utils.book.invalidate();
+    onSettled(_data, _error, variables, _context) {
+      void utils.book.getData.invalidate(variables);
     },
   });
   const deleteBook = api.book.delete.useMutation({
-    onSuccess: () => {
-      void utils.book.invalidate();
+    onSettled(_data, _error, variables, _context) {
+      void utils.book.getData.invalidate(variables);
     },
   });
   const unfavoriteBook = api.book.unfavorite.useMutation({
-    async onMutate() {
-      await utils.book.isFavorite.cancel({ id: book.id });
-      const prevData = utils.book.isFavorite.getData({ id: book.id });
-      utils.book.isFavorite.setData({ id: book.id }, false);
-      return { prevData };
+    async onMutate(variables) {
+      await utils.book.getData.cancel(variables);
+      const previousBook = utils.book.getData.getData(variables);
+      utils.book.getData.setData(variables, (old) => {
+        if (old === undefined) return old;
+        return {
+          ...old,
+          isFavorite: false,
+        };
+      });
+      return { previousBook };
     },
-    onError(error, variables, context) {
-      utils.book.isFavorite.setData({ id: book.id }, context?.prevData);
+    onError(_error, variables, context) {
+      utils.book.getData.setData(variables, context?.previousBook);
     },
-    onSettled: () => {
-      void utils.book.invalidate();
+    onSettled(_data, _error, variables, _context) {
+      void utils.book.getData.invalidate(variables);
     },
   });
   const favoriteBook = api.book.favorite.useMutation({
-    async onMutate() {
-      await utils.book.isFavorite.cancel({ id: book.id });
-      const prevData = utils.book.isFavorite.getData({ id: book.id });
-      utils.book.isFavorite.setData({ id: book.id }, true);
-      return { prevData };
+    async onMutate(variables) {
+      await utils.book.getData.cancel(variables);
+      const previousBook = utils.book.getData.getData(variables);
+      utils.book.getData.setData(variables, (old) => {
+        if (old === undefined) return old;
+        return {
+          ...old,
+          isFavorite: true,
+        };
+      });
+      return { previousBook };
     },
-    onError(error, variables, context) {
-      utils.book.isFavorite.setData({ id: book.id }, context?.prevData);
+    onError(_error, variables, context) {
+      utils.book.getData.setData(variables, context?.previousBook);
     },
-    onSettled: () => {
-      void utils.book.invalidate();
+    onSettled(_data, _error, variables, _context) {
+      void utils.book.getData.invalidate(variables);
     },
   });
   const {
@@ -207,11 +210,10 @@ const BookContent = ({
   };
 
   const draftBookHandler = () => {
-    if (
-      collaborators.some(
-        (collaborator) => collaborator.status === BookOwnerStatus.INVITEE
-      )
-    ) {
+    const hasInvitees = book.owners.some(
+      ({ status }) => status === BookOwnerStatus.INVITEE
+    );
+    if (hasInvitees) {
       setOpenWarning(true);
     } else {
       void confirmDraftBookHandler();
@@ -284,7 +286,7 @@ const BookContent = ({
   };
 
   const toggleFavoriteHandler = () => {
-    if (isFavorite) {
+    if (book.isFavorite) {
       unfavoriteBook.mutate({ id: book.id });
     } else {
       favoriteBook.mutate({ id: book.id });
@@ -306,13 +308,13 @@ const BookContent = ({
     const promises = [
       bookCover
         ? uploadImageUrl.mutateAsync({
-          image: bookCover,
-        })
+            image: bookCover,
+          })
         : undefined,
       bookWallpaper
         ? uploadImageUrl.mutateAsync({
-          image: bookWallpaper,
-        })
+            image: bookWallpaper,
+          })
         : undefined,
     ] as const;
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -401,7 +403,7 @@ const BookContent = ({
                   )}
                   {!book.isOwner && status === "authenticated" && (
                     <button type="button" onClick={toggleFavoriteHandler}>
-                      {!isFavorite ? (
+                      {!book.isFavorite ? (
                         <HiOutlineStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
                       ) : (
                         <HiStar className="absolute bottom-0 right-0 h-10 w-10 text-yellow-400 hover:text-yellow-500" />
@@ -477,10 +479,10 @@ const BookContent = ({
                               (category: Category) =>
                                 !addedCategories.includes(category)
                             ).length === 0 && (
-                                <p className="text-sm font-semibold">
-                                  No more categories left...
-                                </p>
-                              )}
+                              <p className="text-sm font-semibold">
+                                No more categories left...
+                              </p>
+                            )}
                           </div>
                         </Popover.Panel>
                         <Popover.Button
@@ -526,24 +528,24 @@ const BookContent = ({
                     )}
                     {(book.status === BookStatus.INITIAL ||
                       book.status === BookStatus.DRAFT) && (
-                        <button
-                          type="button"
-                          onClick={() => void deleteBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                        >
-                          Delete
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => void deleteBookHandler()}
+                        className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                      >
+                        Delete
+                      </button>
+                    )}
                     {(book.status === BookStatus.PUBLISHED ||
                       book.status === BookStatus.COMPLETED) && (
-                        <button
-                          type="button"
-                          onClick={() => void archiveBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                        >
-                          Archive
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => void archiveBookHandler()}
+                        className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                      >
+                        Archive
+                      </button>
+                    )}
                   </div>
                   <div className="my-10 flex flex-col gap-1">
                     <span className="text-6xl font-bold">12</span>
@@ -572,8 +574,9 @@ const BookContent = ({
           <div className="flex grow flex-col">
             <div
               className={`
-          ${isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 flex-col gap-2"}`}
+          ${
+            isEdit ? "justify-end gap-2" : "justify-center"
+          } ${"flex h-52 flex-col gap-2"}`}
             >
               {!isEdit && (
                 <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -615,10 +618,11 @@ const BookContent = ({
                       />
                       <p
                         className={`${"text-xs"} 
-                    ${watch("title") && watch("title").length > 100
-                            ? "text-red-500"
-                            : "text-black"
-                          }`}
+                    ${
+                      watch("title") && watch("title").length > 100
+                        ? "text-red-500"
+                        : "text-black"
+                    }`}
                       >
                         {watch("title") ? watch("title").length : 0}/100
                       </p>
@@ -653,10 +657,11 @@ const BookContent = ({
                     />
                     <p
                       className={`${"text-xs"} 
-                    ${watch("description") && watch("description").length > 500
-                          ? "text-red-500"
-                          : "text-black"
-                        }`}
+                    ${
+                      watch("description") && watch("description").length > 500
+                        ? "text-red-500"
+                        : "text-black"
+                    }`}
                     >
                       {watch("description") ? watch("description").length : 0}
                       /500

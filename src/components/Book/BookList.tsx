@@ -5,7 +5,7 @@ import type { RouterOutputs } from "~/utils/api";
 import Book from "./Book";
 
 type props = {
-  books: RouterOutputs["book"]["getAll"];
+  books: RouterOutputs["book"]["getData"][];
   penname: string;
   isOwner: boolean;
   isArchived: boolean;
@@ -56,10 +56,7 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
   return (
     <div className="grid grid-cols-4 gap-x-8 gap-y-6">
       {filteredBooks.map((book) => (
-        <Book
-          key={book.id}
-          book={book}
-        />
+        <Book key={book.id} book={book} />
       ))}
     </div>
   );

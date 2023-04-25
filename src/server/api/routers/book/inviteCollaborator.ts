@@ -100,49 +100,40 @@ const inviteCollaborator = protectedProcedure
       });
     }
 
-    // create the invite
-    try {
-      return await ctx.prisma.bookOwner.upsert({
-        where: {
-          bookId_userId: {
-            bookId,
-            userId: user.id,
+    return await ctx.prisma.bookOwner.upsert({
+      where: {
+        bookId_userId: {
+          bookId,
+          userId: user.id,
+        },
+      },
+      create: {
+        book: {
+          connect: {
+            id: bookId,
           },
         },
-        create: {
-          book: {
-            connect: {
-              id: bookId,
-            },
+        user: {
+          connect: {
+            id: user.id,
           },
-          user: {
-            connect: {
-              id: user.id,
-            },
-          },
-          status: BookOwnerStatus.INVITEE,
         },
-        update: {
-          book: {
-            connect: {
-              id: bookId,
-            },
+        status: BookOwnerStatus.INVITEE,
+      },
+      update: {
+        book: {
+          connect: {
+            id: bookId,
           },
-          user: {
-            connect: {
-              id: user.id,
-            },
-          },
-          status: BookOwnerStatus.INVITEE,
         },
-      });
-    } catch (err) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "something went wrong",
-        cause: err,
-      });
-    }
+        user: {
+          connect: {
+            id: user.id,
+          },
+        },
+        status: BookOwnerStatus.INVITEE,
+      },
+    });
   });
 
 export default inviteCollaborator;
