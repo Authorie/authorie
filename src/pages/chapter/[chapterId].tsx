@@ -156,8 +156,18 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
       const previousLike = utils.chapter.isLike.getData();
+      const previousNumberOfLikes = chapter._count.likes;
       utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
-      return { previousLike };
+      chapter._count.likes += 1;
+      return { previousLike, previousNumberOfLikes };
+    },
+    onError(error, variables, context) {
+      if (context?.previousLike) {
+        utils.chapter.isLike.setData({ id: chapterId }, context.previousLike);
+      }
+      if (context?.previousNumberOfLikes) {
+        chapter._count.likes = context.previousNumberOfLikes;
+      }
     },
     onSettled: () => {
       void utils.chapter.isLike.invalidate({ id: chapterId });
@@ -167,8 +177,18 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
     onMutate: async () => {
       await utils.chapter.isLike.cancel();
       const previousLike = utils.chapter.isLike.getData();
+      const previousNumberOfLikes = chapter._count.likes;
       utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
-      return { previousLike };
+      chapter._count.likes -= 1;
+      return { previousLike, previousNumberOfLikes };
+    },
+    onError(error, variables, context) {
+      if (context?.previousLike) {
+        utils.chapter.isLike.setData({ id: chapterId }, context.previousLike);
+      }
+      if (context?.previousNumberOfLikes) {
+        chapter._count.likes = context.previousNumberOfLikes;
+      }
     },
     onSettled: () => {
       void utils.chapter.isLike.invalidate({ id: chapterId });
