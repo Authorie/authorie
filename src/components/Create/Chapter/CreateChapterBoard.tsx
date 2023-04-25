@@ -1,5 +1,5 @@
 import { Popover } from "@headlessui/react";
-import type { Book, Chapter } from "@prisma/client";
+import { type Book, BookStatus, type Chapter } from "@prisma/client";
 import type { Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { useRouter } from "next/router";
@@ -11,8 +11,8 @@ import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";
 type props = {
   editor: Editor;
   title: string;
+  book: Book | null;
   price: number | undefined;
-  bookId: string | undefined;
   selectedChapter: Chapter | null;
   setErrors: (errors: { title: string | undefined }) => void;
   selectDraftHandler: (
@@ -25,29 +25,35 @@ const CreateChapterBoard = ({
   selectedChapter,
   title,
   price,
-  bookId,
+  book,
   setErrors,
   selectDraftHandler,
 }: props) => {
   const router = useRouter();
-  const context = api.useContext();
-  const createChapterMutation = api.chapter.create.useMutation();
-  const deleteChapterMutation = api.chapter.deleteDraft.useMutation();
+  const utils = api.useContext();
+  const createChapterMutation = api.chapter.create.useMutation({
+    onSuccess(data, variables, _context) {
+      void utils.chapter.invalidate();
+      if (variables.bookId) {
+        void utils.book.getData.invalidate({ id: variables.bookId });
+      }
+      void router.replace(`/create/chapter?chapterId=${data.id}`);
+    },
+  });
+  const deleteChapterMutation = api.chapter.deleteDraft.useMutation({
+    onSuccess(_data, _variables, _context) {
+      void utils.chapter.getDrafts.invalidate();
+      if (book) void utils.book.getData.invalidate({ id: book.id });
+    },
+  });
   const deleteDraftChapterHandler = async () => {
     if (!selectedChapter) {
       toast.error("Chapter not saved yet");
       return;
     }
-    const promise = deleteChapterMutation.mutateAsync(
-      {
-        id: selectedChapter.id,
-      },
-      {
-        onSettled() {
-          void context.chapter.getDrafts.invalidate();
-        },
-      }
-    );
+    const promise = deleteChapterMutation.mutateAsync({
+      id: selectedChapter.id,
+    });
     await toast.promise(promise, {
       loading: "Deleting...",
       success: "Deleted!",
@@ -64,24 +70,13 @@ const CreateChapterBoard = ({
       setErrors({ title: "The title is too long" });
       return;
     }
-    const promise = createChapterMutation.mutateAsync(
-      {
-        chapterId: selectedChapter?.id,
-        title,
-        content: editor.getJSON(),
-        bookId,
-        publishedAt: null,
-      },
-      {
-        async onSuccess(data) {
-          await context.chapter.invalidate();
-          if (bookId) {
-            await context.book.getData.invalidate({ id: bookId });
-          }
-          void router.replace(`/create/chapter?chapterId=${data.id}`);
-        },
-      }
-    );
+    const promise = createChapterMutation.mutateAsync({
+      chapterId: selectedChapter?.id,
+      title,
+      content: editor.getJSON(),
+      bookId: book ? book.id : undefined,
+      publishedAt: null,
+    });
     await toast.promise(promise, {
       loading: "Saving...",
       success: "Saved!",
@@ -90,32 +85,38 @@ const CreateChapterBoard = ({
   };
   const publishDraftChapterHandler = async (date?: Date) => {
     if (!editor) return;
+
     if (title === "") {
-      setErrors({
-        title: "The title is required!",
-      });
+      setErrors({ title: "The title is required!" });
       return;
-    } else if (title.trim().length > 80) {
+    }
+
+    if (title.trim().length > 80) {
       setErrors({ title: "The title is too long" });
       return;
     }
-    if (!bookId) {
+
+    if (!book) {
       toast.error("Please select a book first");
       return;
     }
+
+    if (book.status !== BookStatus.PUBLISHED) {
+      toast.error("Please publish the book first");
+      return;
+    }
+
     const promise = createChapterMutation.mutateAsync(
       {
         chapterId: selectedChapter?.id,
         title: title,
         content: editor.getJSON(),
-        bookId,
+        bookId: book.id,
         publishedAt: date || true,
         price: price,
       },
       {
-        onSettled() {
-          void context.chapter.invalidate();
-          void context.book.getData.invalidate({ id: bookId });
+        onSuccess() {
           selectDraftHandler(null);
         },
       }

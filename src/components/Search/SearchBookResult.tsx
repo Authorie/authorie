@@ -3,17 +3,21 @@ import Image from "next/image";
 import Link from "next/link";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
+import { BookOwnerStatus } from "@prisma/client";
 
 type props = {
   book: RouterOutputs["search"]["searchBooks"]["items"][number];
+  onClick: () => void;
 };
 
-const SearchBookResult = ({ book }: props) => {
-  const ownerPenname = book.owners[0]!.user.penname!;
+const SearchBookResult = ({ book, onClick }: props) => {
+  const ownerPenname = book.owners.find(
+    ({ status }) => status === BookOwnerStatus.OWNER
+  )!.user.penname!;
 
   return (
-    <SearchResultCard>
-      <Link href={`/${ownerPenname}/book/${book.id}`} className="flex grow">
+    <SearchResultCard onClick={onClick}>
+      <Link className="flex grow" href={`/${ownerPenname}/book/${book.id}`}>
         <div className="grow py-3">
           <p className="text-xs text-authGreen-600">BOOK</p>
           <h4 className="text-xl font-bold text-authGreen-600">{book.title}</h4>

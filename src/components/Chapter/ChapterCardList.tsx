@@ -8,18 +8,27 @@ import ChapterCard from "./ChapterCard";
 import ChapterDragLayer from "./ChapterDragLayer";
 
 type props = {
+  bookId: string;
   isEdit: boolean;
   isChapterCreatable: boolean;
   arrangedChapters: RouterOutputs["book"]["getData"]["chapters"];
-  setArrangedChapters: React.Dispatch<React.SetStateAction<RouterOutputs["book"]["getData"]["chapters"]>>;
+  setArrangedChapters: React.Dispatch<
+    React.SetStateAction<RouterOutputs["book"]["getData"]["chapters"]>
+  >;
 };
 
-const ChapterCardList = ({ arrangedChapters, setArrangedChapters, isEdit, isChapterCreatable }: props) => {
+const ChapterCardList = ({
+  bookId,
+  isEdit,
+  arrangedChapters,
+  setArrangedChapters,
+  isChapterCreatable,
+}: props) => {
   const router = useRouter();
   const numberOfDraftChapters = arrangedChapters.reduceRight((acc, chapter) => {
     if (chapter.publishedAt) return acc;
     return acc + 1;
-  }, 0)
+  }, 0);
 
   const findChapter = useCallback(
     (id: string) => {
@@ -35,22 +44,25 @@ const ChapterCardList = ({ arrangedChapters, setArrangedChapters, isEdit, isChap
     [arrangedChapters]
   );
 
-  const moveChapter = useCallback((id: string, atIndex: number) => {
-    setArrangedChapters((arrangedChapters) => {
-      const chapterIndex = arrangedChapters.findIndex(
-        (chapter) => chapter.id === id
-      );
-      if (chapterIndex < 0) return arrangedChapters;
-      const chapter = arrangedChapters[chapterIndex];
-      if (chapter == undefined) return arrangedChapters;
-      return update(arrangedChapters, {
-        $splice: [
-          [chapterIndex, 1],
-          [atIndex, 0, chapter],
-        ],
+  const moveChapter = useCallback(
+    (id: string, atIndex: number) => {
+      setArrangedChapters((arrangedChapters) => {
+        const chapterIndex = arrangedChapters.findIndex(
+          (chapter) => chapter.id === id
+        );
+        if (chapterIndex < 0) return arrangedChapters;
+        const chapter = arrangedChapters[chapterIndex];
+        if (chapter == undefined) return arrangedChapters;
+        return update(arrangedChapters, {
+          $splice: [
+            [chapterIndex, 1],
+            [atIndex, 0, chapter],
+          ],
+        });
       });
-    });
-  }, [setArrangedChapters]);
+    },
+    [setArrangedChapters]
+  );
 
   const [, drop] = useDrop(() => ({ accept: "chapter" }));
 
@@ -59,7 +71,7 @@ const ChapterCardList = ({ arrangedChapters, setArrangedChapters, isEdit, isChap
       <div ref={drop} className="grid grid-cols-2 gap-x-4 gap-y-2 p-4">
         {isChapterCreatable && (
           <div
-            onClick={() => void router.push("/create/chapter")}
+            onClick={() => void router.push(`/create/chapter?bookId=${bookId}`)}
             className="flex h-16 w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-white p-3 shadow-lg transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01] hover:bg-gray-200"
           >
             <HiPlusCircle className="h-6 w-6" />
@@ -76,7 +88,11 @@ const ChapterCardList = ({ arrangedChapters, setArrangedChapters, isEdit, isChap
         {arrangedChapters.map((chapter, index) => (
           <ChapterCard
             key={chapter.id}
-            chapterNo={isEdit && chapter.chapterNo ? arrangedChapters.length - numberOfDraftChapters - index : chapter.chapterNo ?? 0}
+            chapterNo={
+              isEdit && chapter.chapterNo
+                ? arrangedChapters.length - numberOfDraftChapters - index
+                : chapter.chapterNo ?? 0
+            }
             isEdit={isEdit}
             chapter={chapter}
             moveChapter={moveChapter}

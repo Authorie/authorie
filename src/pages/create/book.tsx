@@ -75,13 +75,13 @@ const CreateBook = () => {
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
       bookCover
         ? await uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+          image: bookCover,
+        })
         : undefined,
       bookWallpaper
         ? await uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+          image: bookWallpaper,
+        })
         : undefined,
     ] as const);
     const promiseCreateBook = bookCreateMutation.mutateAsync({
@@ -146,12 +146,17 @@ const CreateBook = () => {
               className="hidden"
               onChange={setBookCover}
             />
-            <Image
-              src={bookCover ? bookCover : "/placeholder_book_cover.png"}
-              fill
-              alt="book's cover"
-              className="rounded-md object-cover"
-            />
+
+            {bookCover ? (
+              <Image
+                src={bookCover ? bookCover : "/placeholder_book_cover.png"}
+                fill
+                alt="book's cover"
+                className="rounded-md object-cover"
+              />
+            ) : (
+              <div className="h-full w-full rounded-md bg-authGreen-400" />
+            )}
             <HiOutlinePhoto className="absolute bottom-2 right-2 h-8 w-8 rounded-md bg-gray-100" />
           </label>
           <div className="flex grow flex-col justify-end gap-2 pt-6">
@@ -166,11 +171,10 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${
-                            watch("title") && watch("title").length > 100
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("title") && watch("title").length > 100
+                    ? "text-red-500"
+                    : "text-black"
+                  }`}
               >
                 {watch("title") ? watch("title").length : 0}/100
               </p>
@@ -289,12 +293,11 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${
-                            watch("description") &&
-                            watch("description").length > 500
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("description") &&
+                    watch("description").length > 500
+                    ? "text-red-500"
+                    : "text-black"
+                  }`}
               >
                 {watch("description") ? watch("description").length : 0}
                 /500

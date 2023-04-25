@@ -45,10 +45,10 @@ const DialogLayout = ({
       <Dialog as="div" className="relative z-50" onClose={onCloseHandler}>
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
+          enter="ease-in-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in duration-200"
+          leave="ease-in-out duration-50"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
@@ -59,10 +59,10 @@ const DialogLayout = ({
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
+              enter="ease-in-out duration-200"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
+              leave="ease-in-out duration-50"
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >

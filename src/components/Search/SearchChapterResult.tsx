@@ -6,12 +6,13 @@ import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
 
 type props = {
+  onClick: () => void;
   chapter: RouterOutputs["search"]["searchChapters"]["items"][number];
 };
 
-const SearchChapterResult = ({ chapter }: props) => {
+const SearchChapterResult = ({ onClick, chapter }: props) => {
   return (
-    <SearchResultCard>
+    <SearchResultCard onClick={onClick}>
       <Link
         href={`/chapters/${chapter.id}`}
         className="mr-2 w-10/12 py-3 pr-10"

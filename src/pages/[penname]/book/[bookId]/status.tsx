@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
 import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
-import AuthorList from "~/components/Book/AuthorList";
+import AuthorCard from "~/components/Book/AuthorCard";
 import BookCoverEditable from "~/components/Book/BookCoverEditable";
 import DialogLayout from "~/components/Dialog/DialogLayout";
 import BookStateInformation from "~/components/Information/BookStateInformation";
@@ -139,8 +139,16 @@ const StatusPage = () => {
   const { data: categories } = api.category.getAll.useQuery();
   const { data: book } = api.book.getData.useQuery({ id: bookId });
   const deleteBook = api.book.delete.useMutation();
-  const removeCollaborator = api.book.removeCollaborator.useMutation();
-  const inviteCollaborator = api.book.inviteCollaborator.useMutation();
+  const removeCollaborator = api.book.removeCollaborator.useMutation({
+    onSettled(_data, _error, _variables, _context) {
+      void utils.book.getData.invalidate({ id: bookId });
+    },
+  });
+  const inviteCollaborator = api.book.inviteCollaborator.useMutation({
+    onSettled(_data, _error, _variables, _context) {
+      void utils.book.getData.invalidate({ id: bookId });
+    },
+  });
   const [addedCategories, setAddedCategories] = useState<Category[]>(
     book?.categories ? book?.categories.map((data) => data.category) : []
   );
@@ -648,6 +656,7 @@ const StatusPage = () => {
                           />
                           <button
                             type="button"
+                            disabled={!book.isOwner}
                             onClick={() =>
                               void inviteCollaboratorHandler(watch("author"))
                             }
@@ -668,10 +677,11 @@ const StatusPage = () => {
                           {book.owners
                             .sort(sortAuthors)
                             .map((author, index) => (
-                              <AuthorList
+                              <AuthorCard
                                 key={author.user.id}
                                 index={index + 1}
                                 status={author.status}
+                                isOwner={book.isOwner}
                                 penname={author.user.penname!}
                                 image={
                                   author.user.image ||

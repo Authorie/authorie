@@ -520,9 +520,9 @@ const AuthorBanner = ({
         </div>
       </form>
       <DialogLayout
+        title={"Followers"}
         isOpen={openFollowers}
         closeModal={() => setOpenFollowers(false)}
-        title={"Followers"}
       >
         {
           <div className="flex h-full flex-col gap-4 overflow-y-scroll">
@@ -550,9 +550,9 @@ const AuthorBanner = ({
         }
       </DialogLayout>
       <DialogLayout
+        title={"Following"}
         isOpen={openFollowing}
         closeModal={() => setOpenFollowing(false)}
-        title={"Following"}
       >
         {
           <div className="flex h-full flex-col gap-4 overflow-y-scroll">
@@ -569,7 +569,7 @@ const AuthorBanner = ({
                   <UserCard
                     key={user.id}
                     user={user}
-                    closeModal={() => setOpenFollowers(false)}
+                    closeModal={() => setOpenFollowing(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
                   />

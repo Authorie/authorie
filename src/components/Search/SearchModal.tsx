@@ -93,16 +93,32 @@ const SearchModal = ({ onCloseDialog, openDialog }: props) => {
       case "Users":
         return users?.pages
           .flatMap((page) => page.items)
-          .map((user) => <SearchUserResult key={user.id} user={user} />);
+          .map((user) => (
+            <SearchUserResult
+              key={user.id}
+              user={user}
+              onClick={onCloseDialog}
+            />
+          ));
       case "Books":
         return books?.pages
           .flatMap((page) => page.items)
-          .map((book) => <SearchBookResult key={book.id} book={book} />);
+          .map((book) => (
+            <SearchBookResult
+              key={book.id}
+              book={book}
+              onClick={onCloseDialog}
+            />
+          ));
       case "Chapters":
         return chapters?.pages
           .flatMap((page) => page.items)
           .map((chapter) => (
-            <SearchChapterResult key={chapter.id} chapter={chapter} />
+            <SearchChapterResult
+              key={chapter.id}
+              chapter={chapter}
+              onClick={onCloseDialog}
+            />
           ));
     }
   };

@@ -16,7 +16,9 @@ const DraftChapterBoard = ({
   selectedChapterId,
   selectDraftHandler,
 }: props) => {
-  const [animationParent] = useAutoAnimate();
+  const [animationParent] = useAutoAnimate({
+    duration: 300,
+  });
   return (
     <div className="flex basis-1/4 flex-col gap-3 rounded-lg bg-gray-200 p-4 shadow-xl drop-shadow">
       <div className="flex flex-col gap-2">
@@ -25,22 +27,24 @@ const DraftChapterBoard = ({
           Select one of previous drafts, or you can create a new one.
         </p>
       </div>
-      <ul ref={animationParent} className="flex flex-col gap-3">
+      <ul className="grid grid-flow-row gap-3">
         <ChapterDraftCard
           title="Create a new chapter"
           selected={selectedChapterId === undefined}
           onClickHandler={() => selectDraftHandler(null)}
         />
-        {draftChapters &&
-          draftChapters.map((draftChapter) => (
-            <ChapterDraftCard
-              key={draftChapter.id}
-              title={draftChapter.title}
-              selected={draftChapter.id === selectedChapterId}
-              onClickHandler={() => selectDraftHandler(draftChapter)}
-              publishedAt={draftChapter.publishedAt}
-            />
-          ))}
+        <div ref={animationParent} className="grid grid-flow-row gap-3">
+          {draftChapters &&
+            draftChapters.map((draftChapter) => (
+              <ChapterDraftCard
+                key={draftChapter.id}
+                title={draftChapter.title}
+                selected={draftChapter.id === selectedChapterId}
+                onClickHandler={() => selectDraftHandler(draftChapter)}
+                publishedAt={draftChapter.publishedAt}
+              />
+            ))}
+        </div>
       </ul>
     </div>
   );

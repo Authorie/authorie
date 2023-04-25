@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
 import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import TextareaAutoSize from "react-textarea-autosize";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import CreateChapterBoard from "~/components/Create/Chapter/CreateChapterBoard";
@@ -21,6 +21,7 @@ const CreateChapter = () => {
       void router.push("/auth/login");
     },
   });
+  const bookId = router.query.bookId as string | undefined;
   const [priceError, setPriceError] = useState("");
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
@@ -31,15 +32,24 @@ const CreateChapter = () => {
   const [chapter, setChapter] = useState<
     (Chapter & { book: Book | null }) | null
   >(null);
+
   const editor = useEditor("", true);
   const { data: user } = api.user.getData.useQuery(undefined);
   const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
-  const filteredDrafts = useMemo(() => {
-    return draftChapters?.filter(
-      (draft) =>
-        !draft.publishedAt || dayjs().add(1, "hour").isBefore(draft.publishedAt)
-    );
-  }, [draftChapters]);
+  api.book.getData.useQuery(
+    { id: bookId! },
+    {
+      enabled: router.isReady && !!bookId,
+      onSuccess(data) {
+        if (data.isOwner) {
+          setBook(data);
+        }
+      },
+    }
+  );
+  const filteredDrafts = draftChapters?.filter(
+    (draft) => !draft.publishedAt || dayjs().isBefore(draft.publishedAt, "hour")
+  );
 
   const selectDraftHandler = useCallback(
     (chapter: (Chapter & { book: Book | null }) | null) => {
@@ -190,9 +200,9 @@ const CreateChapter = () => {
         </div>
         {editor && (
           <CreateChapterBoard
-            editor={editor}
+            book={book}
             title={title}
-            bookId={book?.id}
+            editor={editor}
             selectedChapter={chapter}
             setErrors={setErrors}
             price={price}

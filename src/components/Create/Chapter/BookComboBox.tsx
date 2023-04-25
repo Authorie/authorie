@@ -67,8 +67,7 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
                   <Combobox.Option
                     key={book.id}
                     className={({ active }) =>
-                      `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
-                        active ? "bg-authGreen-600 text-white" : "text-gray-900"
+                      `relative cursor-pointer select-none py-2 pl-10 pr-4 ${active ? "bg-authGreen-600 text-white" : "text-gray-900"
                       }`
                     }
                     value={book}
@@ -76,17 +75,15 @@ const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {
                     {({ selected, active }) => (
                       <>
                         <span
-                          className={`block truncate ${
-                            selected ? "font-medium" : "font-normal"
-                          }`}
+                          className={`block truncate ${selected ? "font-medium" : "font-normal"
+                            }`}
                         >
                           {book.title}
                         </span>
                         {selected && (
                           <span
-                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                              active ? "text-white" : "text-teal-600"
-                            }`}
+                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${active ? "text-white" : "text-teal-600"
+                              }`}
                           >
                             <HiCheck className="h-5 w-5" aria-hidden="true" />
                           </span>

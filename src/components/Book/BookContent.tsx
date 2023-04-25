@@ -90,25 +90,25 @@ const BookContent = ({ penname, book, categories }: props) => {
       utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-              ...old,
-              description: variables.description
-                ? variables.description
-                : old.description,
-              coverImage: variables.coverImageUrl
-                ? variables.coverImageUrl
-                : old.coverImage,
-              wallpaperImage: variables.wallpaperImageUrl
-                ? variables.wallpaperImageUrl
-                : old.wallpaperImage,
-              categories: addedCategories.map((category) => ({ category })),
-              chapters: variables.chaptersArrangement
-                ? variables.chaptersArrangement.map((chapterId) => {
-                    return old.chapters.find(
-                      (chapter) => chapter.id === chapterId
-                    )!;
-                  })
-                : old.chapters,
-            }
+            ...old,
+            description: variables.description
+              ? variables.description
+              : old.description,
+            coverImage: variables.coverImageUrl
+              ? variables.coverImageUrl
+              : old.coverImage,
+            wallpaperImage: variables.wallpaperImageUrl
+              ? variables.wallpaperImageUrl
+              : old.wallpaperImage,
+            categories: addedCategories.map((category) => ({ category })),
+            chapters: variables.chaptersArrangement
+              ? variables.chaptersArrangement.map((chapterId) => {
+                return old.chapters.find(
+                  (chapter) => chapter.id === chapterId
+                )!;
+              })
+              : old.chapters,
+          }
           : undefined
       );
       return { prevData };
@@ -308,13 +308,13 @@ const BookContent = ({ penname, book, categories }: props) => {
     const promises = [
       bookCover
         ? uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+          image: bookCover,
+        })
         : undefined,
       bookWallpaper
         ? uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+          image: bookWallpaper,
+        })
         : undefined,
     ] as const;
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -428,17 +428,21 @@ const BookContent = ({ penname, book, categories }: props) => {
               <div className="mb-3 flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold text-black">Author:</p>
-                  {book.owners.map((author) => (
-                    <div
-                      key={author.user.id}
-                      onClick={() =>
-                        void router.push(`/${author.user.penname!}`)
-                      }
-                      className="cursor-pointer rounded-full bg-authGreen-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-authGreen-600"
-                    >
-                      {author.user.penname}
-                    </div>
-                  ))}
+                  {book.owners
+                    .filter(
+                      ({ status }) =>
+                        status ===
+                        (BookOwnerStatus.OWNER || BookOwnerStatus.COLLABORATOR)
+                    )
+                    .map(({ user }) => (
+                      <div
+                        key={user.id}
+                        onClick={() => void router.push(`/${user.penname!}`)}
+                        className="cursor-pointer rounded-full bg-authGreen-500 px-2 py-0.5 text-xs font-semibold text-white hover:bg-authGreen-600"
+                      >
+                        {user.penname}
+                      </div>
+                    ))}
                 </div>
                 {isEdit && (
                   <div className="flex flex-col-reverse gap-2">
@@ -479,10 +483,10 @@ const BookContent = ({ penname, book, categories }: props) => {
                               (category: Category) =>
                                 !addedCategories.includes(category)
                             ).length === 0 && (
-                              <p className="text-sm font-semibold">
-                                No more categories left...
-                              </p>
-                            )}
+                                <p className="text-sm font-semibold">
+                                  No more categories left...
+                                </p>
+                              )}
                           </div>
                         </Popover.Panel>
                         <Popover.Button
@@ -528,24 +532,24 @@ const BookContent = ({ penname, book, categories }: props) => {
                     )}
                     {(book.status === BookStatus.INITIAL ||
                       book.status === BookStatus.DRAFT) && (
-                      <button
-                        type="button"
-                        onClick={() => void deleteBookHandler()}
-                        className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                      >
-                        Delete
-                      </button>
-                    )}
+                        <button
+                          type="button"
+                          onClick={() => void deleteBookHandler()}
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Delete
+                        </button>
+                      )}
                     {(book.status === BookStatus.PUBLISHED ||
                       book.status === BookStatus.COMPLETED) && (
-                      <button
-                        type="button"
-                        onClick={() => void archiveBookHandler()}
-                        className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                      >
-                        Archive
-                      </button>
-                    )}
+                        <button
+                          type="button"
+                          onClick={() => void archiveBookHandler()}
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                        >
+                          Archive
+                        </button>
+                      )}
                   </div>
                   <div className="my-10 flex flex-col gap-1">
                     <span className="text-6xl font-bold">12</span>
@@ -574,9 +578,8 @@ const BookContent = ({ penname, book, categories }: props) => {
           <div className="flex grow flex-col">
             <div
               className={`
-          ${
-            isEdit ? "justify-end gap-2" : "justify-center"
-          } ${"flex h-52 flex-col gap-2"}`}
+          ${isEdit ? "justify-end gap-2" : "justify-center"
+                } ${"flex h-52 flex-col gap-2"}`}
             >
               {!isEdit && (
                 <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -618,11 +621,10 @@ const BookContent = ({ penname, book, categories }: props) => {
                       />
                       <p
                         className={`${"text-xs"} 
-                    ${
-                      watch("title") && watch("title").length > 100
-                        ? "text-red-500"
-                        : "text-black"
-                    }`}
+                    ${watch("title") && watch("title").length > 100
+                            ? "text-red-500"
+                            : "text-black"
+                          }`}
                       >
                         {watch("title") ? watch("title").length : 0}/100
                       </p>
@@ -657,11 +659,10 @@ const BookContent = ({ penname, book, categories }: props) => {
                     />
                     <p
                       className={`${"text-xs"} 
-                    ${
-                      watch("description") && watch("description").length > 500
-                        ? "text-red-500"
-                        : "text-black"
-                    }`}
+                    ${watch("description") && watch("description").length > 500
+                          ? "text-red-500"
+                          : "text-black"
+                        }`}
                     >
                       {watch("description") ? watch("description").length : 0}
                       /500
@@ -696,6 +697,7 @@ const BookContent = ({ penname, book, categories }: props) => {
                   backend={HTML5Backend}
                 >
                   <ChapterCardList
+                    bookId={book.id}
                     isEdit={isEdit}
                     isChapterCreatable={isChapterCreatable}
                     arrangedChapters={arrangedChapters}

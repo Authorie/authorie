@@ -7,16 +7,18 @@ type props = {
   penname: string;
   status: string;
   image: string;
+  isOwner: boolean;
   isBookInitialStatus: boolean;
   onInvite: () => void;
   onRemove: () => void;
 };
 
-const AuthorList = ({
+const AuthorCard = ({
   index,
   penname,
   status,
   image,
+  isOwner,
   isBookInitialStatus,
   onInvite,
   onRemove,
@@ -26,11 +28,7 @@ const AuthorList = ({
       <span className="w-4">{index}.</span>
       <div className="ml-5 flex w-72 items-center gap-4">
         <div className="relative h-8 w-8 overflow-hidden rounded-full">
-          <Image
-            src={image}
-            alt={`${penname}'s profile picture`}
-            fill
-          />
+          <Image src={image} alt={`${penname}'s profile picture`} fill />
         </div>
         <span
           className={`${status === BookOwnerStatus.OWNER ? "font-semibold" : ""
@@ -57,10 +55,10 @@ const AuthorList = ({
           </span>
         </div>
       )}
-      {isBookInitialStatus &&
-        status !== BookOwnerStatus.OWNER && (
-          <div className="flex w-52 justify-end gap-2">
-            {status !== BookOwnerStatus.COLLABORATOR && (
+      {isOwner && isBookInitialStatus && status !== BookOwnerStatus.OWNER && (
+        <div className="flex w-52 justify-end gap-2">
+          {status !==
+            (BookOwnerStatus.COLLABORATOR && BookOwnerStatus.INVITEE) && (
               <button
                 type="button"
                 onClick={onInvite}
@@ -69,19 +67,19 @@ const AuthorList = ({
                 invite
               </button>
             )}
-            {status !== BookOwnerStatus.REJECTED && (
-              <button
-                type="button"
-                onClick={onRemove}
-                className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
-              >
-                remove
-              </button>
-            )}
-          </div>
-        )}
+          {status !== BookOwnerStatus.REJECTED && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
+            >
+              remove
+            </button>
+          )}
+        </div>
+      )}
     </li>
   );
 };
 
-export default AuthorList;
+export default AuthorCard;

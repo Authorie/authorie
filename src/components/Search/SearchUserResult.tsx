@@ -4,12 +4,13 @@ import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
 
 type props = {
+  onClick: () => void;
   user: RouterOutputs["search"]["searchUsers"]["items"][number];
 };
 
-const SearchUserResult = ({ user }: props) => {
+const SearchUserResult = ({ user, onClick }: props) => {
   return (
-    <SearchResultCard>
+    <SearchResultCard onClick={onClick}>
       <Link href={`/${user.penname!}`} className="flex grow">
         <div className="flex h-32 grow flex-col justify-between py-3">
           <div>
