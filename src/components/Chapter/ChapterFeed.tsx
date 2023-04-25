@@ -102,7 +102,7 @@ const ChapterFeed = ({ chapter }: props) => {
           <div className="z-10">
             <h2 className="my-1 text-3xl font-bold">{chapter.title}</h2>
             {chapter.book && (
-              <h3 className="text-dark-400">{chapter.book.title}</h3>
+              <h3 className="text-dark-400">book: {chapter.book.title}</h3>
             )}
             <p className="py-2 text-sm text-dark-600">
               by
