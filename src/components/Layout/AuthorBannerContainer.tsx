@@ -1,6 +1,4 @@
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
 import Custom404 from "~/pages/404";
 import { api } from "~/utils/api";
 import AuthorBanner from "./AuthorBanner";
@@ -22,10 +20,9 @@ const parseUserTab = (pathname: string | undefined) => {
 
 function getAuthorTabButtonClassname(selected: boolean) {
   return `
-    ${
-      selected
-        ? "text-green-500 underline decoration-green-500 underline-offset-2"
-        : "cursor-pointer text-white"
+    ${selected
+      ? "text-green-500 underline decoration-green-500 underline-offset-2"
+      : "cursor-pointer text-white"
     }
     select-none px-11 py-3 text-sm hover:bg-black/30
   `;
@@ -33,19 +30,10 @@ function getAuthorTabButtonClassname(selected: boolean) {
 
 const AuthorBannerContainer = () => {
   const router = useRouter();
-  const { status } = useSession();
   const penname = router.query.penname as string;
-  const tab = useMemo(
-    () => parseUserTab(router.pathname.split("/")[2]),
-    [router.pathname]
-  );
-  const { data: user } = api.user.getData.useQuery(undefined, {
-    enabled: status === "authenticated",
-  });
-  const isOwner =
-    status === "authenticated" && router.isReady && user?.penname === penname;
+  const tab = parseUserTab(router.pathname.split("/")[2]);
   const { data: userInBanner, isLoading } = api.user.getData.useQuery(
-    isOwner ? undefined : penname,
+    { penname },
     {
       enabled: router.isReady,
     }
@@ -56,7 +44,7 @@ const AuthorBannerContainer = () => {
       <div className="relative h-fit min-w-full">
         {!userInBanner && !isLoading && <Custom404 />}
         {userInBanner ? (
-          <AuthorBanner tab={tab} user={userInBanner} />
+          <AuthorBanner penname={penname} user={userInBanner} />
         ) : (
           <AuthorBannerSkeleton />
         )}

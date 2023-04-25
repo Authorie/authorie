@@ -33,8 +33,11 @@ const AboutPage = () => {
   const utils = api.useContext();
   const penname = router.query.penname as string;
   const isOwner = session?.user.penname === penname;
-  const { data: user } = api.user.getData.useQuery(penname);
-
+  const { data: user } = api.user.getData.useQuery({ penname });
+  const ownedBooks = api.useQueries(
+    (t) =>
+      user?.ownedBooks.map(({ bookId }) => t.book.getData({ id: bookId })) ?? []
+  );
   const {
     register,
     handleSubmit,
@@ -60,26 +63,112 @@ const AboutPage = () => {
     setValue("email", user?.emailContact || "");
     setValue("location", user?.location || "");
   }, [user, setValue]);
-  const { totalViews = 0, totalLikes = 0 } =
-    user?.ownedBooks.reduce(
-      (accumulator, { book }) => {
-        book.chapters.forEach(({ _count }) => {
-          accumulator.totalViews += _count.views;
-          accumulator.totalLikes += _count.likes;
-        });
-        return accumulator;
-      },
-      { totalViews: 0, totalLikes: 0 }
-    ) ?? {};
 
-  const updateInfo = api.user.update.useMutation({
-    onSuccess() {
-      void utils.user.getData.invalidate(penname);
+  const [totalViews, totalLikes] = ownedBooks.reduce(
+    (acc, { data: book }) => {
+      if (!book) return acc;
+      book.chapters.forEach(({ _count }) => {
+        acc[0] += _count.views;
+        acc[1] += _count.likes;
+      });
+      return acc;
+    },
+    [0, 0]
+  );
+
+  const updateProfile = api.user.update.useMutation({
+    async onMutate(variables) {
+      await utils.user.getData.cancel(undefined);
+      await utils.user.getData.cancel({
+        penname: variables.penname ? variables.penname : session!.user.penname!,
+      });
+      const prevData = utils.user.getData.getData(undefined);
+      utils.user.getData.setData(undefined, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          penname: variables.penname ? variables.penname : old.penname,
+          bio: variables.bio ? variables.bio : old.bio,
+          image: variables.profileImageUrl
+            ? variables.profileImageUrl
+            : old.image,
+          wallpaperImage: variables.wallpaperImageUrl
+            ? variables.wallpaperImageUrl
+            : old.wallpaperImage,
+          description: variables.description
+            ? variables.description
+            : old.description,
+          location: variables.location ? variables.location : old.location,
+          facebookContact: variables.facebookContact
+            ? variables.facebookContact
+            : old.facebookContact,
+          instagramContact: variables.instagramContact
+            ? variables.instagramContact
+            : old.instagramContact,
+          emailContact: variables.emailContact
+            ? variables.emailContact
+            : old.emailContact,
+        };
+      });
+      utils.user.getData.setData(
+        {
+          penname: variables.penname
+            ? variables.penname
+            : session!.user.penname!,
+        },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            penname: variables.penname ? variables.penname : old.penname,
+            bio: variables.bio ? variables.bio : old.bio,
+            image: variables.profileImageUrl
+              ? variables.profileImageUrl
+              : old.image,
+            wallpaperImage: variables.wallpaperImageUrl
+              ? variables.wallpaperImageUrl
+              : old.wallpaperImage,
+            description: variables.description
+              ? variables.description
+              : old.description,
+            location: variables.location ? variables.location : old.location,
+            facebookContact: variables.facebookContact
+              ? variables.facebookContact
+              : old.facebookContact,
+            instagramContact: variables.instagramContact
+              ? variables.instagramContact
+              : old.instagramContact,
+            emailContact: variables.emailContact
+              ? variables.emailContact
+              : old.emailContact,
+          };
+        }
+      );
+      return { prevData };
+    },
+    onError(_error, variables, context) {
+      if (context?.prevData) {
+        utils.user.getData.setData(undefined, context.prevData);
+        utils.user.getData.setData(
+          {
+            penname: variables.penname
+              ? variables.penname
+              : session!.user.penname!,
+          },
+          context.prevData
+        );
+      }
+    },
+    onSettled(_data, _error, variables, _context) {
+      void utils.user.getData.invalidate(undefined);
+      void utils.user.getData.invalidate({
+        penname: variables.penname ? variables.penname : session!.user.penname!,
+      });
     },
   });
 
   const onSaveHandler = handleSubmit(async (data: ValidationSchema) => {
-    const promiseUpdate = updateInfo.mutateAsync({
+    const promiseUpdate = updateProfile.mutateAsync({
       description: data.description ? data.description : user?.description,
       bio: data.bio ? data.bio : user?.bio,
       facebookContact: data.facebook ? data.facebook : user?.facebookContact,
@@ -149,12 +238,11 @@ const AboutPage = () => {
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${
-                            watch("description") &&
-                            watch("description").length > 700
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("description") &&
+                        watch("description").length > 700
+                        ? "text-red-500"
+                        : "text-black"
+                      }`}
                   >
                     {watch("description") ? watch("description").length : 0}/700
                   </p>
@@ -185,11 +273,10 @@ const AboutPage = () => {
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${
-                            watch("bio") && watch("bio").length > 150
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("bio") && watch("bio").length > 150
+                        ? "text-red-500"
+                        : "text-black"
+                      }`}
                   >
                     {watch("bio") ? watch("bio").length : 0}/150
                   </p>
@@ -233,10 +320,9 @@ const AboutPage = () => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${
-                            watch("facebook") && watch("facebook").length > 100
-                              ? "text-red-500"
-                              : "text-black"
+                          ${watch("facebook") && watch("facebook").length > 100
+                            ? "text-red-500"
+                            : "text-black"
                           }`}
                       >
                         {watch("facebook") ? watch("facebook").length : 0}/100
@@ -278,10 +364,9 @@ const AboutPage = () => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${
-                            watch("ig") && watch("ig").length > 100
-                              ? "text-red-500"
-                              : "text-black"
+                          ${watch("ig") && watch("ig").length > 100
+                            ? "text-red-500"
+                            : "text-black"
                           }`}
                       >
                         {watch("ig") ? watch("ig").length : 0}/100
@@ -323,10 +408,9 @@ const AboutPage = () => {
                       />
                       <p
                         className={`${"text-xs"} 
-                          ${
-                            watch("email") && watch("email").length > 100
-                              ? "text-red-500"
-                              : "text-black"
+                          ${watch("email") && watch("email").length > 100
+                            ? "text-red-500"
+                            : "text-black"
                           }`}
                       >
                         {watch("email") ? watch("email").length : 0}/100
@@ -359,11 +443,10 @@ const AboutPage = () => {
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${
-                            watch("location") && watch("location").length > 100
-                              ? "text-red-500"
-                              : "text-black"
-                          }`}
+                          ${watch("location") && watch("location").length > 100
+                        ? "text-red-500"
+                        : "text-black"
+                      }`}
                   >
                     {watch("location") ? watch("location").length : 0}/100
                   </p>

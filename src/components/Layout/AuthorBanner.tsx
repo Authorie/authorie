@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlinePencilSquare, HiOutlinePhoto } from "react-icons/hi2";
@@ -11,11 +10,9 @@ import z from "zod";
 import UserCard from "~/components/Card/UserCard";
 import DialogLayout from "~/components/Dialog/DialogLayout";
 import useImageUpload from "~/hooks/imageUpload";
-import useInfiniteScrollDialog from "~/hooks/infiniteScrollDialog";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import UserCardSkeleton from "../Card/UserCardSkeleton";
-import { type AuthorTab } from "./AuthorBannerContainer";
 
 const validationSchema = z.object({
   penname: z
@@ -34,56 +31,25 @@ const getFollowedButtonClassName = (followed: boolean) => {
 };
 
 const AuthorBanner = ({
-  tab,
   user,
+  penname,
 }: {
-  tab: AuthorTab;
+  penname: string;
   user: RouterOutputs["user"]["getData"];
 }) => {
-  const scrollableId = "dialog-body";
+  const utils = api.useContext();
+  const { status, data: session } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [openFollowers, setOpenFollowers] = useState(false);
   const [openFollowing, setOpenFollowing] = useState(false);
-  const router = useRouter();
-  const context = api.useContext();
-  const { status, data: session } = useSession();
-  const isOwner = useMemo(() => {
-    return session?.user.id === user.id;
-  }, [session?.user.id, user.id]);
-  const { data: isFollowed, isLoading: queryLoading } =
-    api.user.isFollowUser.useQuery(user.penname!, {
-      enabled: status === "authenticated" && !isOwner && user.penname != null,
-    });
-  const {
-    data: userFollowers,
-    isLoading: loadingFollowers,
-    fetchNextPage: fetchFollowerNextPage,
-    isFetchingNextPage: isFetchingFollowerNextPage,
-    hasNextPage: hasFollowerNextPage,
-  } = api.user.getFollowers.useInfiniteQuery(
-    {
-      limit: 7,
-      penname: user.penname!,
-    },
-    {
-      getNextPageParam: (lastpage) => lastpage.nextCursor,
-    }
+  const followings = api.useQueries((t) =>
+    user.following.map(({ followingId }) => t.user.getData({ id: followingId }))
   );
-  const {
-    data: userFollowing,
-    isLoading: loadingFollowing,
-    fetchNextPage: fetchFollowingNextPage,
-    isFetchingNextPage: isFetchingFollowingNextPage,
-    hasNextPage: hasFollowingNextPage,
-  } = api.user.getFollowing.useInfiniteQuery(
-    {
-      limit: 7,
-      penname: user.penname!,
-    },
-    {
-      getNextPageParam: (lastpage) => lastpage.nextCursor,
-    }
+  const followingsLoading = followings.some((following) => following.isLoading);
+  const followers = api.useQueries((t) =>
+    user.followers.map(({ followerId }) => t.user.getData({ id: followerId }))
   );
+  const followersLoading = followers.some((follower) => follower.isLoading);
   const {
     imageData: profileImage,
     uploadHandler: uploadProfileImageHandler,
@@ -108,68 +74,163 @@ const AuthorBanner = ({
     },
   });
 
-  const updateProfile = api.user.update.useMutation();
-  const followUserMutation = api.user.followUser.useMutation({
-    onMutate: async () => {
-      await context.user.isFollowUser.cancel();
-      const previousFollow = context.user.isFollowUser.getData();
-      context.user.isFollowUser.setData(user.id, (old) => !old);
-      return { previousFollow };
-    },
-    onSettled: () => {
-      void context.user.isFollowUser.invalidate(user.penname!);
-      void context.user.getFollowers.invalidate({
-        penname: user.penname!,
+  const updateProfile = api.user.update.useMutation({
+    async onMutate(variables) {
+      await utils.user.getData.cancel(undefined);
+      await utils.user.getData.cancel({
+        penname: variables.penname ? variables.penname : session!.user.penname!,
       });
-      void context.user.getData.invalidate(user.penname!);
+      const prevData = utils.user.getData.getData(undefined);
+      utils.user.getData.setData(undefined, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          penname: variables.penname ? variables.penname : old.penname,
+          bio: variables.bio ? variables.bio : old.bio,
+          image: variables.profileImageUrl
+            ? variables.profileImageUrl
+            : old.image,
+          wallpaperImage: variables.wallpaperImageUrl
+            ? variables.wallpaperImageUrl
+            : old.wallpaperImage,
+          description: variables.description
+            ? variables.description
+            : old.description,
+          location: variables.location ? variables.location : old.location,
+          facebookContact: variables.facebookContact
+            ? variables.facebookContact
+            : old.facebookContact,
+          instagramContact: variables.instagramContact
+            ? variables.instagramContact
+            : old.instagramContact,
+          emailContact: variables.emailContact
+            ? variables.emailContact
+            : old.emailContact,
+        };
+      });
+      utils.user.getData.setData(
+        {
+          penname: variables.penname
+            ? variables.penname
+            : session!.user.penname!,
+        },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            penname: variables.penname ? variables.penname : old.penname,
+            bio: variables.bio ? variables.bio : old.bio,
+            image: variables.profileImageUrl
+              ? variables.profileImageUrl
+              : old.image,
+            wallpaperImage: variables.wallpaperImageUrl
+              ? variables.wallpaperImageUrl
+              : old.wallpaperImage,
+            description: variables.description
+              ? variables.description
+              : old.description,
+            location: variables.location ? variables.location : old.location,
+            facebookContact: variables.facebookContact
+              ? variables.facebookContact
+              : old.facebookContact,
+            instagramContact: variables.instagramContact
+              ? variables.instagramContact
+              : old.instagramContact,
+            emailContact: variables.emailContact
+              ? variables.emailContact
+              : old.emailContact,
+          };
+        }
+      );
+      return { prevData };
+    },
+    onError(_error, variables, context) {
+      if (context?.prevData) {
+        utils.user.getData.setData(undefined, context.prevData);
+        utils.user.getData.setData(
+          {
+            penname: variables.penname
+              ? variables.penname
+              : session!.user.penname!,
+          },
+          context.prevData
+        );
+      }
+    },
+    onSettled(_data, _error, variables, _context) {
+      void utils.user.getData.invalidate(undefined);
+      void utils.user.getData.invalidate({
+        penname: variables.penname ? variables.penname : session!.user.penname!,
+      });
+    },
+  });
+  const followUserMutation = api.user.followUser.useMutation({
+    async onMutate(_variables) {
+      await utils.user.getData.cancel({ penname });
+      const prevData = utils.user.getData.getData({ penname });
+      utils.user.getData.setData({ penname }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isFollowing: true,
+          following: [...old.following, { followingId: session!.user.id }],
+        };
+      });
+      return { prevData };
+    },
+    onError(_error, _variables, context) {
+      if (context?.prevData) {
+        utils.user.getData.setData({ penname }, context.prevData);
+      }
+    },
+    onSettled(_data, _error, _variables, _context) {
+      void utils.user.getData.invalidate({ penname });
     },
   });
   const unfollowUserMutation = api.user.unfollowUser.useMutation({
-    onMutate: async () => {
-      await context.user.isFollowUser.cancel();
-      const previousFollow = context.user.isFollowUser.getData();
-      context.user.isFollowUser.setData(user.id, (old) => !old);
-      return { previousFollow };
-    },
-    onSettled: () => {
-      void context.user.isFollowUser.invalidate(user.penname!);
-      void context.user.getFollowers.invalidate({
-        penname: user.penname!,
+    async onMutate(_variables) {
+      await utils.user.getData.cancel({ penname });
+      const prevData = utils.user.getData.getData({ penname });
+      utils.user.getData.setData({ penname }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isFollowing: false,
+          following: old.following.filter(
+            ({ followingId }) => followingId !== session!.user.id
+          ),
+        };
       });
-      void context.user.getData.invalidate(user.penname!);
+      return { prevData };
+    },
+    onError(_error, _variables, context) {
+      if (context?.prevData) {
+        utils.user.getData.setData({ penname }, context.prevData);
+      }
+    },
+    onSettled(_data, _error, _variables, _context) {
+      void utils.user.getData.invalidate({ penname });
     },
   });
 
-  const followButtonOnClickHandler = useCallback(() => {
-    if (!user) return;
-    if (isOwner) return;
-    if (Boolean(isFollowed)) {
+  const followButtonOnClickHandler = () => {
+    if (user.isOwner) return;
+    if (user.isFollowing) {
       unfollowUserMutation.mutate(user.id);
     } else {
       followUserMutation.mutate(user.id);
     }
-  }, [followUserMutation, isFollowed, isOwner, unfollowUserMutation, user]);
-
+  };
   const onFollowHandler = (userId: string) => {
-    if (!user) return;
     if (session?.user.id === userId) return;
-    followUserMutation.mutate(userId, {
-      onSuccess() {
-        void context.user.isFollowUser.invalidate(userId);
-      },
-    });
+    followUserMutation.mutate(userId);
   };
 
   const onUnfollowHandler = (userId: string) => {
-    if (!user) return;
     if (session?.user.id === userId) {
       return;
     }
-    unfollowUserMutation.mutate(userId, {
-      onSuccess() {
-        void context.user.isFollowUser.invalidate(userId);
-      },
-    });
+    unfollowUserMutation.mutate(userId);
   };
 
   const onCancelHandler = () => {
@@ -196,39 +257,17 @@ const AuthorBanner = ({
       });
     }
 
-    const promise = updateProfile.mutateAsync(
-      {
-        penname,
-        bio,
-        profileImageUrl,
-        wallpaperImageUrl,
-      },
-      {
-        async onSuccess(data) {
-          setIsEditing(false);
-          void context.user.getData.invalidate(undefined);
-          if (data.penname && data.penname !== user.penname) {
-            await router.replace(`/${data.penname}/${tab.url}`);
-          }
-        },
-      }
-    );
+    const promise = updateProfile.mutateAsync({
+      penname,
+      bio,
+      profileImageUrl,
+      wallpaperImageUrl,
+    });
     await toast.promise(promise, {
       loading: "Updating profile...",
       success: "Profile updated!",
       error: "Failed to update profile",
     });
-  });
-
-  useInfiniteScrollDialog({
-    fetchNextPage: fetchFollowerNextPage,
-    hasNextPage: hasFollowerNextPage,
-    scrollableId,
-  });
-  useInfiniteScrollDialog({
-    fetchNextPage: fetchFollowingNextPage,
-    hasNextPage: hasFollowingNextPage,
-    scrollableId,
   });
 
   return (
@@ -303,7 +342,7 @@ const AuthorBanner = ({
             />
           </label>
           <div>
-            {isOwner && (
+            {user.isOwner && (
               <div className="w-fit">
                 {isEditing ? (
                   <div className="flex gap-3">
@@ -361,18 +400,16 @@ const AuthorBanner = ({
               <h2 className="text-2xl font-bold text-white">{user.penname}</h2>
             )}
           </div>
-          {status === "authenticated" && !isOwner && (
+          {status === "authenticated" && !user.isOwner && (
             <button
               type="button"
               onClick={followButtonOnClickHandler}
               disabled={
-                queryLoading ||
-                followUserMutation.isLoading ||
-                unfollowUserMutation.isLoading
+                followUserMutation.isLoading || unfollowUserMutation.isLoading
               }
-              className={getFollowedButtonClassName(Boolean(isFollowed))}
+              className={getFollowedButtonClassName(user.isFollowing)}
             >
-              {Boolean(isFollowed) ? "Followed" : "Follow"}
+              {user.isFollowing ? "Followed" : "Follow"}
             </button>
           )}
         </div>
@@ -381,14 +418,14 @@ const AuthorBanner = ({
             className="cursor-pointer"
             onClick={() => setOpenFollowers(true)}
           >
-            <span className="font-semibold">{user._count.followers}</span>{" "}
+            <span className="font-semibold">{user.followers.length}</span>{" "}
             followers
           </div>
           <div
             className="cursor-pointer"
             onClick={() => setOpenFollowing(true)}
           >
-            <span className="font-semibold">{user._count.following}</span>{" "}
+            <span className="font-semibold">{user.following.length}</span>{" "}
             following
           </div>
         </div>
@@ -429,39 +466,27 @@ const AuthorBanner = ({
         title={"Followers"}
       >
         {
-          <div
-            id={scrollableId}
-            className="flex h-full flex-col gap-4 overflow-y-scroll"
-          >
-            {userFollowers && !loadingFollowers ? (
-              userFollowers?.pages
-                .flatMap((page) => page.items)
+          <div className="flex h-full flex-col gap-4 overflow-y-scroll">
+            {followersLoading ? (
+              followers
+                .map(({ data }) => data!)
                 .map((user) => (
                   <UserCard
                     key={user.id}
-                    userId={user.id}
-                    penname={user.penname!}
-                    isOwner={user.id === session?.user.id}
-                    followersNumber={user._count.followers}
-                    followingNumber={user._count.following}
-                    image={user.image || "/placeholder_profile.png"}
+                    user={user}
                     closeModal={() => setOpenFollowers(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
                   />
                 ))
             ) : (
-              <div>
-                <UserCardSkeleton />
+              <UserCardSkeleton />
+            )}
+            {user.followers.length === 0 && (
+              <div className="flex w-96 items-center justify-center">
+                <p className="text-lg">No followers</p>
               </div>
             )}
-            {isFetchingFollowerNextPage && <UserCardSkeleton />}
-            {userFollowers?.pages.flatMap((page) => page.items).length ===
-              0 && (
-                <div className="flex w-96 items-center justify-center">
-                  <p className="text-lg">No followers</p>
-                </div>
-              )}
           </div>
         }
       </DialogLayout>
@@ -471,39 +496,27 @@ const AuthorBanner = ({
         title={"Following"}
       >
         {
-          <div
-            id={scrollableId}
-            className="flex h-full flex-col gap-4 overflow-y-scroll"
-          >
-            {userFollowing && !loadingFollowing ? (
-              userFollowing?.pages
-                .flatMap((page) => page.items)
+          <div className="flex h-full flex-col gap-4 overflow-y-scroll">
+            {followingsLoading ? (
+              followings
+                .map(({ data }) => data!)
                 .map((user) => (
                   <UserCard
                     key={user.id}
-                    userId={user.id}
-                    penname={user.penname!}
-                    isOwner={user.id === session?.user.id}
-                    followersNumber={user._count.followers}
-                    followingNumber={user._count.following}
-                    image={user.image || "/placeholder_profile.png"}
+                    user={user}
                     closeModal={() => setOpenFollowers(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
                   />
                 ))
             ) : (
-              <div>
-                <UserCardSkeleton />
+              <UserCardSkeleton />
+            )}
+            {user.following.length === 0 && (
+              <div className="flex w-96 items-center justify-center">
+                <p className="text-lg">No following</p>
               </div>
             )}
-            {isFetchingFollowingNextPage && <UserCardSkeleton />}
-            {userFollowing?.pages.flatMap((page) => page.items).length ===
-              0 && (
-                <div className="flex w-96 items-center justify-center">
-                  <p className="text-lg">No following</p>
-                </div>
-              )}
           </div>
         }
       </DialogLayout>

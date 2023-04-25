@@ -15,7 +15,7 @@ const BookPage = () => {
   const penname = router.query.penname as string;
   const [openArchive, setOpenArchive] = useState(false);
   const [openInformation, setOpenInformation] = useState(false);
-  const { data: user } = api.user.getData.useQuery(penname);
+  const { data: user } = api.user.getData.useQuery({ penname });
   const { data: bookIds, isLoading: bookIdsLoading } = api.book.getAll.useQuery(
     { penname }
   );
@@ -27,15 +27,15 @@ const BookPage = () => {
   const [archiveBooks, nonarchiveBooks] = booksLoading
     ? [undefined, undefined]
     : books.reduce(
-        (acc, { data: book }) => {
-          acc[book!.status === BookStatus.ARCHIVED ? 0 : 1]!.push(book!);
-          return acc;
-        },
-        [
-          [] as RouterOutputs["book"]["getData"][],
-          [] as RouterOutputs["book"]["getData"][],
-        ]
-      );
+      (acc, { data: book }) => {
+        acc[book!.status === BookStatus.ARCHIVED ? 0 : 1]!.push(book!);
+        return acc;
+      },
+      [
+        [] as RouterOutputs["book"]["getData"][],
+        [] as RouterOutputs["book"]["getData"][],
+      ]
+    );
 
   return (
     <div className="mb-8 mt-6 w-[1024px]">

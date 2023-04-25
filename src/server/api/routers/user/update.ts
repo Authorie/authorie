@@ -17,8 +17,17 @@ const update = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-    const { penname, profileImageUrl, wallpaperImageUrl, bio,
-      description, location, facebookContact, instagramContact, emailContact } = input;
+    const {
+      penname,
+      profileImageUrl,
+      wallpaperImageUrl,
+      bio,
+      description,
+      location,
+      facebookContact,
+      instagramContact,
+      emailContact,
+    } = input;
 
     if (penname) {
       const exists = await ctx.prisma.user.findUnique({
@@ -34,7 +43,7 @@ const update = protectedProcedure
       }
     }
 
-    return await ctx.prisma.user.update({
+    await ctx.prisma.user.update({
       where: {
         id: ctx.session.user.id,
       },
