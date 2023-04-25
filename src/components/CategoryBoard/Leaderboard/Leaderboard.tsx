@@ -1,7 +1,7 @@
 import { BookStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { useMemo } from "react";
-import { api, type RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 import ChapterRankCard from "./ChapterRankCard";
 import ChapterRankMinicard from "./ChapterRankMinicard";
 
@@ -21,13 +21,14 @@ const Leaderboard = () => {
     return chapters
       .filter(
         ({ data: chapter }) =>
-          chapter?.book?.status !== (BookStatus.DRAFT || BookStatus.ARCHIVED) &&
-          chapter?.publishedAt !== null &&
-          (chapter?.publishedAt as Date) < new Date()
+          chapter &&
+          chapter.book &&
+          (chapter.book.status === BookStatus.PUBLISHED ||
+            chapter.book.status === BookStatus.COMPLETED) &&
+          chapter.publishedAt !== null &&
+          dayjs().isAfter(chapter.publishedAt)
       )
-      .map(
-        (chapter) => chapter.data
-      ) as unknown as RouterOutputs["chapter"]["getData"][];
+      .map((chapter) => chapter.data!);
   }, [chapters]);
 
   return (

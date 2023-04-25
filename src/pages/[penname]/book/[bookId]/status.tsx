@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useReducer, useState } from "react";
@@ -117,6 +118,7 @@ const sortAuthors = (a: authors, b: authors) => {
 
 export default function BookStatusPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
   const [dialogState, dispatchDialog] = useReducer(
@@ -681,7 +683,12 @@ export default function BookStatusPage() {
                                 key={author.user.id}
                                 index={index + 1}
                                 status={author.status}
-                                isOwner={book.isOwner}
+                                isUserOwner={
+                                  session
+                                    ? author.user.id === session.user.id
+                                    : false
+                                }
+                                isBookOwner={book.isOwner}
                                 penname={author.user.penname!}
                                 image={
                                   author.user.image ||

@@ -5,7 +5,7 @@ import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
@@ -184,17 +184,19 @@ const BookContent = ({ penname, book, categories }: props) => {
       description: book.description ?? "",
     },
   });
-  const isChapterCreatable = useMemo(() => {
+  const isChapterCreatable = () => {
     if (!book.isOwner && !book.isCollborator) return false;
     const validBookStatus = [BookStatus.DRAFT, BookStatus.PUBLISHED];
     return validBookStatus.includes(book.status);
-  }, [book]);
-  const totalViews = useMemo(() => {
-    return book.chapters.reduce((acc, curr) => acc + curr._count.views, 0) || 0;
-  }, [book]);
-  const totalLikes = useMemo(() => {
-    return book.chapters.reduce((acc, curr) => acc + curr._count.likes, 0) || 0;
-  }, [book]);
+  };
+  const totalViews = book.chapters.reduce(
+    (acc, curr) => acc + curr._count.views,
+    0
+  );
+  const totalLikes = book.chapters.reduce(
+    (acc, curr) => acc + curr._count.likes,
+    0
+  );
 
   const confirmDraftBookHandler = async () => {
     if (book === undefined) return;
@@ -431,8 +433,8 @@ const BookContent = ({ penname, book, categories }: props) => {
                   {book.owners
                     .filter(
                       ({ status }) =>
-                        status ===
-                        (BookOwnerStatus.OWNER || BookOwnerStatus.COLLABORATOR)
+                        status === BookOwnerStatus.OWNER ||
+                        status === BookOwnerStatus.COLLABORATOR
                     )
                     .map(({ user }) => (
                       <div
@@ -699,7 +701,7 @@ const BookContent = ({ penname, book, categories }: props) => {
                   <ChapterCardList
                     bookId={book.id}
                     isEdit={isEdit}
-                    isChapterCreatable={isChapterCreatable}
+                    isChapterCreatable={isChapterCreatable()}
                     arrangedChapters={arrangedChapters}
                     setArrangedChapters={setArrangedChapters}
                   />

@@ -7,7 +7,8 @@ type props = {
   penname: string;
   status: string;
   image: string;
-  isOwner: boolean;
+  isUserOwner: boolean;
+  isBookOwner: boolean;
   isBookInitialStatus: boolean;
   onInvite: () => void;
   onRemove: () => void;
@@ -18,15 +19,16 @@ const AuthorCard = ({
   penname,
   status,
   image,
-  isOwner,
+  isUserOwner,
+  isBookOwner,
   isBookInitialStatus,
   onInvite,
   onRemove,
 }: props) => {
   return (
-    <li className="flex h-12 items-center">
+    <li className="flex items-center py-3">
       <span className="w-4">{index}.</span>
-      <div className="ml-5 flex w-72 items-center gap-4">
+      <div className="ml-5 flex w-64 items-center gap-4">
         <div className="relative h-8 w-8 overflow-hidden rounded-full">
           <Image src={image} alt={`${penname}'s profile picture`} fill />
         </div>
@@ -48,26 +50,30 @@ const AuthorCard = ({
           {status === BookOwnerStatus.REJECTED && (
             <HiXCircle className="h-4 w-4 text-red-500" />
           )}
-          <span className="w-40">
+          <span className="w-48">
             {status === BookOwnerStatus.INVITEE && "no response"}
             {status === BookOwnerStatus.REJECTED && "rejected"}
             {status === BookOwnerStatus.COLLABORATOR && "accepted"}
           </span>
         </div>
       )}
-      {isOwner && isBookInitialStatus && status !== BookOwnerStatus.OWNER && (
-        <div className="flex w-52 justify-end gap-2">
-          {status !==
-            (BookOwnerStatus.COLLABORATOR && BookOwnerStatus.INVITEE) && (
-              <button
-                type="button"
-                onClick={onInvite}
-                className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
-              >
-                invite
-              </button>
-            )}
-          {status !== BookOwnerStatus.REJECTED && (
+      <div className="grid grow grid-flow-col justify-end gap-2">
+        {isBookOwner &&
+          isBookInitialStatus &&
+          status === BookOwnerStatus.REJECTED && (
+            <button
+              type="button"
+              onClick={onInvite}
+              className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
+            >
+              invite
+            </button>
+          )}
+        {isBookInitialStatus &&
+          ((isBookOwner &&
+            (status === BookOwnerStatus.COLLABORATOR ||
+              status === BookOwnerStatus.INVITEE)) ||
+            (isUserOwner && status !== BookOwnerStatus.OWNER)) && (
             <button
               type="button"
               onClick={onRemove}
@@ -76,8 +82,7 @@ const AuthorCard = ({
               remove
             </button>
           )}
-        </div>
-      )}
+      </div>
     </li>
   );
 };

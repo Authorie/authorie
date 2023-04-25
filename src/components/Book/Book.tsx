@@ -264,7 +264,8 @@ const Book = ({ book }: props) => {
         {status === "authenticated" &&
           !book.isOwner &&
           !book.isCollborator &&
-          book.status === (BookStatus.PUBLISHED || BookStatus.COMPLETED) && (
+          (book.status === BookStatus.PUBLISHED ||
+            book.status === BookStatus.COMPLETED) && (
             <div
               className="group/star absolute bottom-0 right-0 z-20 h-10 w-10"
               onClick={toggleFavoriteHandler}
@@ -282,28 +283,29 @@ const Book = ({ book }: props) => {
               {book.title}
             </span>
           </div>
-          {book.status !== (BookStatus.INITIAL || BookStatus.DRAFT) && (
-            <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
-              <div className="flex items-center gap-1">
-                <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
-                <p className="text-xs font-medium text-authGreen-600">
-                  {book.chapters.reduce(
-                    (prev, curr) => prev + curr._count.views,
-                    0
-                  )}
-                </p>
+          {book.status !== BookStatus.INITIAL &&
+            book.status !== BookStatus.DRAFT && (
+              <div className="ml-2 flex w-fit items-center gap-4 rounded-full bg-white px-2">
+                <div className="flex items-center gap-1">
+                  <HiOutlineEye className="h-5 w-5 text-authGreen-600" />
+                  <p className="text-xs font-medium text-authGreen-600">
+                    {book.chapters.reduce(
+                      (prev, curr) => prev + curr._count.views,
+                      0
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <HiOutlineHeart className="h-5 w-5 text-red-400" />
+                  <p className="text-xs font-medium text-red-400">
+                    {book.chapters.reduce(
+                      (prev, curr) => prev + curr._count.likes,
+                      0
+                    )}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <HiOutlineHeart className="h-5 w-5 text-red-400" />
-                <p className="text-xs font-medium text-red-400">
-                  {book.chapters.reduce(
-                    (prev, curr) => prev + curr._count.likes,
-                    0
-                  )}
-                </p>
-              </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

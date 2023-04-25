@@ -21,7 +21,7 @@ export const DateLabel = ({
   font,
 }: props) => {
   const formattedDate = useDate(
-    date || undefined,
+    date ?? undefined,
     { withTime: withTime },
     "DD/MM/YYYY"
   );

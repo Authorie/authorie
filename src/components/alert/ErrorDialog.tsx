@@ -17,7 +17,7 @@ const ErrorDialog = ({ isOpen, isCloseHandler, content }: props) => {
           </Dialog.Title>
           <div>
             <p className="text-black">
-              {content || "An error occured while saving changes."}
+              {content ?? "An error occured while saving changes."}
             </p>
           </div>
         </Dialog.Panel>
