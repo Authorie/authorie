@@ -231,6 +231,10 @@ const BookContent = ({
   };
 
   const completeBookHandler = async () => {
+    if (book.chapters.some((chapter) => chapter.publishedAt === null)) {
+      toast.error("You have to publish all chapters before complete book");
+      return;
+    }
     const promiseMoveState = moveState.mutateAsync({
       id: book.id,
       status: BookStatus.COMPLETED,
@@ -243,6 +247,10 @@ const BookContent = ({
   };
 
   const archiveBookHandler = async () => {
+    if (book.chapters.some((chapter) => chapter.publishedAt === null)) {
+      toast.error("You have to publish all chapters before complete book");
+      return;
+    }
     const promiseMoveState = moveState.mutateAsync({
       id: book.id,
       status: BookStatus.ARCHIVED,
