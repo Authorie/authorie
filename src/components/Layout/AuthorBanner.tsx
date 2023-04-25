@@ -14,7 +14,7 @@ import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import UserCardSkeleton from "../Card/UserCardSkeleton";
 import { useRouter } from "next/router";
-import { AuthorTab } from "./AuthorBannerContainer";
+import type { AuthorTab } from "./AuthorBannerContainer";
 
 const validationSchema = z.object({
   penname: z
