@@ -33,7 +33,10 @@ const AboutPage = () => {
   const utils = api.useContext();
   const penname = router.query.penname as string;
   const isOwner = session?.user.penname === penname;
-  const { data: user } = api.user.getData.useQuery({ penname });
+  const { data: user } = api.user.getData.useQuery(
+    { penname },
+    { enabled: router.isReady }
+  );
   const ownedBooks = api.useQueries(
     (t) =>
       user?.ownedBooks.map(({ bookId }) => t.book.getData({ id: bookId })) ?? []

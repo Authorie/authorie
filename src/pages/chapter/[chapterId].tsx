@@ -141,7 +141,7 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
     {
       id: chapterId,
     },
-    { enabled: status === "authenticated" }
+    { enabled: status === "authenticated" && router.isReady }
   );
   const {
     data: comments,

@@ -11,9 +11,14 @@ const CommunityPage = () => {
   const { data: user } = api.user.getData.useQuery(undefined, {
     enabled: status === "authenticated",
   });
-  const { data: communityPosts } = api.communityPosts.getAllPosts.useQuery({
-    penname: communityPenname,
-  });
+  const { data: communityPosts } = api.communityPosts.getAllPosts.useQuery(
+    {
+      penname: communityPenname,
+    },
+    {
+      enabled: router.isReady,
+    }
+  );
   return (
     <div className="flex gap-5">
       <div className="my-8 flex w-fit flex-col items-start justify-start gap-7">

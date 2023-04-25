@@ -15,9 +15,13 @@ const BookPage = () => {
   const penname = router.query.penname as string;
   const [openArchive, setOpenArchive] = useState(false);
   const [openInformation, setOpenInformation] = useState(false);
-  const { data: user } = api.user.getData.useQuery({ penname });
+  const { data: user } = api.user.getData.useQuery(
+    { penname },
+    { enabled: router.isReady }
+  );
   const { data: bookIds, isLoading: bookIdsLoading } = api.book.getAll.useQuery(
-    { penname }
+    { penname },
+    { enabled: router.isReady }
   );
   const isOwner = session ? user?.id === session.user.id : false;
   const books = api.useQueries(
@@ -73,14 +77,18 @@ const BookPage = () => {
             </>
           )}
         </div>
-        {user && archiveBooks && nonarchiveBooks && (
-          <BookList
-            penname={penname}
-            isOwner={isOwner}
-            isArchived={openArchive}
-            books={openArchive ? archiveBooks : nonarchiveBooks}
-          />
-        )}
+        {user &&
+          !bookIdsLoading &&
+          !booksLoading &&
+          archiveBooks &&
+          nonarchiveBooks && (
+            <BookList
+              penname={penname}
+              isOwner={isOwner}
+              isArchived={openArchive}
+              books={openArchive ? archiveBooks : nonarchiveBooks}
+            />
+          )}
         {bookIdsLoading ||
           (booksLoading && (
             <div className="grid grid-cols-4 gap-x-8 gap-y-6">

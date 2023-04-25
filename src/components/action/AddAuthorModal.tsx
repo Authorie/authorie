@@ -33,7 +33,7 @@ export const AddAuthorModal = ({
                 <div className="flex items-center gap-2">
                   <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
                     <Image
-                      src={`${normalUser.image || "/placeholder_profile.png"}`}
+                      src={`${normalUser.image ?? "/placeholder_profile.png"}`}
                       alt="user profile"
                       width={30}
                       height={30}

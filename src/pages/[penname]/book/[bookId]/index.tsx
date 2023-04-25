@@ -7,9 +7,12 @@ export default function BookContentPage() {
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
   const { data: categories } = api.category.getAll.useQuery();
-  const { data: book, isFetched: bookFetched } = api.book.getData.useQuery({
-    id: bookId,
-  });
+  const { data: book, isFetched: bookFetched } = api.book.getData.useQuery(
+    {
+      id: bookId,
+    },
+    { enabled: router.isReady }
+  );
 
   if (bookFetched && !book) {
     return (

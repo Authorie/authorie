@@ -139,7 +139,10 @@ export default function BookStatusPage() {
   } = useImageUpload();
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
-  const { data: book } = api.book.getData.useQuery({ id: bookId });
+  const { data: book } = api.book.getData.useQuery(
+    { id: bookId },
+    { enabled: router.isReady }
+  );
   const deleteBook = api.book.delete.useMutation();
   const removeCollaborator = api.book.removeCollaborator.useMutation({
     onSettled(_data, _error, _variables, _context) {
@@ -365,6 +368,9 @@ export default function BookStatusPage() {
       success: `Successful removed ${user.penname}!`,
       error: `Error occured while removing ${user.penname}`,
     });
+    if (user.id === session!.user.id) {
+      void router.replace(`/${penname}/book`);
+    }
   };
 
   const resetHandler = () => {
