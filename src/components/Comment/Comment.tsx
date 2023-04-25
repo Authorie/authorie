@@ -1,6 +1,6 @@
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CommentButton, LikeButton } from "~/components/action";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
@@ -20,13 +20,32 @@ const Comment = ({ comment }: props) => {
     { id: comment.id },
     { enabled: status === "authenticated" }
   );
-  const [isLiked, setIsLiked] = useState(isLike);
   const likeMutation = api.comment.like.useMutation({
     onMutate: async () => {
-      await utils.comment.isLike.cancel();
-      const previousLike = utils.comment.isLike.getData();
-      utils.comment.isLike.setData({ id: comment.id }, (old) => !old);
-      return { previousLike };
+      await utils.comment.getAll.cancel({ chapterId: comment.chapterId });
+      await utils.comment.isLike.cancel({ id: comment.id });
+      const previousLike = utils.comment.isLike.getData({ id: comment.id });
+      const previousComments = utils.comment.getAll.getData({
+        chapterId: comment.chapterId,
+      });
+      utils.comment.isLike.setData({ id: comment.id }, true);
+      utils.comment.getAll.setData({ chapterId: comment.chapterId }, (old) => {
+        if (!old) return old;
+        const index = old.findIndex((c) => c.id === comment.id);
+        if (index === -1) return old;
+        const newComments = old.slice();
+        newComments[index]!._count.likes += 1;
+        return newComments;
+      });
+      return { previousLike, previousComments };
+    },
+    onError: (err, variables, context) => {
+      if (!context) return;
+      utils.comment.isLike.setData({ id: comment.id }, context.previousLike);
+      utils.comment.getAll.setData(
+        { chapterId: comment.chapterId },
+        context.previousComments
+      );
     },
     onSettled: () => {
       void utils.comment.invalidate();
@@ -35,32 +54,48 @@ const Comment = ({ comment }: props) => {
   });
   const unlikeMutation = api.comment.unlike.useMutation({
     onMutate: async () => {
-      await utils.comment.isLike.cancel();
-      const previousLike = utils.comment.isLike.getData();
-      utils.comment.isLike.setData({ id: comment.id }, (old) => !old);
-      return { previousLike };
+      await utils.comment.getAll.cancel({ chapterId: comment.chapterId });
+      await utils.comment.isLike.cancel({ id: comment.id });
+      const previousLike = utils.comment.isLike.getData({ id: comment.id });
+      const previousComments = utils.comment.getAll.getData({
+        chapterId: comment.chapterId,
+      });
+      utils.comment.isLike.setData({ id: comment.id }, false);
+      utils.comment.getAll.setData({ chapterId: comment.chapterId }, (old) => {
+        if (!old) return old;
+        const index = old.findIndex((c) => c.id === comment.id);
+        if (index === -1) return old;
+        const newComments = old.slice();
+        newComments[index]!._count.likes -= 1;
+        return newComments;
+      });
+      return { previousLike, previousComments };
+    },
+    onError: (err, variables, context) => {
+      if (!context) return;
+      utils.comment.isLike.setData({ id: comment.id }, context.previousLike);
+      utils.comment.getAll.setData(
+        { chapterId: comment.chapterId },
+        context.previousComments
+      );
     },
     onSettled: () => {
-      void utils.book.invalidate();
+      void utils.comment.getAll.invalidate({ chapterId: comment.chapterId });
+      void utils.comment.isLike.invalidate({ id: comment.id });
     },
   });
 
   const onLikeHandler = () => {
+    if (typeof isLike !== "boolean") return;
     if (likeMutation.isLoading && unlikeMutation.isLoading) return;
-    if (isLiked) {
+    if (isLike) {
       unlikeMutation.mutate({ id: comment.id });
-      setIsLiked(false);
       return;
     } else {
       likeMutation.mutate({ id: comment.id });
-      setIsLiked(true);
       return;
     }
   };
-
-  useEffect(() => {
-    setIsLiked(isLike);
-  }, [isLike]);
 
   return (
     <div className="w-[800px] border-y bg-white px-1 pt-2">
@@ -96,7 +131,7 @@ const Comment = ({ comment }: props) => {
           <div className="flex gap-7 pb-1">
             <LikeButton
               isAuthenticated={status === "authenticated"}
-              isLiked={Boolean(isLiked)}
+              isLiked={Boolean(isLike)}
               numberOfLike={comment._count.likes}
               onClickHandler={onLikeHandler}
               small
