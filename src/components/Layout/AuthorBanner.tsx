@@ -165,51 +165,95 @@ const AuthorBanner = ({
     },
   });
   const followUserMutation = api.user.followUser.useMutation({
-    async onMutate(_variables) {
-      await utils.user.getData.cancel({ penname });
+    async onMutate(variables) {
+      await utils.user.getData.cancel({ id: variables });
+      if (variables === user.id) await utils.user.getData.cancel({ penname });
       const prevData = utils.user.getData.getData({ penname });
-      utils.user.getData.setData({ penname }, (old) => {
+      const prevFollowedUserData = utils.user.getData.getData({
+        id: variables,
+      });
+      utils.user.getData.setData({ id: variables }, (old) => {
         if (!old) return old;
         return {
           ...old,
           isFollowing: true,
-          following: [...old.following, { followingId: session!.user.id }],
+          followers: [...old.followers, { followerId: session!.user.id }],
         };
       });
-      return { prevData };
+      if (variables === user.id) {
+        utils.user.getData.setData({ penname }, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            isFollowing: true,
+            following: [...old.following, { followingId: session!.user.id }],
+          };
+        });
+      }
+      return { prevData, prevFollowedUserData };
     },
-    onError(_error, _variables, context) {
+    onError(_error, variables, context) {
       if (context?.prevData) {
         utils.user.getData.setData({ penname }, context.prevData);
       }
+      if (context?.prevFollowedUserData) {
+        utils.user.getData.setData(
+          { id: variables },
+          context.prevFollowedUserData
+        );
+      }
     },
-    onSettled(_data, _error, _variables, _context) {
+    onSettled(_data, _error, variables, _context) {
       void utils.user.getData.invalidate({ penname });
+      void utils.user.getData.invalidate({ id: variables });
     },
   });
   const unfollowUserMutation = api.user.unfollowUser.useMutation({
-    async onMutate(_variables) {
-      await utils.user.getData.cancel({ penname });
+    async onMutate(variables) {
+      await utils.user.getData.cancel({ id: variables });
+      if (variables === user.id) await utils.user.getData.cancel({ penname });
       const prevData = utils.user.getData.getData({ penname });
-      utils.user.getData.setData({ penname }, (old) => {
+      const prevFollowedUserData = utils.user.getData.getData({
+        id: variables,
+      });
+      utils.user.getData.setData({ id: variables }, (old) => {
         if (!old) return old;
         return {
           ...old,
           isFollowing: false,
-          following: old.following.filter(
-            ({ followingId }) => followingId !== session!.user.id
+          followers: old.followers.filter(
+            ({ followerId }) => followerId !== session!.user.id
           ),
         };
       });
-      return { prevData };
+      if (variables === user.id) {
+        utils.user.getData.setData({ penname }, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            isFollowing: false,
+            following: old.following.filter(
+              ({ followingId }) => followingId !== session!.user.id
+            ),
+          };
+        });
+      }
+      return { prevData, prevFollowedUserData };
     },
-    onError(_error, _variables, context) {
+    onError(_error, variables, context) {
       if (context?.prevData) {
         utils.user.getData.setData({ penname }, context.prevData);
       }
+      if (context?.prevFollowedUserData) {
+        utils.user.getData.setData(
+          { id: variables },
+          context.prevFollowedUserData
+        );
+      }
     },
-    onSettled(_data, _error, _variables, _context) {
+    onSettled(_data, _error, variables, _context) {
       void utils.user.getData.invalidate({ penname });
+      void utils.user.getData.invalidate({ id: variables });
     },
   });
 
@@ -467,7 +511,7 @@ const AuthorBanner = ({
       >
         {
           <div className="flex h-full flex-col gap-4 overflow-y-scroll">
-            {followersLoading ? (
+            {!followersLoading ? (
               followers
                 .map(({ data }) => data!)
                 .map((user) => (
@@ -497,9 +541,15 @@ const AuthorBanner = ({
       >
         {
           <div className="flex h-full flex-col gap-4 overflow-y-scroll">
-            {followingsLoading ? (
+            {!followingsLoading ? (
               followings
                 .map(({ data }) => data!)
+                .filter((following) => {
+                  if (user.isOwner) {
+                    return following.isFollowing;
+                  }
+                  return true;
+                })
                 .map((user) => (
                   <UserCard
                     key={user.id}

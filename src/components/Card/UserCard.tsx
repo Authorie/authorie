@@ -55,7 +55,7 @@ const UserCard = ({ user, followUser, unfollowUser, closeModal }: props) => {
           </div>
         </div>
         {!user.isOwner &&
-          (user.isFollower ? (
+          (user.isFollowing ? (
             <button
               type="button"
               onClick={unfollowHandler}
