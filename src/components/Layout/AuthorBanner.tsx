@@ -439,12 +439,12 @@ const AuthorBanner = ({
                 .map((user) => (
                   <UserCard
                     key={user.id}
-                    penname={user.penname!}
-                    image={user.image || undefined}
-                    followersNumber={user._count.followers}
-                    isOwner={user.id === session?.user.id}
-                    followingNumber={user._count.following}
                     userId={user.id}
+                    penname={user.penname!}
+                    isOwner={user.id === session?.user.id}
+                    followersNumber={user._count.followers}
+                    followingNumber={user._count.following}
+                    image={user.image || "/placeholder_profile.png"}
                     closeModal={() => setOpenFollowers(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
@@ -481,12 +481,12 @@ const AuthorBanner = ({
                 .map((user) => (
                   <UserCard
                     key={user.id}
-                    penname={user.penname!}
-                    image={user.image || undefined}
-                    followersNumber={user._count.followers}
-                    isOwner={user.id === session?.user.id}
-                    followingNumber={user._count.following}
                     userId={user.id}
+                    penname={user.penname!}
+                    isOwner={user.id === session?.user.id}
+                    followersNumber={user._count.followers}
+                    followingNumber={user._count.following}
+                    image={user.image || "/placeholder_profile.png"}
                     closeModal={() => setOpenFollowers(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
