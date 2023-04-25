@@ -32,27 +32,27 @@ type ValidationSchema = z.infer<typeof validationSchema>;
 
 type DialogState =
   | {
-      isOpen: false;
-    }
+    isOpen: false;
+  }
   | {
-      isOpen: true;
-      title: string;
-      description: string;
-      action: () => void;
-    };
+    isOpen: true;
+    title: string;
+    description: string;
+    action: () => void;
+  };
 
 type DialogAction =
   | {
-      type: "reset";
-    }
+    type: "reset";
+  }
   | {
-      type:
-        | "draftWarning"
-        | "deleteWarning"
-        | "archiveWarning"
-        | "completeWarning";
-      action: () => void;
-    };
+    type:
+    | "draftWarning"
+    | "deleteWarning"
+    | "archiveWarning"
+    | "completeWarning";
+    action: () => void;
+  };
 
 const dialogInitialState = { isOpen: false as const };
 
@@ -93,6 +93,26 @@ const dialogReducer = (state: DialogState, action: DialogAction) => {
     default:
       return state;
   }
+};
+
+const getStatusPoint = (status: BookOwnerStatus) => {
+  switch (status) {
+    case BookOwnerStatus.OWNER:
+      return 2;
+    case BookOwnerStatus.COLLABORATOR:
+      return 1;
+    case BookOwnerStatus.INVITEE:
+    case BookOwnerStatus.REJECTED:
+      return 0;
+  }
+};
+
+interface authors {
+  status: BookOwnerStatus;
+}
+
+const sortAuthors = (a: authors, b: authors) => {
+  return getStatusPoint(b.status) - getStatusPoint(a.status);
 };
 
 const StatusPage = () => {
@@ -163,25 +183,25 @@ const StatusPage = () => {
       utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-              ...old,
-              description: variables.description
-                ? variables.description
-                : old.description,
-              coverImage: variables.coverImageUrl
-                ? variables.coverImageUrl
-                : old.coverImage,
-              wallpaperImage: variables.wallpaperImageUrl
-                ? variables.wallpaperImageUrl
-                : old.wallpaperImage,
-              categories: addedCategories.map((category) => ({ category })),
-              chapters: variables.chaptersArrangement
-                ? variables.chaptersArrangement.map((chapterId) => {
-                    return old.chapters.find(
-                      (chapter) => chapter.id === chapterId
-                    )!;
-                  })
-                : old.chapters,
-            }
+            ...old,
+            description: variables.description
+              ? variables.description
+              : old.description,
+            coverImage: variables.coverImageUrl
+              ? variables.coverImageUrl
+              : old.coverImage,
+            wallpaperImage: variables.wallpaperImageUrl
+              ? variables.wallpaperImageUrl
+              : old.wallpaperImage,
+            categories: addedCategories.map((category) => ({ category })),
+            chapters: variables.chaptersArrangement
+              ? variables.chaptersArrangement.map((chapterId) => {
+                return old.chapters.find(
+                  (chapter) => chapter.id === chapterId
+                )!;
+              })
+              : old.chapters,
+          }
           : undefined
       );
       return { prevData };
@@ -356,13 +376,13 @@ const StatusPage = () => {
       const promises = [
         bookCover
           ? uploadImageUrl.mutateAsync({
-              image: bookCover,
-            })
+            image: bookCover,
+          })
           : undefined,
         bookWallpaper
           ? uploadImageUrl.mutateAsync({
-              image: bookWallpaper,
-            })
+            image: bookWallpaper,
+          })
           : undefined,
       ] as const;
       const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -496,11 +516,10 @@ const StatusPage = () => {
                               />
                               <p
                                 className={`text-xs 
-                                ${
-                                  watch("title", "").length > 100
+                                ${watch("title", "").length > 100
                                     ? "text-red-500"
                                     : "text-black"
-                                }`}
+                                  }`}
                               >
                                 {watch("title", "").length}/100
                               </p>
@@ -538,11 +557,10 @@ const StatusPage = () => {
                             />
                             <p
                               className={`text-xs 
-                              ${
-                                watch("description", "").length > 500
+                              ${watch("description", "").length > 500
                                   ? "text-red-500"
                                   : "text-black"
-                              }`}
+                                }`}
                             >
                               {watch("description", "").length}/500
                             </p>
@@ -586,23 +604,23 @@ const StatusPage = () => {
                         )}
                         {(book.status === BookStatus.INITIAL ||
                           book.status === BookStatus.DRAFT) && (
-                          <button
-                            type="button"
-                            onClick={() => void deleteBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Delete
-                          </button>
-                        )}
+                            <button
+                              type="button"
+                              onClick={() => void deleteBookHandler()}
+                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                            >
+                              Delete
+                            </button>
+                          )}
                         {(book.status === BookStatus.PUBLISHED ||
                           book.status === BookStatus.COMPLETED) && (
-                          <button
-                            onClick={() => void archiveBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Archive
-                          </button>
-                        )}
+                            <button
+                              onClick={() => void archiveBookHandler()}
+                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                            >
+                              Archive
+                            </button>
+                          )}
                       </div>
                     )}
                   </div>
@@ -647,31 +665,34 @@ const StatusPage = () => {
                           </div>
                         )}
                         <ol className="divide-y-2 self-center">
-                          {book.owners.map((author, index) => (
-                            <AuthorList
-                              key={author.user.id}
-                              index={index + 1}
-                              status={author.status}
-                              penname={author.user.penname!}
-                              image={
-                                author.user.image || "/placeholder_profile.png"
-                              }
-                              isBookInitialStatus={
-                                book.status === BookStatus.INITIAL
-                              }
-                              onInvite={() =>
-                                void inviteCollaboratorHandler(
-                                  author.user.penname!
-                                )
-                              }
-                              onRemove={() =>
-                                void removeCollaboratorHandler({
-                                  id: author.user.id,
-                                  penname: author.user.penname!,
-                                })
-                              }
-                            />
-                          ))}
+                          {book.owners
+                            .sort(sortAuthors)
+                            .map((author, index) => (
+                              <AuthorList
+                                key={author.user.id}
+                                index={index + 1}
+                                status={author.status}
+                                penname={author.user.penname!}
+                                image={
+                                  author.user.image ||
+                                  "/placeholder_profile.png"
+                                }
+                                isBookInitialStatus={
+                                  book.status === BookStatus.INITIAL
+                                }
+                                onInvite={() =>
+                                  void inviteCollaboratorHandler(
+                                    author.user.penname!
+                                  )
+                                }
+                                onRemove={() =>
+                                  void removeCollaboratorHandler({
+                                    id: author.user.id,
+                                    penname: author.user.penname!,
+                                  })
+                                }
+                              />
+                            ))}
                         </ol>
                       </div>
                     </div>
