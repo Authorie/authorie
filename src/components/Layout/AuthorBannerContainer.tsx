@@ -44,7 +44,7 @@ const AuthorBannerContainer = () => {
       <div className="relative h-fit min-w-full">
         {!userInBanner && !isLoading && <Custom404 />}
         {userInBanner ? (
-          <AuthorBanner penname={penname} user={userInBanner} />
+          <AuthorBanner tab={tab} penname={penname} user={userInBanner} />
         ) : (
           <AuthorBannerSkeleton />
         )}

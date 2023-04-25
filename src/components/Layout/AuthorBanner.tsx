@@ -13,6 +13,8 @@ import useImageUpload from "~/hooks/imageUpload";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import UserCardSkeleton from "../Card/UserCardSkeleton";
+import { useRouter } from "next/router";
+import { AuthorTab } from "./AuthorBannerContainer";
 
 const validationSchema = z.object({
   penname: z
@@ -31,12 +33,15 @@ const getFollowedButtonClassName = (followed: boolean) => {
 };
 
 const AuthorBanner = ({
+  tab,
   user,
   penname,
 }: {
+  tab: AuthorTab;
   penname: string;
   user: RouterOutputs["user"]["getData"];
 }) => {
+  const router = useRouter();
   const utils = api.useContext();
   const { status, data: session } = useSession();
   const [isEditing, setIsEditing] = useState(false);
@@ -69,8 +74,8 @@ const AuthorBanner = ({
   } = useForm({
     resolver: zodResolver(validationSchema),
     defaultValues: {
-      penname: user.penname || "",
-      bio: user.bio,
+      penname: user.penname ?? "",
+      bio: user.bio ?? "",
     },
   });
 
@@ -162,6 +167,16 @@ const AuthorBanner = ({
       void utils.user.getData.invalidate({
         penname: variables.penname ? variables.penname : session!.user.penname!,
       });
+    },
+    async onSuccess(_data, variables, _context) {
+      if (variables.penname) {
+        await router.replace(`/${variables.penname}/${tab.url}`);
+      }
+      reset({
+        penname: variables.penname ? variables.penname : user.penname!,
+        bio: variables.bio ? variables.bio : user.bio ?? "",
+      });
+      setIsEditing(false);
     },
   });
   const followUserMutation = api.user.followUser.useMutation({
