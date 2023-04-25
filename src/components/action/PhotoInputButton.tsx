@@ -16,11 +16,18 @@ export const PhotoInputButton = ({
   top,
 }: props) => {
   return (
-    <Popover>
+    <Popover className="z-10">
       <Popover.Panel className="relative">
-        <div className={`absolute -left-10 ${top ? `${top}` : "top-8"}`}>
-          <UploadImageInput onClick={(image) => setImageUrl(image)} />
-        </div>
+        {({ close }) => (
+          <div className={`absolute -left-10 ${top ? `${top}` : "top-8"}`}>
+            <UploadImageInput
+              onSubmit={(imageUrl: string) => {
+                setImageUrl(imageUrl);
+                close();
+              }}
+            />
+          </div>
+        )}
       </Popover.Panel>
       <Popover.Button
         className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg outline-none hover:bg-${hoverColor ? `${hoverColor}` : "gray-500"

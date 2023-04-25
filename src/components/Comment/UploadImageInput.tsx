@@ -1,23 +1,28 @@
 import Image from "next/image";
+import { useState } from "react";
 import z from "zod";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 type props = {
-  onClick: (image: string) => void;
+  onSubmit: (image: string) => void;
 };
 
-const UploadImageInput = ({ onClick }: props) => {
+const UploadImageInput = ({ onSubmit }: props) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { imageData, uploadHandler, resetImageData } = useImageUpload();
   const uploadImage = api.upload.uploadImage.useMutation();
 
   const submitHandler = async () => {
     const urlParser = z.string().startsWith("data:image");
     if (imageData && urlParser.safeParse(imageData).success) {
+      setIsLoading(true);
       const commentImageUrl = await uploadImage.mutateAsync({
         image: imageData,
       });
-      onClick(commentImageUrl)
+      setIsLoading(false);
+      onSubmit(commentImageUrl);
       resetImageData();
     }
   };
@@ -29,28 +34,38 @@ const UploadImageInput = ({ onClick }: props) => {
           <Image src={imageData} alt="Comment Image" width={300} height={300} />
         ) : (
           <div className="flex items-center justify-center rounded-lg font-semibold">
-            {`Image size < 1 mb`}
+            Image size smaller than 5 MB
           </div>
         )}
       </div>
-      <label
-        htmlFor="upload-image"
-        className="flex cursor-pointer items-center justify-center rounded-lg border px-2 py-1 text-gray-700 hover:bg-gray-200"
-      >
-        <input
-          id="upload-image"
-          hidden
-          type="file"
-          accept="image/jepg, image/png"
-          onChange={uploadHandler}
-        />
-        <p>Upload Image</p>
-      </label>
-      <div
-        className="cursor-pointer rounded-lg bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
-        onClick={() => void submitHandler()}
-      >
-        Confirm
+      <div className="grid w-full grid-cols-2 gap-2">
+        <label
+          htmlFor="upload-image"
+          className="flex cursor-pointer items-center justify-center rounded-lg border bg-gray-100 px-2 py-1 text-gray-700 hover:bg-gray-300"
+        >
+          <input
+            id="upload-image"
+            hidden
+            type="file"
+            accept="image/jepg, image/png"
+            onChange={uploadHandler}
+          />
+          <p>Upload Image</p>
+        </label>
+        <button
+          type="button"
+          disabled={isLoading}
+          onClick={() => void submitHandler()}
+          className="cursor-pointer rounded-lg bg-blue-500 px-4 py-1 text-white hover:bg-blue-600"
+        >
+          {isLoading ? (
+            <div className="grid items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          ) : (
+            "Confirm"
+          )}
+        </button>
       </div>
     </div>
   );

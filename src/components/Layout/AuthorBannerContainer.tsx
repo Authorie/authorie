@@ -49,7 +49,7 @@ const AuthorBannerContainer = () => {
           <AuthorBannerSkeleton />
         )}
       </div>
-      <div className="sticky top-0 z-30 ml-40 w-full self-start">
+      <div className="sticky top-0 z-10 ml-40 w-full self-start">
         <div className="flex max-w-xl items-center justify-between bg-black/60 shadow-lg backdrop-blur-lg">
           {authorTabs.map((data) => (
             <button
