@@ -115,7 +115,7 @@ const sortAuthors = (a: authors, b: authors) => {
   return getStatusPoint(b.status) - getStatusPoint(a.status);
 };
 
-const StatusPage = () => {
+export default function BookStatusPage() {
   const router = useRouter();
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
@@ -721,6 +721,4 @@ const StatusPage = () => {
       </div>
     </div>
   );
-};
-
-export default StatusPage;
+}

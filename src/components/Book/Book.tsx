@@ -161,7 +161,13 @@ const Book = ({ book }: props) => {
 
   return (
     <div
-      onClick={() => void router.push(`/${penname}/book/${book.id}`)}
+      onClick={() => {
+        if (book.status === BookStatus.INITIAL) {
+          void router.push(`/${penname}/book/${book.id}/status`);
+        } else {
+          void router.push(`/${penname}/book/${book.id}`);
+        }
+      }}
       className={`${book.status === BookStatus.ARCHIVED
           ? ""
           : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"

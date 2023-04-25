@@ -1,9 +1,8 @@
 import { useRouter } from "next/router";
-
 import BookContent from "~/components/Book/BookContent";
 import { api } from "~/utils/api";
 
-export default function BookPage() {
+export default function BookContentPage() {
   const router = useRouter();
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
@@ -11,6 +10,7 @@ export default function BookPage() {
   const { data: book, isFetched: bookFetched } = api.book.getData.useQuery({
     id: bookId,
   });
+
   if (bookFetched && !book) {
     return (
       <div className="flex h-full flex-col items-center justify-center">

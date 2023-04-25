@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { RouterOutputs } from "~/utils/api";
 import SearchResultCard from "./SearchResultCard";
-import { BookOwnerStatus } from "@prisma/client";
+import { BookOwnerStatus, BookStatus } from "@prisma/client";
 
 type props = {
   book: RouterOutputs["search"]["searchBooks"]["items"][number];
@@ -15,9 +15,17 @@ const SearchBookResult = ({ book, onClick }: props) => {
     ({ status }) => status === BookOwnerStatus.OWNER
   )!.user.penname!;
 
+  const getHref = () => {
+    if (book.status === BookStatus.INITIAL) {
+      return `/${ownerPenname}/book/${book.id}/status`;
+    } else {
+      return `/${ownerPenname}/book/${book.id}`;
+    }
+  };
+
   return (
     <SearchResultCard onClick={onClick}>
-      <Link className="flex grow" href={`/${ownerPenname}/book/${book.id}`}>
+      <Link className="flex grow" href={getHref()}>
         <div className="grow py-3">
           <p className="text-xs text-authGreen-600">BOOK</p>
           <h4 className="text-xl font-bold text-authGreen-600">{book.title}</h4>
