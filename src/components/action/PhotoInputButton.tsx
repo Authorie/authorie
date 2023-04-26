@@ -16,7 +16,7 @@ export const PhotoInputButton = ({
   top,
 }: props) => {
   return (
-    <Popover className="z-10">
+    <Popover className="z-30">
       <Popover.Panel className="relative">
         {({ close }) => (
           <div className={`absolute -left-10 ${top ? `${top}` : "top-8"}`}>
@@ -30,8 +30,9 @@ export const PhotoInputButton = ({
         )}
       </Popover.Panel>
       <Popover.Button
-        className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg outline-none hover:bg-${hoverColor ? `${hoverColor}` : "gray-500"
-          } focus:outline-none`}
+        className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg outline-none hover:bg-${
+          hoverColor ? `${hoverColor}` : "gray-500"
+        } focus:outline-none`}
       >
         <HiOutlinePhoto
           className={`h-5 w-5 text-${color ? `${color}` : "white"}`}

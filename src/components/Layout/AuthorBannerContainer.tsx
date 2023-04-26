@@ -20,9 +20,10 @@ const parseUserTab = (pathname: string | undefined) => {
 
 function getAuthorTabButtonClassname(selected: boolean) {
   return `
-    ${selected
-      ? "text-green-500 underline decoration-green-500 underline-offset-2"
-      : "cursor-pointer text-white"
+    ${
+      selected
+        ? "text-green-500 underline decoration-green-500 underline-offset-2"
+        : "cursor-pointer text-white"
     }
     select-none px-11 py-3 text-sm hover:bg-black/30
   `;
@@ -54,7 +55,7 @@ const AuthorBannerContainer = () => {
           <AuthorBannerSkeleton />
         )}
       </div>
-      <div className="sticky top-0 z-10 ml-40 w-full self-start">
+      <div className="sticky top-0 z-30 ml-40 w-full self-start">
         <div className="flex max-w-xl items-center justify-between bg-black/60 shadow-lg backdrop-blur-lg">
           {authorTabs.map((data) => (
             <button

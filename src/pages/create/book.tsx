@@ -75,13 +75,13 @@ const CreateBook = () => {
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
       bookCover
         ? await uploadImageUrl.mutateAsync({
-          image: bookCover,
-        })
+            image: bookCover,
+          })
         : undefined,
       bookWallpaper
         ? await uploadImageUrl.mutateAsync({
-          image: bookWallpaper,
-        })
+            image: bookWallpaper,
+          })
         : undefined,
     ] as const);
     const promiseCreateBook = bookCreateMutation.mutateAsync({
@@ -171,10 +171,11 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${watch("title") && watch("title").length > 100
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            watch("title") && watch("title").length > 100
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {watch("title") ? watch("title").length : 0}/100
               </p>
@@ -213,9 +214,10 @@ const CreateBook = () => {
                       className="rounded-full bg-white"
                       type="button"
                     >
-                      <div className="flex items-center justify-center rounded-xl bg-authGreen-300 p-1 hover:bg-authGreen-500">
-                        <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
+                      <div className="flex items-center justify-center rounded-full bg-authGreen-300 p-1 hover:bg-authGreen-500">
+                        <div className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 p-0.5 px-2 text-xs font-semibold">
                           <HiOutlinePlus className="h-3 w-3 stroke-[3]" />
+                          <span>Invite Authors</span>
                         </div>
                       </div>
                       <p className="sr-only">open user list</p>
@@ -293,11 +295,12 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${watch("description") &&
-                    watch("description").length > 500
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            watch("description") &&
+                            watch("description").length > 500
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {watch("description") ? watch("description").length : 0}
                 /500

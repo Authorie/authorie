@@ -33,8 +33,9 @@ const AuthorCard = ({
           <Image src={image} alt={`${penname}'s profile picture`} fill />
         </div>
         <span
-          className={`${status === BookOwnerStatus.OWNER ? "font-semibold" : ""
-            } ${isBookInitialStatus ? "w-52" : ""}`}
+          className={`${
+            status === BookOwnerStatus.OWNER ? "font-semibold" : ""
+          } ${isBookInitialStatus ? "w-52" : ""}`}
         >
           {penname}
         </span>
@@ -57,32 +58,34 @@ const AuthorCard = ({
           </span>
         </div>
       )}
-      <div className="grid grow grid-flow-col justify-end gap-2">
-        {isBookOwner &&
-          isBookInitialStatus &&
-          status === BookOwnerStatus.REJECTED && (
-            <button
-              type="button"
-              onClick={onInvite}
-              className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
-            >
-              invite
-            </button>
-          )}
-        {isBookInitialStatus &&
-          ((isBookOwner &&
-            (status === BookOwnerStatus.COLLABORATOR ||
-              status === BookOwnerStatus.INVITEE)) ||
-            (isUserOwner && status !== BookOwnerStatus.OWNER)) && (
-            <button
-              type="button"
-              onClick={onRemove}
-              className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
-            >
-              remove
-            </button>
-          )}
-      </div>
+      {!isUserOwner && (
+        <div className="grid grow grid-flow-col justify-end gap-2">
+          {isBookOwner &&
+            isBookInitialStatus &&
+            status === BookOwnerStatus.REJECTED && (
+              <button
+                type="button"
+                onClick={onInvite}
+                className="border border-blue-400 px-4 py-1 text-sm text-blue-400 hover:bg-blue-400 hover:text-white"
+              >
+                invite
+              </button>
+            )}
+          {isBookInitialStatus &&
+            ((isBookOwner &&
+              (status === BookOwnerStatus.COLLABORATOR ||
+                status === BookOwnerStatus.INVITEE)) ||
+              status !== BookOwnerStatus.OWNER) && (
+              <button
+                type="button"
+                onClick={onRemove}
+                className="border border-red-400 px-4 py-1 text-sm text-red-400 hover:bg-red-400 hover:text-white"
+              >
+                remove
+              </button>
+            )}
+        </div>
+      )}
     </li>
   );
 };

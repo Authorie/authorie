@@ -12,9 +12,9 @@ type props = {
   editor: Editor;
   title: string;
   book:
-  | RouterOutputs["book"]["getData"]
-  | RouterOutputs["chapter"]["getData"]["book"]
-  | null;
+    | RouterOutputs["book"]["getData"]
+    | RouterOutputs["chapter"]["getData"]["book"]
+    | null;
   price: number | undefined;
   selectedChapter: RouterOutputs["chapter"]["getData"] | null;
   setErrors: (errors: { title: string | undefined }) => void;
@@ -32,6 +32,7 @@ const CreateChapterBoard = ({
   setErrors,
   selectDraftHandler,
 }: props) => {
+  const bookNotPublished = book?.status !== BookStatus.PUBLISHED;
   const router = useRouter();
   const utils = api.useContext();
   const createChapterMutation = api.chapter.create.useMutation({
@@ -187,16 +188,34 @@ const CreateChapterBoard = ({
                     />
                   </div>
                 </Popover.Panel>
-                <Popover.Button className="h-8 rounded-lg border border-authGreen-600 px-2 text-sm font-semibold text-authGreen-600 outline-none hover:bg-gray-200 focus:outline-none">
+                <Popover.Button
+                  disabled={bookNotPublished}
+                  className={`relative h-8 rounded-lg border px-2 text-sm font-semibold outline-none focus:outline-none ${
+                    bookNotPublished
+                      ? "group/publishAt border-gray-300 text-gray-300"
+                      : "border-authGreen-600 text-authGreen-600 hover:bg-gray-200"
+                  }`}
+                >
                   Set Publish Date
+                  <span className="absolute -right-4 bottom-10 hidden w-52 rounded-full bg-gray-200 text-xs text-gray-500 group-hover/publishAt:block">
+                    please publish the book first
+                  </span>
                 </Popover.Button>
               </Popover>
               <button
                 type="button"
+                disabled={bookNotPublished}
                 onClick={() => void publishDraftChapterHandler()}
-                className="h-8 w-28 rounded-lg bg-authGreen-500 text-sm font-semibold text-white hover:bg-authGreen-600"
+                className={`relative h-8 w-28 rounded-lg text-sm font-semibold text-white ${
+                  bookNotPublished
+                    ? "group/publish bg-gray-300"
+                    : "bg-authGreen-500 hover:bg-authGreen-600"
+                }`}
               >
                 Publish Now
+                <span className="absolute -right-4 bottom-10 hidden w-52 rounded-full bg-gray-200 text-xs text-gray-500 group-hover/publish:block">
+                  please publish the book first
+                </span>
               </button>
             </>
           )}

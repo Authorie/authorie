@@ -21,14 +21,13 @@ import {
 } from "react-icons/hi2";
 import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
-
 import ChapterCardList from "~/components/Chapter/ChapterCardList";
-import DialogLayout from "~/components/Dialog/DialogLayout";
 import BookManagementInformation from "~/components/Information/BookManagementInformation";
 import InformationButton from "~/components/Information/InformationButton";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api, type RouterOutputs } from "~/utils/api";
+import { BookStateButton } from "../action/BookStateButton";
 
 const validationSchema = z.object({
   title: z
@@ -57,7 +56,6 @@ const BookContent = ({ penname, book, categories }: props) => {
   const utils = api.useContext();
   const { status } = useSession();
   const [isEdit, setIsEdit] = useState(false);
-  const [openWarning, setOpenWarning] = useState(false);
   const [openInformation, setOpenInformation] = useState(false);
   const [addedCategories, setAddedCategories] = useState<Category[]>(
     book.categories.map(({ category }) => category)
@@ -84,29 +82,29 @@ const BookContent = ({ penname, book, categories }: props) => {
       utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-            ...old,
-            description: variables.description
-              ? variables.description
-              : old.description,
-            coverImage: variables.coverImageUrl
-              ? variables.coverImageUrl
-              : old.coverImage,
-            wallpaperImage: variables.wallpaperImageUrl
-              ? variables.wallpaperImageUrl
-              : old.wallpaperImage,
-            categories: addedCategories.map((category) => ({ category })),
-            chapters: variables.chaptersArrangement
-              ? variables.chaptersArrangement.map((chapterId, index) => {
-                return {
-                  ...old.chapters.find(
-                    (chapter) => chapter.id === chapterId
-                  )!,
-                  chapterNo: index + 1,
-                };
-              })
-              : old.chapters,
-            updatedAt: dayjs().toDate(),
-          }
+              ...old,
+              description: variables.description
+                ? variables.description
+                : old.description,
+              coverImage: variables.coverImageUrl
+                ? variables.coverImageUrl
+                : old.coverImage,
+              wallpaperImage: variables.wallpaperImageUrl
+                ? variables.wallpaperImageUrl
+                : old.wallpaperImage,
+              categories: addedCategories.map((category) => ({ category })),
+              chapters: variables.chaptersArrangement
+                ? variables.chaptersArrangement.map((chapterId, index) => {
+                    return {
+                      ...old.chapters.find(
+                        (chapter) => chapter.id === chapterId
+                      )!,
+                      chapterNo: index + 1,
+                    };
+                  })
+                : old.chapters,
+              updatedAt: dayjs().toDate(),
+            }
           : undefined
       );
       return { prevData };
@@ -117,16 +115,6 @@ const BookContent = ({ penname, book, categories }: props) => {
       }
       void utils.book.getData.invalidate({ id: variables.id });
       resetHandler();
-    },
-  });
-  const moveState = api.book.moveState.useMutation({
-    onSettled(_data, _error, variables, _context) {
-      void utils.book.getData.invalidate(variables);
-    },
-  });
-  const deleteBook = api.book.delete.useMutation({
-    onSettled(_data, _error, variables, _context) {
-      void utils.book.getData.invalidate(variables);
     },
   });
   const unfavoriteBook = api.book.unfavorite.useMutation({
@@ -196,85 +184,6 @@ const BookContent = ({ penname, book, categories }: props) => {
     0
   );
 
-  const confirmDraftBookHandler = async () => {
-    if (book === undefined) return;
-    const promiseMoveState = moveState.mutateAsync({
-      id: book.id,
-      status: BookStatus.DRAFT,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Move to draft state...",
-      success: "Your book is in draft state now!",
-      error: "Error occured during move state",
-    });
-  };
-
-  const draftBookHandler = () => {
-    const hasInvitees = book.owners.some(
-      ({ status }) => status === BookOwnerStatus.INVITEE
-    );
-    if (hasInvitees) {
-      setOpenWarning(true);
-    } else {
-      void confirmDraftBookHandler();
-    }
-  };
-
-  const publishBookHandler = async () => {
-    const promiseMoveState = moveState.mutateAsync({
-      id: book.id,
-      status: BookStatus.PUBLISHED,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Publishing book...",
-      success: "Your book is now published!",
-      error: "Error occured during publish",
-    });
-  };
-
-  const completeBookHandler = async () => {
-    if (book.chapters.some((chapter) => chapter.publishedAt === null)) {
-      toast.error("You have to publish all chapters before complete book");
-      return;
-    }
-    const promiseMoveState = moveState.mutateAsync({
-      id: book.id,
-      status: BookStatus.COMPLETED,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Completing book...",
-      success: "Your book is now completed!",
-      error: "Error occured during completed",
-    });
-  };
-
-  const archiveBookHandler = async () => {
-    if (book.chapters.some((chapter) => chapter.publishedAt === null)) {
-      toast.error("You have to publish all chapters before complete book");
-      return;
-    }
-    const promiseMoveState = moveState.mutateAsync({
-      id: book.id,
-      status: BookStatus.ARCHIVED,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Archive book...",
-      success: "Your book is now archived!",
-      error: "Error occured during archive",
-    });
-    void router.push(`/${penname}/book`);
-  };
-
-  const deleteBookHandler = async () => {
-    const promiseDeleteBook = deleteBook.mutateAsync({ id: book.id });
-    await toast.promise(promiseDeleteBook, {
-      loading: "Deleting book...",
-      success: "Your book is now deleted!",
-      error: "Error occured during deleting",
-    });
-    void router.push(`/${penname}/book`);
-  };
-
   const toggleCategoryHandler = (category: { id: string; title: string }) => {
     setAddedCategories((addedCategories) => {
       if (addedCategories.includes(category)) {
@@ -308,13 +217,13 @@ const BookContent = ({ penname, book, categories }: props) => {
     const promises = [
       bookCover
         ? uploadImageUrl.mutateAsync({
-          image: bookCover,
-        })
+            image: bookCover,
+          })
         : undefined,
       bookWallpaper
         ? uploadImageUrl.mutateAsync({
-          image: bookWallpaper,
-        })
+            image: bookWallpaper,
+          })
         : undefined,
     ] as const;
     const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -339,14 +248,6 @@ const BookContent = ({ penname, book, categories }: props) => {
 
   return (
     <>
-      <DialogLayout
-        button
-        isOpen={openWarning}
-        closeModal={() => setOpenWarning(false)}
-        title="Are you sure you want to start writing now?"
-        description="Not every authors has responsed to your invitation yet."
-        onClick={() => void confirmDraftBookHandler()}
-      />
       <form
         id="submit-changes"
         onSubmit={(e) => void onSaveHandler(e)}
@@ -390,7 +291,7 @@ const BookContent = ({ penname, book, categories }: props) => {
                     </label>
                   )}
                   {book.coverImage || bookCover ? (
-                    <div className="absolute h-52 w-36 overflow-hidden">
+                    <div className="absolute h-52 w-36 overflow-hidden bg-authGreen-300">
                       <Image
                         src={bookCover ? bookCover : book.coverImage!}
                         alt="book's cover image"
@@ -483,10 +384,10 @@ const BookContent = ({ penname, book, categories }: props) => {
                               (category: Category) =>
                                 !addedCategories.includes(category)
                             ).length === 0 && (
-                                <p className="text-sm font-semibold">
-                                  No more categories left...
-                                </p>
-                              )}
+                              <p className="text-sm font-semibold">
+                                No more categories left...
+                              </p>
+                            )}
                           </div>
                         </Popover.Panel>
                         <Popover.Button
@@ -504,57 +405,13 @@ const BookContent = ({ penname, book, categories }: props) => {
                 <div>
                   {book.isOwner && (
                     <div className="flex flex-col gap-4">
-                      {book.status === BookStatus.INITIAL && (
-                        <button
-                          type="button"
-                          onClick={() => void draftBookHandler()}
-                          className="h-8 w-32 rounded-md bg-gradient-to-b from-authBlue-500 to-authBlue-600 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-authBlue-600 hover:to-authBlue-700"
-                        >
-                          Start Writing
-                        </button>
-                      )}
-                      {book.status === BookStatus.DRAFT && (
-                        <button
-                          type="button"
-                          onClick={() => void publishBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-green-400 to-green-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
-                        >
-                          Publish
-                        </button>
-                      )}
-                      {book.status === BookStatus.PUBLISHED && (
-                        <button
-                          type="button"
-                          onClick={() => void completeBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
-                        >
-                          Complete
-                        </button>
-                      )}
-                      {(book.status === BookStatus.INITIAL ||
-                        book.status === BookStatus.DRAFT) && (
-                          <button
-                            type="button"
-                            onClick={() => void deleteBookHandler()}
-                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      {(book.status === BookStatus.PUBLISHED ||
-                        book.status === BookStatus.COMPLETED) && (
-                          <button
-                            type="button"
-                            onClick={() => void archiveBookHandler()}
-                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                          >
-                            Archive
-                          </button>
-                        )}
+                      <BookStateButton book={book} penname={penname} />
                     </div>
                   )}
                   <div className="my-10 flex flex-col gap-1">
-                    <span className="text-6xl font-bold">12</span>
+                    <span className="text-6xl font-bold">
+                      {book.chapters.length}
+                    </span>
                     <p className="text-xl font-bold text-authGreen-600">
                       chapters
                     </p>
@@ -580,8 +437,9 @@ const BookContent = ({ penname, book, categories }: props) => {
           <div className="flex grow flex-col">
             <div
               className={`
-          ${isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 flex-col gap-2"}`}
+          ${
+            isEdit ? "justify-end gap-2" : "justify-center"
+          } ${"flex h-52 flex-col gap-2"}`}
             >
               {!isEdit && (
                 <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -623,10 +481,11 @@ const BookContent = ({ penname, book, categories }: props) => {
                       />
                       <p
                         className={`${"text-xs"} 
-                    ${watch("title") && watch("title").length > 100
-                            ? "text-red-500"
-                            : "text-black"
-                          }`}
+                    ${
+                      watch("title") && watch("title").length > 100
+                        ? "text-red-500"
+                        : "text-black"
+                    }`}
                       >
                         {watch("title") ? watch("title").length : 0}/100
                       </p>
@@ -645,6 +504,7 @@ const BookContent = ({ penname, book, categories }: props) => {
                   onEdit={() => setIsEdit(true)}
                   isOwner={book.isOwner}
                   reset={resetHandler}
+                  formId={"submit-changes"}
                 />
               </div>
               {isEdit ? (
@@ -661,10 +521,11 @@ const BookContent = ({ penname, book, categories }: props) => {
                     />
                     <p
                       className={`${"text-xs"} 
-                    ${watch("description") && watch("description").length > 500
-                          ? "text-red-500"
-                          : "text-black"
-                        }`}
+                    ${
+                      watch("description") && watch("description").length > 500
+                        ? "text-red-500"
+                        : "text-black"
+                    }`}
                     >
                       {watch("description") ? watch("description").length : 0}
                       /500

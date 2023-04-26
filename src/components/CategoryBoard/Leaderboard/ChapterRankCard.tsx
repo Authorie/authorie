@@ -31,7 +31,7 @@ const ChapterRankCard = ({
     >
       <div className="h-full w-full overflow-hidden rounded-sm shadow-lg">
         {image ? (
-          <div className="h-full w-36 overflow-hidden rounded-sm">
+          <div className="h-full w-36 overflow-hidden rounded-sm bg-authGreen-300">
             <Image
               src={image}
               alt={`${chapterTitle}'s cover image`}
