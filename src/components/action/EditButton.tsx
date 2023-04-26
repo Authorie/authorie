@@ -5,9 +5,16 @@ type props = {
   isOwner: boolean;
   reset: () => void;
   isEdit: boolean;
+  formId: string;
 };
 
-export const EditButton = ({ onEdit, isOwner, reset, isEdit }: props) => {
+export const EditButton = ({
+  onEdit,
+  isOwner,
+  reset,
+  isEdit,
+  formId,
+}: props) => {
   return (
     <>
       <button type="button" onClick={onEdit} className="cursor-pointer">
@@ -24,14 +31,14 @@ export const EditButton = ({ onEdit, isOwner, reset, isEdit }: props) => {
           <button
             type="button"
             onClick={reset}
-            className="rounded-xl bg-red-500 px-5 py-1 text-white hover:bg-red-600 hover:text-white"
+            className="rounded-xl bg-red-500 px-5 py-1 text-white outline-none hover:bg-red-600 hover:text-white focus:outline-none"
           >
             Cancel
           </button>
           <button
-            form="submit-changes"
+            form={formId}
             type="submit"
-            className="rounded-xl bg-blue-500 px-5 py-1 font-semibold text-white hover:bg-blue-600 hover:text-white"
+            className="rounded-xl bg-blue-500 px-5 py-1 font-semibold text-white outline-none hover:bg-blue-600 hover:text-white focus:outline-none"
           >
             Save Change
           </button>

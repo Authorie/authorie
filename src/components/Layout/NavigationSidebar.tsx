@@ -9,6 +9,7 @@ import {
   HiOutlineHome,
   HiOutlineMagnifyingGlass,
   HiPencil,
+  HiOutlineBookOpen,
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";
@@ -51,18 +52,26 @@ const NavigationSidebar = () => {
       <div className="mt-6 flex flex-col items-center gap-2 sm:mt-10 sm:items-stretch">
         {session &&
           (user ? (
-            <Link href={user.penname ? `/${user.penname}` : "/auth/new-user"}>
-              <Image
-                src={user.image || "/placeholder_profile.png"}
-                alt="profile picture"
-                width={30}
-                height={30}
-                className="h-7 w-7 rounded-full"
-              />
-              <span className="hidden truncate sm:inline-block">
-                {user.penname}
-              </span>
-            </Link>
+            <>
+              <Link href={user.penname ? `/${user.penname}` : "/auth/new-user"}>
+                <Image
+                  src={user.image || "/placeholder_profile.png"}
+                  alt="profile picture"
+                  width={30}
+                  height={30}
+                  className="h-7 w-7 rounded-full"
+                />
+                <span className="hidden truncate sm:inline-block">
+                  {user.penname}
+                </span>
+              </Link>
+              <Link
+                href={user.penname ? `/${user.penname}/book` : "/auth/new-user"}
+              >
+                <HiOutlineBookOpen className="h-7 w-7" />
+                <span className="hidden sm:inline-block">My book</span>
+              </Link>
+            </>
           ) : (
             <Link href="/">
               <div className="h-7 w-7 animate-pulse rounded-full bg-black/60" />

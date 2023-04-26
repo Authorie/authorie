@@ -4,7 +4,7 @@ import { BookOwnerStatus, BookStatus } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useReducer, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { HiOutlineChevronLeft, HiOutlinePhoto } from "react-icons/hi2";
@@ -12,13 +12,13 @@ import TextareaAutoSize from "react-textarea-autosize";
 import z from "zod";
 import AuthorCard from "~/components/Book/AuthorCard";
 import BookCoverEditable from "~/components/Book/BookCoverEditable";
-import DialogLayout from "~/components/Dialog/DialogLayout";
 import BookStateInformation from "~/components/Information/BookStateInformation";
 import InformationButton from "~/components/Information/InformationButton";
 import { CategoryPopover } from "~/components/action/CategoryPopover";
 import { EditButton } from "~/components/action/EditButton";
 import useImageUpload from "~/hooks/imageUpload";
 import { api } from "~/utils/api";
+import { BookStateButton } from "~/components/action/BookStateButton";
 
 const validationSchema = z.object({
   title: z
@@ -30,71 +30,6 @@ const validationSchema = z.object({
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
-
-type DialogState =
-  | {
-    isOpen: false;
-  }
-  | {
-    isOpen: true;
-    title: string;
-    description: string;
-    action: () => void;
-  };
-
-type DialogAction =
-  | {
-    type: "reset";
-  }
-  | {
-    type:
-    | "draftWarning"
-    | "deleteWarning"
-    | "archiveWarning"
-    | "completeWarning";
-    action: () => void;
-  };
-
-const dialogInitialState = { isOpen: false as const };
-
-const dialogReducer = (state: DialogState, action: DialogAction) => {
-  switch (action.type) {
-    case "reset":
-      return { isOpen: false as const };
-    case "draftWarning":
-      return {
-        isOpen: true as const,
-        title: "Are you sure you want to start writing now?",
-        description: "Not every authors has responsed to your invitation yet.",
-        action: action.action,
-      };
-    case "deleteWarning":
-      return {
-        isOpen: true as const,
-        title: "Are you sure you want to delete this book?",
-        description: "You cannot restore the book after deleted",
-        action: action.action,
-      };
-    case "completeWarning":
-      return {
-        isOpen: true as const,
-        title: "Are you sure you want to complete the book now?",
-        description:
-          "You cannot go back and continue writing anymore after complete the book",
-        action: action.action,
-      };
-    case "archiveWarning":
-      return {
-        isOpen: true as const,
-        title: "Are you sure you want to archive the book?",
-        description:
-          "Your reader will not be able to read this book anymore until you unarchive the book.",
-        action: action.action,
-      };
-    default:
-      return state;
-  }
-};
 
 const getStatusPoint = (status: BookOwnerStatus) => {
   switch (status) {
@@ -121,10 +56,6 @@ export default function BookStatusPage() {
   const { data: session } = useSession();
   const bookId = router.query.bookId as string;
   const penname = router.query.penname as string;
-  const [dialogState, dispatchDialog] = useReducer(
-    dialogReducer,
-    dialogInitialState
-  );
   const [isEdit, setIsEdit] = useState(false);
   const [openInformation, setOpenInformation] = useState(false);
   const {
@@ -143,7 +74,6 @@ export default function BookStatusPage() {
     { id: bookId },
     { enabled: router.isReady }
   );
-  const deleteBook = api.book.delete.useMutation();
   const removeCollaborator = api.book.removeCollaborator.useMutation({
     onSettled(_data, _error, _variables, _context) {
       void utils.book.getData.invalidate({ id: bookId });
@@ -172,23 +102,6 @@ export default function BookStatusPage() {
     },
   });
 
-  const moveState = api.book.moveState.useMutation({
-    async onMutate(newBook) {
-      await utils.book.getData.cancel();
-      const prevData = utils.book.getData.getData({ id: newBook.id });
-      if (!prevData) return;
-      const book = {
-        ...prevData,
-        status: newBook.status,
-      };
-      utils.book.getData.setData({ id: newBook.id }, book);
-      return { prevData };
-    },
-    onSettled: () => {
-      void utils.book.getData.invalidate({ id: bookId });
-    },
-  });
-
   const updateBook = api.book.update.useMutation({
     async onMutate(variables) {
       await utils.book.getData.cancel({ id: variables.id });
@@ -196,25 +109,25 @@ export default function BookStatusPage() {
       utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-            ...old,
-            description: variables.description
-              ? variables.description
-              : old.description,
-            coverImage: variables.coverImageUrl
-              ? variables.coverImageUrl
-              : old.coverImage,
-            wallpaperImage: variables.wallpaperImageUrl
-              ? variables.wallpaperImageUrl
-              : old.wallpaperImage,
-            categories: addedCategories.map((category) => ({ category })),
-            chapters: variables.chaptersArrangement
-              ? variables.chaptersArrangement.map((chapterId) => {
-                return old.chapters.find(
-                  (chapter) => chapter.id === chapterId
-                )!;
-              })
-              : old.chapters,
-          }
+              ...old,
+              description: variables.description
+                ? variables.description
+                : old.description,
+              coverImage: variables.coverImageUrl
+                ? variables.coverImageUrl
+                : old.coverImage,
+              wallpaperImage: variables.wallpaperImageUrl
+                ? variables.wallpaperImageUrl
+                : old.wallpaperImage,
+              categories: addedCategories.map((category) => ({ category })),
+              chapters: variables.chaptersArrangement
+                ? variables.chaptersArrangement.map((chapterId) => {
+                    return old.chapters.find(
+                      (chapter) => chapter.id === chapterId
+                    )!;
+                  })
+                : old.chapters,
+            }
           : undefined
       );
       return { prevData };
@@ -230,110 +143,6 @@ export default function BookStatusPage() {
 
   const uploadImageUrl = api.upload.uploadImage.useMutation();
 
-  const confirmDraftBookHandler = async () => {
-    if (book === undefined) return;
-    const promiseMoveState = moveState.mutateAsync({
-      id: book?.id,
-      status: BookStatus.DRAFT,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Move to draft state...",
-      success: "Your book is in draft state now!",
-      error: "Error occured during move state",
-    });
-  };
-
-  const draftBookHandler = () => {
-    if (book === undefined) return;
-    const hasCollaborators = book.owners.some(
-      ({ status }) => status === BookOwnerStatus.INVITEE
-    );
-    if (hasCollaborators) {
-      dispatchDialog({
-        type: "draftWarning",
-        action: () => void confirmDraftBookHandler(),
-      });
-    } else {
-      void confirmDraftBookHandler();
-    }
-  };
-
-  const publishBookHandler = async () => {
-    if (book === undefined) return;
-    const promiseMoveState = moveState.mutateAsync({
-      id: book?.id,
-      status: BookStatus.PUBLISHED,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Publishing book...",
-      success: "Your book is now published!",
-      error: "Error occured during publish",
-    });
-  };
-
-  const confirmCompleteBookHandler = async () => {
-    if (book === undefined) return;
-
-    const promiseMoveState = moveState.mutateAsync({
-      id: book?.id,
-      status: BookStatus.COMPLETED,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Completing book...",
-      success: "Your book is now completed!",
-      error: "Error occured during completed",
-    });
-  };
-
-  const completeBookHandler = () => {
-    if (book === undefined) return;
-    dispatchDialog({
-      type: "completeWarning",
-      action: () => void confirmCompleteBookHandler(),
-    });
-  };
-
-  const confirmArchiveBookHandler = async () => {
-    if (book === undefined) return;
-    const promiseMoveState = moveState.mutateAsync({
-      id: book?.id,
-      status: BookStatus.ARCHIVED,
-    });
-    await toast.promise(promiseMoveState, {
-      loading: "Archive book...",
-      success: "Your book is now archived!",
-      error: "Error occured during archive",
-    });
-    void router.push(`/${penname}/book`);
-  };
-
-  const archiveBookHandler = () => {
-    if (book === undefined) return;
-    dispatchDialog({
-      type: "archiveWarning",
-      action: () => void confirmArchiveBookHandler(),
-    });
-  };
-
-  const confirmDeleteBookHandler = async () => {
-    if (book === undefined) return;
-    const promiseDeleteBook = deleteBook.mutateAsync({ id: book?.id });
-    await toast.promise(promiseDeleteBook, {
-      loading: "Deleting book...",
-      success: "Your book is now deleted!",
-      error: "Error occured during deleting",
-    });
-    void router.push(`/${penname}/book`);
-  };
-
-  const deleteBookHandler = () => {
-    if (book === undefined) return;
-    dispatchDialog({
-      type: "deleteWarning",
-      action: () => void confirmDeleteBookHandler(),
-    });
-  };
-
   const toggleCategoryHandler = (category: Category) => {
     if (addedCategories.includes(category)) {
       setAddedCategories(addedCategories.filter((data) => data !== category));
@@ -343,6 +152,7 @@ export default function BookStatusPage() {
   };
 
   const inviteCollaboratorHandler = async (penname: string) => {
+    if (penname.trim() === "") return;
     const promiseInvite = inviteCollaborator.mutateAsync({
       penname,
       bookId,
@@ -350,7 +160,7 @@ export default function BookStatusPage() {
     await toast.promise(promiseInvite, {
       loading: `Inviting ${penname}...`,
       success: "Invited!",
-      error: `Error occured while inviting ${penname}`,
+      error: `Error occured, ${penname} might not exist or have not follow each other`,
     });
     setValue("author", "");
   };
@@ -385,20 +195,21 @@ export default function BookStatusPage() {
     setAddedCategories(book?.categories.map((data) => data.category) || []);
   };
 
-  const onSaveHandler = async (data: ValidationSchema) => {
+  const onSaveHandler = handleSubmit(async (data: ValidationSchema) => {
+    console.log("check");
     if (book === undefined) return;
     const { title, description } = data;
     try {
       const promises = [
         bookCover
           ? uploadImageUrl.mutateAsync({
-            image: bookCover,
-          })
+              image: bookCover,
+            })
           : undefined,
         bookWallpaper
           ? uploadImageUrl.mutateAsync({
-            image: bookWallpaper,
-          })
+              image: bookWallpaper,
+            })
           : undefined,
       ] as const;
       const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
@@ -418,18 +229,10 @@ export default function BookStatusPage() {
     } catch (err) {
       toast("Error occured during update");
     }
-  };
+  });
 
   return (
     <div className="h-full w-full">
-      <DialogLayout
-        isOpen={dialogState.isOpen}
-        closeModal={() => dispatchDialog({ type: "reset" })}
-        title={dialogState.isOpen ? dialogState.title : ""}
-        description={dialogState.isOpen ? dialogState.description : ""}
-        onClick={dialogState.isOpen ? dialogState.action : () => void {}}
-        button
-      />
       <div className="relative m-8 overflow-hidden rounded-xl bg-white">
         <div className="absolute right-2 top-2 z-10">
           <InformationButton
@@ -452,8 +255,8 @@ export default function BookStatusPage() {
         <div className="relative overflow-hidden rounded-tl-large shadow-lg">
           {book ? (
             <form
-              id="submit-changes"
-              onSubmit={(e) => void handleSubmit(onSaveHandler)(e)}
+              id="status-submit-changes"
+              onSubmit={(e) => void onSaveHandler(e)}
             >
               <div className="absolute h-52 w-full overflow-hidden">
                 {book?.wallpaperImage || bookWallpaper ? (
@@ -470,23 +273,23 @@ export default function BookStatusPage() {
               </div>
               <div className="flex min-h-[850px] flex-col px-20 py-5">
                 <div className="z-10 mt-32 flex flex-col">
+                  {!isEdit && (
+                    <div className="flex max-w-2xl flex-wrap gap-2">
+                      {book.categories.map((c) => (
+                        <div
+                          key={c.category.id}
+                          onClick={() =>
+                            void router.push(`/category/${c.category.title}`)
+                          }
+                          className="cursor-pointer rounded-full bg-orange-400 px-3 text-sm font-light text-white hover:bg-orange-500"
+                        >
+                          {c.category.title}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="relative flex gap-5">
-                    {!isEdit && (
-                      <div className="absolute left-0 top-0 flex gap-1">
-                        {book.categories.map((c) => (
-                          <div
-                            key={c.category.id}
-                            onClick={() =>
-                              void router.push(`/category/${c.category.title}`)
-                            }
-                            className="cursor-pointer rounded-full bg-orange-400 px-3 text-sm font-light text-white hover:bg-orange-500"
-                          >
-                            {c.category.title}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="relative mt-10">
+                    <div className="relative mt-5">
                       {isEdit && (
                         <label
                           htmlFor="BookWallpaper"
@@ -532,10 +335,11 @@ export default function BookStatusPage() {
                               />
                               <p
                                 className={`text-xs 
-                                ${watch("title", "").length > 100
+                                ${
+                                  watch("title", "").length > 100
                                     ? "text-red-500"
                                     : "text-black"
-                                  }`}
+                                }`}
                               >
                                 {watch("title", "").length}/100
                               </p>
@@ -552,6 +356,7 @@ export default function BookStatusPage() {
                           onEdit={() => setIsEdit(true)}
                           isOwner={book.isOwner}
                           reset={resetHandler}
+                          formId={"status-submit-changes"}
                         />
                       </div>
                       {!isEdit ? (
@@ -573,10 +378,11 @@ export default function BookStatusPage() {
                             />
                             <p
                               className={`text-xs 
-                              ${watch("description", "").length > 500
+                              ${
+                                watch("description", "").length > 500
                                   ? "text-red-500"
                                   : "text-black"
-                                }`}
+                              }`}
                             >
                               {watch("description", "").length}/500
                             </p>
@@ -591,52 +397,7 @@ export default function BookStatusPage() {
                     </div>
                     {!isEdit && book.isOwner && (
                       <div className="mt-12 flex flex-col gap-3">
-                        {book.status === BookStatus.INITIAL && (
-                          <button
-                            type="button"
-                            onClick={() => void draftBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-blue-400 to-blue-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-blue-500 hover:to-blue-600"
-                          >
-                            Start Writing
-                          </button>
-                        )}
-                        {book.status === BookStatus.DRAFT && (
-                          <button
-                            type="button"
-                            onClick={() => void publishBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-green-400 to-green-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
-                          >
-                            Publish
-                          </button>
-                        )}
-                        {book.status === BookStatus.PUBLISHED && (
-                          <button
-                            type="button"
-                            onClick={() => void completeBookHandler()}
-                            className="rounded-full bg-gradient-to-b from-gray-400 to-gray-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
-                          >
-                            Complete
-                          </button>
-                        )}
-                        {(book.status === BookStatus.INITIAL ||
-                          book.status === BookStatus.DRAFT) && (
-                            <button
-                              type="button"
-                              onClick={() => void deleteBookHandler()}
-                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                            >
-                              Delete
-                            </button>
-                          )}
-                        {(book.status === BookStatus.PUBLISHED ||
-                          book.status === BookStatus.COMPLETED) && (
-                            <button
-                              onClick={() => void archiveBookHandler()}
-                              className="rounded-full bg-gradient-to-b from-red-400 to-red-500 px-12 py-2 font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
-                            >
-                              Archive
-                            </button>
-                          )}
+                        <BookStateButton book={book} penname={penname} />
                       </div>
                     )}
                   </div>
@@ -661,6 +422,10 @@ export default function BookStatusPage() {
                             className="w-96 rounded-full border border-gray-300 px-5 py-1 outline-none focus:outline-none"
                             placeholder="Enter author's penname..."
                             {...register("author")}
+                            type="text"
+                            onKeyDown={() =>
+                              void inviteCollaboratorHandler(watch("author"))
+                            }
                           />
                           <button
                             type="button"
