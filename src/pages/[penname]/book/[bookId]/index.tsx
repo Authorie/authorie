@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { useRouter } from "next/router";
 import BookContent from "~/components/Book/BookContent";
 import { api } from "~/utils/api";
@@ -26,7 +27,12 @@ export default function BookContentPage() {
   return (
     <div className="w-full px-6 py-8">
       {book && categories ? (
-        <BookContent penname={penname} book={book} categories={categories} />
+        <BookContent
+          key={dayjs(book.updatedAt).toString()}
+          penname={penname}
+          book={book}
+          categories={categories}
+        />
       ) : (
         <div className="grid h-[788px] w-full items-center justify-center rounded-xl bg-white shadow-lg">
           <svg

@@ -533,7 +533,6 @@ const AuthorBanner = ({
                   <UserCard
                     key={user.id}
                     user={user}
-                    closeModal={() => setOpenFollowers(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
                   />
@@ -569,7 +568,6 @@ const AuthorBanner = ({
                   <UserCard
                     key={user.id}
                     user={user}
-                    closeModal={() => setOpenFollowing(false)}
                     followUser={(userId) => onFollowHandler(userId)}
                     unfollowUser={(userId) => onUnfollowHandler(userId)}
                   />

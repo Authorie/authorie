@@ -4,13 +4,12 @@ import type { MouseEvent } from "react";
 import { type RouterOutputs } from "~/utils/api";
 
 type props = {
-  closeModal: () => void;
   user: RouterOutputs["user"]["getData"];
   followUser: (userId: string) => void;
   unfollowUser: (userId: string) => void;
 };
 
-const UserCard = ({ user, followUser, unfollowUser, closeModal }: props) => {
+const UserCard = ({ user, followUser, unfollowUser }: props) => {
   const router = useRouter();
   const followHandler = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -22,8 +21,7 @@ const UserCard = ({ user, followUser, unfollowUser, closeModal }: props) => {
   };
 
   const onClickHandler = () => {
-    closeModal();
-    void router.push(`/${user.penname!}`);
+    void router.push(`/${user.penname!}`, undefined, { shallow: true });
   };
   return (
     <div

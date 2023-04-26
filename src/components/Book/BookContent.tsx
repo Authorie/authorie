@@ -2,10 +2,11 @@ import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
 import { BookOwnerStatus, BookStatus } from "@prisma/client";
+import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useForm } from "react-hook-form";
@@ -65,13 +66,6 @@ const BookContent = ({ penname, book, categories }: props) => {
     RouterOutputs["book"]["getData"]["chapters"]
   >(book.chapters.sort(sortChapters));
 
-  useEffect(() => {
-    setArrangedChapters(book.chapters.sort(sortChapters));
-  }, [book.chapters]);
-  useEffect(() => {
-    setAddedCategories(book.categories.map(({ category }) => category));
-  }, [book.categories]);
-
   const {
     imageData: bookCover,
     uploadHandler: setBookCover,
@@ -102,23 +96,27 @@ const BookContent = ({ penname, book, categories }: props) => {
               : old.wallpaperImage,
             categories: addedCategories.map((category) => ({ category })),
             chapters: variables.chaptersArrangement
-              ? variables.chaptersArrangement.map((chapterId) => {
-                return old.chapters.find(
-                  (chapter) => chapter.id === chapterId
-                )!;
+              ? variables.chaptersArrangement.map((chapterId, index) => {
+                return {
+                  ...old.chapters.find(
+                    (chapter) => chapter.id === chapterId
+                  )!,
+                  chapterNo: index + 1,
+                };
               })
               : old.chapters,
+            updatedAt: dayjs().toDate(),
           }
           : undefined
       );
       return { prevData };
     },
-    onError(_error, variables, context) {
-      utils.book.getData.setData(variables, context?.prevData);
-    },
-    onSettled(_data, _error, variables, _context) {
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.book.getData.setData({ id: variables.id }, context?.prevData);
+      }
+      void utils.book.getData.invalidate({ id: variables.id });
       resetHandler();
-      void utils.book.getData.invalidate(variables);
     },
   });
   const moveState = api.book.moveState.useMutation({
