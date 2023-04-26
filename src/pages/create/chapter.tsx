@@ -1,17 +1,16 @@
-import { type Book, type Chapter } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import dayjs from "dayjs";
 import { useSession } from "next-auth/react";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
-import type { ChangeEvent } from "react";
+import { type ChangeEvent, useMemo } from "react";
 import { useCallback, useEffect, useState } from "react";
 import TextareaAutoSize from "react-textarea-autosize";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import CreateChapterBoard from "~/components/Create/Chapter/CreateChapterBoard";
 import DraftChapterBoard from "~/components/Create/Chapter/DraftChapterBoard";
 import { useEditor } from "~/hooks/editor";
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 
 const CreateChapter = () => {
   const router = useRouter();
@@ -28,14 +27,22 @@ const CreateChapter = () => {
   });
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState<number>();
-  const [book, setBook] = useState<Book | null>(null);
+  const [book, setBook] = useState<
+    | RouterOutputs["book"]["getData"]
+    | RouterOutputs["chapter"]["getData"]["book"]
+    | null
+  >(null);
   const [chapter, setChapter] = useState<
-    (Chapter & { book: Book | null }) | null
+    RouterOutputs["chapter"]["getData"] | null
   >(null);
 
   const editor = useEditor("", true);
   const { data: user } = api.user.getData.useQuery(undefined);
-  const { data: draftChapters } = api.chapter.getDrafts.useQuery(undefined);
+  const { data: draftChapterIds } = api.chapter.getDrafts.useQuery(undefined);
+  const draftChapters = api.useQueries(
+    (t) => draftChapterIds?.map((id) => t.chapter.getData(id)) ?? []
+  );
+  const draftChaptersLoading = draftChapters.some((q) => q.isLoading);
   api.book.getData.useQuery(
     { id: bookId! },
     {
@@ -47,18 +54,28 @@ const CreateChapter = () => {
       },
     }
   );
-  const filteredDrafts = draftChapters?.filter(
-    (draft) => !draft.publishedAt || dayjs().isBefore(draft.publishedAt, "hour")
+  const filteredDrafts = useMemo(
+    () =>
+      draftChapters
+        ?.filter(
+          ({ data: draft, isLoading }) =>
+            !isLoading &&
+            draft &&
+            draft.publishedAt &&
+            dayjs().isBefore(draft.publishedAt, "hour")
+        )
+        .map(({ data }) => data!) ?? [],
+    [draftChapters]
   );
 
   const selectDraftHandler = useCallback(
-    (chapter: (Chapter & { book: Book | null }) | null) => {
+    (chapter: RouterOutputs["chapter"]["getData"] | null) => {
       if (!editor) return;
       setErrors({
         title: undefined,
       });
       setChapter(chapter);
-      setTitle(chapter?.title || "");
+      setTitle(chapter?.title ?? "");
       editor.commands.setContent(
         chapter ? (chapter.content as JSONContent) : ""
       );
@@ -66,7 +83,11 @@ const CreateChapter = () => {
     },
     [editor]
   );
-  const toggleBookHandler = (book: Book) => {
+  const toggleBookHandler = (
+    book:
+      | RouterOutputs["book"]["getData"]
+      | RouterOutputs["chapter"]["getData"]["book"]
+  ) => {
     setBook((prev) => {
       if (prev === book) {
         return null;
@@ -107,19 +128,19 @@ const CreateChapter = () => {
 
   useEffect(() => {
     const chapterId = router.query.chapterId as string | undefined;
-    if (chapterId) {
-      const chapter = filteredDrafts?.find(
+    if (chapterId && !draftChaptersLoading) {
+      const chapter = filteredDrafts.find(
         (chapter) => chapter.id === chapterId
       );
       if (chapter) selectDraftHandler(chapter);
       else void router.push("/create/chapter");
     }
-  }, [router, filteredDrafts, selectDraftHandler]);
+  }, [router, filteredDrafts, selectDraftHandler, draftChaptersLoading]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
       <DraftChapterBoard
-        draftChapters={filteredDrafts}
+        draftChapters={draftChaptersLoading ? filteredDrafts : undefined}
         selectedChapterId={chapter?.id}
         selectDraftHandler={selectDraftHandler}
       />

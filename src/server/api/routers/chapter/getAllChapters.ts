@@ -35,29 +35,8 @@ const getAllChapters = publicProcedure
           },
         },
       },
-      include: {
-        book: {
-          select: {
-            id: true,
-            title: true,
-            wallpaperImage: true,
-          },
-        },
-        owner: {
-          select: {
-            id: true,
-            penname: true,
-            image: true,
-          },
-        },
-        chapterMarketHistories: true,
-        _count: {
-          select: {
-            views: true,
-            likes: true,
-            comments: true,
-          },
-        },
+      select: {
+        id: true,
       },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,

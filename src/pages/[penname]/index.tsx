@@ -18,23 +18,31 @@ const HomePage = () => {
         enabled: router.isReady,
       }
     );
-
+  const chapters = api.useQueries(
+    (t) =>
+      data?.pages
+        .flatMap((page) => page.items)
+        .map((chapter) => t.chapter.getData(chapter)) ?? []
+  );
+  const chaptersLoading = chapters.some((c) => c.isLoading);
   useInfiniteScroll(fetchNextPage, hasNextPage);
 
   return (
     <div className="flex w-[1024px] flex-col gap-4 py-8">
-      {data &&
-        data.pages
-          .flatMap((page) => page.items)
-          .map((chapter) => <ChapterFeed key={chapter.id} chapter={chapter} />)}
-      {(isFetchingNextPage || isLoading) && (
+      {!chaptersLoading &&
+        chapters
+          .filter(({ isLoading }) => !isLoading)
+          .map(({ data: chapter }) => (
+            <ChapterFeed key={chapter!.id} chapter={chapter!} />
+          ))}
+      {isFetchingNextPage && chaptersLoading && (
         <div>
           <ChapterFeedSkeleton />
         </div>
       )}
-      {data &&
-        data.pages.flatMap((page) => page.items).length === 0 &&
-        !isLoading && (
+      {!isLoading &&
+        data &&
+        data.pages.flatMap(({ items }) => items).length === 0 && (
           <div className="flex h-44 items-center justify-center rounded-lg bg-white text-3xl font-semibold">
             The author has not published anything yet!
           </div>

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { z } from "zod";
 import { publicProcedure } from "~/server/api/trpc";
 
@@ -11,26 +12,15 @@ const getLeaderboard = publicProcedure
   .query(async ({ ctx, input }) => {
     const { limit, skip } = input;
 
-    const firstDayThisMonth = new Date();
-    firstDayThisMonth.setDate(1);
-    firstDayThisMonth.setHours(0, 0, 0, 0);
-
-    const firstDayNextMonth = new Date();
-    if (firstDayNextMonth.getMonth() === 11) {
-      firstDayNextMonth.setFullYear(firstDayNextMonth.getFullYear() + 1);
-      firstDayNextMonth.setMonth(0);
-    } else {
-      firstDayNextMonth.setMonth(firstDayNextMonth.getMonth() + 1);
-    }
-    firstDayNextMonth.setDate(1);
-    firstDayNextMonth.setHours(0, 0, 0, 0);
+    const firstDayOfThisMonth = dayjs().startOf("month").toDate();
+    const LastDayOfThisMonth = dayjs().endOf("month").toDate();
 
     return await ctx.prisma.chapterView.groupBy({
       by: ["chapterId"],
       where: {
         createdAt: {
-          gte: firstDayThisMonth,
-          lt: firstDayNextMonth,
+          gte: firstDayOfThisMonth,
+          lte: LastDayOfThisMonth,
         },
       },
       _count: {

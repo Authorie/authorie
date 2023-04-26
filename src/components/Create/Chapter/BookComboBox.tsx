@@ -8,8 +8,14 @@ import { api, type RouterOutputs } from "~/utils/api";
 
 type props = {
   user: RouterOutputs["user"]["getData"];
-  selectedBook: Book | null;
-  onToggleBook: (book: Book) => void;
+  selectedBook:
+  | RouterOutputs["book"]["getData"]
+  | RouterOutputs["chapter"]["getData"]["book"];
+  onToggleBook: (
+    book:
+      | RouterOutputs["book"]["getData"]
+      | RouterOutputs["chapter"]["getData"]["book"]
+  ) => void;
 };
 
 const BookComboBox = ({ user, selectedBook, onToggleBook }: props) => {

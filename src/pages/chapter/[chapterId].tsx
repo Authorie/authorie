@@ -125,7 +125,6 @@ const checkChapterReadable = (
 };
 
 const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
-  const utils = api.useContext();
   const router = useRouter();
   const { data: session, status } = useSession();
   const chapterId = router.query.chapterId as string;
@@ -137,12 +136,6 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
     checkChapterReadable(chapter, session?.user.id)
   );
   const editor = useEditor("The content cannot be shown...", false);
-  const { data: isLiked } = api.chapter.isLike.useQuery(
-    {
-      id: chapterId,
-    },
-    { enabled: status === "authenticated" && router.isReady }
-  );
   const {
     data: comments,
     isSuccess,
@@ -152,48 +145,8 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
   });
 
   const { mutate: readChapterMutate } = api.chapter.read.useMutation();
-  const likeMutation = api.chapter.like.useMutation({
-    onMutate: async () => {
-      await utils.chapter.isLike.cancel();
-      const previousLike = utils.chapter.isLike.getData();
-      const previousNumberOfLikes = chapter._count.likes;
-      utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
-      chapter._count.likes += 1;
-      return { previousLike, previousNumberOfLikes };
-    },
-    onError(error, variables, context) {
-      if (context?.previousLike) {
-        utils.chapter.isLike.setData({ id: chapterId }, context.previousLike);
-      }
-      if (context?.previousNumberOfLikes) {
-        chapter._count.likes = context.previousNumberOfLikes;
-      }
-    },
-    onSettled: () => {
-      void utils.chapter.isLike.invalidate({ id: chapterId });
-    },
-  });
-  const unlikeMutation = api.chapter.unlike.useMutation({
-    onMutate: async () => {
-      await utils.chapter.isLike.cancel();
-      const previousLike = utils.chapter.isLike.getData();
-      const previousNumberOfLikes = chapter._count.likes;
-      utils.chapter.isLike.setData({ id: chapterId }, (old) => !old);
-      chapter._count.likes -= 1;
-      return { previousLike, previousNumberOfLikes };
-    },
-    onError(error, variables, context) {
-      if (context?.previousLike) {
-        utils.chapter.isLike.setData({ id: chapterId }, context.previousLike);
-      }
-      if (context?.previousNumberOfLikes) {
-        chapter._count.likes = context.previousNumberOfLikes;
-      }
-    },
-    onSettled: () => {
-      void utils.chapter.isLike.invalidate({ id: chapterId });
-    },
-  });
+  const likeMutation = api.chapter.like.useMutation();
+  const unlikeMutation = api.chapter.unlike.useMutation();
 
   useEffect(() => {
     setIsChapterReadable(checkChapterReadable(chapter, session?.user.id));
@@ -227,12 +180,12 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
 
   const onLikeHandler = () => {
     if (
-      isLiked === undefined ||
+      chapter === undefined ||
       likeMutation.isLoading ||
       unlikeMutation.isLoading
     )
       return;
-    if (isLiked) {
+    if (chapter.isLiked) {
       unlikeMutation.mutate({ id: chapterId });
     } else {
       likeMutation.mutate({ id: chapterId });
@@ -361,8 +314,8 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
               <div className="flex w-1/2 items-center justify-center">
                 <ChapterLikeButton
                   isAuthenticated={status === "authenticated"}
-                  isLiked={Boolean(isLiked)}
-                  numberOfLike={chapter._count.likes || 0}
+                  isLiked={chapter.isLiked}
+                  numberOfLike={chapter._count.likes ?? 0}
                   onClickHandler={onLikeHandler}
                 />
                 <ChapterCommentInput chapterId={chapterId} />

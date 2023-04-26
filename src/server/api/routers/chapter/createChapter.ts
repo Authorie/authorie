@@ -25,15 +25,19 @@ const createChapter = protectedProcedure
     })
   )
   .mutation(async ({ ctx, input }) => {
-
     const { chapterId, title, content, bookId, price } = input;
-    const publishedAt = input.publishedAt === null || input.publishedAt === false ? null : input.publishedAt === true ? dayjs().toDate() : input.publishedAt;
+    const publishedAt =
+      input.publishedAt === null || input.publishedAt === false
+        ? null
+        : input.publishedAt === true
+          ? dayjs().toDate()
+          : input.publishedAt;
     if (bookId) {
       await ctx.prisma.book.findFirstOrThrow({
         where: {
           id: bookId,
           status: {
-            in: [BookStatus.DRAFT, BookStatus.PUBLISHED]
+            in: [BookStatus.DRAFT, BookStatus.PUBLISHED],
           },
           owners: {
             some: {
@@ -59,14 +63,16 @@ const createChapter = protectedProcedure
       });
     }
 
-    const chapterNo = publishedAt ? await ctx.prisma.chapter.count({
-      where: {
-        bookId,
-        publishedAt: {
-          lte: publishedAt,
-        }
-      }
-    }) + 1 : undefined
+    const chapterNo = publishedAt
+      ? (await ctx.prisma.chapter.count({
+        where: {
+          bookId,
+          publishedAt: {
+            lte: publishedAt,
+          },
+        },
+      })) + 1
+      : undefined;
 
     if (chapterId) {
       const chapter = await ctx.prisma.chapter.findFirstOrThrow({

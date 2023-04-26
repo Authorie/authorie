@@ -4,7 +4,7 @@ import { publicProcedure } from "~/server/api/trpc";
 const getChapter = publicProcedure
   .input(z.object({ id: z.string().cuid() }))
   .query(async ({ ctx, input }) => {
-    return await ctx.prisma.chapter.findUniqueOrThrow({
+    const chapter = await ctx.prisma.chapter.findUniqueOrThrow({
       where: { id: input.id },
       include: {
         book: {
@@ -12,6 +12,7 @@ const getChapter = publicProcedure
             id: true,
             title: true,
             coverImage: true,
+            wallpaperImage: true,
             status: true,
             owners: {
               include: {
@@ -43,6 +44,21 @@ const getChapter = publicProcedure
         chapterMarketHistories: true,
       },
     });
+    return {
+      ...chapter,
+      isLiked: ctx.session
+        ? Boolean(
+          await ctx.prisma.chapterLike.findUnique({
+            where: {
+              chapterId_userId: {
+                chapterId: input.id,
+                userId: ctx.session.user.id,
+              },
+            },
+          })
+        )
+        : false,
+    };
   });
 
 export default getChapter;

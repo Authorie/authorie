@@ -1,13 +1,8 @@
+import dayjs from "dayjs";
 import { protectedProcedure } from "~/server/api/trpc";
 
 const getDraftChapters = protectedProcedure.query(async ({ ctx }) => {
-  const lastHour = new Date();
-  if (lastHour.getHours() === 0) {
-    lastHour.setHours(23);
-    lastHour.setDate(lastHour.getDate() - 1);
-  } else {
-    lastHour.setHours(lastHour.getHours() - 1);
-  }
+  const minPublishedAt = dayjs().subtract(1, "hour").toDate();
 
   return await ctx.prisma.chapter.findMany({
     where: {
@@ -18,13 +13,13 @@ const getDraftChapters = protectedProcedure.query(async ({ ctx }) => {
         },
         {
           publishedAt: {
-            gt: lastHour,
+            gt: minPublishedAt,
           },
         },
       ],
     },
-    include: {
-      book: true,
+    select: {
+      id: true,
     },
   });
 });

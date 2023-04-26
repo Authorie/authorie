@@ -18,8 +18,8 @@ const Home = () => {
     selectedCategories === "all"
       ? undefined
       : selectedCategories === "following"
-      ? followedCategories.map((c) => c.id)
-      : [selectedCategories.id];
+        ? followedCategories.map((c) => c.id)
+        : [selectedCategories.id];
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading } =
     api.chapter.getFeeds.useInfiniteQuery(
       {
@@ -31,6 +31,13 @@ const Home = () => {
         getNextPageParam: (lastpage) => lastpage.nextCursor,
       }
     );
+  const chapters = api.useQueries(
+    (t) =>
+      data?.pages
+        .flatMap((page) => page.items)
+        .map((chapter) => t.chapter.getData(chapter)) ?? []
+  );
+  const chaptersLoading = chapters.some((c) => c.isLoading);
 
   useInfiniteScroll(fetchNextPage, hasNextPage);
 
@@ -38,11 +45,11 @@ const Home = () => {
     <div className="flex flex-col px-10 py-4">
       <CategoryBoard isLogin={status === "authenticated"} />
       <div className="flex flex-col gap-4">
-        {data &&
-          data.pages
-            .flatMap((page) => page.items)
-            .map((chapter) => (
-              <ChapterFeed key={chapter.id} chapter={chapter} />
+        {!chaptersLoading &&
+          chapters
+            .filter(({ isLoading }) => !isLoading)
+            .map(({ data: chapter }) => (
+              <ChapterFeed key={chapter!.id} chapter={chapter!} />
             ))}
         {(isFetchingNextPage || isLoading) && (
           <div>

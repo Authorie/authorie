@@ -1,22 +1,25 @@
 import { Popover } from "@headlessui/react";
-import { type Book, BookStatus, type Chapter } from "@prisma/client";
+import { BookStatus } from "@prisma/client";
 import type { Editor } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import DateTimeInputField from "~/components/DateTimeInput/DateTimeInputField";
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import TextEditorMenuBar from "./TextEditorMenu/TextEditorMenuBar";
 
 type props = {
   editor: Editor;
   title: string;
-  book: Book | null;
+  book:
+  | RouterOutputs["book"]["getData"]
+  | RouterOutputs["chapter"]["getData"]["book"]
+  | null;
   price: number | undefined;
-  selectedChapter: Chapter | null;
+  selectedChapter: RouterOutputs["chapter"]["getData"] | null;
   setErrors: (errors: { title: string | undefined }) => void;
   selectDraftHandler: (
-    chapter: (Chapter & { book: Book | null }) | null
+    chapter: RouterOutputs["chapter"]["getData"] | null
   ) => void;
 };
 

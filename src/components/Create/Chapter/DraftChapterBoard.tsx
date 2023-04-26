@@ -1,13 +1,12 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import type { Book, Chapter } from "@prisma/client";
 import type { RouterOutputs } from "~/utils/api";
 import ChapterDraftCard from "./ChapterDraftCard";
 
 type props = {
-  draftChapters: RouterOutputs["chapter"]["getDrafts"] | undefined;
+  draftChapters: RouterOutputs["chapter"]["getData"][] | undefined;
   selectedChapterId: string | undefined;
   selectDraftHandler: (
-    chapter: (Chapter & { book: Book | null }) | null
+    chapter: RouterOutputs["chapter"]["getData"] | null
   ) => void;
 };
 

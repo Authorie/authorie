@@ -12,7 +12,7 @@ import DialogBuyChapter from "../Dialog/DialogBuyChapter";
 import { DateLabel } from "../action/DateLabel";
 
 type props = {
-  chapter: RouterOutputs["chapter"]["getFeeds"]["items"][number];
+  chapter: RouterOutputs["chapter"]["getData"];
 };
 
 const ChapterFeed = ({ chapter }: props) => {
