@@ -5,7 +5,7 @@ import { PhotoInputButton } from "../action/PhotoInputButton";
 
 type props = {
   chapterId: string;
-  parentId?: string;
+  parentId: string;
 };
 
 const ReplyCommentInput = ({ chapterId, parentId }: props) => {
@@ -26,10 +26,10 @@ const ReplyCommentInput = ({ chapterId, parentId }: props) => {
           image: commentImageUrl !== "" ? commentImageUrl : undefined,
         },
         {
-          onSuccess() {
+          onSuccess(_data, variables, _context) {
             setContent("");
             setCommentImageUrl("");
-            void utils.comment.getAll.invalidate({ chapterId });
+            void utils.comment.getData.invalidate({ id: variables.parent });
           },
         }
       );

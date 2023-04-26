@@ -8,92 +8,66 @@ import ReplyCommentInput from "./ReplyCommentInput";
 
 type props = {
   comment:
-  | RouterOutputs["comment"]["getAll"][number]
-  | RouterOutputs["comment"]["getAll"][number]["replies"][number];
+  | RouterOutputs["comment"]["getData"]
+  | RouterOutputs["comment"]["getData"]["replies"][number];
 };
 
 const Comment = ({ comment }: props) => {
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const utils = api.useContext();
-  const [openReplies, setOpenReplies] = useState(false);
-  const { data: isLike } = api.comment.isLike.useQuery(
-    { id: comment.id },
-    { enabled: status === "authenticated" }
+  const isLike = comment.likes.some(({ userId }) =>
+    session ? session.user.id === userId : false
   );
+  const [openReplies, setOpenReplies] = useState(false);
   const likeMutation = api.comment.like.useMutation({
-    onMutate: async () => {
-      await utils.comment.getAll.cancel({ chapterId: comment.chapterId });
-      await utils.comment.isLike.cancel({ id: comment.id });
-      const previousLike = utils.comment.isLike.getData({ id: comment.id });
-      const previousComments = utils.comment.getAll.getData({
-        chapterId: comment.chapterId,
-      });
-      utils.comment.isLike.setData({ id: comment.id }, true);
-      utils.comment.getAll.setData({ chapterId: comment.chapterId }, (old) => {
+    async onMutate(variables) {
+      await utils.comment.getData.cancel(variables);
+      const previousData = utils.comment.getData.getData(variables);
+      utils.comment.getData.setData(variables, (old) => {
         if (!old) return old;
-        const index = old.findIndex((c) => c.id === comment.id);
-        if (index === -1) return old;
-        const newComments = old.slice();
-        newComments[index]!._count.likes += 1;
-        return newComments;
+        return {
+          ...old,
+          likes: [...old.likes, { userId: session!.user.id }],
+          _count: { ...old._count, likes: old._count.likes + 1 },
+        };
       });
-      return { previousLike, previousComments };
+      return { previousData };
     },
-    onError: (err, variables, context) => {
-      if (!context) return;
-      utils.comment.isLike.setData({ id: comment.id }, context.previousLike);
-      utils.comment.getAll.setData(
-        { chapterId: comment.chapterId },
-        context.previousComments
-      );
-    },
-    onSettled: () => {
-      void utils.comment.invalidate();
-      void utils.book.invalidate();
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.comment.getData.setData(variables, context?.previousData);
+      }
+      void utils.comment.getData.invalidate(variables);
     },
   });
   const unlikeMutation = api.comment.unlike.useMutation({
-    onMutate: async () => {
-      await utils.comment.getAll.cancel({ chapterId: comment.chapterId });
-      await utils.comment.isLike.cancel({ id: comment.id });
-      const previousLike = utils.comment.isLike.getData({ id: comment.id });
-      const previousComments = utils.comment.getAll.getData({
-        chapterId: comment.chapterId,
-      });
-      utils.comment.isLike.setData({ id: comment.id }, false);
-      utils.comment.getAll.setData({ chapterId: comment.chapterId }, (old) => {
+    async onMutate(variables) {
+      await utils.comment.getData.cancel(variables);
+      const previousData = utils.comment.getData.getData(variables);
+      utils.comment.getData.setData(variables, (old) => {
         if (!old) return old;
-        const index = old.findIndex((c) => c.id === comment.id);
-        if (index === -1) return old;
-        const newComments = old.slice();
-        newComments[index]!._count.likes -= 1;
-        return newComments;
+        return {
+          ...old,
+          likes: old.likes.filter(({ userId }) => userId !== session!.user.id),
+          _count: { ...old._count, likes: old._count.likes - 1 },
+        };
       });
-      return { previousLike, previousComments };
+      return { previousData };
     },
-    onError: (err, variables, context) => {
-      if (!context) return;
-      utils.comment.isLike.setData({ id: comment.id }, context.previousLike);
-      utils.comment.getAll.setData(
-        { chapterId: comment.chapterId },
-        context.previousComments
-      );
-    },
-    onSettled: () => {
-      void utils.comment.getAll.invalidate({ chapterId: comment.chapterId });
-      void utils.comment.isLike.invalidate({ id: comment.id });
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.comment.getData.setData(variables, context?.previousData);
+      }
+      void utils.comment.getData.invalidate(variables);
     },
   });
 
   const onLikeHandler = () => {
-    if (typeof isLike !== "boolean") return;
     if (likeMutation.isLoading && unlikeMutation.isLoading) return;
     if (isLike) {
       unlikeMutation.mutate({ id: comment.id });
-      return;
     } else {
       likeMutation.mutate({ id: comment.id });
-      return;
     }
   };
 
@@ -157,7 +131,7 @@ const Comment = ({ comment }: props) => {
         <div className="ml-7 mt-2">
           <ReplyCommentInput
             chapterId={comment.chapterId}
-            parentId={comment.id || undefined}
+            parentId={comment.id}
           />
         </div>
       )}

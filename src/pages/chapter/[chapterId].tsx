@@ -39,18 +39,19 @@ const ChapterPage = () => {
       { enabled: router.isReady }
     );
   const editor = useEditor("The content cannot be shown...", false);
-  const {
-    data: comments,
-    isSuccess,
-    isLoading: isLoadingComment,
-  } = api.comment.getAll.useQuery(
-    {
-      chapterId: chapterId,
-    },
-    {
-      enabled: router.isReady,
-    }
+  const { data: commentIds, isLoading: commentIdsLoading } =
+    api.comment.getAll.useQuery(
+      {
+        chapterId,
+      },
+      {
+        enabled: router.isReady,
+      }
+    );
+  const comments = api.useQueries(
+    (t) => commentIds?.map((commentId) => t.comment.getData(commentId)) ?? []
   );
+  const commentsLoading = comments.some(({ isLoading }) => isLoading);
 
   const { mutate: readChapterMutate } = api.chapter.read.useMutation();
   const likeMutation = api.chapter.like.useMutation({
@@ -124,7 +125,6 @@ const ChapterPage = () => {
       setOpenBuyChapter(false);
     };
   }, [chapter, chapterLoading, status]);
-
   useEffect(() => {
     if (readChapter) return;
     if (!router.isReady) return;
@@ -177,27 +177,25 @@ const ChapterPage = () => {
             isOpen={openComment}
             closeModal={() => setOpenComment(false)}
           >
-            {comments && comments.length !== 0 ? (
-              <div>
-                {isSuccess &&
-                  comments.map((comment) => (
-                    <Comment key={comment.id} comment={comment} />
-                  ))}
-                {isLoadingComment && (
-                  <div className="flex items-center justify-center rounded-full text-white">
-                    <svg
-                      className="... h-5 w-5 animate-spin"
-                      viewBox="0 0 24 24"
-                    ></svg>
-                    Processing...
-                  </div>
-                )}
-              </div>
-            ) : (
+            {commentIds && commentIds.length === 0 && (
               <div className="flex h-full items-center justify-center text-xl font-semibold text-white">
                 <p>No comments</p>
               </div>
             )}
+            {commentIdsLoading ||
+              (commentsLoading && (
+                <div className="flex items-center justify-center rounded-full text-white">
+                  <svg
+                    className="... h-5 w-5 animate-spin"
+                    viewBox="0 0 24 24"
+                  />
+                  Processing...
+                </div>
+              ))}
+            {!commentsLoading &&
+              comments.map(({ data: comment }) => (
+                <Comment key={comment!.id} comment={comment!} />
+              ))}
           </DialogLayout>
           <DialogLayout
             isOpen={openLogin}
