@@ -44,6 +44,7 @@ const ChapterFeed = ({ chapter }: props) => {
       <DialogBuyChapter
         title={chapter.title}
         price={chapter.price}
+        bookId={chapter.bookId}
         chapterId={chapter.id}
         isOpen={openBuyChapter}
         closeModal={() => setOpenBuyChapter(false)}

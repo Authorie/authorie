@@ -10,6 +10,7 @@ type props = {
   isOpen: boolean;
   closeModal: () => void;
   price: number;
+  bookId: string | null;
   chapterId: string;
   title: string;
   cancelClick?: () => void;
@@ -21,6 +22,7 @@ const DialogBuyChapter = ({
   isOpen,
   closeModal,
   price,
+  bookId,
   chapterId,
   title,
   cancelClick,
@@ -30,14 +32,16 @@ const DialogBuyChapter = ({
   const router = useRouter();
   const utils = api.useContext();
   const { status } = useSession();
+  const [openNotEnoughCoin, setOpenNotEnoughCoin] = useState(false);
   const { data: user } = api.user.getData.useQuery(undefined, {
     enabled: status === "authenticated",
   });
-  const [openNotEnoughCoin, setOpenNotEnoughCoin] = useState(false);
   const buyChapter = api.chapter.buyChapter.useMutation({
-    onSuccess() {
-      void utils.chapter.getData.invalidate();
-      void utils.book.getData.invalidate();
+    onSuccess(_data, variables, _context) {
+      void utils.user.getData.invalidate(undefined);
+      void utils.chapter.getData.invalidate({ id: variables.chapterId });
+      if (bookId) void utils.book.getData.invalidate({ id: bookId });
+      void router.push(`/chapter/${variables.chapterId}`);
     },
   });
 
@@ -53,16 +57,9 @@ const DialogBuyChapter = ({
       setOpenNotEnoughCoin(true);
       return;
     }
-    const promise = buyChapter.mutateAsync(
-      {
-        chapterId,
-      },
-      {
-        onSuccess() {
-          void router.push(`/chapter/${chapterId}`);
-        },
-      }
-    );
+    const promise = buyChapter.mutateAsync({
+      chapterId,
+    });
     await toast.promise(promise, {
       loading: "purchasing...",
       success: "Your purchase was successful!",

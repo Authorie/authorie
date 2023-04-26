@@ -94,6 +94,7 @@ const ChapterCardList = ({
                 : chapter.chapterNo ?? 0
             }
             isEdit={isEdit}
+            bookId={bookId}
             chapter={chapter}
             moveChapter={moveChapter}
             findChapter={findChapter}
@@ -103,6 +104,7 @@ const ChapterCardList = ({
       <ChapterDragLayer
         moveChapter={moveChapter}
         findChapter={findChapter}
+        bookId={bookId}
         chapters={arrangedChapters}
       />
     </div>

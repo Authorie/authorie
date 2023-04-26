@@ -1,6 +1,6 @@
 import type { JSONContent } from "@tiptap/react";
 import dayjs from "dayjs";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
 import { type ChangeEvent, useMemo } from "react";
@@ -17,7 +17,7 @@ const CreateChapter = () => {
   useSession({
     required: true,
     onUnauthenticated() {
-      void router.push("/auth/login");
+      void signIn();
     },
   });
   const bookId = router.query.bookId as string | undefined;

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import z from "zod";
@@ -28,7 +28,7 @@ const NewUser = () => {
   useSession({
     required: true,
     onUnauthenticated() {
-      void router.replace("/auth/signIn");
+      void signIn();
     },
   });
   api.user.getData.useQuery(undefined, {

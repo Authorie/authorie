@@ -1,7 +1,7 @@
 import { Popover } from "@headlessui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category, User } from "@prisma/client";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -29,7 +29,7 @@ const CreateBook = () => {
   useSession({
     required: true,
     onUnauthenticated() {
-      void router.push("/auth/login");
+      void signIn();
     },
   });
   const utils = api.useContext();

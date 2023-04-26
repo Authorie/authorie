@@ -23,6 +23,7 @@ function getItemStyles(
 }
 
 type props = {
+  bookId: string;
   chapters: Array<RouterOutputs["book"]["getData"]["chapters"][number]>;
   moveChapter: (id: string, atIndex: number) => void;
   findChapter: (id: string) => {
@@ -31,7 +32,12 @@ type props = {
   };
 };
 
-const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
+const ChapterDragLayer = ({
+  moveChapter,
+  findChapter,
+  chapters,
+  bookId,
+}: props) => {
   const { itemType, isDragging, item, initialOffset, currentOffset } =
     useDragLayer((monitor) => ({
       item: monitor.getItem<{ id: string; originalIndex: number }>(),
@@ -44,7 +50,7 @@ const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
   const numberOfDraftChapters = chapters.reduceRight((acc, chapter) => {
     if (chapter.publishedAt) return acc;
     return acc + 1;
-  }, 0)
+  }, 0);
 
   if (!isDragging) {
     return null;
@@ -59,6 +65,7 @@ const ChapterDragLayer = ({ moveChapter, findChapter, chapters }: props) => {
         {itemType === "chapter" && (
           <ChapterCard
             key={item.id}
+            bookId={bookId}
             chapterNo={chapters.length - numberOfDraftChapters - itemIndex}
             isEdit={false}
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

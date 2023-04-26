@@ -13,6 +13,7 @@ import DialogBuyChapter from "../Dialog/DialogBuyChapter";
 import { DateLabel } from "../action/DateLabel";
 
 type props = {
+  bookId: string;
   chapter: RouterOutputs["book"]["getData"]["chapters"][number];
   moveChapter: (id: string, atIndex: number) => void;
   findChapter: (id: string) => {
@@ -24,6 +25,7 @@ type props = {
 };
 
 const ChapterCard = ({
+  bookId,
   chapter,
   moveChapter,
   findChapter,
@@ -127,6 +129,7 @@ const ChapterCard = ({
       <DialogBuyChapter
         title={chapter.title}
         price={chapter.price}
+        bookId={bookId}
         chapterId={chapter.id}
         isOpen={openBuyChapter}
         closeModal={() => setOpenBuyChapter(false)}

@@ -1,12 +1,10 @@
 import { BookStatus } from "@prisma/client";
 import type { JSONContent } from "@tiptap/react";
 import { EditorContent } from "@tiptap/react";
-import type { GetStaticProps, InferGetStaticPropsType } from "next";
 import { signIn, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { ParsedUrlQuery } from "querystring";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import {
@@ -22,142 +20,95 @@ import DialogLayout from "~/components/Dialog/DialogLayout";
 import { ChapterLikeButton } from "~/components/action/ChapterLikeButton";
 import { DateLabel } from "~/components/action/DateLabel";
 import { useEditor } from "~/hooks/editor";
-import { generateSSGHelper } from "~/server/utils";
-import { api, type RouterOutputs } from "~/utils/api";
+import { api } from "~/utils/api";
 import Custom404 from "../404";
-import dayjs from "dayjs";
 
-export async function getStaticPaths() {
-  const ssg = generateSSGHelper(null);
-  const chapterIds = await ssg.chapter.getAllIds.fetch();
-  return {
-    paths: chapterIds.map(({ id }) => ({
-      params: { chapterId: id },
-    })),
-    fallback: "blocking",
-  };
-}
-
-type Props = {
-  chapter: RouterOutputs["chapter"]["getData"];
-  nextChapterId: string | null;
-  previousChapterId: string | null;
-};
-
-interface Params extends ParsedUrlQuery {
-  chapterId: string;
-}
-
-export const getStaticProps: GetStaticProps<Props, Params> = async (
-  context
-) => {
-  const ssg = generateSSGHelper(null);
-  const chapterId = context.params!.chapterId;
-  const chapter = await ssg.chapter.getData.fetch({ id: chapterId });
-  if (!chapter || !chapter.bookId || dayjs().isBefore(chapter.publishedAt)) {
-    return {
-      notFound: true,
-    };
-  }
-  const book = await ssg.book.getData.fetch({
-    id: chapter.bookId,
-  });
-  if (
-    !book ||
-    book.status === BookStatus.INITIAL ||
-    book.status === BookStatus.DRAFT
-  ) {
-    return {
-      notFound: true,
-    };
-  }
-  let nextChapterId: string | null = null;
-  let previousChapterId: string | null = null;
-  if (chapter.chapterNo !== null && chapter.chapterNo > 0) {
-    for (const ch of book.chapters) {
-      if (!ch.chapterNo) continue;
-      const diff = ch.chapterNo - chapter.chapterNo;
-      if (diff === 1) {
-        nextChapterId = ch.id;
-      } else if (diff === -1) {
-        previousChapterId = ch.id;
-      }
-    }
-  }
-  return {
-    props: {
-      chapter,
-      nextChapterId,
-      previousChapterId,
-    },
-    revalidate: 10,
-  };
-};
-
-type props = InferGetStaticPropsType<typeof getStaticProps>;
-
-// checkChapterReadable
-// return false means the chapter is not readable (no book, not owner, book is draft or archived, valid book state but not free)
-// return true means the chapter is readable (owner, book is published or completed and free)
-const checkChapterReadable = (
-  chapter: props["chapter"],
-  userId: string | undefined
-) => {
-  if (!chapter || !chapter.book) {
-    return false;
-  }
-
-  const isOwner =
-    chapter.ownerId === userId ||
-    chapter.book.owners.some(({ user: owner }) => owner.id === userId) ||
-    chapter.chapterMarketHistories.some((history) => history.userId === userId);
-  if (isOwner) {
-    return true;
-  }
-
-  switch (chapter.book.status) {
-    case BookStatus.PUBLISHED:
-    case BookStatus.COMPLETED:
-      return chapter.price === 0;
-    case BookStatus.ARCHIVED:
-      return false;
-  }
-};
-
-const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
+const ChapterPage = () => {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const utils = api.useContext();
+  const { status } = useSession();
   const chapterId = router.query.chapterId as string;
   const [open404, setOpen404] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
+  const [readChapter, setReadChapter] = useState(false);
   const [openComment, setOpenComment] = useState(false);
   const [openBuyChapter, setOpenBuyChapter] = useState(false);
-  const [isChapterReadable, setIsChapterReadable] = useState(
-    checkChapterReadable(chapter, session?.user.id)
-  );
+  const { data: chapter, isLoading: chapterLoading } =
+    api.chapter.getData.useQuery(
+      { id: chapterId },
+      { enabled: router.isReady }
+    );
   const editor = useEditor("The content cannot be shown...", false);
   const {
     data: comments,
     isSuccess,
     isLoading: isLoadingComment,
-  } = api.comment.getAll.useQuery({
-    chapterId: chapterId,
-  });
+  } = api.comment.getAll.useQuery(
+    {
+      chapterId: chapterId,
+    },
+    {
+      enabled: router.isReady,
+    }
+  );
 
   const { mutate: readChapterMutate } = api.chapter.read.useMutation();
-  const likeMutation = api.chapter.like.useMutation();
-  const unlikeMutation = api.chapter.unlike.useMutation();
-
+  const likeMutation = api.chapter.like.useMutation({
+    async onMutate(variables) {
+      await utils.chapter.getData.cancel();
+      const previousChapter = utils.chapter.getData.getData(variables);
+      utils.chapter.getData.setData(variables, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isLiked: true,
+          _count: {
+            ...old._count,
+            likes: old._count.likes + 1,
+          },
+        };
+      });
+      return { previousChapter };
+    },
+    onSettled(_data, error, variables, context) {
+      if (error && context?.previousChapter) {
+        utils.chapter.getData.setData(variables, context.previousChapter);
+      }
+      void utils.chapter.getData.invalidate(variables);
+    },
+  });
+  const unlikeMutation = api.chapter.unlike.useMutation({
+    async onMutate(variables) {
+      await utils.chapter.getData.cancel();
+      const previousChapter = utils.chapter.getData.getData(variables);
+      utils.chapter.getData.setData(variables, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isLiked: false,
+          _count: {
+            ...old._count,
+            likes: old._count.likes - 1,
+          },
+        };
+      });
+      return { previousChapter };
+    },
+    onSettled(_data, error, variables, context) {
+      if (error && context?.previousChapter) {
+        utils.chapter.getData.setData(variables, context.previousChapter);
+      }
+      void utils.chapter.getData.invalidate(variables);
+    },
+  });
   useEffect(() => {
-    setIsChapterReadable(checkChapterReadable(chapter, session?.user.id));
-  }, [chapter, session?.user.id]);
-  useEffect(() => {
-    if (editor && isChapterReadable) {
+    if (editor && chapter?.isChapterReadable) {
       editor.commands.setContent(chapter.content as JSONContent);
     }
-  }, [chapter, editor, isChapterReadable]);
+  }, [chapter, editor, chapter?.isChapterReadable]);
   useEffect(() => {
-    if (!isChapterReadable) {
+    if (chapterLoading || !chapter) return;
+    if (!chapter.isChapterReadable) {
       setOpen404(() => {
         if (!chapter.book) return true;
         return ![BookStatus.PUBLISHED, BookStatus.COMPLETED].includes(
@@ -172,11 +123,14 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
       setOpenLogin(false);
       setOpenBuyChapter(false);
     };
-  }, [chapter.book, isChapterReadable, status]);
+  }, [chapter, chapterLoading, status]);
+
   useEffect(() => {
+    if (readChapter) return;
     if (!router.isReady) return;
+    setReadChapter(true);
     readChapterMutate({ id: chapterId });
-  }, [router.isReady, readChapterMutate, chapterId]);
+  }, [router.isReady, chapterId, readChapter, readChapterMutate]);
 
   const onLikeHandler = () => {
     if (
@@ -262,6 +216,7 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
           <DialogBuyChapter
             title={chapter.title}
             price={chapter.price}
+            bookId={chapter.bookId}
             chapterId={chapter.id}
             isOpen={openBuyChapter}
             closeModal={() => setOpenBuyChapter(false)}
@@ -298,10 +253,10 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
             </div>
           </div>
           <div className="sticky top-0 z-10 flex h-12 w-full items-center justify-between rounded-b-xl bg-authGreen-600 p-2">
-            {previousChapterId ? (
+            {chapter.previousChapterId ? (
               <div
                 onClick={() =>
-                  void router.push(`/chapter/${previousChapterId}`)
+                  void router.push(`/chapter/${chapter.previousChapterId!}`)
                 }
                 className="mx-10"
               >
@@ -334,9 +289,11 @@ const ChapterPage = ({ chapter, previousChapterId, nextChapterId }: props) => {
             >
               <HiOutlineArrowTopRightOnSquare className="h-5 w-5 text-white" />
             </div>
-            {nextChapterId ? (
+            {chapter.nextChapterId ? (
               <div
-                onClick={() => void router.push(`/chapter/${nextChapterId}`)}
+                onClick={() =>
+                  void router.push(`/chapter/${chapter.nextChapterId!}`)
+                }
                 className="mx-10 cursor-pointer rounded-full 
                   bg-gray-500 text-white hover:bg-gray-700"
               >
