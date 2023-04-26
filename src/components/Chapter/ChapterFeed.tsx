@@ -7,7 +7,7 @@ import { useState } from "react";
 import { HiLockClosed } from "react-icons/hi2";
 import { CommentButton, LikeButton } from "~/components/action";
 import { useEditor } from "~/hooks/editor";
-import { api, type RouterOutputs } from "~/utils/api";
+import { type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
 import { DateLabel } from "../action/DateLabel";
 
@@ -26,10 +26,6 @@ const ChapterFeed = ({ chapter }: props) => {
       (history) => history.userId === session?.user.id
     );
   const editor = useEditor(chapter.content as Content, false);
-  const { data: isLike } = api.comment.isLike.useQuery(
-    { id: chapter.id },
-    { enabled: status === "authenticated" }
-  );
 
   const clickCardHandler = () => {
     if (!isOwner && !isChapterBought) {
@@ -126,7 +122,7 @@ const ChapterFeed = ({ chapter }: props) => {
             <div className="pointer-events-none w-20">
               <LikeButton
                 isAuthenticated={status === "authenticated"}
-                isLiked={Boolean(isLike)}
+                isLiked={chapter.isLiked}
                 numberOfLike={chapter._count.likes}
               />
             </div>

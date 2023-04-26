@@ -4,12 +4,10 @@ import { protectedProcedure } from "~/server/api/trpc";
 const unlike = protectedProcedure
   .input(z.object({ id: z.string().cuid() }))
   .mutation(async ({ ctx, input }) => {
-    await ctx.prisma.chapterCommentLike.delete({
+    await ctx.prisma.chapterCommentLike.deleteMany({
       where: {
-        commentId_userId: {
-          commentId: input.id,
-          userId: ctx.session.user.id,
-        },
+        commentId: input.id,
+        userId: ctx.session.user.id,
       },
     });
   });
