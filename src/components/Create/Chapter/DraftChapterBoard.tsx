@@ -3,7 +3,7 @@ import type { RouterOutputs } from "~/utils/api";
 import ChapterDraftCard from "./ChapterDraftCard";
 
 type props = {
-  draftChapters: RouterOutputs["chapter"]["getData"][] | undefined;
+  draftChapters: (RouterOutputs["chapter"]["getData"] | undefined)[];
   selectedChapterId: string | undefined;
   selectDraftHandler: (
     chapter: RouterOutputs["chapter"]["getData"] | null
@@ -33,14 +33,14 @@ const DraftChapterBoard = ({
           onClickHandler={() => selectDraftHandler(null)}
         />
         <div ref={animationParent} className="grid grid-flow-row gap-3">
-          {draftChapters &&
+          {draftChapters.every((draft) => draft !== undefined) &&
             draftChapters.map((draftChapter) => (
               <ChapterDraftCard
-                key={draftChapter.id}
-                title={draftChapter.title}
-                selected={draftChapter.id === selectedChapterId}
-                onClickHandler={() => selectDraftHandler(draftChapter)}
-                publishedAt={draftChapter.publishedAt}
+                key={draftChapter!.id}
+                title={draftChapter!.title}
+                selected={draftChapter!.id === selectedChapterId}
+                onClickHandler={() => selectDraftHandler(draftChapter!)}
+                publishedAt={draftChapter!.publishedAt}
               />
             ))}
         </div>

@@ -37,7 +37,38 @@ const DialogBuyChapter = ({
     enabled: status === "authenticated",
   });
   const buyChapter = api.chapter.buyChapter.useMutation({
-    onSuccess(_data, variables, _context) {
+    async onMutate(variables) {
+      await utils.chapter.getData.cancel({
+        id: variables.chapterId,
+      });
+      const prevUserData = utils.user.getData.getData(undefined);
+      const prevData = utils.chapter.getData.getData({
+        id: variables.chapterId,
+      });
+      utils.user.getData.setData(undefined, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          coin: old.coin - (prevData?.price ?? 0),
+        };
+      });
+      utils.chapter.getData.setData({ id: variables.chapterId }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          isChapterReadable: true, // frontend should make sure chapter can be read after bought
+        };
+      });
+      return { prevUserData, prevData };
+    },
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.user.getData.setData(undefined, context?.prevUserData);
+        utils.chapter.getData.setData(
+          { id: variables.chapterId },
+          context?.prevData
+        );
+      }
       void utils.user.getData.invalidate(undefined);
       void utils.chapter.getData.invalidate({ id: variables.chapterId });
       if (bookId) void utils.book.getData.invalidate({ id: bookId });

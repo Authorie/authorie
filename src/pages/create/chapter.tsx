@@ -1,9 +1,8 @@
 import type { JSONContent } from "@tiptap/react";
-import dayjs from "dayjs";
 import { signIn, useSession } from "next-auth/react";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
-import { type ChangeEvent, useMemo } from "react";
+import { type ChangeEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import TextareaAutoSize from "react-textarea-autosize";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
@@ -53,19 +52,6 @@ const CreateChapter = () => {
         }
       },
     }
-  );
-  const filteredDrafts = useMemo(
-    () =>
-      draftChapters
-        ?.filter(
-          ({ data: draft, isLoading }) =>
-            !isLoading &&
-            draft &&
-            draft.publishedAt &&
-            dayjs().isBefore(draft.publishedAt, "hour")
-        )
-        .map(({ data }) => data!) ?? [],
-    [draftChapters]
   );
 
   const selectDraftHandler = useCallback(
@@ -129,18 +115,18 @@ const CreateChapter = () => {
   useEffect(() => {
     const chapterId = router.query.chapterId as string | undefined;
     if (chapterId && !draftChaptersLoading) {
-      const chapter = filteredDrafts.find(
-        (chapter) => chapter.id === chapterId
+      const chapter = draftChapters.find(
+        ({ data: chapter }) => chapter?.id === chapterId
       );
-      if (chapter) selectDraftHandler(chapter);
+      if (chapter && chapter.data) selectDraftHandler(chapter.data);
       else void router.push("/create/chapter");
     }
-  }, [router, filteredDrafts, selectDraftHandler, draftChaptersLoading]);
+  }, [router, selectDraftHandler, draftChaptersLoading, draftChapters]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
       <DraftChapterBoard
-        draftChapters={draftChaptersLoading ? filteredDrafts : undefined}
+        draftChapters={draftChapters.map(({ data }) => data)}
         selectedChapterId={chapter?.id}
         selectDraftHandler={selectDraftHandler}
       />
