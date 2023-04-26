@@ -59,14 +59,16 @@ export default function BookStatusPage() {
   const [isEdit, setIsEdit] = useState(false);
   const [openInformation, setOpenInformation] = useState(false);
   const {
-    imageData: bookCover,
-    uploadHandler: setBookCover,
+    image: bookCover,
+    setImageHandler: setBookCover,
     resetImageData: resetBookCover,
+    uploadHandler: uploadBookCover,
   } = useImageUpload();
   const {
-    imageData: bookWallpaper,
-    uploadHandler: setBookWallpaper,
+    image: bookWallpaper,
+    setImageHandler: setBookWallpaper,
     resetImageData: resetBookWallpaper,
+    uploadHandler: uploadBookWallpaper,
   } = useImageUpload();
   const utils = api.useContext();
   const { data: categories } = api.category.getAll.useQuery();
@@ -109,25 +111,25 @@ export default function BookStatusPage() {
       utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-              ...old,
-              description: variables.description
-                ? variables.description
-                : old.description,
-              coverImage: variables.coverImageUrl
-                ? variables.coverImageUrl
-                : old.coverImage,
-              wallpaperImage: variables.wallpaperImageUrl
-                ? variables.wallpaperImageUrl
-                : old.wallpaperImage,
-              categories: addedCategories.map((category) => ({ category })),
-              chapters: variables.chaptersArrangement
-                ? variables.chaptersArrangement.map((chapterId) => {
-                    return old.chapters.find(
-                      (chapter) => chapter.id === chapterId
-                    )!;
-                  })
-                : old.chapters,
-            }
+            ...old,
+            description: variables.description
+              ? variables.description
+              : old.description,
+            coverImage: variables.coverImageUrl
+              ? variables.coverImageUrl
+              : old.coverImage,
+            wallpaperImage: variables.wallpaperImageUrl
+              ? variables.wallpaperImageUrl
+              : old.wallpaperImage,
+            categories: addedCategories.map((category) => ({ category })),
+            chapters: variables.chaptersArrangement
+              ? variables.chaptersArrangement.map((chapterId) => {
+                return old.chapters.find(
+                  (chapter) => chapter.id === chapterId
+                )!;
+              })
+              : old.chapters,
+          }
           : undefined
       );
       return { prevData };
@@ -140,8 +142,6 @@ export default function BookStatusPage() {
       void utils.book.getData.invalidate(variables);
     },
   });
-
-  const uploadImageUrl = api.upload.uploadImage.useMutation();
 
   const toggleCategoryHandler = (category: Category) => {
     if (addedCategories.includes(category)) {
@@ -196,39 +196,25 @@ export default function BookStatusPage() {
   };
 
   const onSaveHandler = handleSubmit(async (data: ValidationSchema) => {
-    console.log("check");
     if (book === undefined) return;
     const { title, description } = data;
-    try {
-      const promises = [
-        bookCover
-          ? uploadImageUrl.mutateAsync({
-              image: bookCover,
-            })
-          : undefined,
-        bookWallpaper
-          ? uploadImageUrl.mutateAsync({
-              image: bookWallpaper,
-            })
-          : undefined,
-      ] as const;
-      const [coverImageUrl, wallpaperImageUrl] = await Promise.all(promises);
-      const promiseUpdateBook = updateBook.mutateAsync({
-        id: book.id,
-        title,
-        description,
-        category: addedCategories.map((category) => category.id),
-        coverImageUrl,
-        wallpaperImageUrl,
-      });
-      await toast.promise(promiseUpdateBook, {
-        loading: "Updating book...",
-        success: "Book updated!",
-        error: "Error occured during update",
-      });
-    } catch (err) {
-      toast("Error occured during update");
-    }
+    const [coverImageUrl, wallpaperImageUrl] = await Promise.all([
+      uploadBookCover(),
+      uploadBookWallpaper(),
+    ]);
+    const promiseUpdateBook = updateBook.mutateAsync({
+      id: book.id,
+      title,
+      description,
+      category: addedCategories.map((category) => category.id),
+      coverImageUrl,
+      wallpaperImageUrl,
+    });
+    await toast.promise(promiseUpdateBook, {
+      loading: "Updating book...",
+      success: "Book updated!",
+      error: "Error occured during update",
+    });
   });
 
   return (
@@ -261,7 +247,7 @@ export default function BookStatusPage() {
               <div className="absolute h-52 w-full overflow-hidden">
                 {book?.wallpaperImage || bookWallpaper ? (
                   <Image
-                    src={bookWallpaper ? bookWallpaper : book.wallpaperImage!}
+                    src={bookWallpaper ?? book.wallpaperImage!}
                     alt={`${book.title}'s wallpaper image`}
                     height={200}
                     width={2000}
@@ -308,8 +294,8 @@ export default function BookStatusPage() {
                       )}
                       <BookCoverEditable
                         title={book.title}
-                        coverImage={book?.coverImage || ""}
-                        uploadCover={bookCover}
+                        coverImage={book?.coverImage ?? undefined}
+                        uploadCover={bookCover ?? undefined}
                         isEdit={isEdit}
                         setBookCover={setBookCover}
                       />
@@ -335,11 +321,10 @@ export default function BookStatusPage() {
                               />
                               <p
                                 className={`text-xs 
-                                ${
-                                  watch("title", "").length > 100
+                                ${watch("title", "").length > 100
                                     ? "text-red-500"
                                     : "text-black"
-                                }`}
+                                  }`}
                               >
                                 {watch("title", "").length}/100
                               </p>
@@ -378,11 +363,10 @@ export default function BookStatusPage() {
                             />
                             <p
                               className={`text-xs 
-                              ${
-                                watch("description", "").length > 500
+                              ${watch("description", "").length > 500
                                   ? "text-red-500"
                                   : "text-black"
-                              }`}
+                                }`}
                             >
                               {watch("description", "").length}/500
                             </p>

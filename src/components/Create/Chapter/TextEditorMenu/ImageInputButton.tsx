@@ -4,12 +4,10 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useState } from "react";
 import { RiCloseFill, RiImageLine } from "react-icons/ri";
 import useImageUpload from "~/hooks/imageUpload";
-import { api } from "~/utils/api";
 
 const ImageInputButton = ({ editor }: { editor: Editor }) => {
   const [InputUrl, setInputUrl] = useState({ value: "" });
-  const uploadImage = api.upload.uploadImage.useMutation();
-  const { imageData, uploadHandler, imageName, resetImageData } =
+  const { image, imageName, setImageHandler, resetImageData, uploadHandler } =
     useImageUpload();
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     resetImageData();
@@ -18,12 +16,12 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     let profileImageUrl;
-    if (imageData) {
-      profileImageUrl = await uploadImage.mutateAsync({
-        image: imageData,
-      });
-      editor.chain().focus().setImage({ src: profileImageUrl }).run();
-      resetImageData();
+    if (image) {
+      profileImageUrl = await uploadHandler();
+      if (profileImageUrl) {
+        editor.chain().focus().setImage({ src: profileImageUrl }).run();
+        resetImageData();
+      }
     } else {
       editor.chain().focus().setImage({ src: InputUrl.value }).run();
       setInputUrl({ value: "" });
@@ -60,7 +58,7 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
                 id="add-image"
                 type="file"
                 className="m-1 rounded-md p-1 hover:bg-slate-200"
-                onChange={uploadHandler}
+                onChange={setImageHandler}
               />
               <div className="cursor-pointer rounded-full bg-gradient-to-b from-green-500 to-green-400 px-4 py-1 text-center text-white hover:bg-gradient-to-b hover:from-green-600 hover:to-green-400">
                 Choose file
@@ -73,7 +71,7 @@ const ImageInputButton = ({ editor }: { editor: Editor }) => {
               Submit
             </button>
           </div>
-          <p className="text-xs">{imageName}</p>
+          <p className="text-xs">{imageName ?? ""}</p>
         </div>
       </Popover.Panel>
     </Popover>

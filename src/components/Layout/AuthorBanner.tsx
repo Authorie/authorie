@@ -56,14 +56,16 @@ const AuthorBanner = ({
   );
   const followersLoading = followers.some((follower) => follower.isLoading);
   const {
-    imageData: profileImage,
-    uploadHandler: uploadProfileImageHandler,
+    image: profileImage,
+    setImageHandler: uploadProfileImageHandler,
     resetImageData: resetProfileImage,
+    uploadHandler: uploadProfileImage,
   } = useImageUpload();
   const {
-    imageData: wallpaperImage,
-    uploadHandler: uploadWallpaperImageHandler,
+    image: wallpaperImage,
+    setImageHandler: uploadWallpaperImageHandler,
     resetImageData: resetWallpaperImage,
+    uploadHandler: uploadWallpaperImage,
   } = useImageUpload();
   const {
     register,
@@ -299,22 +301,11 @@ const AuthorBanner = ({
     setIsEditing(false);
   };
 
-  const uploadImage = api.upload.uploadImage.useMutation();
-
   const onSubmitHandler = handleSubmit(async ({ penname, bio }) => {
-    let profileImageUrl;
-    let wallpaperImageUrl;
-    const urlParser = z.string().startsWith("data:image");
-    if (profileImage && urlParser.safeParse(profileImage).success) {
-      profileImageUrl = await uploadImage.mutateAsync({
-        image: profileImage,
-      });
-    }
-    if (wallpaperImage && urlParser.safeParse(wallpaperImage).success) {
-      wallpaperImageUrl = await uploadImage.mutateAsync({
-        image: wallpaperImage,
-      });
-    }
+    const [profileImageUrl, wallpaperImageUrl] = await Promise.all([
+      uploadProfileImage(),
+      uploadWallpaperImage(),
+    ]);
 
     const promise = updateProfile.mutateAsync({
       penname,
@@ -349,9 +340,9 @@ const AuthorBanner = ({
             <HiOutlinePhoto className="absolute left-2 top-2 z-10 h-7 w-7 rounded-lg bg-black p-1 text-white" />
           </div>
         )}
-        {user.wallpaperImage || wallpaperImage !== "" ? (
+        {user.wallpaperImage || wallpaperImage ? (
           <Image
-            src={wallpaperImage !== "" ? wallpaperImage : user.wallpaperImage!}
+            src={wallpaperImage ?? user.wallpaperImage!}
             alt="wallpaper"
             priority
             height={100}
@@ -389,11 +380,7 @@ const AuthorBanner = ({
               </div>
             )}
             <Image
-              src={
-                profileImage === ""
-                  ? user.image || "/placeholder_profile.png"
-                  : profileImage
-              }
+              src={profileImage ?? (user.image || "/placeholder_profile.png")}
               alt="profile picture"
               width="250"
               height="250"

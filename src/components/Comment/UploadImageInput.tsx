@@ -1,8 +1,6 @@
 import Image from "next/image";
 import { useState } from "react";
-import z from "zod";
 import useImageUpload from "~/hooks/imageUpload";
-import { api } from "~/utils/api";
 import LoadingSpinner from "../ui/LoadingSpinner";
 
 type props = {
@@ -11,17 +9,14 @@ type props = {
 
 const UploadImageInput = ({ onSubmit }: props) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { imageData, uploadHandler, resetImageData } = useImageUpload();
-  const uploadImage = api.upload.uploadImage.useMutation();
+  const { image, setImageHandler, resetImageData, uploadHandler } =
+    useImageUpload();
 
   const submitHandler = async () => {
-    const urlParser = z.string().startsWith("data:image");
-    if (imageData && urlParser.safeParse(imageData).success) {
-      setIsLoading(true);
-      const commentImageUrl = await uploadImage.mutateAsync({
-        image: imageData,
-      });
-      setIsLoading(false);
+    setIsLoading(true);
+    const commentImageUrl = await uploadHandler();
+    setIsLoading(false);
+    if (commentImageUrl) {
       onSubmit(commentImageUrl);
       resetImageData();
     }
@@ -30,8 +25,8 @@ const UploadImageInput = ({ onSubmit }: props) => {
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-white p-2">
       <div className="flex h-64 w-72 items-center justify-center overflow-auto border">
-        {imageData ? (
-          <Image src={imageData} alt="Comment Image" width={300} height={300} />
+        {image ? (
+          <Image src={image} alt="Comment Image" width={300} height={300} />
         ) : (
           <div className="flex items-center justify-center rounded-lg font-semibold">
             Image size smaller than 5 MB
@@ -48,7 +43,7 @@ const UploadImageInput = ({ onSubmit }: props) => {
             hidden
             type="file"
             accept="image/jepg, image/png"
-            onChange={uploadHandler}
+            onChange={setImageHandler}
           />
           <p>Upload Image</p>
         </label>

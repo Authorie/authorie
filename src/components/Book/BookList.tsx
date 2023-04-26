@@ -38,7 +38,6 @@ const BookList = ({ books, penname, isOwner, isArchived }: props) => {
   }
 
   if (books.length == 0 && !isOwner && !isArchived) {
-    console.log(books);
     return (
       <div>
         <p>{`${penname} still has not published any book yet!`}</p>
