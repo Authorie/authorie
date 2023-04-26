@@ -7,7 +7,7 @@ import { api } from "~/utils/api";
 const HomePage = () => {
   const router = useRouter();
   const penname = router.query.penname as string;
-  const { data, fetchNextPage, isFetchingNextPage, isLoading, hasNextPage } =
+  const { data, fetchNextPage, isLoading, hasNextPage } =
     api.chapter.getAllChapters.useInfiniteQuery(
       {
         penname,
@@ -24,29 +24,22 @@ const HomePage = () => {
         .flatMap((page) => page.items)
         .map((chapter) => t.chapter.getData(chapter)) ?? []
   );
-  const chaptersLoading = chapters.some((c) => c.isLoading);
   useInfiniteScroll(fetchNextPage, hasNextPage);
 
   return (
     <div className="flex w-[1024px] flex-col gap-4 py-8">
-      {!chaptersLoading &&
-        chapters
-          .filter(({ isLoading }) => !isLoading)
-          .map(({ data: chapter }) => (
-            <ChapterFeed key={chapter!.id} chapter={chapter!} />
-          ))}
-      {isFetchingNextPage && chaptersLoading && (
-        <div>
-          <ChapterFeedSkeleton />
+      {chapters.map(({ data: chapter }, index) =>
+        chapter ? (
+          <ChapterFeed key={chapter.id} chapter={chapter} />
+        ) : (
+          <ChapterFeedSkeleton key={index} />
+        )
+      )}
+      {!isLoading && chapters.length === 0 && (
+        <div className="flex h-44 items-center justify-center rounded-lg bg-white text-3xl font-semibold">
+          The author has not published anything yet!
         </div>
       )}
-      {!isLoading &&
-        data &&
-        data.pages.flatMap(({ items }) => items).length === 0 && (
-          <div className="flex h-44 items-center justify-center rounded-lg bg-white text-3xl font-semibold">
-            The author has not published anything yet!
-          </div>
-        )}
     </div>
   );
 };

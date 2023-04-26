@@ -1,5 +1,4 @@
 import { useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
 import CategoryBoard from "~/components/CategoryBoard/CategoryBoard";
 import ChapterFeedSkeleton from "~/components/Chapter/ChapterFeedSkeleton";
 import { useFollowedCategories } from "~/hooks/followedCategories";
@@ -7,7 +6,7 @@ import useInfiniteScroll from "~/hooks/infiniteScroll";
 import { useSelectedCategory } from "~/hooks/selectedCategory";
 import { useSelectedDate } from "~/hooks/selectedDate";
 import { api } from "~/utils/api";
-const ChapterFeed = dynamic(() => import("~/components/Chapter/ChapterFeed"));
+import ChapterFeed from "~/components/Chapter/ChapterFeed";
 
 const Home = () => {
   const selectedDate = useSelectedDate();
@@ -20,7 +19,7 @@ const Home = () => {
       : selectedCategories === "following"
         ? followedCategories.map((c) => c.id)
         : [selectedCategories.id];
-  const { data, fetchNextPage, isFetchingNextPage, hasNextPage, isLoading } =
+  const { data, fetchNextPage, hasNextPage } =
     api.chapter.getFeeds.useInfiniteQuery(
       {
         limit: 10,
@@ -37,7 +36,6 @@ const Home = () => {
         .flatMap((page) => page.items)
         .map((chapter) => t.chapter.getData(chapter)) ?? []
   );
-  const chaptersLoading = chapters.some((c) => c.isLoading);
 
   useInfiniteScroll(fetchNextPage, hasNextPage);
 
@@ -45,16 +43,12 @@ const Home = () => {
     <div className="flex flex-col px-10 py-4">
       <CategoryBoard isLogin={status === "authenticated"} />
       <div className="flex flex-col gap-4">
-        {!chaptersLoading &&
-          chapters
-            .filter(({ isLoading }) => !isLoading)
-            .map(({ data: chapter }) => (
-              <ChapterFeed key={chapter!.id} chapter={chapter!} />
-            ))}
-        {(isFetchingNextPage || isLoading) && (
-          <div>
-            <ChapterFeedSkeleton />
-          </div>
+        {chapters.map(({ data: chapter }, index) =>
+          chapter ? (
+            <ChapterFeed key={chapter.id} chapter={chapter} />
+          ) : (
+            <ChapterFeedSkeleton key={index} />
+          )
         )}
       </div>
     </div>
