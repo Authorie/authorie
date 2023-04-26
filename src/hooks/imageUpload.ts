@@ -41,8 +41,9 @@ const useImageUpload = () => {
 
   const uploadHandler = useCallback(async () => {
     if (image === null) return undefined;
-    const filename = image.name;
-    const { presignedUrl, imageUrl } = await createPresignedUrl({ filename });
+    const { presignedUrl, imageUrl } = await createPresignedUrl({
+      type: image.type,
+    });
     await fetch(presignedUrl, {
       mode: "cors",
       method: "PUT",

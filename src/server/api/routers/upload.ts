@@ -8,13 +8,13 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const uploadRouter = createTRPCRouter({
   createPresignedUrl: protectedProcedure
-    .input(z.object({ filename: z.string() }))
+    .input(z.object({ type: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const [, ext] = input.filename.split(".");
-      if (ext !== "png" && ext !== "jpeg") {
+      const [dataType, ext] = input.type.split("/");
+      if (dataType !== "image" || ext === undefined) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "invalid image type",
+          message: "invalid file type",
         });
       }
       const key = `${ctx.session.user.id}/${createId()}.${ext}`;
