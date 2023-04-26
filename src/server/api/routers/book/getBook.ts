@@ -64,7 +64,6 @@ const getBook = publicProcedure
           select: {
             id: true,
             title: true,
-            views: true,
             price: true,
             ownerId: true,
             chapterNo: true,
