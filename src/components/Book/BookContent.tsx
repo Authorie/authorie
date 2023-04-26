@@ -504,55 +504,57 @@ const BookContent = ({ penname, book, categories }: props) => {
               </div>
               {!isEdit && (
                 <div>
-                  <div className="flex flex-col gap-4">
-                    {book.status === BookStatus.INITIAL && (
-                      <button
-                        type="button"
-                        onClick={() => void draftBookHandler()}
-                        className="h-8 w-32 rounded-md bg-gradient-to-b from-authBlue-500 to-authBlue-600 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-authBlue-600 hover:to-authBlue-700"
-                      >
-                        Start Writing
-                      </button>
-                    )}
-                    {book.status === BookStatus.DRAFT && (
-                      <button
-                        type="button"
-                        onClick={() => void publishBookHandler()}
-                        className="h-8 w-32 rounded-lg bg-gradient-to-b from-green-400 to-green-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
-                      >
-                        Publish
-                      </button>
-                    )}
-                    {book.status === BookStatus.PUBLISHED && (
-                      <button
-                        type="button"
-                        onClick={() => void completeBookHandler()}
-                        className="h-8 w-32 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
-                      >
-                        Complete
-                      </button>
-                    )}
-                    {(book.status === BookStatus.INITIAL ||
-                      book.status === BookStatus.DRAFT) && (
+                  {book.isOwner && (
+                    <div className="flex flex-col gap-4">
+                      {book.status === BookStatus.INITIAL && (
                         <button
                           type="button"
-                          onClick={() => void deleteBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          onClick={() => void draftBookHandler()}
+                          className="h-8 w-32 rounded-md bg-gradient-to-b from-authBlue-500 to-authBlue-600 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-authBlue-600 hover:to-authBlue-700"
                         >
-                          Delete
+                          Start Writing
                         </button>
                       )}
-                    {(book.status === BookStatus.PUBLISHED ||
-                      book.status === BookStatus.COMPLETED) && (
+                      {book.status === BookStatus.DRAFT && (
                         <button
                           type="button"
-                          onClick={() => void archiveBookHandler()}
-                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          onClick={() => void publishBookHandler()}
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-green-400 to-green-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
                         >
-                          Archive
+                          Publish
                         </button>
                       )}
-                  </div>
+                      {book.status === BookStatus.PUBLISHED && (
+                        <button
+                          type="button"
+                          onClick={() => void completeBookHandler()}
+                          className="h-8 w-32 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
+                        >
+                          Complete
+                        </button>
+                      )}
+                      {(book.status === BookStatus.INITIAL ||
+                        book.status === BookStatus.DRAFT) && (
+                          <button
+                            type="button"
+                            onClick={() => void deleteBookHandler()}
+                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      {(book.status === BookStatus.PUBLISHED ||
+                        book.status === BookStatus.COMPLETED) && (
+                          <button
+                            type="button"
+                            onClick={() => void archiveBookHandler()}
+                            className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+                          >
+                            Archive
+                          </button>
+                        )}
+                    </div>
+                  )}
                   <div className="my-10 flex flex-col gap-1">
                     <span className="text-6xl font-bold">12</span>
                     <p className="text-xl font-bold text-authGreen-600">

@@ -589,7 +589,7 @@ export default function BookStatusPage() {
                         </>
                       )}
                     </div>
-                    {!isEdit && (
+                    {!isEdit && book.isOwner && (
                       <div className="mt-12 flex flex-col gap-3">
                         {book.status === BookStatus.INITIAL && (
                           <button

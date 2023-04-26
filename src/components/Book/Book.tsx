@@ -46,6 +46,12 @@ const Book = ({ book }: props) => {
       });
       return { prevData };
     },
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.book.getData.setData({ id: variables.bookId }, context?.prevData);
+      }
+      void utils.book.getData.invalidate({ id: variables.bookId });
+    },
   });
   const moveState = api.book.moveState.useMutation({
     async onMutate(variables) {
@@ -60,8 +66,11 @@ const Book = ({ book }: props) => {
       });
       return { prevData };
     },
-    onSettled: () => {
-      void utils.book.invalidate();
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.book.getData.setData({ id: variables.id }, context?.prevData);
+      }
+      void utils.book.getData.invalidate({ id: variables.id });
     },
   });
   const unfavoriteBook = api.book.unfavorite.useMutation({
@@ -77,10 +86,10 @@ const Book = ({ book }: props) => {
       });
       return { previousBook };
     },
-    onError(_error, variables, context) {
-      utils.book.getData.setData(variables, context?.previousBook);
-    },
-    onSettled(_data, _error, variables, _context) {
+    onSettled(_data, error, variables, context) {
+      if (error) {
+        utils.book.getData.setData(variables, context?.previousBook);
+      }
       void utils.book.getData.invalidate(variables);
     },
   });
@@ -235,7 +244,7 @@ const Book = ({ book }: props) => {
                 {book.status}
               </div>
             )}
-            {book.status === BookStatus.DRAFT && (
+            {book.isOwner && book.status === BookStatus.DRAFT && (
               <button
                 onClick={(e) => void publishBookHandler(e)}
                 className="absolute -right-5 -top-2 z-20 rounded-lg bg-green-500 px-2 py-1 text-sm font-semibold text-white shadow-lg hover:bg-green-700"
@@ -243,7 +252,7 @@ const Book = ({ book }: props) => {
                 Publish this book
               </button>
             )}
-            {book.status === BookStatus.ARCHIVED && (
+            {book.isOwner && book.status === BookStatus.ARCHIVED && (
               <button
                 onClick={(e) => void unarchiveBookHandler(e)}
                 className="absolute right-2 top-2 z-20 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700"
@@ -251,7 +260,7 @@ const Book = ({ book }: props) => {
                 Unarchive
               </button>
             )}
-            {book.status === BookStatus.INITIAL && (
+            {book.isOwner && book.status === BookStatus.INITIAL && (
               <button
                 onClick={changeStateHandler}
                 className="absolute bottom-2 right-2 z-20 rounded-full bg-gray-400 px-1 py-1 text-xs font-semibold text-white hover:bg-gray-500"
