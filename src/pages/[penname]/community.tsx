@@ -32,7 +32,7 @@ const CommunityPage = () => {
           <CommunityInput
             penname={user.penname!}
             communityPenname={communityPenname}
-            userImg={user.image || "/placeholder_image.png"}
+            userImg={user.image ?? "/placeholder_profile.png"}
           />
         )}
         {communityPosts.map(({ data: post }) =>
