@@ -30,7 +30,7 @@ const useImageUpload = () => {
   const setImageHandler = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file !== undefined) {
-      setImage(file);
+      if (file.size < 5 * 1024 * 1024 * 1024) setImage(file); // limit 5 GB (R2 limit)
     }
   }, []);
 

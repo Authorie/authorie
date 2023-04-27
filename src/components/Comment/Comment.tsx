@@ -1,9 +1,10 @@
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
-import { CommentButton, LikeButton } from "~/components/action";
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
+import CommentButton from "../action/CommentButton";
+import LikeButton from "../action/LikeButton";
 import ReplyCommentInput from "./ReplyCommentInput";
 
 type props = {
