@@ -57,19 +57,20 @@ const CreateBook = () => {
   });
 
   const bookCreateMutation = api.book.create.useMutation({
-    onSuccess: async () => {
-      await utils.book.invalidate();
+    onSuccess(_data, _variables, _context) {
+      if (user) {
+        void utils.book.getAll.invalidate({ penname: user.penname! });
+        void router.push(`/${user.penname!}/book`);
+      }
     },
   });
 
   const toggleCollaboratorsHandler = (collaborator: User) => {
-    if (addedCollaborators.includes(collaborator)) {
-      setAddedCollaborators(
-        addedCollaborators.filter((data) => data !== collaborator)
-      );
-    } else {
-      setAddedCollaborators([...addedCollaborators, collaborator]);
-    }
+    setAddedCollaborators((prev) =>
+      prev.includes(collaborator)
+        ? prev.filter((data) => data !== collaborator)
+        : [...prev, collaborator]
+    );
   };
 
   const submitHandler = handleSubmit(async ({ title, description }) => {
@@ -94,7 +95,6 @@ const CreateBook = () => {
       success: `Created ${title} successfully!`,
       error: "Error occured while creating book!",
     });
-    void router.push(`/${user.penname!}/book`);
   });
 
   return (
@@ -121,10 +121,10 @@ const CreateBook = () => {
               className="absolute left-4 top-4 h-7 w-8"
             >
               <input
-                type="file"
-                accept="image/png, image/jpeg"
-                name="BookWallpaper"
                 id="BookWallpaper"
+                type="file"
+                accept="image/*"
+                name="BookWallpaper"
                 className="hidden cursor-pointer"
                 onChange={setBookWallpaper}
               />
@@ -138,9 +138,9 @@ const CreateBook = () => {
             <input
               id="BookCover"
               type="file"
-              accept="image/png, image/jpeg"
+              accept="image/*"
               name="BookCover"
-              className="hidden"
+              className="hidden cursor-pointer"
               onChange={setBookCover}
             />
 
@@ -159,9 +159,9 @@ const CreateBook = () => {
           <div className="flex grow flex-col justify-end gap-2 pt-6">
             <div className="flex items-end gap-2">
               <TextareaAutoSize
+                id="title"
                 minRows={1}
                 aria-invalid={errors.title ? "true" : "false"}
-                id="title"
                 className="focus:shadow-outline resize-none bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
                 placeholder="Untitled"
                 {...register("title")}
