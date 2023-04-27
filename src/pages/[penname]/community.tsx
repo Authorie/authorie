@@ -11,13 +11,19 @@ const CommunityPage = () => {
   const { data: user } = api.user.getData.useQuery(undefined, {
     enabled: status === "authenticated",
   });
-  const { data: communityPosts } = api.communityPosts.getAllPosts.useQuery(
+  const { data: communityPostIds } = api.communityPosts.getAllPosts.useQuery(
     {
       penname: communityPenname,
     },
     {
       enabled: router.isReady,
     }
+  );
+  const communityPosts = api.useQueries(
+    (t) =>
+      communityPostIds?.map((communityPostId) =>
+        t.communityPosts.getPost(communityPostId)
+      ) ?? []
   );
   return (
     <div className="flex gap-5">
@@ -29,13 +35,15 @@ const CommunityPage = () => {
             userImg={user.image || "/placeholder_image.png"}
           />
         )}
-        {communityPosts?.map((post) => (
-          <CommunityPost
-            key={post.id}
-            id={post.id}
-            isAuthenticated={status === "authenticated"}
-          />
-        ))}
+        {communityPosts.map(({ data: post }) =>
+          post ? (
+            <CommunityPost
+              key={post.id}
+              post={post}
+              isAuthenticated={status === "authenticated"}
+            />
+          ) : null
+        )}
       </div>
       <div className="sticky top-5 mt-8 flex h-96 w-[380px] items-center justify-center rounded-lg bg-white text-2xl font-bold">
         Authorie
