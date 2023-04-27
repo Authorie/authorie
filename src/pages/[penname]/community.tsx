@@ -1,7 +1,9 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import CommunityInput from "~/components/Community/CommunityInput";
+import CommunityInputSkeleton from "~/components/Community/CommunityInputSkeleton";
 import CommunityPost from "~/components/Community/CommunityPost";
+import CommunitySkeleton from "~/components/Community/CommunitySkeleton";
 import { api } from "~/utils/api";
 
 const CommunityPage = () => {
@@ -28,21 +30,25 @@ const CommunityPage = () => {
   return (
     <div className="flex gap-5">
       <div className="my-8 flex w-fit flex-col items-start justify-start gap-7">
-        {user && (
+        {user ? (
           <CommunityInput
             penname={user.penname!}
             communityPenname={communityPenname}
             userImg={user.image ?? "/placeholder_profile.png"}
           />
+        ) : (
+          <CommunityInputSkeleton />
         )}
-        {communityPosts.map(({ data: post }) =>
+        {communityPosts.map(({ data: post }, index) =>
           post ? (
             <CommunityPost
               key={post.id}
               post={post}
               isAuthenticated={status === "authenticated"}
             />
-          ) : null
+          ) : (
+            <CommunitySkeleton key={index} />
+          )
         )}
       </div>
       <div className="sticky top-5 mt-8 flex h-96 w-[380px] items-center justify-center rounded-lg bg-white text-2xl font-bold">
