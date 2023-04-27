@@ -40,8 +40,8 @@ const BookCoverEditable = ({
               <Image
                 src={uploadCover ? uploadCover : coverImage!}
                 alt={`cover image of the book called ${title}`}
-                width={144}
-                height={208}
+                fill
+                className="object-cover"
               />
             </div>
           ) : (

@@ -263,8 +263,8 @@ const Book = ({ book }: props) => {
               <Image
                 src={book.coverImage}
                 alt="book picture"
-                width={208}
-                height={288}
+                fill
+                className="object-cover"
               />
             </div>
           ) : (

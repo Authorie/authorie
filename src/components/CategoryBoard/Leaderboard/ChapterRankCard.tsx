@@ -35,8 +35,8 @@ const ChapterRankCard = ({
             <Image
               src={image}
               alt={`${chapterTitle}'s cover image`}
-              width={144}
-              height={208}
+              fill
+              className="object-cover"
             />
           </div>
         ) : (

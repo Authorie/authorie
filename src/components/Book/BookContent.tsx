@@ -83,29 +83,29 @@ const BookContent = ({ penname, book, categories }: props) => {
       utils.book.getData.setData({ id: variables.id }, (old) =>
         old
           ? {
-            ...old,
-            description: variables.description
-              ? variables.description
-              : old.description,
-            coverImage: variables.coverImageUrl
-              ? variables.coverImageUrl
-              : old.coverImage,
-            wallpaperImage: variables.wallpaperImageUrl
-              ? variables.wallpaperImageUrl
-              : old.wallpaperImage,
-            categories: addedCategories.map((category) => ({ category })),
-            chapters: variables.chaptersArrangement
-              ? variables.chaptersArrangement.map((chapterId, index) => {
-                return {
-                  ...old.chapters.find(
-                    (chapter) => chapter.id === chapterId
-                  )!,
-                  chapterNo: index + 1,
-                };
-              })
-              : old.chapters,
-            updatedAt: dayjs().toDate(),
-          }
+              ...old,
+              description: variables.description
+                ? variables.description
+                : old.description,
+              coverImage: variables.coverImageUrl
+                ? variables.coverImageUrl
+                : old.coverImage,
+              wallpaperImage: variables.wallpaperImageUrl
+                ? variables.wallpaperImageUrl
+                : old.wallpaperImage,
+              categories: addedCategories.map((category) => ({ category })),
+              chapters: variables.chaptersArrangement
+                ? variables.chaptersArrangement.map((chapterId, index) => {
+                    return {
+                      ...old.chapters.find(
+                        (chapter) => chapter.id === chapterId
+                      )!,
+                      chapterNo: index + 1,
+                    };
+                  })
+                : old.chapters,
+              updatedAt: dayjs().toDate(),
+            }
           : undefined
       );
       return { prevData };
@@ -287,8 +287,8 @@ const BookContent = ({ penname, book, categories }: props) => {
                       <Image
                         src={bookCover ?? book.coverImage!}
                         alt="book's cover image"
-                        width={144}
-                        height={208}
+                        fill
+                        className="object-cover"
                       />
                     </div>
                   ) : (
@@ -376,10 +376,10 @@ const BookContent = ({ penname, book, categories }: props) => {
                               (category: Category) =>
                                 !addedCategories.includes(category)
                             ).length === 0 && (
-                                <p className="text-sm font-semibold">
-                                  No more categories left...
-                                </p>
-                              )}
+                              <p className="text-sm font-semibold">
+                                No more categories left...
+                              </p>
+                            )}
                           </div>
                         </Popover.Panel>
                         <Popover.Button
@@ -429,8 +429,9 @@ const BookContent = ({ penname, book, categories }: props) => {
           <div className="flex grow flex-col">
             <div
               className={`
-          ${isEdit ? "justify-end gap-2" : "justify-center"
-                } ${"flex h-52 flex-col gap-2"}`}
+          ${
+            isEdit ? "justify-end gap-2" : "justify-center"
+          } ${"flex h-52 flex-col gap-2"}`}
             >
               {!isEdit && (
                 <div className="flex max-w-2xl flex-wrap gap-2 ">
@@ -472,10 +473,11 @@ const BookContent = ({ penname, book, categories }: props) => {
                       />
                       <p
                         className={`${"text-xs"} 
-                    ${watch("title") && watch("title").length > 100
-                            ? "text-red-500"
-                            : "text-black"
-                          }`}
+                    ${
+                      watch("title") && watch("title").length > 100
+                        ? "text-red-500"
+                        : "text-black"
+                    }`}
                       >
                         {watch("title") ? watch("title").length : 0}/100
                       </p>
@@ -511,10 +513,11 @@ const BookContent = ({ penname, book, categories }: props) => {
                     />
                     <p
                       className={`${"text-xs"} 
-                    ${watch("description") && watch("description").length > 500
-                          ? "text-red-500"
-                          : "text-black"
-                        }`}
+                    ${
+                      watch("description") && watch("description").length > 500
+                        ? "text-red-500"
+                        : "text-black"
+                    }`}
                     >
                       {watch("description") ? watch("description").length : 0}
                       /500
