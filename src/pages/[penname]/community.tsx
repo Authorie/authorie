@@ -53,7 +53,7 @@ const CommunityPage = () => {
           )
         )}
         {communityPosts.length === 0 && (
-          <div className="flex h-96 w-[580px] items-center justify-center rounded-lg bg-white text-center text-lg font-semibold">
+          <div className="flex h-96 w-[672px] items-center justify-center rounded-lg bg-white text-center text-lg font-semibold">
             This community page still does not have any discussions.
           </div>
         )}

@@ -168,10 +168,11 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${watch("title") && watch("title").length > 100
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            watch("title") && watch("title").length > 100
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {watch("title") ? watch("title").length : 0}/100
               </p>
@@ -200,7 +201,7 @@ const CreateBook = () => {
                     ))}
                   </div>
                   <Popover className="relative">
-                    <Popover.Panel className="absolute bottom-0 left-7 z-10">
+                    <Popover.Panel className="absolute -left-10 bottom-0 z-10 max-h-96 overflow-y-auto">
                       <AddAuthorModal
                         toogleCollaboratorsHandler={toggleCollaboratorsHandler}
                         addedCollaborators={addedCollaborators}
@@ -242,8 +243,8 @@ const CreateBook = () => {
                   </div>
                   {categories && (
                     <Popover className="relative">
-                      <Popover.Panel className="absolute bottom-0 left-7 z-10">
-                        <div className="grid w-max grid-cols-2 gap-2 rounded-xl bg-gray-200 p-2">
+                      <Popover.Panel className="absolute -left-10 bottom-0 z-10">
+                        <div className="grid h-96 w-max grid-cols-2 gap-2 overflow-y-auto rounded-xl bg-gray-200 p-2">
                           {categories
                             .filter(
                               (category) => !addedCategories.includes(category)
@@ -270,8 +271,9 @@ const CreateBook = () => {
                         type="button"
                       >
                         <div className="flex items-center justify-center rounded-xl bg-authYellow-300 p-1 hover:bg-authYellow-500">
-                          <div className="flex items-center justify-center rounded-xl bg-gray-100 p-0.5">
+                          <div className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 p-0.5 px-2 text-xs font-semibold">
                             <HiOutlinePlus className="h-3 w-3 stroke-[3]" />
+                            <span>Add categories</span>
                           </div>
                         </div>
                         <p className="sr-only">open category list</p>
@@ -291,11 +293,12 @@ const CreateBook = () => {
               />
               <p
                 className={`${"text-xs"} 
-                          ${watch("description") &&
-                    watch("description").length > 500
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            watch("description") &&
+                            watch("description").length > 500
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {watch("description") ? watch("description").length : 0}
                 /500
