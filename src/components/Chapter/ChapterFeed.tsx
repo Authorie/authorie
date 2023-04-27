@@ -5,12 +5,11 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiLockClosed } from "react-icons/hi2";
+import { CommentButton, LikeButton } from "~/components/action";
 import { useEditor } from "~/hooks/editor";
 import { type RouterOutputs } from "~/utils/api";
 import DialogBuyChapter from "../Dialog/DialogBuyChapter";
-import CommentButton from "../action/CommentButton";
 import { DateLabel } from "../action/DateLabel";
-import LikeButton from "../action/LikeButton";
 
 type props = {
   chapter: RouterOutputs["chapter"]["getData"];

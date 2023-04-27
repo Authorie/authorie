@@ -29,7 +29,7 @@ const UploadImageInput = ({ onSubmit }: props) => {
           <Image src={image} alt="Comment Image" width={300} height={300} />
         ) : (
           <div className="flex items-center justify-center rounded-lg font-semibold">
-            Image size smaller than 5 GB
+            Image size smaller than 5 MB
           </div>
         )}
       </div>

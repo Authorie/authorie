@@ -8,7 +8,7 @@ type props = {
   small?: boolean;
 };
 
-const LikeButton = ({
+export const LikeButton = ({
   isAuthenticated,
   isLiked,
   numberOfLike,
@@ -21,8 +21,9 @@ const LikeButton = ({
   return (
     <div
       className={`flex cursor-pointer items-center transition duration-100 ease-in-out hover:-translate-y-[1px] hover:scale-105 hover:text-red-400
-        ${!isAuthenticated ? "pointer-events-none" : ""} ${numberOfLike > 0 ? "gap-1" : ""
-        }`}
+        ${!isAuthenticated ? "pointer-events-none" : ""} ${
+        numberOfLike > 0 ? "gap-1" : ""
+      }`}
       onClick={onClickHandler}
     >
       {isLiked ? (
@@ -40,5 +41,3 @@ const LikeButton = ({
     </div>
   );
 };
-
-export default LikeButton;

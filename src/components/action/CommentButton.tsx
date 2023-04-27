@@ -6,7 +6,11 @@ type props = {
   small?: boolean;
 };
 
-const CommentButton = ({ numberOfComments, onClickHandler, small }: props) => {
+export const CommentButton = ({
+  numberOfComments,
+  onClickHandler,
+  small,
+}: props) => {
   const textSize = small ? "xs" : "sm";
   const size = small ? "4" : "6";
 
@@ -22,5 +26,3 @@ const CommentButton = ({ numberOfComments, onClickHandler, small }: props) => {
     </div>
   );
 };
-
-export default CommentButton;
