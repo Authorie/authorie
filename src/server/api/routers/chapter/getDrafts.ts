@@ -13,7 +13,7 @@ const getDraftChapters = protectedProcedure.query(async ({ ctx }) => {
         },
         {
           publishedAt: {
-            lt: minPublishedAt,
+            gt: minPublishedAt,
           },
         },
       ],
