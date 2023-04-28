@@ -63,17 +63,6 @@ const createChapter = protectedProcedure
       });
     }
 
-    const chapterNo = publishedAt
-      ? (await ctx.prisma.chapter.count({
-        where: {
-          bookId,
-          publishedAt: {
-            lte: publishedAt,
-          },
-        },
-      })) + 1
-      : undefined;
-
     if (chapterId) {
       const chapter = await ctx.prisma.chapter.findFirstOrThrow({
         where: {
@@ -88,32 +77,69 @@ const createChapter = protectedProcedure
           message: "You can't change the book of a chapter",
         });
       }
-
-      return await ctx.prisma.chapter.update({
-        where: { id: chapterId },
-        data: {
-          title,
-          content,
-          bookId,
-          price,
-          chapterNo,
-          publishedAt,
-          ownerId: ctx.session.user.id,
-        },
-      });
-    } else {
-      return await ctx.prisma.chapter.create({
-        data: {
-          title,
-          content,
-          bookId,
-          price,
-          chapterNo,
-          publishedAt,
-          ownerId: ctx.session.user.id,
-        },
-      });
     }
+
+    return await ctx.prisma.$transaction(async (trx) => {
+      const chapterNo = publishedAt
+        ? (await ctx.prisma.chapter.count({
+          where: {
+            bookId,
+            publishedAt: {
+              lte: publishedAt,
+            },
+          },
+        })) + 1
+        : undefined;
+
+      if (publishedAt) {
+        await trx.chapter.updateMany({
+          where: {
+            bookId,
+            chapterNo: {
+              gte: chapterNo,
+            },
+          },
+          data: {
+            chapterNo: {
+              increment: 1,
+            },
+          },
+        });
+      }
+
+      if (chapterId) {
+        return await trx.chapter.update({
+          where: { id: chapterId },
+          data: {
+            title,
+            content,
+            bookId,
+            price,
+            chapterNo,
+            publishedAt,
+            ownerId: ctx.session.user.id,
+          },
+          select: {
+            id: true,
+          },
+        });
+      } else {
+        return await trx.chapter.create({
+          data: {
+            title,
+            content,
+            bookId,
+            price,
+            chapterNo,
+            publishedAt,
+            ownerId: ctx.session.user.id,
+          },
+          select: {
+            id: true,
+          },
+        });
+      }
+    });
   });
 
 export default createChapter;
