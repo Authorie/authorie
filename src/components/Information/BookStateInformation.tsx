@@ -10,7 +10,7 @@ const BookStateInformation = () => {
         </div>
         <div className="flex items-center gap-2 px-2">
           <p>Click</p>
-          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-gradient-to-b from-authBlue-500 to-authBlue-600 text-sm font-semibold text-white">
+          <div className="bg-bue-500 flex h-8 w-32 items-center justify-center rounded-md text-sm font-semibold text-white">
             <p>Start Writing</p>
           </div>
           <p>to move to Draft state</p>
@@ -23,7 +23,7 @@ const BookStateInformation = () => {
         </div>
         <div className="flex items-center gap-2 px-2">
           <p>Click</p>
-          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-gradient-to-b from-green-500 to-green-600 text-sm font-semibold text-white">
+          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-green-500 text-sm font-semibold text-white">
             <p>Publish</p>
           </div>
           <p>to move to Publish state</p>
@@ -36,7 +36,7 @@ const BookStateInformation = () => {
         </div>
         <div className="flex items-center gap-2 px-2">
           <p>Click</p>
-          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-gradient-to-b from-gray-400 to-gray-500 text-sm font-semibold text-white">
+          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-gray-500 text-sm font-semibold text-white">
             <p>Complete</p>
           </div>
           <p>to move to Complete state</p>
@@ -56,7 +56,7 @@ const BookStateInformation = () => {
         </div>
         <div className="flex items-center gap-2 px-2">
           <p>Click</p>
-          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white">
+          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-red-500 text-sm font-semibold text-white">
             <p>Archive</p>
           </div>
           <p>to move to Archive state</p>

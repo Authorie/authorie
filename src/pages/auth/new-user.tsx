@@ -1,99 +1,148 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useForm, type SubmitHandler } from "react-hook-form";
-import z from "zod";
-import LoadingSpinner from "~/components/ui/LoadingSpinner";
-import { api } from "~/utils/api";
-
-const validationSchema = z.object({
-  penname: z
-    .string()
-    .max(50, { message: "Your penname is too long" })
-    .min(1, { message: "Your penname is required" }),
-});
-
-type ValidationSchema = z.infer<typeof validationSchema>;
+import { useState } from "react";
+import NewUserForm from "~/components/NewUser/NewUserForm";
+import UserTutorial from "~/components/NewUser/UserTutorial";
+import { HiArrowLeft } from "react-icons/hi2";
 
 const NewUser = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ValidationSchema>({
-    resolver: zodResolver(validationSchema),
-  });
-  const router = useRouter();
-  const context = api.useContext();
-  useSession({
-    required: true,
-    onUnauthenticated() {
-      void signIn();
+  const [currentSlide, setCurrentSlide] = useState(1);
+  const slides = [
+    {
+      id: 1,
+      title: "Welcome to Authorie",
+      description:
+        "In Authorie, you can create books and chapters or invite other people to write a book with you!",
+      buttonName: "Start Tutorial",
+      buttonColor: "blue",
     },
-  });
-  api.user.getData.useQuery(undefined, {
-    onSuccess(data) {
-      if (data.penname) void router.replace("/");
+    {
+      id: 2,
+      title: "Book State",
+      description:
+        "There are 4 main book state in Authorie and each state function differently",
+      buttonName: "Next",
+      buttonColor: "gray",
     },
-  });
-  const updateUser = api.user.update.useMutation();
-  const onSubmitHandler: SubmitHandler<ValidationSchema> = (data) => {
-    updateUser.mutate(
-      { penname: data.penname },
-      {
-        onSuccess() {
-          void context.user.getData.invalidate();
-          if (router.query.callbackUrl) {
-            void router.replace(router.query.callbackUrl as string);
-          } else {
-            void router.replace("/");
-          }
-        },
-      }
-    );
+    {
+      id: 3,
+      title: "Initial State",
+      description:
+        "You can invite authors to write with you only in this state, but you will not be able to write anything yet. Now click this button to start writing the book",
+      buttonName: "Start Writing",
+      buttonColor: "blue",
+    },
+    {
+      id: 4,
+      title: "Draft State",
+      description:
+        "Now, you can write and save as many chapters as you want and readers cannot see your book yet. Click on this button so that everyone can see your book.",
+      buttonName: "Publish",
+      buttonColor: "green",
+    },
+    {
+      id: 5,
+      title: "Publish State",
+      description:
+        "Everyone can see your book now. You can start publish chapters. After you finished writing this book, you can click this button!",
+      buttonName: "Complete",
+      buttonColor: "gray",
+    },
+    {
+      id: 6,
+      title: "Complete State",
+      description:
+        "Right now, the user know that your book has been completed. At the same time, you will no longer be able to add more chapters and cannot reverse the state back to publish",
+      buttonName: "Archive",
+      buttonColor: "red",
+    },
+    {
+      id: 7,
+      title: "Archive and Delete",
+      description:
+        "You can archive your book on publish and complete state and delete your book on initial state and draft state",
+      buttonName: "Next",
+      buttonColor: "gray",
+    },
+    {
+      id: 8,
+      title: "Now you are ready to create your first book and chapter!",
+      description: "",
+      buttonName: "Let's go",
+      buttonColor: "green",
+    },
+  ];
+
+  const goToSlide = (id: number) => {
+    setCurrentSlide(id);
   };
-  const errorsExist = Boolean(errors.penname || updateUser.isError);
+
+  const nextSlide = () => {
+    setCurrentSlide(currentSlide + 1);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(currentSlide === 1 ? currentSlide : currentSlide - 1);
+  };
 
   return (
-    <form
-      onSubmit={(e) => void handleSubmit(onSubmitHandler)(e)}
-      className="flex h-screen flex-col items-center justify-center gap-3"
-    >
-      <div className="grid items-center gap-x-6 gap-y-2">
-        <label className="text-md font-bold text-gray-700">
-          Enter your author name:
-        </label>
-        <input
-          {...register("penname")}
-          aria-invalid={errorsExist}
-          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${errorsExist ? "border-red-500" : ""
-            }`}
-          id="username"
-          type="text"
-          placeholder="your pen name..."
-        />
+    <div className="relative h-screen overflow-hidden">
+      {currentSlide !== 1 && (
         <div
-          aria-hidden={!errorsExist}
-          className="visible col-start-2 self-start aria-hidden:invisible"
+          onClick={prevSlide}
+          className="absolute left-32 top-40 z-50 flex cursor-pointer items-center gap-2 rounded-full px-2 py-1 hover:bg-gray-200"
         >
-          <p role="alert" className="text-sm text-red-600">
-            {errors.penname
-              ? "Please enter your pen name."
-              : updateUser.isError
-                ? "The pen name already exists. Please enter a new one."
-                : ""}
-          </p>
+          <HiArrowLeft className="h-6 w-6" />
+          <span className="text-lg font-semibold">back</span>
         </div>
-      </div>
-      <button
-        type="submit"
-        disabled={updateUser.isLoading}
-        aria-disabled={updateUser.isLoading}
-        className="flex h-10 w-32 items-center justify-center rounded-full bg-green-500 px-8 py-2 font-bold text-white hover:bg-green-600"
+      )}
+      {slides.map((tutorial) => (
+        <div
+          key={tutorial.id}
+          className={`absolute inset-0 flex h-full w-full items-center justify-center bg-cover bg-center transition-transform duration-500 ${
+            tutorial.id === currentSlide
+              ? "translate-x-0 transform"
+              : tutorial.id < currentSlide
+              ? "-translate-x-full transform"
+              : "translate-x-full transform"
+          }`}
+        >
+          <UserTutorial
+            title={tutorial.title}
+            description={tutorial.description}
+            buttonName={tutorial.buttonName}
+            buttonColor={tutorial.buttonColor}
+            onClick={nextSlide}
+          />
+        </div>
+      ))}
+      <div
+        className={`absolute inset-0 flex h-full w-full items-center justify-center bg-cover bg-center transition-transform duration-500 ${
+          9 === currentSlide
+            ? "translate-x-0 transform"
+            : 9 < currentSlide
+            ? "-translate-x-full transform"
+            : "translate-x-full transform"
+        }`}
       >
-        {updateUser.isLoading ? <LoadingSpinner /> : <span>Confirm</span>}
-      </button>
-    </form>
+        <NewUserForm />
+      </div>
+      <div className="absolute bottom-32 z-50 flex w-full items-center justify-center gap-4">
+        {slides.map((slide) => (
+          <button
+            key={slide.id}
+            className={`h-3 w-3 rounded-full border border-gray-300 hover:opacity-70 focus:outline-none ${
+              slide.id === currentSlide ? "bg-gray-300" : ""
+            }`}
+            onClick={() => goToSlide(slide.id)}
+          ></button>
+        ))}
+        <button
+          className={`h-3 w-3 rounded-full border border-gray-300 hover:opacity-70 focus:outline-none ${
+            9 === currentSlide ? "bg-gray-300" : ""
+          }`}
+          onClick={() => goToSlide(9)}
+        ></button>
+      </div>
+    </div>
   );
 };
 

@@ -188,7 +188,7 @@ export const BookStateButton = ({ book, penname }: props) => {
         <button
           type="button"
           onClick={() => void onDraftHandler()}
-          className="h-8 w-32 rounded-md bg-gradient-to-b from-authBlue-500 to-authBlue-600 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-authBlue-600 hover:to-authBlue-700"
+          className="h-10 w-36 rounded-md bg-blue-500 font-semibold text-white outline-none hover:bg-blue-600 focus:outline-none"
         >
           Start Writing
         </button>
@@ -197,7 +197,7 @@ export const BookStateButton = ({ book, penname }: props) => {
         <button
           type="button"
           onClick={() => void onPublishHandler()}
-          className="h-8 w-32 rounded-lg bg-gradient-to-b from-green-400 to-green-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-green-500 hover:to-green-600"
+          className="h-10 w-36 rounded-lg bg-green-500 font-semibold text-white outline-none hover:bg-green-600 focus:outline-none"
         >
           Publish
         </button>
@@ -206,7 +206,7 @@ export const BookStateButton = ({ book, penname }: props) => {
         <button
           type="button"
           onClick={() => void onCompleteHandler()}
-          className="h-8 w-32 rounded-lg bg-gradient-to-b from-gray-400 to-gray-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-gray-500 hover:to-gray-600"
+          className="h-10 w-36 rounded-lg bg-gray-500 font-semibold text-white outline-none hover:bg-gray-600 focus:outline-none"
         >
           Complete
         </button>
@@ -216,7 +216,7 @@ export const BookStateButton = ({ book, penname }: props) => {
         <button
           type="button"
           onClick={() => void onDeleteHandler()}
-          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+          className="h-10 w-36 rounded-lg bg-red-500 font-semibold text-white outline-none hover:bg-red-600 focus:outline-none"
         >
           Delete
         </button>
@@ -226,7 +226,7 @@ export const BookStateButton = ({ book, penname }: props) => {
         <button
           type="button"
           onClick={() => void onArchiveHandler()}
-          className="h-8 w-32 rounded-lg bg-gradient-to-b from-red-400 to-red-500 text-sm font-semibold text-white hover:bg-gradient-to-b hover:from-red-500 hover:to-red-600"
+          className="h-10 w-36 rounded-lg bg-red-500 font-semibold text-white outline-none hover:bg-red-600 focus:outline-none"
         >
           Archive
         </button>
