@@ -42,7 +42,7 @@ const BookPage = () => {
     );
 
   return (
-    <div className="mb-8 mt-6 w-[1024px]">
+    <div className="mb-8 mt-6 w-full px-24">
       <div className={"max-h-full rounded-lg p-4 px-6 shadow-lg"}>
         <div className="flex items-center justify-between">
           {isOwner && (

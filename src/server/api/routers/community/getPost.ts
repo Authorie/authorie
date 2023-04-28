@@ -25,6 +25,9 @@ const getPost = publicProcedure
           select: {
             id: true,
           },
+          orderBy: {
+            createdAt: "desc"
+          }
         },
         _count: true,
       },

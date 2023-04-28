@@ -10,12 +10,9 @@ const CommunityPage = () => {
   const router = useRouter();
   const { status } = useSession();
   const communityPenname = router.query.penname as string;
-  const { data: user, isInitialLoading } = api.user.getData.useQuery(
-    undefined,
-    {
-      enabled: status === "authenticated",
-    }
-  );
+  const { data: user } = api.user.getData.useQuery(undefined, {
+    enabled: status === "authenticated",
+  });
   const { data: communityPostIds } = api.communityPosts.getAllPosts.useQuery(
     {
       penname: communityPenname,
@@ -31,16 +28,17 @@ const CommunityPage = () => {
       ) ?? []
   );
   return (
-    <div className="flex gap-5">
-      <div className="mt-8 flex w-fit flex-col items-start justify-start gap-7">
-        {user && (
+    <div className="grid w-full grid-cols-3 gap-5 px-24 pb-12">
+      <div className="col-span-2 mt-8 flex flex-col items-start justify-start gap-7">
+        {user ? (
           <CommunityInput
             penname={user.penname!}
             communityPenname={communityPenname}
             userImg={user.image ?? "/placeholder_profile.png"}
           />
+        ) : (
+          <CommunityInputSkeleton />
         )}
-        {isInitialLoading && <CommunityInputSkeleton />}
         {communityPosts.map(({ data: post }, index) =>
           post ? (
             <CommunityPost
@@ -52,13 +50,13 @@ const CommunityPage = () => {
             <CommunitySkeleton key={index} />
           )
         )}
-        {communityPosts.length === 0 && (
-          <div className="flex w-[672px] grow items-center justify-center rounded-lg bg-white text-center text-lg font-semibold">
+        {communityPostIds && communityPostIds.length === 0 && (
+          <div className="flex w-full grow items-center justify-center rounded-lg bg-white text-center text-lg font-semibold">
             This community page still does not have any discussions.
           </div>
         )}
       </div>
-      <div className="sticky top-5 mt-8 flex h-96 w-[380px] items-center justify-center rounded-lg bg-white text-2xl font-bold">
+      <div className="sticky top-5 mt-8 flex h-96 grow items-center justify-center rounded-lg bg-white text-2xl font-bold">
         Authorie
       </div>
     </div>

@@ -42,7 +42,7 @@ const UploadImageInput = ({ onSubmit }: props) => {
             id="upload-image"
             hidden
             type="file"
-            accept="image/jepg, image/png"
+            accept="image/*"
             onChange={setImageHandler}
           />
           <p>Upload Image</p>

@@ -39,6 +39,9 @@ const CommunityPost = ({ isAuthenticated, post }: props) => {
       void utils.communityPosts.getPost.invalidate({ id: postId });
     },
   });
+  const children = api.useQueries((t) =>
+    post.children.map((reply) => t.communityPosts.getPost(reply))
+  );
 
   const onLikeHandler = () => {
     toggleLike.mutate({
@@ -48,7 +51,7 @@ const CommunityPost = ({ isAuthenticated, post }: props) => {
   };
 
   return (
-    <div className="flex w-[672px] flex-col rounded-xl bg-white px-6">
+    <div className="flex w-full flex-col rounded-xl bg-white px-6">
       <div className="flex w-full flex-col py-4">
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
@@ -94,15 +97,19 @@ const CommunityPost = ({ isAuthenticated, post }: props) => {
             {post.children?.length}
           </div>
         </div>
-        <CommunityCommentInput id={post.id} />
+        <CommunityCommentInput
+          id={post.id}
+          openCommentHandler={() => setOpenComment(true)}
+        />
       </div>
       {openComment && (
         <CommentContainer
+          comments={children.map(({ data }) => data)}
           isAuthenticated={isAuthenticated}
-          commentsId={post.children}
           noMoreReply={false}
         />
       )}
+      <button type="submit" className="hidden" />
     </div>
   );
 };

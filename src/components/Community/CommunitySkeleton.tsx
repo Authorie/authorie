@@ -1,6 +1,6 @@
 const CommunitySkeleton = () => {
   return (
-    <div className="flex w-[672px] flex-col rounded-xl bg-white px-6">
+    <div className="flex w-full flex-col rounded-xl bg-white px-6">
       <div className="flex w-full animate-pulse flex-col py-4">
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 overflow-hidden rounded-full bg-slate-200"></div>

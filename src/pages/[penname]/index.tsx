@@ -27,7 +27,7 @@ const HomePage = () => {
   useInfiniteScroll(fetchNextPage, hasNextPage);
 
   return (
-    <div className="flex w-[1024px] flex-col gap-4 py-8">
+    <div className="grid w-full grid-flow-row gap-4 px-24 py-8">
       {chapters.map(({ data: chapter }, index) =>
         chapter ? (
           <ChapterFeed key={chapter.id} chapter={chapter} />

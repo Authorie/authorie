@@ -1,4 +1,4 @@
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import Image from "next/image";
 import { DateLabel } from "../action/DateLabel";
 import { LikeButton } from "../action";
@@ -8,25 +8,27 @@ import CommentContainer from "./CommentContainer";
 import CommunityCommentInput from "./CommunityCommentInput";
 
 type props = {
-  id: string;
+  comment: RouterOutputs["communityPosts"]["getPost"];
   isAuthenticated: boolean;
   noMoreReply: boolean;
 };
 
-const CommunityComment = ({ id, isAuthenticated, noMoreReply }: props) => {
-  const { data: comment } = api.communityPosts.getPost.useQuery({ id });
-  const [openComment, setOpenComment] = useState(false);
+const CommunityComment = ({ comment, isAuthenticated, noMoreReply }: props) => {
   const utils = api.useContext();
+  const [openComment, setOpenComment] = useState(false);
   const toggleLike = api.communityPosts.toggleLikePost.useMutation({
     onSuccess() {
-      void utils.communityPosts.getPost.invalidate({ id });
+      void utils.communityPosts.getPost.invalidate({ id: comment.id });
     },
   });
+  const children = api.useQueries((t) =>
+    comment.children.map((reply) => t.communityPosts.getPost(reply))
+  );
 
   const onLikeHandler = () => {
     toggleLike.mutate({
-      postId: id,
-      like: !comment?.isLike,
+      postId: comment.id,
+      like: !comment.isLike,
     });
   };
 
@@ -34,9 +36,9 @@ const CommunityComment = ({ id, isAuthenticated, noMoreReply }: props) => {
     <div className="flex flex-col border-t pt-2">
       <div className="flex items-center gap-2">
         <div className="h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
-          {comment?.user.image && (
+          {comment.user.image && (
             <Image
-              src={comment?.user.image}
+              src={comment.user.image}
               alt="user's profile image"
               width={50}
               height={50}
@@ -44,10 +46,10 @@ const CommunityComment = ({ id, isAuthenticated, noMoreReply }: props) => {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold">{comment?.user.penname}</p>
+          <p className="text-sm font-semibold">{comment.user.penname}</p>
           <p className="mb-2 text-gray-500">.</p>
           <DateLabel
-            date={comment?.createdAt as Date}
+            date={comment.createdAt}
             withTime={false}
             size={"xs"}
             hover
@@ -56,22 +58,22 @@ const CommunityComment = ({ id, isAuthenticated, noMoreReply }: props) => {
       </div>
       <div className="ml-9 flex flex-col">
         <div className="mb-2 flex flex-col gap-3">
-          {comment?.image && (
+          {comment.image && (
             <Image
-              src={comment?.image}
+              src={comment.image}
               width={100}
               height={100}
               alt="comment image"
             />
           )}
-          <p className="text-sm">{comment?.content}</p>
+          <p className="text-sm">{comment.content}</p>
         </div>
         <div className="mb-2 flex items-center">
           <div className="w-10">
             <LikeButton
               isAuthenticated={isAuthenticated}
-              isLiked={comment?.isLike || false}
-              numberOfLike={comment?._count.likes || 0}
+              isLiked={comment.isLike || false}
+              numberOfLike={comment._count.likes || 0}
               onClickHandler={() => void onLikeHandler()}
               small
             />
@@ -83,7 +85,7 @@ const CommunityComment = ({ id, isAuthenticated, noMoreReply }: props) => {
                 onClick={() => setOpenComment((prev) => !prev)}
               >
                 <HiChatBubbleBottomCenterText className="h-4 w-4" />
-                {comment?.children?.length}
+                {comment.children?.length}
               </div>
             </div>
           )}
@@ -91,11 +93,14 @@ const CommunityComment = ({ id, isAuthenticated, noMoreReply }: props) => {
         {!noMoreReply && openComment && (
           <div>
             <div className="mb-2">
-              <CommunityCommentInput id={id} />
+              <CommunityCommentInput
+                id={comment.id}
+                openCommentHandler={() => setOpenComment(true)}
+              />
             </div>
             <CommentContainer
+              comments={children.map(({ data }) => data)}
               isAuthenticated={isAuthenticated}
-              commentsId={comment?.children}
               noMoreReply={true}
             />
           </div>
