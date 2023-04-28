@@ -114,13 +114,20 @@ const CreateChapter = () => {
 
   useEffect(() => {
     const chapterId = router.query.chapterId as string | undefined;
+    if (chapterId && chapter && chapter.id === chapterId) return;
     if (chapterId && !draftChaptersLoading) {
       const chapter = draftChapters.find(
         ({ data: chapter }) => chapter?.id === chapterId
       );
       if (chapter && chapter.data) selectDraftHandler(chapter.data);
     }
-  }, [router, selectDraftHandler, draftChaptersLoading, draftChapters]);
+  }, [
+    router,
+    selectDraftHandler,
+    draftChaptersLoading,
+    draftChapters,
+    chapter,
+  ]);
 
   return (
     <div className="flex-0 flex h-full gap-4 rounded-b-2xl bg-white px-4 py-5">
