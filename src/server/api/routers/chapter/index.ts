@@ -10,9 +10,11 @@ import getLeaderboard from "./getLeaderboard";
 import like from "./like";
 import readChapter from "./readChapter";
 import unlike from "./unlike";
+import getPurchased from "./getPurchased";
 
 export const chapterRouter = createTRPCRouter({
   getAllChapters: getAllChapters,
+  getPurchased: getPurchased,
   getFeeds: getFeeds,
   getData: getChapter,
   getDrafts: getDraftChapters,

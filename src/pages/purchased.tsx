@@ -1,7 +1,5 @@
 import { api } from "~/utils/api";
 import useInfiniteScroll from "~/hooks/infiniteScroll";
-import ChapterFeed from "~/components/Chapter/ChapterFeed";
-import ChapterFeedSkeleton from "~/components/Chapter/ChapterFeedSkeleton";
 import ChapterPurchased from "~/components/Chapter/ChapterPurchased";
 import ChapterPurchasedSkeleton from "~/components/Chapter/ChapterPurchasedSkeleton";
 import { useSession } from "next-auth/react";
@@ -9,7 +7,7 @@ import { useSession } from "next-auth/react";
 const PurchasedPage = () => {
   const { data: session } = useSession();
   const { data, fetchNextPage, hasNextPage } =
-    api.chapter.getFeeds.useInfiniteQuery(
+    api.chapter.getPurchased.useInfiniteQuery(
       {
         limit: 10,
       },
