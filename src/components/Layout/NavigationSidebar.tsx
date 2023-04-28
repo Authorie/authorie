@@ -10,6 +10,7 @@ import {
   HiOutlineMagnifyingGlass,
   HiPencil,
   HiOutlineBookOpen,
+  HiOutlineShoppingCart,
 } from "react-icons/hi2";
 import { Button, Link } from "~/components/ui/NavigationItems";
 import { useSelectCategory } from "~/hooks/selectedCategory";
@@ -70,6 +71,10 @@ const NavigationSidebar = () => {
               >
                 <HiOutlineBookOpen className="h-7 w-7" />
                 <span className="hidden sm:inline-block">My book</span>
+              </Link>
+              <Link href={"/purchased"}>
+                <HiOutlineShoppingCart className="h-7 w-7" />
+                <span className="hidden sm:inline-block">Purchased</span>
               </Link>
             </>
           ) : (
