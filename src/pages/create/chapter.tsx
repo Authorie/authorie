@@ -119,7 +119,6 @@ const CreateChapter = () => {
         ({ data: chapter }) => chapter?.id === chapterId
       );
       if (chapter && chapter.data) selectDraftHandler(chapter.data);
-      else void router.push("/create/chapter");
     }
   }, [router, selectDraftHandler, draftChaptersLoading, draftChapters]);
 
