@@ -112,23 +112,48 @@ const getChapter = publicProcedure
         previousChapterId = previousChapter.id;
       }
     }
+
+    let isLiked = false,
+      isChapterBought = false,
+      dayOfPurchase = null as Date | null;
+    if (ctx.session) {
+      const marketHistory = await ctx.prisma.chapterMarketHistory.findFirst({
+        where: {
+          chapterId: input.id,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      if (marketHistory) {
+        isChapterBought = true;
+        dayOfPurchase = marketHistory.createdAt;
+      }
+
+      isLiked = Boolean(
+        await ctx.prisma.chapterLike.findUnique({
+          where: {
+            chapterId_userId: {
+              chapterId: input.id,
+              userId: ctx.session.user.id,
+            },
+          },
+        })
+      );
+    }
+
+    const isChapterReadable = checkChapterReadable(
+      chapter,
+      ctx.session?.user.id
+    );
+
     return {
       ...chapter,
       nextChapterId,
       previousChapterId,
-      isChapterReadable: checkChapterReadable(chapter, ctx.session?.user.id),
-      isLiked: ctx.session
-        ? Boolean(
-          await ctx.prisma.chapterLike.findUnique({
-            where: {
-              chapterId_userId: {
-                chapterId: input.id,
-                userId: ctx.session.user.id,
-              },
-            },
-          })
-        )
-        : false,
+      isChapterReadable,
+      isChapterBought,
+      dayOfPurchase,
+      isLiked,
     };
   });
 

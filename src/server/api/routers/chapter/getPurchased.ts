@@ -11,21 +11,22 @@ const getPurchased = protectedProcedure
   )
   .query(async ({ ctx, input }) => {
     const { cursor, limit } = input;
+    const marketHistories = await ctx.prisma.chapterMarketHistory.findMany({
+      where: {
+        userId: ctx.session.user.id,
+      },
+      select: {
+        chapterId: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+    });
+
     return makePagination(
-      await ctx.prisma.chapter.findMany({
-        where: {
-          chapterMarketHistories: {
-            some: {
-              userId: ctx.session.user.id,
-            },
-          },
-        },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
-      }),
+      marketHistories.map(({ chapterId }) => ({ id: chapterId })),
       limit
     );
   });
