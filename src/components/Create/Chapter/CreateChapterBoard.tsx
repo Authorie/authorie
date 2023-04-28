@@ -37,7 +37,7 @@ const CreateChapterBoard = ({
   const utils = api.useContext();
   const createChapterMutation = api.chapter.create.useMutation({
     onSuccess(data, variables, _context) {
-      void utils.chapter.getDrafts.invalidate();
+      void utils.chapter.getDrafts.invalidate(undefined);
       if (variables.bookId) {
         void utils.book.getData.invalidate({ id: variables.bookId });
       }
@@ -46,7 +46,7 @@ const CreateChapterBoard = ({
   });
   const deleteChapterMutation = api.chapter.deleteDraft.useMutation({
     onSuccess(_data, _variables, _context) {
-      void utils.chapter.getDrafts.invalidate();
+      void utils.chapter.getDrafts.invalidate(undefined);
       if (book) void utils.book.getData.invalidate({ id: book.id });
     },
   });

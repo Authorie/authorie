@@ -43,7 +43,7 @@ const NewUserForm = () => {
       { penname: data.penname },
       {
         onSuccess() {
-          void context.user.getData.invalidate();
+          void context.user.getData.invalidate(undefined);
           if (router.query.callbackUrl) {
             void router.replace(router.query.callbackUrl as string);
           } else {
@@ -67,9 +67,8 @@ const NewUserForm = () => {
         <input
           {...register("penname")}
           aria-invalid={errorsExist}
-          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${
-            errorsExist ? "border-red-500" : ""
-          }`}
+          className={`focus:shadow-outline w-96 appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none ${errorsExist ? "border-red-500" : ""
+            }`}
           id="username"
           type="text"
           placeholder="your pen name..."
@@ -82,8 +81,8 @@ const NewUserForm = () => {
             {errors.penname
               ? "Please enter your pen name."
               : updateUser.isError
-              ? "The pen name already exists. Please enter a new one."
-              : ""}
+                ? "The pen name already exists. Please enter a new one."
+                : ""}
           </p>
         </div>
       </div>
