@@ -77,6 +77,13 @@ const createChapter = protectedProcedure
           message: "You can't change the book of a chapter",
         });
       }
+
+      if (chapter.publishedAt && dayjs().isBefore(chapter.publishedAt)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You can't edit a published chapter",
+        });
+      }
     }
 
     return await ctx.prisma.$transaction(async (trx) => {
