@@ -2,7 +2,6 @@ import Image from "next/image";
 import { PhotoInputButton } from "../action/PhotoInputButton";
 import { useState } from "react";
 import { api } from "~/utils/api";
-import type { ChangeEvent } from "react";
 import { toast } from "react-hot-toast";
 import TextareaAutoSize from "react-textarea-autosize";
 import { HiXMark } from "react-icons/hi2";
@@ -17,23 +16,23 @@ const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
   const utils = api.useContext();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [discussionImageUrl, setDiscussionImageUrl] = useState("");
+  const [discussionImageUrl, setDiscussionImageUrl] = useState<string | null>(
+    null
+  );
+
   const postDiscussion = api.communityPosts.createNewPost.useMutation({
-    onSuccess() {
-      void utils.communityPosts.getAllPosts.invalidate();
+    onSuccess(_data, variables, _context) {
+      setTitle("");
+      setContent("");
+      setDiscussionImageUrl(null);
+      void utils.communityPosts.getAllPosts.invalidate({
+        penname: variables.authorPenname,
+      });
     },
   });
 
-  const titleChangeHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setTitle(e.target.value);
-  };
-
-  const contentChangeHandler = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
-  };
-
   const submitDiscussionHandler = async () => {
-    if (!content && !discussionImageUrl) return;
+    if (!content) return;
     const promisePostDiscussion = postDiscussion.mutateAsync({
       title: title,
       content: content,
@@ -46,9 +45,6 @@ const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
       success: `Posted successfully!`,
       error: "Post Failed!",
     });
-    setTitle("");
-    setContent("");
-    setDiscussionImageUrl("");
   };
 
   return (
@@ -63,7 +59,7 @@ const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
         <div className="flex h-fit w-full flex-col gap-4">
           <TextareaAutoSize
             minRows={1}
-            onChange={titleChangeHandler}
+            onChange={({ target }) => setTitle(target.value)}
             value={title}
             placeholder="Write a title"
             className="text-dark-700 w-full resize-none bg-transparent text-xl font-semibold outline-none focus:outline-none"
@@ -86,7 +82,7 @@ const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
           )}
           <TextareaAutoSize
             value={content}
-            onChange={contentChangeHandler}
+            onChange={({ target }) => setContent(target.value)}
             placeholder="Write a discussion"
             minRows={2}
             className="flex h-24 w-full resize-none bg-transparent text-gray-700 outline-none focus:outline-none"
