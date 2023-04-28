@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { protectedProcedure } from "~/server/api/trpc";
 
 const getDraftChapters = protectedProcedure.query(async ({ ctx }) => {
-  const minPublishedAt = dayjs().subtract(1, "hour").toDate();
+  const minPublishedAt = dayjs().add(1, "hour").toDate();
 
   return await ctx.prisma.chapter.findMany({
     where: {
