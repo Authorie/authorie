@@ -207,17 +207,10 @@ const Book = ({ book }: props) => {
     <>
       <DialogLayout
         isOpen={dialogState.isOpen}
-        closeModal={() =>
-          setDialogState({
-            isOpen: false,
-            title: "",
-            description: "",
-            action: () => void {},
-          })
-        }
-        title={dialogState.isOpen ? dialogState.title : ""}
-        description={dialogState.isOpen ? dialogState.description : ""}
-        onClick={dialogState.isOpen ? dialogState.action : () => void {}}
+        closeModal={() => setDialogState({ ...dialogState, isOpen: false })}
+        title={dialogState.title}
+        description={dialogState.description}
+        onClick={dialogState.action}
         button
       />
       <div
