@@ -197,13 +197,12 @@ const AuthorBanner = ({
           followers: [...old.followers, { followerId: session!.user.id }],
         };
       });
-      if (variables === user.id) {
+      if (variables === session?.user.id) {
         utils.user.getData.setData({ penname }, (old) => {
           if (!old) return old;
           return {
             ...old,
-            isFollowing: true,
-            following: [...old.following, { followingId: session!.user.id }],
+            following: [...old.following, { followingId: session.user.id }],
           };
         });
       }
@@ -243,14 +242,13 @@ const AuthorBanner = ({
           ),
         };
       });
-      if (variables === user.id) {
+      if (variables === session?.user.id) {
         utils.user.getData.setData({ penname }, (old) => {
           if (!old) return old;
           return {
             ...old,
-            isFollowing: false,
             following: old.following.filter(
-              ({ followingId }) => followingId !== session!.user.id
+              ({ followingId }) => followingId !== session.user.id
             ),
           };
         });
