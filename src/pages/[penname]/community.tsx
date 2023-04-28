@@ -32,7 +32,7 @@ const CommunityPage = () => {
   );
   return (
     <div className="flex gap-5">
-      <div className="my-8 flex w-fit flex-col items-start justify-start gap-7">
+      <div className="mt-8 flex w-fit flex-col items-start justify-start gap-7">
         {user && (
           <CommunityInput
             penname={user.penname!}
@@ -53,7 +53,7 @@ const CommunityPage = () => {
           )
         )}
         {communityPosts.length === 0 && (
-          <div className="flex h-96 w-[672px] items-center justify-center rounded-lg bg-white text-center text-lg font-semibold">
+          <div className="flex w-[672px] grow items-center justify-center rounded-lg bg-white text-center text-lg font-semibold">
             This community page still does not have any discussions.
           </div>
         )}
