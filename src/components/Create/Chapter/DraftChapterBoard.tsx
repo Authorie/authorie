@@ -33,16 +33,17 @@ const DraftChapterBoard = ({
           onClickHandler={() => selectDraftHandler(null)}
         />
         <div ref={animationParent} className="grid grid-flow-row gap-3">
-          {draftChapters.every((draft) => draft !== undefined) &&
-            draftChapters.map((draftChapter) => (
+          {draftChapters.map((draftChapter) =>
+            draftChapter ? (
               <ChapterDraftCard
-                key={draftChapter!.id}
-                title={draftChapter!.title}
-                selected={draftChapter!.id === selectedChapterId}
-                onClickHandler={() => selectDraftHandler(draftChapter!)}
-                publishedAt={draftChapter!.publishedAt}
+                key={draftChapter.id}
+                title={draftChapter.title}
+                selected={draftChapter.id === selectedChapterId}
+                onClickHandler={() => selectDraftHandler(draftChapter)}
+                publishedAt={draftChapter.publishedAt}
               />
-            ))}
+            ) : null
+          )}
         </div>
       </ul>
     </div>
