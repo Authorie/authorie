@@ -14,14 +14,7 @@ type props = {
 
 const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
   const utils = api.useContext();
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
       title: "",
       content: "",
