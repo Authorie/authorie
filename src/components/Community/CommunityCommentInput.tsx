@@ -57,6 +57,13 @@ const CommunityCommentInput = ({ id, openCommentHandler }: props) => {
     });
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void handleSubmit(submitCommentHandler)();
+    }
+  };
+
   return (
     <form
       className="relative flex w-full items-center gap-2"
@@ -88,6 +95,7 @@ const CommunityCommentInput = ({ id, openCommentHandler }: props) => {
           minRows={1}
           placeholder="Write a comment"
           className="grow resize-none bg-transparent text-sm text-gray-600 outline-none focus:outline-none"
+          onKeyDown={handleKeyDown}
           {...register("comment")}
         />
         <PhotoInputButton
