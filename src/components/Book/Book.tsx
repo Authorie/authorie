@@ -262,9 +262,9 @@ const Book = ({ book }: props) => {
           {book.status === BookStatus.PUBLISHED && latestChapter && (
             <div className="absolute right-0 top-0 z-10 flex w-full justify-between text-xs font-semibold text-white">
               {latestChapter.publishedAt &&
-                dayjs().isBefore(latestChapter.publishedAt, "day") && (
-                  <p className="bg-red-400 px-2">New</p>
-                )}
+                dayjs().isBefore(
+                  dayjs(latestChapter.publishedAt).add(1, "day")
+                ) && <p className="bg-red-400 px-2">New</p>}
               <p className="line-clamp-1 bg-slate-500 px-2 font-medium">
                 #{publishedChapter.length} - {latestChapter.title}
               </p>
