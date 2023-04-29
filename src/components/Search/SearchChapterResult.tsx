@@ -13,10 +13,7 @@ type props = {
 const SearchChapterResult = ({ onClick, chapter }: props) => {
   return (
     <SearchResultCard onClick={onClick}>
-      <Link
-        href={`/chapters/${chapter.id}`}
-        className="mr-2 w-10/12 py-3 pr-10"
-      >
+      <Link href={`/chapters/${chapter.id}`} className="mr-2 w-full py-3 pr-10">
         <p className="text-xs text-authBlue-500">CHAPTER</p>
         <h4 className="text-xl font-bold text-authBlue-500">{chapter.title}</h4>
         <div className="my-2 flex gap-10 text-xs text-dark-400">

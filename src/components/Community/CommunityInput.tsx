@@ -60,8 +60,8 @@ const CommunityInput = ({ userImg, penname, communityPenname }: props) => {
       onSubmit={(e) => void submitDiscussionHandler(e)}
     >
       <div className="flex items-center gap-2">
-        <div className="h-7 w-7 overflow-hidden rounded-full">
-          <Image src={userImg} alt="user image" width={50} height={50} />
+        <div className="relative h-7 w-7 overflow-hidden rounded-full">
+          <Image src={userImg} alt="user image" fill className="object-cover" />
         </div>
         <span className="font-semibold">{penname}</span>
       </div>

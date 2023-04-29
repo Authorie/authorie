@@ -322,8 +322,9 @@ const AuthorBanner = ({
     <>
       <label
         htmlFor="upload-wallpaper"
-        className={`absolute inset-0 h-72 overflow-hidden ${isEditing ? "cursor-pointer" : ""
-          }`}
+        className={`absolute inset-0 h-72 overflow-hidden ${
+          isEditing ? "cursor-pointer" : ""
+        }`}
       >
         {isEditing && (
           <div>
@@ -349,8 +350,9 @@ const AuthorBanner = ({
           />
         ) : (
           <div
-            className={`${isEditing ? "opacity-90" : ""
-              } h-full w-full bg-authGreen-400`}
+            className={`${
+              isEditing ? "opacity-90" : ""
+            } h-full w-full bg-authGreen-400`}
           />
         )}
       </label>
@@ -361,8 +363,9 @@ const AuthorBanner = ({
         <div className="mb-3 flex justify-between ">
           <label
             htmlFor="upload-profile"
-            className={`${isEditing ? "cursor-pointer" : ""
-              } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
+            className={`${
+              isEditing ? "cursor-pointer" : ""
+            } relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border`}
           >
             {isEditing && (
               <div>
@@ -380,9 +383,10 @@ const AuthorBanner = ({
             <Image
               src={profileImage ?? (user.image || "/placeholder_profile.png")}
               alt="profile picture"
-              width="250"
-              height="250"
-              className={isEditing ? "absolute z-0 opacity-90" : "absolute z-0"}
+              fill
+              className={`${
+                isEditing ? "opacity-90" : ""
+              } absolute z-0 object-cover`}
             />
           </label>
           <div>
@@ -425,10 +429,11 @@ const AuthorBanner = ({
                   />
                   <p
                     className={`${"text-xs"} 
-                          ${watch("penname") && watch("penname").length > 50
-                        ? "text-red-500"
-                        : "text-white"
-                      }`}
+                          ${
+                            watch("penname") && watch("penname").length > 50
+                              ? "text-red-500"
+                              : "text-white"
+                          }`}
                   >
                     {watch("penname") ? watch("penname").length : 0}
                     /50
@@ -485,10 +490,11 @@ const AuthorBanner = ({
                 />
                 <p
                   className={`${"text-xs"} 
-                          ${(watch("bio") || "").length > 150
-                      ? "text-red-500"
-                      : "text-white"
-                    }`}
+                          ${
+                            (watch("bio") || "").length > 150
+                              ? "text-red-500"
+                              : "text-white"
+                          }`}
                 >
                   {(watch("bio") || "").length}/150
                 </p>

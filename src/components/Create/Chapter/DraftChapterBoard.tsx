@@ -32,6 +32,9 @@ const DraftChapterBoard = ({
           selected={selectedChapterId === undefined}
           onClickHandler={() => selectDraftHandler(null)}
         />
+        {draftChapters.length !== 0 && (
+          <p className="font-semibold text-gray-700">My Chapters</p>
+        )}
         <div ref={animationParent} className="grid grid-flow-row gap-3">
           {draftChapters.map((draftChapter) =>
             draftChapter ? (

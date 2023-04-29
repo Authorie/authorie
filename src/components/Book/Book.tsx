@@ -221,11 +221,7 @@ const Book = ({ book }: props) => {
             void router.push(`/${penname}/book/${book.id}`);
           }
         }}
-        className={`${
-          book.status === BookStatus.ARCHIVED
-            ? ""
-            : "cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
-        } flex`}
+        className="flex cursor-pointer transition duration-100 ease-in-out hover:-translate-y-1 hover:scale-[1.01]"
       >
         <div className="h-72 w-3 rounded-r-lg bg-authGreen-600 shadow-lg" />
         <div className="relative flex w-52 flex-col rounded-l-lg pb-2 shadow-lg">
@@ -266,9 +262,9 @@ const Book = ({ book }: props) => {
           {book.status === BookStatus.PUBLISHED && latestChapter && (
             <div className="absolute right-0 top-0 z-10 flex w-full justify-between text-xs font-semibold text-white">
               {latestChapter.publishedAt &&
-                dayjs().isBefore(latestChapter.publishedAt, "day") && (
-                  <p className="bg-red-400 px-2">New</p>
-                )}
+                dayjs().isBefore(
+                  dayjs(latestChapter.publishedAt).add(1, "day")
+                ) && <p className="bg-red-400 px-2">New</p>}
               <p className="line-clamp-1 bg-slate-500 px-2 font-medium">
                 #{publishedChapter.length} - {latestChapter.title}
               </p>
@@ -300,7 +296,7 @@ const Book = ({ book }: props) => {
               {book.isOwner && book.status === BookStatus.ARCHIVED && (
                 <button
                   onClick={(e) => void unarchiveBookHandler(e)}
-                  className="absolute right-2 top-2 z-20 rounded-full border border-white bg-yellow-600 px-2 py-1 text-xs text-white hover:bg-yellow-700"
+                  className="absolute -right-3 -top-2 z-20 cursor-pointer rounded-lg border border-white bg-yellow-600 px-3 py-2 font-semibold text-white hover:bg-yellow-700"
                 >
                   Unarchive
                 </button>

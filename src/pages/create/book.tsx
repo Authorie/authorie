@@ -162,7 +162,7 @@ const CreateBook = () => {
                 id="title"
                 minRows={1}
                 aria-invalid={errors.title ? "true" : "false"}
-                className="focus:shadow-outline resize-none bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-600 focus:outline-none"
+                className="focus:shadow-outline resize-none bg-transparent text-4xl font-bold text-gray-800 placeholder:text-gray-400 focus:outline-none"
                 placeholder="Untitled"
                 {...register("title")}
               />

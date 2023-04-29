@@ -35,12 +35,12 @@ const SearchUserResult = ({ user, onClick }: props) => {
             </p>
           </div>
         </div>
-        <div className="h-20 w-20">
-          <div className="overflow-hidden rounded-full drop-shadow">
+        <div className="flex items-center justify-center">
+          <div className="flex h-20 w-20 overflow-hidden rounded-full drop-shadow">
             <Image
               src={user.image || "/placeholder_profile.png"}
-              width={90}
-              height={90}
+              fill
+              className="object-cover"
               alt="user profile image"
             />
           </div>
