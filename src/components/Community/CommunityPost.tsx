@@ -54,13 +54,13 @@ const CommunityPost = ({ isAuthenticated, post }: props) => {
     <div className="flex w-full flex-col rounded-xl bg-white px-6">
       <div className="flex w-full flex-col py-4">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
+          <div className="relative h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
             {post.user.image && (
               <Image
                 src={post.user.image}
                 alt="user profile image"
-                width={50}
-                height={50}
+                className="object-cover"
+                fill
               />
             )}
           </div>
@@ -89,8 +89,9 @@ const CommunityPost = ({ isAuthenticated, post }: props) => {
             onClickHandler={onLikeHandler}
           />
           <div
-            className={`flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm text-authGreen-600 hover:bg-authGreen-100 ${post.children.length === 0 ? "pointer-events-none" : ""
-              }`}
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm text-authGreen-600 hover:bg-authGreen-100 ${
+              post.children.length === 0 ? "pointer-events-none" : ""
+            }`}
             onClick={() => setOpenComment((prev) => !prev)}
           >
             <HiChatBubbleBottomCenterText className="h-6 w-6" />

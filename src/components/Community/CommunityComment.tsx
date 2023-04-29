@@ -35,13 +35,13 @@ const CommunityComment = ({ comment, isAuthenticated, noMoreReply }: props) => {
   return (
     <div className="flex flex-col border-t pt-2">
       <div className="flex items-center gap-2">
-        <div className="h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
+        <div className="relative h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
           {comment.user.image && (
             <Image
               src={comment.user.image}
               alt="user's profile image"
-              width={50}
-              height={50}
+              fill
+              className="object-cover"
             />
           )}
         </div>

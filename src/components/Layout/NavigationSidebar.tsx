@@ -55,13 +55,14 @@ const NavigationSidebar = () => {
           (user ? (
             <>
               <Link href={user.penname ? `/${user.penname}` : "/auth/new-user"}>
-                <Image
-                  src={user.image || "/placeholder_profile.png"}
-                  alt="profile picture"
-                  width={30}
-                  height={30}
-                  className="h-7 w-7 rounded-full"
-                />
+                <div className="relative h-7 w-7 overflow-hidden rounded-full">
+                  <Image
+                    src={user.image || "/placeholder_profile.png"}
+                    alt="profile picture"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <span className="hidden truncate sm:inline-block">
                   {user.penname}
                 </span>

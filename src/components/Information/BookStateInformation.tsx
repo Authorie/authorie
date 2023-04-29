@@ -10,7 +10,7 @@ const BookStateInformation = () => {
         </div>
         <div className="flex items-center gap-2 px-2">
           <p>Click</p>
-          <div className="bg-bue-500 flex h-8 w-32 items-center justify-center rounded-md text-sm font-semibold text-white">
+          <div className="flex h-8 w-32 items-center justify-center rounded-md bg-blue-500 text-sm font-semibold text-white">
             <p>Start Writing</p>
           </div>
           <p>to move to Draft state</p>

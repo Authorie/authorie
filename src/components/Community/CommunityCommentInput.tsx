@@ -79,13 +79,13 @@ const CommunityCommentInput = ({ id, openCommentHandler }: props) => {
         </div>
       )}
       <div className="w-8">
-        <div className="h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
+        <div className="relative h-7 w-7 overflow-hidden rounded-full bg-authGreen-500">
           {session && (
             <Image
               src={session.user.image ?? "/placeholder_profile.png"}
               alt="user's image"
-              width={100}
-              height={100}
+              fill
+              className="object-cover"
             />
           )}
         </div>
