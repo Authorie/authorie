@@ -14,9 +14,9 @@ const CreateLayout = ({ children }: PropsWithChildren) => {
 
   const buttonClassName = (selectedTab: tab) => {
     if (selectedTab === tab) {
-      return "rounded-t-2xl bg-white px-4 outline-none font-bold text-authGreen-600";
+      return "rounded-t-2xl bg-white px-4 focus:outline-none outline-none font-bold text-authGreen-600";
     } else {
-      return "rounded-t-2xl bg-authGreen-600 outline-none px-4 text-white hover:bg-authGreen-500";
+      return "rounded-t-2xl bg-authGreen-600 focus:outline-none outline-none px-4 text-white hover:bg-authGreen-500";
     }
   };
 
