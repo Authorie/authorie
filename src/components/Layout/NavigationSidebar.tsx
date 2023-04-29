@@ -73,7 +73,7 @@ const NavigationSidebar = () => {
                 <HiOutlineBookOpen className="h-7 w-7" />
                 <span className="hidden sm:inline-block">My book</span>
               </Link>
-              <Link href={"/purchased"}>
+              <Link href={"/chapter/purchased"}>
                 <HiOutlineShoppingCart className="h-7 w-7" />
                 <span className="hidden sm:inline-block">Purchased</span>
               </Link>

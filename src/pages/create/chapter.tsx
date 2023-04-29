@@ -153,16 +153,17 @@ const CreateChapter = () => {
               <TextareaAutoSize
                 minRows={1}
                 placeholder="Untitled"
-                className="w-full resize-none bg-transparent text-2xl font-semibold placeholder-gray-600 outline-none focus:outline-none"
+                className="w-full resize-none bg-transparent text-2xl font-semibold placeholder-gray-400 outline-none focus:outline-none"
                 value={title}
                 onChange={changeTitleHandler}
               />
               <p
                 className={`${"text-xs"} 
-                          ${title && title.length > 80
-                    ? "text-red-500"
-                    : "text-black"
-                  }`}
+                          ${
+                            title && title.length > 80
+                              ? "text-red-500"
+                              : "text-black"
+                          }`}
               >
                 {title ? title.length : 0}
                 /80

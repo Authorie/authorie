@@ -1,7 +1,7 @@
 const HistoryPage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="grid h-3/4 w-3/5 grid-cols-2 rounded-xl bg-slate-100 ">
+      <div className="grid h-3/4 w-3/5 grid-cols-2 rounded-xl bg-gray-300 ">
         <div className="flex items-center justify-center rounded-l-lg bg-authGreen-400">
           <p className="text-5xl font-bold">History</p>
         </div>

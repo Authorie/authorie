@@ -1,7 +1,7 @@
 const PrivacyPage = () => {
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex w-3/5 flex-col rounded-xl bg-slate-100 ">
+    <div className="flex h-screen items-center justify-center bg-authGreen-100">
+      <div className="flex w-3/5 flex-col rounded-xl bg-gray-300 ">
         <div className="flex items-center justify-center rounded-t-lg bg-authGreen-400 py-6">
           <p className="text-5xl font-bold">Privacy</p>
         </div>
