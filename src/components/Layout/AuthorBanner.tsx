@@ -383,9 +383,10 @@ const AuthorBanner = ({
             <Image
               src={profileImage ?? (user.image || "/placeholder_profile.png")}
               alt="profile picture"
-              width="128"
-              height="128"
-              className={isEditing ? "absolute z-0 opacity-90" : "absolute z-0"}
+              fill
+              className={`${
+                isEditing ? "opacity-90" : ""
+              } absolute z-0 object-cover`}
             />
           </label>
           <div>
