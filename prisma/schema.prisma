@@ -6,10 +6,6 @@ generator client {
     previewFeatures = ["jsonProtocol"]
 }
 
-generator dbml {
-    provider = "prisma-dbml-generator"
-}
-
 datasource db {
     provider     = "mysql"
     url          = env("DATABASE_URL")
