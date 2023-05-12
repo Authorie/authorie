@@ -1,0 +1,345 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table accounts {
+  id String [pk]
+  userId String [not null]
+  type String [not null]
+  provider String [not null]
+  providerAccountId String [not null]
+  refresh_token String
+  access_token String
+  expires_at Int
+  token_type String
+  scope String
+  id_token String
+  session_state String
+  user users [not null]
+
+  indexes {
+    (provider, providerAccountId) [unique]
+  }
+}
+
+Table sessions {
+  id String [pk]
+  sessionToken String [unique, not null]
+  userId String [not null]
+  expires DateTime [not null]
+  user users [not null]
+}
+
+Table users {
+  id String [pk]
+  penname String [unique]
+  name String
+  email String [unique]
+  emailVerified DateTime
+  image String
+  bio String
+  description String
+  wallpaperImage String
+  facebookContact String
+  instagramContact String
+  emailContact String
+  location String
+  coin Int [not null, default: 100000]
+  createdAt DateTime [default: `now()`, not null]
+  accounts accounts [not null]
+  sessions sessions [not null]
+  categories categoriesOnUsers [not null]
+  following followingFollowers [not null]
+  followers followingFollowers [not null]
+  ownedBooks bookOwners [not null]
+  favorites favoriteBooks [not null]
+  ownedChapters chapters [not null]
+  likedChapters chapterLikes [not null]
+  comments chapterComments [not null]
+  likedComments chapterCommentLikes [not null]
+  viewedChapters chapterViews [not null]
+  chapterMarketHistories chapterMarketHistories [not null]
+  posts communityPosts [not null]
+  postLikes communityPostLikes [not null]
+  communityPosts communityPosts [not null]
+}
+
+Table followingFollowers {
+  following users [not null]
+  followingId String [not null]
+  follower users [not null]
+  followerId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (followingId, followerId) [pk]
+  }
+}
+
+Table verificationTokens {
+  identifier String [not null]
+  token String [unique, not null]
+  expires DateTime [not null]
+
+  indexes {
+    (identifier, token) [unique]
+  }
+}
+
+Table categories {
+  id String [pk]
+  title String [not null]
+  users categoriesOnUsers [not null]
+  books bookCategories [not null]
+}
+
+Table categoriesOnUsers {
+  category categories [not null]
+  categoryId String [not null]
+  user users [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (categoryId, userId) [pk]
+  }
+}
+
+Table books {
+  id String [pk]
+  title String [not null]
+  description String
+  previousStatus BookStatus
+  status BookStatus [not null, default: 'INITIAL']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  coverImage String
+  wallpaperImage String
+  owners bookOwners [not null]
+  categories bookCategories [not null]
+  favoritees favoriteBooks [not null]
+  chapters chapters [not null]
+}
+
+Table bookOwners {
+  book books [not null]
+  bookId String [not null]
+  user users [not null]
+  userId String [not null]
+  status BookOwnerStatus [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (bookId, userId) [pk]
+  }
+}
+
+Table bookCategories {
+  book books [not null]
+  bookId String [not null]
+  category categories [not null]
+  categoryId String [not null]
+
+  indexes {
+    (bookId, categoryId) [pk]
+  }
+}
+
+Table favoriteBooks {
+  book books [not null]
+  bookId String [not null]
+  user users [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (bookId, userId) [pk]
+  }
+}
+
+Table chapters {
+  id String [pk]
+  chapterNo Int
+  title String [not null]
+  content Json [not null]
+  price Int [not null, default: 0]
+  publishedAt DateTime
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  book books
+  bookId String
+  owner users [not null]
+  ownerId String [not null]
+  views chapterViews [not null]
+  likes chapterLikes [not null]
+  comments chapterComments [not null]
+  chapterMarketHistories chapterMarketHistories [not null]
+}
+
+Table chapterViews {
+  id String [pk]
+  chapter chapters [not null]
+  chapterId String [not null]
+  user users
+  userId String
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table chapterLikes {
+  chapter chapters [not null]
+  chapterId String [not null]
+  user users [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (chapterId, userId) [pk]
+  }
+}
+
+Table chapterComments {
+  id String [pk]
+  image String
+  content String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  chapter chapters [not null]
+  chapterId String [not null]
+  user users [not null]
+  userId String [not null]
+  replies chapterComments [not null]
+  parent chapterComments
+  parentCommentId String
+  likes chapterCommentLikes [not null]
+}
+
+Table chapterCommentLikes {
+  comment chapterComments [not null]
+  commentId String [not null]
+  user users [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (commentId, userId) [pk]
+  }
+}
+
+Table chapterMarketHistories {
+  id String [pk]
+  chapter chapters [not null]
+  chapterId String [not null]
+  user users [not null]
+  userId String [not null]
+  price Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (chapterId, userId) [unique]
+  }
+}
+
+Table communityPosts {
+  id String [pk]
+  title String [not null]
+  content String [not null]
+  image String
+  authorId String [not null]
+  author users [not null]
+  parentId String
+  parent communityPosts
+  children communityPosts [not null]
+  user users [not null]
+  userId String [not null]
+  likes communityPostLikes [not null]
+  communityPostId String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table communityPostLikes {
+  post communityPosts [not null]
+  postId String [not null]
+  user users [not null]
+  userId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+
+  indexes {
+    (postId, userId) [pk]
+  }
+}
+
+Enum BookStatus {
+  INITIAL
+  DRAFT
+  PUBLISHED
+  COMPLETED
+  ARCHIVED
+}
+
+Enum BookOwnerStatus {
+  OWNER
+  INVITEE
+  COLLABORATOR
+  REJECTED
+}
+
+Ref: accounts.userId > users.id [delete: Cascade]
+
+Ref: sessions.userId > users.id [delete: Cascade]
+
+Ref: followingFollowers.followingId > users.id [delete: Cascade]
+
+Ref: followingFollowers.followerId > users.id [delete: Cascade]
+
+Ref: categoriesOnUsers.categoryId > categories.id [delete: Cascade]
+
+Ref: categoriesOnUsers.userId > users.id [delete: Cascade]
+
+Ref: bookOwners.bookId > books.id [delete: Cascade]
+
+Ref: bookOwners.userId > users.id [delete: Cascade]
+
+Ref: bookCategories.bookId > books.id [delete: Cascade]
+
+Ref: bookCategories.categoryId > categories.id [delete: Cascade]
+
+Ref: favoriteBooks.bookId > books.id [delete: Restrict]
+
+Ref: favoriteBooks.userId > users.id [delete: Cascade]
+
+Ref: chapters.bookId > books.id [delete: Cascade]
+
+Ref: chapters.ownerId > users.id [delete: Cascade]
+
+Ref: chapterViews.chapterId > chapters.id [delete: Cascade]
+
+Ref: chapterViews.userId > users.id [delete: Cascade]
+
+Ref: chapterLikes.chapterId > chapters.id [delete: Cascade]
+
+Ref: chapterLikes.userId > users.id [delete: Cascade]
+
+Ref: chapterComments.chapterId > chapters.id [delete: Cascade]
+
+Ref: chapterComments.userId > users.id [delete: Cascade]
+
+Ref: chapterComments.parentCommentId > chapterComments.id
+
+Ref: chapterCommentLikes.commentId > chapterComments.id [delete: Cascade]
+
+Ref: chapterCommentLikes.userId > users.id [delete: Cascade]
+
+Ref: chapterMarketHistories.chapterId > chapters.id [delete: Cascade]
+
+Ref: chapterMarketHistories.userId > users.id [delete: Cascade]
+
+Ref: communityPosts.authorId > users.id [delete: Cascade]
+
+Ref: communityPosts.parentId - communityPosts.id [delete: No Action]
+
+Ref: communityPosts.userId > users.id [delete: Cascade]
+
+Ref: communityPostLikes.postId > communityPosts.id [delete: Cascade]
+
+Ref: communityPostLikes.userId > users.id [delete: Cascade]
