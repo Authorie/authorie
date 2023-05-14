@@ -2,7 +2,7 @@ import type { JSONContent } from "@tiptap/react";
 import { signIn, useSession } from "next-auth/react";
 import { default as Image, default as NextImage } from "next/image";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import TextareaAutoSize from "react-textarea-autosize";
 import BookComboBox from "~/components/Create/Chapter/BookComboBox";
 import CreateChapterBoard from "~/components/Create/Chapter/CreateChapterBoard";
@@ -23,6 +23,7 @@ const CreateChapter = () => {
   const [errors, setErrors] = useState<{ title: string | undefined }>({
     title: undefined,
   });
+  const [firstRender, setFirstRender] = useState(true);
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState<number>();
   const [book, setBook] = useState<
@@ -40,7 +41,7 @@ const CreateChapter = () => {
   const draftChapters = api.useQueries(
     (t) => draftChapterIds?.map((id) => t.chapter.getData(id)) ?? []
   );
-  const draftChaptersLoading = draftChapters.some((q) => q.isLoading);
+  const draftChaptersLoading = useMemo(() => draftChapters.some((q) => q.isLoading), [draftChapters]);
   api.book.getData.useQuery(
     { id: bookId! },
     {
@@ -54,22 +55,19 @@ const CreateChapter = () => {
   );
 
   const selectDraftHandler = useCallback(
-    (chapter: RouterOutputs["chapter"]["getData"] | null) => {
+    (draft: RouterOutputs["chapter"]["getData"] | null) => {
       if (!editor) return;
       setErrors({
         title: undefined,
       });
-      setChapter(chapter);
-      setTitle(chapter?.title ?? "");
+      setChapter(draft);
+      setTitle(draft?.title ?? "");
       editor.commands.setContent(
-        chapter ? (chapter.content as JSONContent) : ""
+        draft ? (draft.content as JSONContent) : ""
       );
-      setBook(chapter ? chapter.book : null);
-      const newUrl = new URL("/create/chapter")
-      if (chapter) newUrl.searchParams.set("chapterId", chapter.id)
-      void router.push(newUrl)
+      setBook(draft ? draft.book : null);
     },
-    [editor, router]
+    [editor]
   );
   const toggleBookHandler = (
     book:
@@ -115,8 +113,9 @@ const CreateChapter = () => {
   };
 
   useEffect(() => {
-    const chapterId = router.query.chapterId as string | undefined;
-    if (chapterId && chapter && chapter.id === chapterId) return;
+    if (firstRender) return;
+    setFirstRender(false);
+    const chapterId = router.query.chapterId;
     if (chapterId && !draftChaptersLoading) {
       const chapter = draftChapters.find(
         ({ data: chapter }) => chapter?.id === chapterId
@@ -125,10 +124,10 @@ const CreateChapter = () => {
     }
   }, [
     router,
+    firstRender,
     selectDraftHandler,
     draftChaptersLoading,
     draftChapters,
-    chapter,
   ]);
 
   return (
